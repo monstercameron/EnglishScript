@@ -57,6 +57,30 @@ The application's workflow is as follows:
 5. Extract the JavaScript translation from the API response and save it into a `.js` file.
 6. Execute the resulting JavaScript file.
 
+### Example
+
+Below is an example of how English scripts translate to JavaScript using rules and aliases:
+
+- English Script: `"I have a fixed number that is 1"`
+- JavaScript: `"const value = 1;"`
+
+- English Script: `"I have a number a that I add 1 and 2,"`
+- JavaScript: `"let a = 1 + 2;"`
+
+- English Script: `"I have a number a that I add a and b then divide by a,"`
+- JavaScript: `"let a = (a + b) / a;"`
+
+- English Script: `"show my number a"`
+- JavaScript: `"console.log(a);"`
+
+And here is an example of how aliases work:
+
+- Alias: `["const", "constant", "fixed"]`
+- This means 'const' in JavaScript can be represented by 'constant' or 'fixed' in English script.
+
+- Alias: `["log", "console", "display", "show"]`
+- This means 'console.log' in JavaScript can be represented by 'display' or 'show' in English script.
+
 ### Contributing
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
