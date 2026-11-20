@@ -65,7 +65,7 @@ def card(rival):
   <p class="note">{esc(rival["note"])}</p>
   <p class="meta"><span>{esc(runs)}.</span> <span>{esc(rival.get("checked_with") or "")}</span></p>
   {printed}
-  <p class="sources">{sources}</p>
+  <p class="sources">{sources}<a class="back" href="#ledger">Back to the list</a></p>
 </article>'''
 
 
@@ -140,6 +140,21 @@ def page():
   .rival .printed summary {{ font: 0.9rem var(--caps); letter-spacing: 0.08em; text-transform: lowercase; cursor: pointer; color: var(--accent); }}
   .rival .printed pre {{ font: 0.78rem/1.5 var(--mono); margin: 0.3rem 0 0; }}
   .rival .sources {{ margin: 0 1rem 0.8rem; font-size: 0.95rem; display: flex; flex-wrap: wrap; gap: 0.2rem 0.8rem; }}
+  .rival .back {{ margin-left: auto; font: 0.9rem var(--caps); letter-spacing: 0.08em; text-transform: lowercase; }}
+  table.ledger {{ scroll-margin-top: 1rem; }}
+  .to-top {{
+    position: fixed; right: 1.2rem; bottom: 1.2rem; z-index: 50; padding: 0.5rem 0.9rem 0.55rem;
+    font: 0.95rem var(--caps); letter-spacing: 0.08em; text-transform: lowercase; text-decoration: none;
+    color: var(--accent-ink); background: var(--accent); border: 1px solid var(--accent); box-shadow: 3px 3px 0 var(--rule);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }}
+  .to-top:hover {{ filter: brightness(1.08); }}
+  .to-top:focus-visible {{ outline: 2px solid var(--focus); outline-offset: 3px; }}
+  /* With scripts, it waits until the reader has scrolled; without, it is always there. */
+  .to-top:not(.shown) {{ opacity: 0; transform: translateY(0.6rem); pointer-events: none; }}
+  @media (scripting: none) {{ .to-top:not(.shown) {{ opacity: 1; transform: none; pointer-events: auto; }} }}
+  .to-top:not(.shown):focus-visible {{ opacity: 1; transform: none; pointer-events: auto; }}
+  @media print {{ .to-top {{ display: none; }} }}
   table.ledger td:nth-child(n+2), table.ledger th:nth-child(n+2) {{ text-align: right; font-variant-numeric: lining-nums tabular-nums; }}
   table.ledger tr.ours td {{ font-weight: 600; }}
 </style>
@@ -148,7 +163,7 @@ def page():
 
 {pages.nav("")}
 <main class="fizz">
-<h1>FizzBuzz, Every Way</h1>
+<h1 id="top">FizzBuzz, Every Way</h1>
 <p class="standfirst">One small program in EnglishScript, and the same program in {len(found)} of its rivals: the English-like languages since 1955, and the new ones that ask a model.</p>
 
 <div class="intro">
@@ -157,7 +172,7 @@ def page():
 </div>
 
 <div class="scroll">
-<table class="ledger">
+<table class="ledger" id="ledger">
   <thead><tr><th>Language</th><th>Year</th><th>Lines</th><th>Computes it itself</th><th>How far checked</th></tr></thead>
   <tbody>
     <tr class="ours"><td>EnglishScript</td><td>2026</td><td>{ours}</td><td>yes</td><td>Run, here, on every build</td></tr>
@@ -190,9 +205,17 @@ def page():
   Printed from <a href="{pages.SOURCE}/blob/main/docs/rivals/fizzbuzz.json">docs/rivals/fizzbuzz.json</a> and <a href="{pages.SOURCE}/blob/main/examples/fizzbuzz.english">examples/fizzbuzz.english</a> by <code>tools/build_site.py</code>. The rivals' samples were written for this page; corrections are welcome.
 </footer>
 
+<a class="to-top" href="#top" aria-label="Back to the top of the page"><span aria-hidden="true">↑</span> Top</a>
+
 <script type="module">
 import {{ mountSnippets }} from "./play/snippets.js";
 mountSnippets();
+
+// The button back to the top shows only once the reader has scrolled away from it.
+const button = document.querySelector(".to-top");
+const away = () => button.classList.toggle("shown", window.scrollY > 600);
+away();
+window.addEventListener("scroll", away, {{ passive: true }});
 </script>
 </body>
 </html>

@@ -54,6 +54,21 @@
   .rival .printed summary { font: 0.9rem var(--caps); letter-spacing: 0.08em; text-transform: lowercase; cursor: pointer; color: var(--accent); }
   .rival .printed pre { font: 0.78rem/1.5 var(--mono); margin: 0.3rem 0 0; }
   .rival .sources { margin: 0 1rem 0.8rem; font-size: 0.95rem; display: flex; flex-wrap: wrap; gap: 0.2rem 0.8rem; }
+  .rival .back { margin-left: auto; font: 0.9rem var(--caps); letter-spacing: 0.08em; text-transform: lowercase; }
+  table.ledger { scroll-margin-top: 1rem; }
+  .to-top {
+    position: fixed; right: 1.2rem; bottom: 1.2rem; z-index: 50; padding: 0.5rem 0.9rem 0.55rem;
+    font: 0.95rem var(--caps); letter-spacing: 0.08em; text-transform: lowercase; text-decoration: none;
+    color: var(--accent-ink); background: var(--accent); border: 1px solid var(--accent); box-shadow: 3px 3px 0 var(--rule);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .to-top:hover { filter: brightness(1.08); }
+  .to-top:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+  /* With scripts, it waits until the reader has scrolled; without, it is always there. */
+  .to-top:not(.shown) { opacity: 0; transform: translateY(0.6rem); pointer-events: none; }
+  @media (scripting: none) { .to-top:not(.shown) { opacity: 1; transform: none; pointer-events: auto; } }
+  .to-top:not(.shown):focus-visible { opacity: 1; transform: none; pointer-events: auto; }
+  @media print { .to-top { display: none; } }
   table.ledger td:nth-child(n+2), table.ledger th:nth-child(n+2) { text-align: right; font-variant-numeric: lining-nums tabular-nums; }
   table.ledger tr.ours td { font-weight: 600; }
 </style>
@@ -76,7 +91,7 @@
 </nav>
 
 <main class="fizz">
-<h1>FizzBuzz, Every Way</h1>
+<h1 id="top">FizzBuzz, Every Way</h1>
 <p class="standfirst">One small program in EnglishScript, and the same program in 31 of its rivals: the English-like languages since 1955, and the new ones that ask a model.</p>
 
 <div class="intro">
@@ -85,7 +100,7 @@
 </div>
 
 <div class="scroll">
-<table class="ledger">
+<table class="ledger" id="ledger">
   <thead><tr><th>Language</th><th>Year</th><th>Lines</th><th>Computes it itself</th><th>How far checked</th></tr></thead>
   <tbody>
     <tr class="ours"><td>EnglishScript</td><td>2026</td><td>12</td><td>yes</td><td>Run, here, on every build</td></tr>
@@ -289,7 +304,7 @@ Buzz</pre>
   <p class="note">The 1958 manual lists no verb for arithmetic: adding or multiplying was done in X-1 sections of hand-written UNIVAC machine code, as the manual's own sample problem does, so the counting here is done that way and only the comparisons, moves and jumps are FLOW-MATIC. The words come from a one-item input file, and numbers would print with leading zeros.</p>
   <p class="meta"><span>Does not compute it by itself.</span> <span>Every FLOW-MATIC operation (INPUT, TEST, MOVE, JUMP, WRITE-ITEM, READ-ITEM, CLOSE-OUT, STOP, and the X-1 entry form) checked against the 1958 UNIVAC manual U1518. Not confirmed: the UNIVAC machine code inside the X-1 sections (not written), the data designs, and how a numeric test value is written for a short field. The flow of operations was traced in Python.</span></p>
   
-  <p class="sources"><a href="http://www.bitsavers.org/pdf/univac/flow-matic/U1518_FLOW-MATIC_Programming_System_1958.pdf">bitsavers.org</a> <a href="https://en.wikipedia.org/wiki/FLOW-MATIC">en.wikipedia.org</a></p>
+  <p class="sources"><a href="http://www.bitsavers.org/pdf/univac/flow-matic/U1518_FLOW-MATIC_Programming_System_1958.pdf">bitsavers.org</a> <a href="https://en.wikipedia.org/wiki/FLOW-MATIC">en.wikipedia.org</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="classic" id="cobol">
   <header>
@@ -320,7 +335,7 @@ Buzz</pre>
   <p class="note">The number is moved into an edited picture, ZZ9, which blanks leading zeros, and TRIM removes the blanks before it is shown. Code starts in column 8, as fixed format requires.</p>
   <p class="meta"><span>Computes it by itself.</span> <span>Fixed format, GnuCOBOL-compatible. PERFORM VARYING, EVALUATE TRUE, FUNCTION MOD, FUNCTION TRIM, DISPLAY and the PIC ZZ9 edited item checked against the GnuCOBOL Programmer's Guide. No COBOL compiler was available to run it.</span></p>
   
-  <p class="sources"><a href="https://gnucobol.sourceforge.io/HTML/gnucobpg.html">gnucobol.sourceforge.io</a></p>
+  <p class="sources"><a href="https://gnucobol.sourceforge.io/HTML/gnucobpg.html">gnucobol.sourceforge.io</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="classic" id="sql">
   <header>
@@ -351,7 +366,7 @@ Buzz
 98
 Fizz
 Buzz</pre></details>
-  <p class="sources"><a href="https://www.sqlite.org/lang_with.html">sqlite.org</a> <a href="https://www.sqlite.org/lang_expr.html">sqlite.org</a></p>
+  <p class="sources"><a href="https://www.sqlite.org/lang_with.html">sqlite.org</a> <a href="https://www.sqlite.org/lang_expr.html">sqlite.org</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="classic" id="natural">
   <header>
@@ -384,7 +399,7 @@ END</pre>
   <p class="note">Natural has a DIVIDE statement that gives a remainder, so each number is divided twice before a DECIDE chooses the word. NOTITLE, written once, stops Natural adding its usual page title to the whole report, and numbers are written right-aligned in their field, as in any Natural report.</p>
   <p class="meta"><span>Computes it by itself.</span> <span>Structured mode. DEFINE DATA, FOR, DIVIDE ... GIVING ... REMAINDER, DECIDE FOR FIRST CONDITION and WRITE NOTITLE checked against the Natural 8.2.7 statements reference (read from the Internet Archive's copies; the live pages now return 404). The WRITE page says that if NOTITLE is used it applies to all DISPLAY, PRINT and WRITE statements within the same object that write to the same report, and its FOR and DIVIDE examples put NOTITLE on one WRITE only. Not run.</span></p>
   
-  <p class="sources"><a href="https://documentation.softwareag.com/natural/nat827mf/sm/divide.htm">documentation.softwareag.com</a> <a href="https://documentation.softwareag.com/natural/nat827mf/sm/decidefo.htm">documentation.softwareag.com</a> <a href="https://documentation.softwareag.com/natural/nat827mf/sm/for.htm">documentation.softwareag.com</a> <a href="https://documentation.softwareag.com/natural/nat827mf/sm/write.htm">documentation.softwareag.com</a></p>
+  <p class="sources"><a href="https://documentation.softwareag.com/natural/nat827mf/sm/divide.htm">documentation.softwareag.com</a> <a href="https://documentation.softwareag.com/natural/nat827mf/sm/decidefo.htm">documentation.softwareag.com</a> <a href="https://documentation.softwareag.com/natural/nat827mf/sm/for.htm">documentation.softwareag.com</a> <a href="https://documentation.softwareag.com/natural/nat827mf/sm/write.htm">documentation.softwareag.com</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="classic" id="hypertalk">
   <header>
@@ -405,7 +420,7 @@ end mouseUp</pre>
   <p class="note">HyperTalk has no console, so the script runs when a button is clicked and puts the lines into a field on the card. Each line is built by putting words after it, which reads close to English.</p>
   <p class="meta"><span>Computes it by itself.</span> <span>on mouseUp, repeat with, mod, one-line if ... then, put ... into/after, empty, &amp; return and card field checked against Goodman's HyperTalk Bible (1989) and Apple's HyperTalk Beginner's Guide (1989). No HyperCard to run it.</span></p>
   
-  <p class="sources"><a href="https://www.vintageapple.org/macprogramming/pdf/HyperTalk_Bible_1989.pdf">vintageapple.org</a> <a href="https://www.vintageapple.org/macbooks/pdf/HyperTalk_Beginners_Guide_An_Introduction_to_Scripting_1989.pdf">vintageapple.org</a></p>
+  <p class="sources"><a href="https://www.vintageapple.org/macprogramming/pdf/HyperTalk_Bible_1989.pdf">vintageapple.org</a> <a href="https://www.vintageapple.org/macbooks/pdf/HyperTalk_Beginners_Guide_An_Introduction_to_Scripting_1989.pdf">vintageapple.org</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="classic" id="lingo">
   <header>
@@ -424,7 +439,7 @@ end</pre>
   <p class="note">This is the older verbose syntax, inherited from HyperTalk, that later Director versions kept beside dot syntax. A bare put writes to Director's Message window, since Lingo has no other console.</p>
   <p class="meta"><span>Computes it by itself.</span> <span>Handler form, repeat with, mod, set ... to, EMPTY and put to the Message window confirmed from secondary references. Not confirmed from a primary Director manual: put ... after on a variable (found only in errata notes to the Director 6 Lingo Dictionary) and the exact form the Message window shows. Not run.</span></p>
   
-  <p class="sources"><a href="https://www3.cs.stonybrook.edu/~lori/classes/MM/lingo.html">www3.cs.stonybrook.edu</a> <a href="https://www.c3.hu/docs/lingo/Ldoc_Errors_601.html">c3.hu</a> <a href="https://en.wikipedia.org/wiki/Lingo_(programming_language)">en.wikipedia.org</a></p>
+  <p class="sources"><a href="https://www3.cs.stonybrook.edu/~lori/classes/MM/lingo.html">www3.cs.stonybrook.edu</a> <a href="https://www.c3.hu/docs/lingo/Ldoc_Errors_601.html">c3.hu</a> <a href="https://en.wikipedia.org/wiki/Lingo_(programming_language)">en.wikipedia.org</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="classic" id="applescript">
   <header>
@@ -447,7 +462,7 @@ theLines</pre>
   <p class="note">Joining a number onto text turns the number into text, because the text is on the left. The script's last line is its result, which Script Editor and osascript display.</p>
   <p class="meta"><span>Computes it by itself.</span> <span>repeat with ... from ... to, compound if with else if, mod, is, &amp; with text on the left, and the linefeed constant (AppleScript 2.0 and later) checked against the AppleScript Language Guide. No Mac to run it.</span></p>
   
-  <p class="sources"><a href="https://developer.apple.com/library/archive/documentation/AppleScript/Conceptual/AppleScriptLangGuide/reference/ASLR_control_statements.html">developer.apple.com</a> <a href="https://developer.apple.com/library/archive/documentation/AppleScript/Conceptual/AppleScriptLangGuide/reference/ASLR_operators.html">developer.apple.com</a> <a href="https://developer.apple.com/library/archive/documentation/AppleScript/Conceptual/AppleScriptLangGuide/reference/ASLR_classes.html">developer.apple.com</a></p>
+  <p class="sources"><a href="https://developer.apple.com/library/archive/documentation/AppleScript/Conceptual/AppleScriptLangGuide/reference/ASLR_control_statements.html">developer.apple.com</a> <a href="https://developer.apple.com/library/archive/documentation/AppleScript/Conceptual/AppleScriptLangGuide/reference/ASLR_operators.html">developer.apple.com</a> <a href="https://developer.apple.com/library/archive/documentation/AppleScript/Conceptual/AppleScriptLangGuide/reference/ASLR_classes.html">developer.apple.com</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="classic" id="inform7">
   <header>
@@ -472,7 +487,7 @@ When play begins:
   <p class="note">Inform needs a room before it will compile, so the story has one, and the lines are printed when play begins, before the game's banner. Blocks are indented with tabs, which Inform reads as its indentation.</p>
   <p class="meta"><span>Computes it by itself.</span> <span>repeat with ... running from ... to, remainder after dividing ... by, if / otherwise if / otherwise, say with [N] and [line break], To phrases and When play begins checked against Writing with Inform and the Basic Inform phrase definitions. Not compiled.</span></p>
   
-  <p class="sources"><a href="https://ganelson.github.io/inform/basic_inform/phdf.html">ganelson.github.io</a> <a href="https://ganelson.github.io/inform-website/book/WI_11_7.html">ganelson.github.io</a> <a href="https://ganelson.github.io/inform-website/book/WI_11_8.html">ganelson.github.io</a> <a href="https://ganelson.github.io/inform-website/book/WI_11_11.html">ganelson.github.io</a></p>
+  <p class="sources"><a href="https://ganelson.github.io/inform/basic_inform/phdf.html">ganelson.github.io</a> <a href="https://ganelson.github.io/inform-website/book/WI_11_7.html">ganelson.github.io</a> <a href="https://ganelson.github.io/inform-website/book/WI_11_8.html">ganelson.github.io</a> <a href="https://ganelson.github.io/inform-website/book/WI_11_11.html">ganelson.github.io</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="classic" id="plain-english">
   <header>
@@ -494,7 +509,7 @@ When play begins:
   <p class="note">"If a counter is past 100" both adds one to a new local counter and tests it, so the loop needs no separate counting step. Every conditional fits on one line, as the language requires.</p>
   <p class="meta"><span>Computes it by itself.</span> <span>To run:, Start up., Loop. / Repeat. / break, If a counter is past ..., is evenly divisible by, one-line conditionals with semicolons, Convert ... to a string and Write checked against the Osmosian instructions. Not in the instructions: Wait for the escape key, which is taken from the language's published Hello World. Not run (the compiler is Windows-only and was not installed).</span></p>
   
-  <p class="sources"><a href="http://www.osmosian.com/instructions.pdf">osmosian.com</a> <a href="https://rosettacode.org/wiki/Category:Plain_English">rosettacode.org</a></p>
+  <p class="sources"><a href="http://www.osmosian.com/instructions.pdf">osmosian.com</a> <a href="https://rosettacode.org/wiki/Category:Plain_English">rosettacode.org</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="controlled" id="ace">
   <header>
@@ -510,7 +525,7 @@ If there is an integer N and N &gt;= 1 and N =&lt; 100 then a program prints the
   <p class="note">ACE has + - * / but no remainder, so "multiple" is defined with a multiplication. These sentences state the rules as logic; they do not run, and they say nothing about the order in which the lines appear.</p>
   <p class="meta"><span>Does not compute it by itself.</span> <span>Variables in apposition, if ... then, is not, of-phrases, strings, integers, arithmetic with * and boolean formulas such as N =&lt; 100 checked against the ACE construction rules. Not parsed with APE, which was not available locally; the content words (multiple, output, program, prints) rely on APE's lexicon.</span></p>
   
-  <p class="sources"><a href="https://web.archive.org/web/2024/http://attempto.ifi.uzh.ch/site/docs/ace_constructionrules.html">web.archive.org</a> <a href="https://en.wikipedia.org/wiki/Attempto_Controlled_English">en.wikipedia.org</a></p>
+  <p class="sources"><a href="https://web.archive.org/web/2024/http://attempto.ifi.uzh.ch/site/docs/ace_constructionrules.html">web.archive.org</a> <a href="https://en.wikipedia.org/wiki/Attempto_Controlled_English">en.wikipedia.org</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="controlled" id="peng">
   <header>
@@ -521,7 +536,7 @@ If there is an integer N and N &gt;= 1 and N =&lt; 100 then a program prints the
   <p class="note">There is too little published about PENG's grammar to write FizzBuzz in it faithfully. Its editor offers only the words that may come next, so the sentences a writer can type depend on a lexicon that is not published.</p>
   <p class="meta"><span>Does not compute it by itself.</span> <span>Schwitter's PENG papers (2002, 2003, 2006) and the PENG Light paper (2009) were read. None shows numbers used as values, arithmetic, a remainder or any output.</span></p>
   
-  <p class="sources"><a href="https://aclanthology.org/2003.eamt-1.17.pdf">aclanthology.org</a> <a href="https://aclanthology.org/www.mt-archive.info/CLAW-2006-Schwitter.pdf">aclanthology.org</a> <a href="https://aclanthology.org/U09-1011.pdf">aclanthology.org</a></p>
+  <p class="sources"><a href="https://aclanthology.org/2003.eamt-1.17.pdf">aclanthology.org</a> <a href="https://aclanthology.org/www.mt-archive.info/CLAW-2006-Schwitter.pdf">aclanthology.org</a> <a href="https://aclanthology.org/U09-1011.pdf">aclanthology.org</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="controlled" id="sbvr">
   <header>
@@ -536,7 +551,7 @@ It is obligatory that each integer that is not a multiple of 3 and that is not a
   <p class="note">These are business rules: each says what must be true, not how to make it so, and nothing here runs. In the specification, terms, verbs, names and keywords are told apart by font and colour, which plain text loses, and rules cannot say what order the lines come in.</p>
   <p class="meta"><span>Does not compute it by itself.</span> <span>The rule form (It is obligatory that each ... that ...), the keywords each, that, and, not, and the quoted names checked against the OMG SBVR 1.5 specification. The verbs (is greater than, is a multiple of, is printed as) would have to be defined in the business vocabulary.</span></p>
   
-  <p class="sources"><a href="https://www.omg.org/spec/SBVR/1.5/PDF">omg.org</a></p>
+  <p class="sources"><a href="https://www.omg.org/spec/SBVR/1.5/PDF">omg.org</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="controlled" id="gherkin">
   <header>
@@ -567,7 +582,7 @@ It is obligatory that each integer that is not a multiple of 3 and that is not a
   <p class="note">The feature file states examples of the behaviour; to run it, a programmer must write a step definition for each of the two step patterns, in a language such as Java, JavaScript or Ruby, plus the FizzBuzz code they call. It checks the ten numbers in the table, not all hundred.</p>
   <p class="meta"><span>Does not compute it by itself.</span> <span>Parsed and compiled into 10 test cases with the official parser, gherkin-official 43.0.0. Not executed: there are no step definitions.</span></p>
   
-  <p class="sources"><a href="https://cucumber.io/docs/gherkin/reference/">cucumber.io</a> <a href="https://github.com/cucumber/gherkin">github.com</a></p>
+  <p class="sources"><a href="https://cucumber.io/docs/gherkin/reference/">cucumber.io</a> <a href="https://github.com/cucumber/gherkin">github.com</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="teaching" id="quorum">
   <header>
@@ -590,7 +605,7 @@ end</pre>
   <p class="note">Quorum's keywords were chosen by testing them on novices, which is why it says "repeat", "output" and "elseif", and uses one equals sign for comparison.</p>
   <p class="meta"><span>Computes it by itself.</span> <span>integer declaration, repeat while ... end, if / elseif / else / end, mod, = as comparison and output checked against the Quorum language tutorials. Not run.</span></p>
   
-  <p class="sources"><a href="https://quorumlanguage.com/tutorials/language/repeat.html">quorumlanguage.com</a> <a href="https://quorumlanguage.com/tutorials/language/if.html">quorumlanguage.com</a> <a href="https://quorumlanguage.com/tutorials/language/operators.html">quorumlanguage.com</a></p>
+  <p class="sources"><a href="https://quorumlanguage.com/tutorials/language/repeat.html">quorumlanguage.com</a> <a href="https://quorumlanguage.com/tutorials/language/if.html">quorumlanguage.com</a> <a href="https://quorumlanguage.com/tutorials/language/operators.html">quorumlanguage.com</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="teaching" id="hedy">
   <header>
@@ -626,7 +641,7 @@ Buzz
 98
 Fizz
 Buzz</pre></details>
-  <p class="sources"><a href="https://github.com/hedyorg/hedylang">github.com</a> <a href="https://pypi.org/project/hedylang/">pypi.org</a> <a href="https://github.com/hedyorg/hedy/blob/main/grammars-Total/level14.en-Total.lark">github.com</a> <a href="https://github.com/hedyorg/hedy/blob/main/content/cheatsheets/en.yaml">github.com</a> <a href="https://github.com/hedyorg/hedy/blob/main/content/adventures/en.yaml">github.com</a> <a href="https://www.hedy.org/for-teachers/manual">hedy.org</a></p>
+  <p class="sources"><a href="https://github.com/hedyorg/hedylang">github.com</a> <a href="https://pypi.org/project/hedylang/">pypi.org</a> <a href="https://github.com/hedyorg/hedy/blob/main/grammars-Total/level14.en-Total.lark">github.com</a> <a href="https://github.com/hedyorg/hedy/blob/main/content/cheatsheets/en.yaml">github.com</a> <a href="https://github.com/hedyorg/hedy/blob/main/content/adventures/en.yaml">github.com</a> <a href="https://www.hedy.org/for-teachers/manual">hedy.org</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="model" id="jac">
   <header>
@@ -657,7 +672,7 @@ Buzz
 98
 Fizz
 Buzz</pre></details>
-  <p class="sources"><a href="https://docs.jaseci.org/">docs.jaseci.org</a> <a href="https://pypi.org/project/jaclang/">pypi.org</a></p>
+  <p class="sources"><a href="https://docs.jaseci.org/">docs.jaseci.org</a> <a href="https://pypi.org/project/jaclang/">pypi.org</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="model" id="jac-llm">
   <header>
@@ -680,7 +695,7 @@ with entry {
   <p class="note">The function has no body: a model is asked, a hundred times, to do arithmetic it may get wrong, and the str return type means a wrong word is accepted without complaint. Jac's stand-in model can make the program testable, but only with answers written down in advance.</p>
   <p class="meta"><span>Does not compute it by itself.</span> <span>Passes jac check with jaclang 0.16.7 (warnings only, because the byllm plugin could not be installed here). Syntax checked against the by llm reference and jaclang's bundled jac-by-llm guide, which says to describe the function with sem, not a docstring. No model was called.</span></p>
   
-  <p class="sources"><a href="https://docs.jaseci.org/reference/plugins/byllm/">docs.jaseci.org</a> <a href="https://arxiv.org/abs/2405.08965">arxiv.org</a></p>
+  <p class="sources"><a href="https://docs.jaseci.org/reference/plugins/byllm/">docs.jaseci.org</a> <a href="https://arxiv.org/abs/2405.08965">arxiv.org</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="model" id="dspy">
   <header>
@@ -708,7 +723,7 @@ for n in range(1, 101):
   <p class="note">The signature's docstring and field names become the prompt, and a model fills in says for each number. DSPy could tune the prompt against a metric, but each answer is still the model's guess.</p>
   <p class="meta"><span>Does not compute it by itself.</span> <span>Signature, InputField, OutputField, Predict and dspy.LM checked against the DSPy signatures guide, and the program run end to end with dspy 3.5.0 and its DummyLM, which returns canned answers, to confirm the API. No real model was called.</span></p>
   
-  <p class="sources"><a href="https://dspy.ai/learn/programming/signatures/">dspy.ai</a> <a href="https://github.com/stanfordnlp/dspy/blob/main/docs/docs/learn/programming/signatures.md">github.com</a></p>
+  <p class="sources"><a href="https://dspy.ai/learn/programming/signatures/">dspy.ai</a> <a href="https://github.com/stanfordnlp/dspy/blob/main/docs/docs/learn/programming/signatures.md">github.com</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="model" id="baml">
   <header>
@@ -737,7 +752,7 @@ test FifteenIsFizzBuzz {
   <p class="note">The function is a typed prompt; the host program would call it once per number. The test can assert that 15 gives FizzBuzz, but only by asking the model, so it can pass one day and fail the next.</p>
   <p class="meta"><span>Does not compute it by itself.</span> <span>Passes baml-cli check (baml-cli 0.226.3, the BAML v0 language); a misspelt function name in the test was reported, so the check is real. Test syntax checked against the BAML testing guide. The test was not run, since it calls a live model.</span></p>
   
-  <p class="sources"><a href="https://docs.boundaryml.com/guide/baml-basics/testing-functions">docs.boundaryml.com</a> <a href="https://docs.boundaryml.com/guide/introduction/why-baml.md">docs.boundaryml.com</a></p>
+  <p class="sources"><a href="https://docs.boundaryml.com/guide/baml-basics/testing-functions">docs.boundaryml.com</a> <a href="https://docs.boundaryml.com/guide/introduction/why-baml.md">docs.boundaryml.com</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="model" id="typechat">
   <header>
@@ -775,7 +790,7 @@ main();</pre>
   <p class="note">The TypeScript compiler checks that each entry is a number or one of the three words, and sends its errors back to the model to repair. It cannot check that the words are in the right places, or that there are a hundred of them.</p>
   <p class="meta"><span>Does not compute it by itself.</span> <span>createLanguageModel, createJsonTranslator, createTypeScriptJsonValidator from typechat/ts, translate and response.success / data / message checked against TypeChat's README and its sentiment example. Not type-checked or run.</span></p>
   
-  <p class="sources"><a href="https://github.com/microsoft/TypeChat/blob/main/typescript/README.md">github.com</a> <a href="https://github.com/microsoft/TypeChat/blob/main/typescript/examples/sentiment/src/main.ts">github.com</a></p>
+  <p class="sources"><a href="https://github.com/microsoft/TypeChat/blob/main/typescript/README.md">github.com</a> <a href="https://github.com/microsoft/TypeChat/blob/main/typescript/examples/sentiment/src/main.ts">github.com</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="model" id="marsha">
   <header>
@@ -795,7 +810,7 @@ This function takes a whole number and returns what is said for it in FizzBuzz: 
   <p class="note">Marsha asks a model to write Python from the description and turns the examples into tests that the Python must pass. The answer is then computed by that generated Python, which is only as right as the five examples make it.</p>
   <p class="meta"><span>Does not compute it by itself.</span> <span>The # func header, integer and string types, the description and the * example lines checked against Marsha's README and its fibonacci and roman_numerals examples. Not compiled, since compiling calls a model.</span></p>
   
-  <p class="sources"><a href="https://github.com/alantech/marsha">github.com</a> <a href="https://github.com/alantech/marsha/blob/main/examples/general-purpose/fibonacci.mrsh">github.com</a></p>
+  <p class="sources"><a href="https://github.com/alantech/marsha">github.com</a> <a href="https://github.com/alantech/marsha/blob/main/examples/general-purpose/fibonacci.mrsh">github.com</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="model" id="sudolang">
   <header>
@@ -813,7 +828,7 @@ for each n in 1..100 {
   <p class="note">SudoLang looks like code, but its only interpreter is the model reading it, which must keep count and do the arithmetic in its reply. Nothing checks that it printed a hundred lines or got them right.</p>
   <p class="meta"><span>Does not compute it by itself.</span> <span>for each, the 1..100 range, if / else, % and log() checked against the SudoLang specification. There is nothing to run it with but a model.</span></p>
   
-  <p class="sources"><a href="https://github.com/paralleldrive/sudolang-llm-support/blob/main/sudolang.sudo.md">github.com</a></p>
+  <p class="sources"><a href="https://github.com/paralleldrive/sudolang-llm-support/blob/main/sudolang.sudo.md">github.com</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="model" id="lmql">
   <header>
@@ -830,7 +845,7 @@ from
   <p class="note">The constraint lets the model write only Fizz, Buzz, FizzBuzz or the number itself on each line, so the shape is guaranteed. Which of the four it picks is still the model's guess.</p>
   <p class="meta"><span>Does not compute it by itself.</span> <span>argmax, the from clause, a Python for loop in the prompt and inline where ... in set(...) constraints checked against the LMQL constraints documentation. Not confirmed: a constraint set that uses the loop variable, and the model name, which is not from the LMQL docs. Not run.</span></p>
   
-  <p class="sources"><a href="https://lmql.ai/docs/language/constraints.html">lmql.ai</a></p>
+  <p class="sources"><a href="https://lmql.ai/docs/language/constraints.html">lmql.ai</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="model" id="jev">
   <header>
@@ -860,7 +875,7 @@ with TypeSafeClient(model="jev-latest") as client:  # reads TYPESAFE_API_KEY
   <p class="note">Jev writes no text and does no arithmetic: it gives a probability to each of four listed answers, so this sends a hundred requests to guess what one line of remainder arithmetic would compute exactly. It is the wrong tool for FizzBuzz, and its documentation says to keep questions simple and do the rest in code.</p>
   <p class="meta"><span>Does not compute it by itself.</span> <span>TypeSafeClient, system_one, Choice with instructions and criteria, and response.choices[...].choice checked against TypeSafe's quickstart and Choice pages. No request was sent.</span></p>
   
-  <p class="sources"><a href="https://docs.typesafe.ai/introduction/quickstart.md">docs.typesafe.ai</a> <a href="https://docs.typesafe.ai/primitives/choice.md">docs.typesafe.ai</a></p>
+  <p class="sources"><a href="https://docs.typesafe.ai/introduction/quickstart.md">docs.typesafe.ai</a> <a href="https://docs.typesafe.ai/primitives/choice.md">docs.typesafe.ai</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="model" id="instructor">
   <header>
@@ -895,7 +910,7 @@ for line in result.lines:
   <p class="note">Pydantic checks that there are exactly a hundred lines and that each is a number or one of the three words, and Instructor asks again when it fails. A reply with Fizz in the wrong place passes.</p>
   <p class="meta"><span>Does not compute it by itself.</span> <span>from_provider and create(response_model=..., messages=..., max_retries=...) checked against the Instructor docs and the signatures in instructor 1.17.0. The Pydantic response model was tested locally: it accepts a correct answer, rejects 99 lines, and accepts a wrong answer. No model was called.</span></p>
   
-  <p class="sources"><a href="https://python.useinstructor.com/">python.useinstructor.com</a> <a href="https://python.useinstructor.com/concepts/retrying/">python.useinstructor.com</a></p>
+  <p class="sources"><a href="https://python.useinstructor.com/">python.useinstructor.com</a> <a href="https://python.useinstructor.com/concepts/retrying/">python.useinstructor.com</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="model" id="marvin">
   <header>
@@ -914,7 +929,7 @@ print("\n".join(lines))</pre>
   <p class="note">Marvin turns the request and the result type into an agent task, and the model writes the hundred lines. The type makes sure a list of strings comes back, not that the strings are right.</p>
   <p class="meta"><span>Does not compute it by itself.</span> <span>marvin.run with result_type checked against Marvin's README. Marvin could not be installed here (a dependency has no build for this machine), so it was not imported. No model was called.</span></p>
   
-  <p class="sources"><a href="https://github.com/PrefectHQ/marvin">github.com</a> <a href="https://askmarvin.ai/">askmarvin.ai</a></p>
+  <p class="sources"><a href="https://github.com/PrefectHQ/marvin">github.com</a> <a href="https://askmarvin.ai/">askmarvin.ai</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="model" id="outlines">
   <header>
@@ -943,7 +958,7 @@ for n in range(1, 101):
   <p class="note">Generation is constrained to the four allowed answers for each number, so the shape is guaranteed. The arithmetic is not: the model may still say Fizz for 5.</p>
   <p class="meta"><span>Does not compute it by itself.</span> <span>from_transformers and model(prompt, output_type) with a Literal type checked against the Outlines README (version 1 API). A Literal built from str(n) at run time is ordinary Python but is not shown in the docs. Not run.</span></p>
   
-  <p class="sources"><a href="https://github.com/dottxt-ai/outlines">github.com</a></p>
+  <p class="sources"><a href="https://github.com/dottxt-ai/outlines">github.com</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="model" id="guidance">
   <header>
@@ -966,7 +981,7 @@ for n in range(1, 101):
   <p class="note">select forces each line to be one of four strings, so the shape is guaranteed while the model writes. Which string it selects is the model's arithmetic, and is not guaranteed.</p>
   <p class="meta"><span>Does not compute it by itself.</span> <span>models.Transformers, lm += text, select([...], name=...) and lm[name] checked against the Guidance README. Guidance could not be installed here, so it was not imported. Not run.</span></p>
   
-  <p class="sources"><a href="https://github.com/guidance-ai/guidance">github.com</a></p>
+  <p class="sources"><a href="https://github.com/guidance-ai/guidance">github.com</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="classic" id="naturaljava">
   <header>
@@ -988,7 +1003,7 @@ Call System.out's println and pass it word.</pre>
   <p class="note">NaturalJava builds a Java program from one typed request at a time, each holding a single action, which is why FizzBuzz becomes a dozen commands. The loop variable is assumed to be i, since the paper does not show the Java a for loop becomes.</p>
   <p class="meta"><span>Does not compute it by itself.</span> <span>The paper shows the wording of the for-loop command, declarations, if statements, "Assign x plus y to z", method calls ("Call ... and pass it ...") and "Leave this loop". It shows no remainder, no printing, no else and no Java for a for loop, so those commands are extrapolated and the Java it would produce is not given.</span></p>
   
-  <p class="sources"><a href="https://web.media.mit.edu/~lieber/IUI/Price/Price.pdf">web.media.mit.edu</a></p>
+  <p class="sources"><a href="https://web.media.mit.edu/~lieber/IUI/Price/Price.pdf">web.media.mit.edu</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="classic" id="metafor">
   <header>
@@ -999,7 +1014,7 @@ Call System.out's println and pass it word.</pre>
   <p class="note">Metafor reads a story and drafts code to be finished by a programmer; its authors say the output may not run. A player who "says" something would become a method call on the player, not a print statement.</p>
   <p class="meta"><span>Does not compute it by itself.</span> <span>Read the IUI 2005 and CHI 2005 papers. They show stories becoming Python-like scaffolding (classes, methods, if/else from "if ...; otherwise"), and say that people describe sets rather than loops. They show no counted loop, no arithmetic beyond a comparison and no printing, so what Metafor would produce from this story is not given.</span></p>
   
-  <p class="sources"><a href="https://web.media.mit.edu/~lieber/Publications/Metafor-Visualizing-Stories.pdf">web.media.mit.edu</a> <a href="https://web.media.mit.edu/~lieber/Publications/Programmatic-Semantics.pdf">web.media.mit.edu</a> <a href="https://www.media.mit.edu/projects/metafor-programming-by-storytelling/overview/">media.mit.edu</a></p>
+  <p class="sources"><a href="https://web.media.mit.edu/~lieber/Publications/Metafor-Visualizing-Stories.pdf">web.media.mit.edu</a> <a href="https://web.media.mit.edu/~lieber/Publications/Programmatic-Semantics.pdf">web.media.mit.edu</a> <a href="https://www.media.mit.edu/projects/metafor-programming-by-storytelling/overview/">media.mit.edu</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
 <article class="rival" data-family="classic" id="pegasus">
   <header>
@@ -1010,7 +1025,7 @@ Call System.out's println and pass it word.</pre>
   <p class="note">Pegasus aimed to read free English and generate Java; its site shows one worked example, a matrix printed and tested, but nothing close enough to FizzBuzz to write a faithful sample.</p>
   <p class="meta"><span>Does not compute it by itself.</span> <span>The Onward! 2006 paper could not be obtained (ACM returned 403; no open copy was found). The project's own site was read; it gives examples, including "which can be divided by 3", but describes most of them as what Pegasus will be able to do.</span></p>
   
-  <p class="sources"><a href="https://dl.acm.org/doi/10.1145/1176617.1176628">dl.acm.org</a> <a href="https://oopsla.org/2006/submission/onward/pegasus:_first_steps_towards_a_naturalistic_programming_language.html">oopsla.org</a> <a href="http://www.pegasus-project.org/en/Theory___Technique.html">pegasus-project.org</a></p>
+  <p class="sources"><a href="https://dl.acm.org/doi/10.1145/1176617.1176628">dl.acm.org</a> <a href="https://oopsla.org/2006/submission/onward/pegasus:_first_steps_towards_a_naturalistic_programming_language.html">oopsla.org</a> <a href="http://www.pegasus-project.org/en/Theory___Technique.html">pegasus-project.org</a><a class="back" href="#ledger">Back to the list</a></p>
 </article>
     </div>
     </div>
@@ -1021,9 +1036,17 @@ Call System.out's println and pass it word.</pre>
   Printed from <a href="https://github.com/monstercameron/EnglishScript/blob/main/docs/rivals/fizzbuzz.json">docs/rivals/fizzbuzz.json</a> and <a href="https://github.com/monstercameron/EnglishScript/blob/main/examples/fizzbuzz.english">examples/fizzbuzz.english</a> by <code>tools/build_site.py</code>. The rivals' samples were written for this page; corrections are welcome.
 </footer>
 
+<a class="to-top" href="#top" aria-label="Back to the top of the page"><span aria-hidden="true">↑</span> Top</a>
+
 <script type="module">
 import { mountSnippets } from "./play/snippets.js";
 mountSnippets();
+
+// The button back to the top shows only once the reader has scrolled away from it.
+const button = document.querySelector(".to-top");
+const away = () => button.classList.toggle("shown", window.scrollY > 600);
+away();
+window.addEventListener("scroll", away, { passive: true });
 </script>
 </body>
 </html>
