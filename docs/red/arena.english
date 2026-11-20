@@ -10,7 +10,7 @@ To pointer at a left (number) by a top (number):
 
 To arena:
   Fill Screen from 0 by 0 with 160 over 144 as 0.
-  Portrait Combat's opponent at 104 by 4.
+  Portrait Combat's opponent at 104 by 0.
   Back Combat's species at 7 by 49.
   Inscribe (the first 12 letters of Combat's opponent) at 8 by 0.
   Inscribe "L{Combat's enemy level}" at 49 by 9.

@@ -63,6 +63,24 @@ class RedCampaign(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(campaign.field("place"), "Bedroom")
         self.assertEqual(campaign.field("stage"), "find oak")
 
+    async def test_brocks_portraits_stay_above_the_player_status(self):
+        campaign = await Campaign.start()
+        campaign.journey.fields["mode"] = "battle"
+        campaign.combat.fields["species"] = "Bulbasaur"
+
+        def draw(opponent):
+            campaign.combat.fields["opponent"] = opponent
+            campaign.press("noop")
+            page.sync(campaign.world)
+            return campaign.frames[-1][3]
+
+        empty = draw("")
+        for opponent in ("Geodude", "Onix"):
+            with self.subTest(opponent=opponent):
+                frame = draw(opponent)
+                self.assertTrue(any(frame[y * 160 + x] for y in range(56) for x in range(104, 160)))
+                self.assertEqual(frame[56 * 160:96 * 160], empty[56 * 160:96 * 160])
+
     async def test_three_starters_earn_and_keep_brock_rewards(self):
         fixtures = (("replay.json", "Bulbasaur"),
                     ("replay-squirtle.json", "Squirtle"),

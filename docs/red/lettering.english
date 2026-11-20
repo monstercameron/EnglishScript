@@ -344,9 +344,25 @@ To work out the caption remainder (text) for a wording (text):
   Let the second line be the caption line of the rest.
   The answer is the remaining words for the second line of the rest.
 
+To rosette at a left (number) by a top (number):
+  Fill Screen from (the left + 2) by the top with 4 over 7 as 3.
+  Fill Screen from the left by (the top + 2) with 8 over 3 as 3.
+  Fill Screen from (the left + 2) by (the top + 2) with 4 over 3 as 0.
+  Fill Screen from (the left + 3) by (the top + 1) with 2 over 1 as 0.
+  Fill Screen from (the left + 3) by (the top + 5) with 2 over 1 as 0.
+  Fill Screen from (the left + 3) by (the top + 3) with 2 over 1 as 3.
+
 To caption a wording (text):
   Fill Screen from 0 by 96 with 160 over 48 as 3.
   Fill Screen from 2 by 98 with 156 over 44 as 0.
+  Trace Screen from 6 by 99 to 153 at 99 with 3.
+  Trace Screen from 6 by 140 to 153 at 140 with 3.
+  Trace Screen from 3 by 101 to 3 at 138 with 3.
+  Trace Screen from 156 by 101 to 156 at 138 with 3.
+  Rosette at 0 by 96.
+  Rosette at 152 by 96.
+  Rosette at 0 by 137.
+  Rosette at 152 by 137.
   Let the first line be the caption line of the wording.
   Let the rest be the remaining words for the first line of the wording.
   Let the second line be the caption line of the rest.
