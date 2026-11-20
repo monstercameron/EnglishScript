@@ -2,6 +2,8 @@
 
 EnglishScript is not the first attempt to program in English, and it is not the only new language that brings language models into a program. This page sets out the rivals: what each one was, how it treats a sentence that could mean two things, what it got right, why it stalled or lasted, and what EnglishScript should borrow from it or fear.
 
+[FizzBuzz, every way](fizzbuzz.html) shows one small program in each of them, beside the same program in EnglishScript.
+
 It was put together in November 2026 from the rivals' own manuals, papers and repositories, and from what their designers and users have said about them. Every claim that matters links to its source. The code samples were written for this page from each language's documentation and checked against it. Where a source could not be read, or a figure is only the vendor's own, the page says so.
 
 ## The short version

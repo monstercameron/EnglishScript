@@ -330,6 +330,13 @@ def opposition_page():
     )
 
 
+def fizzbuzz_page():
+    """docs/fizzbuzz.html: FizzBuzz in EnglishScript beside FizzBuzz in each rival."""
+    import rivals
+
+    return render_page(rivals.page())
+
+
 def systems_page():
     """docs/systems.html: System 0, 1 and 2, with every example run as the page is built."""
     import systems
@@ -340,7 +347,7 @@ def systems_page():
 #: The pages printed from Markdown: (file in docs/, the function that makes it).
 PRINTED = [("reference.html", reference_page), ("vulkan.html", vulkan_page), ("page.html", page_library_page),
            ("concerns.html", concerns_page), ("editors.html", editors_page),
-           ("opposition.html", opposition_page), ("systems.html", systems_page)]
+           ("opposition.html", opposition_page), ("systems.html", systems_page), ("fizzbuzz.html", fizzbuzz_page)]
 
 
 def main():

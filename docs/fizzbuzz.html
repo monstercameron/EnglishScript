@@ -1,0 +1,1029 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FizzBuzz in EnglishScript and its rivals</title>
+<meta name="description" content="FizzBuzz in EnglishScript beside FizzBuzz in 31 other English-like languages and languages that ask a model, each checked against its documentation.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;family=IM+Fell+English:ital@0;1&amp;family=IM+Fell+English+SC&amp;family=UnifrakturMaguntia&amp;display=swap">
+<link rel="stylesheet" href="assets/english.css">
+<style>
+  .fizz { max-width: 84rem; margin: 0 auto; padding: 0 16px 2rem; }
+  .fizz > h1 { font: 400 clamp(2.4rem, 8vw, 3.7rem)/1.05 var(--fell); margin: 2.5rem 0 0.4rem; text-align: center; text-wrap: balance; }
+  .fizz > .standfirst { font: italic 1.35rem/1.4 var(--fell); color: var(--muted); margin: 0 auto 1.5rem; max-width: 42rem; text-align: center; text-wrap: pretty; }
+  .fizz > .intro, .fizz > .ledger { max-width: 48rem; margin-left: auto; margin-right: auto; }
+  .side-by-side { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; margin-top: 2rem; }
+  @media (min-width: 960px) {
+    .side-by-side { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); align-items: start; }
+    .ours { position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow: auto; }
+  }
+  .ours figure.snippet { margin: 0; }
+  .ours .output { max-height: 14rem; overflow: auto; }
+  .ours h2, .rival h2 { font: 400 1.5rem/1.2 var(--fell); margin: 0; }
+  .ours > p { font: italic 1.05rem/1.4 var(--fell); color: var(--muted); margin: 0.6rem 0 0.8rem; }
+  .filters { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 1rem; }
+  .filters input { position: absolute; opacity: 0; pointer-events: none; }
+  .filters label { font: 0.95rem var(--caps); letter-spacing: 0.08em; text-transform: lowercase; border: 1px solid var(--ink); padding: 0.3rem 0.7rem 0.35rem; cursor: pointer; transition: background-color 0.2s ease, color 0.2s ease; }
+  .filters label .count { color: var(--muted); }
+  .filters input:checked + label { background: var(--ink); color: var(--bg); }
+  .filters input:checked + label .count { color: var(--bg); opacity: 0.7; }
+  .filters input:focus-visible + label { outline: 2px solid var(--focus); outline-offset: 2px; }
+  #f-classic:checked ~ .rivals .rival:not([data-family="classic"]) { display: none; }
+  #f-controlled:checked ~ .rivals .rival:not([data-family="controlled"]) { display: none; }
+  #f-teaching:checked ~ .rivals .rival:not([data-family="teaching"]) { display: none; }
+  #f-model:checked ~ .rivals .rival:not([data-family="model"]) { display: none; }
+  .rivals { flex: 0 0 100%; min-width: 0; margin-top: 0.6rem; }
+  .side-by-side > section { min-width: 0; }
+  .rival { min-width: 0; }
+  .rival .meta, .rival .note { overflow-wrap: anywhere; }
+  .rival { border: 1px solid var(--ink); background: var(--bg); box-shadow: 4px 4px 0 var(--rule); margin: 0 0 1.4rem; scroll-margin-top: 1rem; }
+  .rival > header { padding: 0.7rem 1rem 0.5rem; background: var(--panel); border-bottom: 3px double var(--ink); }
+  .rival .year { font: 1rem var(--caps); letter-spacing: 0.08em; color: var(--muted); }
+  .rival .tags { display: flex; flex-wrap: wrap; gap: 0.3rem 0.5rem; margin: 0.35rem 0 0; }
+  .tag, .check { font: 0.85rem var(--caps); letter-spacing: 0.08em; text-transform: lowercase; border: 1px solid var(--rule); padding: 0.05rem 0.45rem 0.12rem; }
+  .check-run { border-color: var(--good); color: var(--good); }
+  .check-documentation { border-color: var(--ink); }
+  .check-partly-checked { border-color: var(--warn); color: var(--warn); }
+  .check-not-a-program { border-color: var(--accent); color: var(--accent); }
+  .rival pre.code { margin: 0; padding: 0.9rem 1rem; font: 0.8rem/1.55 var(--mono); font-variant-ligatures: none; white-space: pre; overflow-x: auto; border-bottom: 1px solid var(--rule); }
+  .rival .note { margin: 0.7rem 1rem 0.3rem; font-size: 1.1rem; line-height: 1.4; }
+  .rival .meta { margin: 0 1rem 0.4rem; font: italic 1rem/1.4 var(--fell); color: var(--muted); }
+  .rival .printed { margin: 0 1rem 0.4rem; }
+  .rival .printed summary { font: 0.9rem var(--caps); letter-spacing: 0.08em; text-transform: lowercase; cursor: pointer; color: var(--accent); }
+  .rival .printed pre { font: 0.78rem/1.5 var(--mono); margin: 0.3rem 0 0; }
+  .rival .sources { margin: 0 1rem 0.8rem; font-size: 0.95rem; display: flex; flex-wrap: wrap; gap: 0.2rem 0.8rem; }
+  table.ledger td:nth-child(n+2), table.ledger th:nth-child(n+2) { text-align: right; font-variant-numeric: lining-nums tabular-nums; }
+  table.ledger tr.ours td { font-weight: 600; }
+</style>
+</head>
+<body>
+
+<nav class="sitenav" aria-label="The pages of this site">
+  <div class="inner">
+    <a class="home" href="./">EnglishScript</a>
+    <a class="page" href="./">The treatise</a>
+    <a class="page" href="playground.html">The playground</a>
+    <a class="page" href="todo.html">A page</a>
+    <a class="page" href="compare.html">Compared</a>
+    <a class="page" href="opposition.html">The opposition</a>
+    <a class="page" href="systems.html">Three systems</a>
+    <a class="page" href="reference.html">The grammar</a>
+    <a class="page" href="how.html">The machinery</a>
+    <a class="page" href="https://github.com/monstercameron/EnglishScript">The source</a>
+  </div>
+</nav>
+
+<main class="fizz">
+<h1>FizzBuzz, Every Way</h1>
+<p class="standfirst">One small program in EnglishScript, and the same program in 31 of its rivals: the English-like languages since 1955, and the new ones that ask a model.</p>
+
+<div class="intro">
+<p>FizzBuzz counts from 1 to 100, saying “Fizz” for a multiple of three, “Buzz” for a multiple of five, “FizzBuzz” for both, and otherwise the number. It is small enough to show whole, and it needs a loop, a choice and a little arithmetic, which is where English-like languages differ most.</p>
+<p>Each sample was written for this page from its language's own documentation, and is marked with how far it was checked: <strong>run</strong>, when it was run and printed FizzBuzz exactly (3 of them); <strong>checked</strong>, when every construct was checked against the documentation but nothing here could run it; <strong>partly checked</strong>; or <strong>not a program</strong>, for a specification, or for a request that hands the arithmetic to a model. Some of these languages cannot do it at all, and their cards say why. <a href="opposition.html">The opposition</a> tells each one's story.</p>
+</div>
+
+<div class="scroll">
+<table class="ledger">
+  <thead><tr><th>Language</th><th>Year</th><th>Lines</th><th>Computes it itself</th><th>How far checked</th></tr></thead>
+  <tbody>
+    <tr class="ours"><td>EnglishScript</td><td>2026</td><td>12</td><td>yes</td><td>Run, here, on every build</td></tr>
+<tr><td><a href="#flow-matic">FLOW-MATIC</a></td><td>1955</td><td>25</td><td>no</td><td>Partly checked</td></tr>
+<tr><td><a href="#cobol">COBOL</a></td><td>1960</td><td>21</td><td>yes</td><td>Checked</td></tr>
+<tr><td><a href="#sql">SQL</a></td><td>1974</td><td>13</td><td>yes</td><td>Run</td></tr>
+<tr><td><a href="#natural">Natural</a></td><td>1979</td><td>21</td><td>yes</td><td>Checked</td></tr>
+<tr><td><a href="#hypertalk">HyperTalk</a></td><td>1987</td><td>11</td><td>yes</td><td>Checked</td></tr>
+<tr><td><a href="#lingo">Lingo</a></td><td>1989</td><td>9</td><td>yes</td><td>Partly checked</td></tr>
+<tr><td><a href="#applescript">AppleScript</a></td><td>1993</td><td>13</td><td>yes</td><td>Checked</td></tr>
+<tr><td><a href="#inform7">Inform 7</a></td><td>2006</td><td>13</td><td>yes</td><td>Checked</td></tr>
+<tr><td><a href="#plain-english">Osmosian Plain English</a></td><td>2006</td><td>12</td><td>yes</td><td>Partly checked</td></tr>
+<tr><td><a href="#ace">Attempto Controlled English</a></td><td>1996</td><td>6</td><td>no</td><td>Not a program</td></tr>
+<tr><td><a href="#peng">PENG</a></td><td>2002</td><td>1</td><td>no</td><td>Partly checked</td></tr>
+<tr><td><a href="#sbvr">SBVR Structured English</a></td><td>2008</td><td>5</td><td>no</td><td>Not a program</td></tr>
+<tr><td><a href="#gherkin">Gherkin</a></td><td>2008</td><td>19</td><td>no</td><td>Not a program</td></tr>
+<tr><td><a href="#quorum">Quorum</a></td><td>2011</td><td>13</td><td>yes</td><td>Checked</td></tr>
+<tr><td><a href="#hedy">Hedy</a></td><td>2020</td><td>18</td><td>yes</td><td>Run</td></tr>
+<tr><td><a href="#jac">Jac</a></td><td>2024</td><td>13</td><td>yes</td><td>Run</td></tr>
+<tr><td><a href="#jac-llm">Jac with by llm</a></td><td>2024</td><td>10</td><td>no</td><td>Not a program</td></tr>
+<tr><td><a href="#dspy">DSPy</a></td><td>2023</td><td>11</td><td>no</td><td>Not a program</td></tr>
+<tr><td><a href="#baml">BAML</a></td><td>2023</td><td>16</td><td>no</td><td>Not a program</td></tr>
+<tr><td><a href="#typechat">TypeChat</a></td><td>2023</td><td>21</td><td>no</td><td>Not a program</td></tr>
+<tr><td><a href="#marsha">Marsha</a></td><td>2023</td><td>1</td><td>no</td><td>Not a program</td></tr>
+<tr><td><a href="#sudolang">SudoLang</a></td><td>2023</td><td>6</td><td>no</td><td>Not a program</td></tr>
+<tr><td><a href="#lmql">LMQL</a></td><td>2022</td><td>7</td><td>no</td><td>Not a program</td></tr>
+<tr><td><a href="#jev">Jev</a></td><td>2026</td><td>19</td><td>no</td><td>Not a program</td></tr>
+<tr><td><a href="#instructor">Instructor</a></td><td>2023</td><td>16</td><td>no</td><td>Not a program</td></tr>
+<tr><td><a href="#marvin">Marvin</a></td><td>2023</td><td>8</td><td>no</td><td>Not a program</td></tr>
+<tr><td><a href="#outlines">Outlines</a></td><td>2023</td><td>16</td><td>no</td><td>Not a program</td></tr>
+<tr><td><a href="#guidance">Guidance</a></td><td>2023</td><td>12</td><td>no</td><td>Not a program</td></tr>
+<tr><td><a href="#naturaljava">NaturalJava</a></td><td>2000</td><td>12</td><td>no</td><td>Partly checked</td></tr>
+<tr><td><a href="#metafor">Metafor</a></td><td>2005</td><td>1</td><td>no</td><td>Partly checked</td></tr>
+<tr><td><a href="#pegasus">Pegasus</a></td><td>2006</td><td>1</td><td>no</td><td>Partly checked</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="side-by-side">
+  <section class="ours" aria-labelledby="ours-title">
+    <h2 id="ours-title">EnglishScript</h2>
+    <p>Kept beside the others as you scroll. The output under it is what the compiler said when this page was built, and “Run it” runs it again in your browser.</p>
+    <figure class="snippet">
+<pre class="program" data-expect="ok"># FizzBuzz, from 1 to 100.
+
+Let the count be 1.
+
+Repeat 100 times:
+  If the count is divisible by 15:
+    Say "FizzBuzz"
+  Otherwise if the count is divisible by 3:
+    Say "Fizz"
+  Otherwise if the count is divisible by 5:
+    Say "Buzz"
+  Otherwise:
+    Say the count.
+  Add 1 to the count.
+
+For example, the count is 101.</pre>
+<pre class="output">1
+2
+Fizz
+4
+Buzz
+Fizz
+7
+8
+Fizz
+Buzz
+11
+Fizz
+13
+14
+FizzBuzz
+16
+17
+Fizz
+19
+Buzz
+Fizz
+22
+23
+Fizz
+Buzz
+26
+Fizz
+28
+29
+FizzBuzz
+31
+32
+Fizz
+34
+Buzz
+Fizz
+37
+38
+Fizz
+Buzz
+41
+Fizz
+43
+44
+FizzBuzz
+46
+47
+Fizz
+49
+Buzz
+Fizz
+52
+53
+Fizz
+Buzz
+56
+Fizz
+58
+59
+FizzBuzz
+61
+62
+Fizz
+64
+Buzz
+Fizz
+67
+68
+Fizz
+Buzz
+71
+Fizz
+73
+74
+FizzBuzz
+76
+77
+Fizz
+79
+Buzz
+Fizz
+82
+83
+Fizz
+Buzz
+86
+Fizz
+88
+89
+FizzBuzz
+91
+92
+Fizz
+94
+Buzz
+Fizz
+97
+98
+Fizz
+Buzz</pre>
+    </figure>
+  </section>
+
+  <section aria-label="The rivals">
+    <div class="filters" role="radiogroup" aria-label="Which rivals to show">
+<input type="radio" name="family" id="f-all" checked><label for="f-all">All <span class="count">31</span></label>
+<input type="radio" name="family" id="f-classic"><label for="f-classic">English-like languages <span class="count">12</span></label>
+<input type="radio" name="family" id="f-controlled"><label for="f-controlled">Controlled English <span class="count">4</span></label>
+<input type="radio" name="family" id="f-teaching"><label for="f-teaching">For teaching <span class="count">2</span></label>
+<input type="radio" name="family" id="f-model"><label for="f-model">Languages that ask a model <span class="count">13</span></label>
+    <div class="rivals">
+<article class="rival" data-family="classic" id="flow-matic">
+  <header>
+    <h2>FLOW-MATIC <span class="year">1955</span></h2>
+    <p class="tags"><span class="tag">English-like languages</span><span class="check check-partly-checked" title="Some constructs could not be confirmed: the note says which.">Partly checked</span><span class="tag">25 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">(0) INPUT WORDS FILE-A ; OUTPUT LISTING FILE-B ; HSP B .
+(1) X-1 SET NUMBER (W) , COUNT-3 (W) AND COUNT-5 (W) TO ZERO .
+(2) X-1 ADD ONE TO NUMBER (W) , COUNT-3 (W) AND COUNT-5 (W) .
+(3) TEST COUNT-3 (W) AGAINST 3 ; IF EQUAL GO TO OPERATION 10 ;
+    OTHERWISE GO TO OPERATION 4 .
+(4) TEST COUNT-5 (W) AGAINST 5 ; IF EQUAL GO TO OPERATION 7 ;
+    OTHERWISE GO TO OPERATION 5 .
+(5) MOVE NUMBER (W) TO LINE (B) .
+(6) JUMP TO OPERATION 16 .
+(7) X-1 SET COUNT-5 (W) TO ZERO .
+(8) MOVE BUZZ (A) TO LINE (B) .
+(9) JUMP TO OPERATION 16 .
+(10) X-1 SET COUNT-3 (W) TO ZERO .
+(11) TEST COUNT-5 (W) AGAINST 5 ; IF EQUAL GO TO OPERATION 14 ;
+    OTHERWISE GO TO OPERATION 12 .
+(12) MOVE FIZZ (A) TO LINE (B) .
+(13) JUMP TO OPERATION 16 .
+(14) X-1 SET COUNT-5 (W) TO ZERO .
+(15) MOVE FIZZBUZZ (A) TO LINE (B) .
+(16) WRITE-ITEM B .
+(17) TEST NUMBER (W) AGAINST 100 ; IF EQUAL GO TO OPERATION 18 ;
+    OTHERWISE GO TO OPERATION 2 .
+(18) READ-ITEM A ; IF END OF DATA GO TO OPERATION 19 .
+(19) CLOSE-OUT FILES B .
+(20) STOP . (END)</pre>
+  <p class="note">The 1958 manual lists no verb for arithmetic: adding or multiplying was done in X-1 sections of hand-written UNIVAC machine code, as the manual's own sample problem does, so the counting here is done that way and only the comparisons, moves and jumps are FLOW-MATIC. The words come from a one-item input file, and numbers would print with leading zeros.</p>
+  <p class="meta"><span>Does not compute it by itself.</span> <span>Every FLOW-MATIC operation (INPUT, TEST, MOVE, JUMP, WRITE-ITEM, READ-ITEM, CLOSE-OUT, STOP, and the X-1 entry form) checked against the 1958 UNIVAC manual U1518. Not confirmed: the UNIVAC machine code inside the X-1 sections (not written), the data designs, and how a numeric test value is written for a short field. The flow of operations was traced in Python.</span></p>
+  
+  <p class="sources"><a href="http://www.bitsavers.org/pdf/univac/flow-matic/U1518_FLOW-MATIC_Programming_System_1958.pdf">bitsavers.org</a> <a href="https://en.wikipedia.org/wiki/FLOW-MATIC">en.wikipedia.org</a></p>
+</article>
+<article class="rival" data-family="classic" id="cobol">
+  <header>
+    <h2>COBOL <span class="year">1960</span></h2>
+    <p class="tags"><span class="tag">English-like languages</span><span class="check check-documentation" title="Every construct was checked against the documentation cited. It was not run.">Checked</span><span class="tag">21 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">       IDENTIFICATION DIVISION.
+       PROGRAM-ID. FIZZBUZZ.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01  N        PIC 999.
+       01  N-SHOWN  PIC ZZ9.
+       PROCEDURE DIVISION.
+           PERFORM VARYING N FROM 1 BY 1 UNTIL N &gt; 100
+               EVALUATE TRUE
+                   WHEN FUNCTION MOD(N, 15) = 0
+                       DISPLAY "FizzBuzz"
+                   WHEN FUNCTION MOD(N, 3) = 0
+                       DISPLAY "Fizz"
+                   WHEN FUNCTION MOD(N, 5) = 0
+                       DISPLAY "Buzz"
+                   WHEN OTHER
+                       MOVE N TO N-SHOWN
+                       DISPLAY FUNCTION TRIM(N-SHOWN)
+               END-EVALUATE
+           END-PERFORM
+           STOP RUN.</pre>
+  <p class="note">The number is moved into an edited picture, ZZ9, which blanks leading zeros, and TRIM removes the blanks before it is shown. Code starts in column 8, as fixed format requires.</p>
+  <p class="meta"><span>Computes it by itself.</span> <span>Fixed format, GnuCOBOL-compatible. PERFORM VARYING, EVALUATE TRUE, FUNCTION MOD, FUNCTION TRIM, DISPLAY and the PIC ZZ9 edited item checked against the GnuCOBOL Programmer's Guide. No COBOL compiler was available to run it.</span></p>
+  
+  <p class="sources"><a href="https://gnucobol.sourceforge.io/HTML/gnucobpg.html">gnucobol.sourceforge.io</a></p>
+</article>
+<article class="rival" data-family="classic" id="sql">
+  <header>
+    <h2>SQL <span class="year">1974</span></h2>
+    <p class="tags"><span class="tag">English-like languages</span><span class="check check-run" title="It was run, and what it printed is FizzBuzz exactly.">Run</span><span class="tag">13 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">WITH RECURSIVE numbers(n) AS (
+    SELECT 1
+    UNION ALL
+    SELECT n + 1 FROM numbers WHERE n &lt; 100
+)
+SELECT CASE
+           WHEN n % 15 = 0 THEN 'FizzBuzz'
+           WHEN n % 3 = 0 THEN 'Fizz'
+           WHEN n % 5 = 0 THEN 'Buzz'
+           ELSE CAST(n AS TEXT)
+       END AS result
+FROM numbers
+ORDER BY n;</pre>
+  <p class="note">Written in SQLite's dialect: a recursive common table expression makes the numbers 1 to 100, and CASE picks the word. The % operator works in SQLite, PostgreSQL and MySQL; standard SQL spells it MOD(n, 15).</p>
+  <p class="meta"><span>Computes it by itself.</span> <span>Run with sqlite3 3.49.1 (Python's sqlite3); output matched FizzBuzz exactly.</span></p>
+  <details class="printed"><summary>What it printed</summary><pre>1
+2
+Fizz
+4
+Buzz
+…
+98
+Fizz
+Buzz</pre></details>
+  <p class="sources"><a href="https://www.sqlite.org/lang_with.html">sqlite.org</a> <a href="https://www.sqlite.org/lang_expr.html">sqlite.org</a></p>
+</article>
+<article class="rival" data-family="classic" id="natural">
+  <header>
+    <h2>Natural <span class="year">1979</span></h2>
+    <p class="tags"><span class="tag">English-like languages</span><span class="check check-documentation" title="Every construct was checked against the documentation cited. It was not run.">Checked</span><span class="tag">21 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">DEFINE DATA LOCAL
+1 #N  (I2)
+1 #Q  (I2)
+1 #R3 (I2)
+1 #R5 (I2)
+END-DEFINE
+*
+FOR #N 1 TO 100
+  DIVIDE 3 INTO #N GIVING #Q REMAINDER #R3
+  DIVIDE 5 INTO #N GIVING #Q REMAINDER #R5
+  DECIDE FOR FIRST CONDITION
+    WHEN #R3 = 0 AND #R5 = 0
+      WRITE NOTITLE 'FizzBuzz'
+    WHEN #R3 = 0
+      WRITE 'Fizz'
+    WHEN #R5 = 0
+      WRITE 'Buzz'
+    WHEN NONE
+      WRITE #N
+  END-DECIDE
+END-FOR
+*
+END</pre>
+  <p class="note">Natural has a DIVIDE statement that gives a remainder, so each number is divided twice before a DECIDE chooses the word. NOTITLE, written once, stops Natural adding its usual page title to the whole report, and numbers are written right-aligned in their field, as in any Natural report.</p>
+  <p class="meta"><span>Computes it by itself.</span> <span>Structured mode. DEFINE DATA, FOR, DIVIDE ... GIVING ... REMAINDER, DECIDE FOR FIRST CONDITION and WRITE NOTITLE checked against the Natural 8.2.7 statements reference (read from the Internet Archive's copies; the live pages now return 404). The WRITE page says that if NOTITLE is used it applies to all DISPLAY, PRINT and WRITE statements within the same object that write to the same report, and its FOR and DIVIDE examples put NOTITLE on one WRITE only. Not run.</span></p>
+  
+  <p class="sources"><a href="https://documentation.softwareag.com/natural/nat827mf/sm/divide.htm">documentation.softwareag.com</a> <a href="https://documentation.softwareag.com/natural/nat827mf/sm/decidefo.htm">documentation.softwareag.com</a> <a href="https://documentation.softwareag.com/natural/nat827mf/sm/for.htm">documentation.softwareag.com</a> <a href="https://documentation.softwareag.com/natural/nat827mf/sm/write.htm">documentation.softwareag.com</a></p>
+</article>
+<article class="rival" data-family="classic" id="hypertalk">
+  <header>
+    <h2>HyperTalk <span class="year">1987</span></h2>
+    <p class="tags"><span class="tag">English-like languages</span><span class="check check-documentation" title="Every construct was checked against the documentation cited. It was not run.">Checked</span><span class="tag">11 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">on mouseUp
+  put empty into fizzBuzz
+  repeat with n = 1 to 100
+    put empty into thisLine
+    if n mod 3 is 0 then put "Fizz" after thisLine
+    if n mod 5 is 0 then put "Buzz" after thisLine
+    if thisLine is empty then put n into thisLine
+    put thisLine &amp; return after fizzBuzz
+  end repeat
+  put fizzBuzz into card field "Output"
+end mouseUp</pre>
+  <p class="note">HyperTalk has no console, so the script runs when a button is clicked and puts the lines into a field on the card. Each line is built by putting words after it, which reads close to English.</p>
+  <p class="meta"><span>Computes it by itself.</span> <span>on mouseUp, repeat with, mod, one-line if ... then, put ... into/after, empty, &amp; return and card field checked against Goodman's HyperTalk Bible (1989) and Apple's HyperTalk Beginner's Guide (1989). No HyperCard to run it.</span></p>
+  
+  <p class="sources"><a href="https://www.vintageapple.org/macprogramming/pdf/HyperTalk_Bible_1989.pdf">vintageapple.org</a> <a href="https://www.vintageapple.org/macbooks/pdf/HyperTalk_Beginners_Guide_An_Introduction_to_Scripting_1989.pdf">vintageapple.org</a></p>
+</article>
+<article class="rival" data-family="classic" id="lingo">
+  <header>
+    <h2>Lingo <span class="year">1989</span></h2>
+    <p class="tags"><span class="tag">English-like languages</span><span class="check check-partly-checked" title="Some constructs could not be confirmed: the note says which.">Partly checked</span><span class="tag">9 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">on fizzBuzz
+  repeat with n = 1 to 100
+    set theLine to EMPTY
+    if n mod 3 = 0 then put "Fizz" after theLine
+    if n mod 5 = 0 then put "Buzz" after theLine
+    if theLine = EMPTY then put n into theLine
+    put theLine
+  end repeat
+end</pre>
+  <p class="note">This is the older verbose syntax, inherited from HyperTalk, that later Director versions kept beside dot syntax. A bare put writes to Director's Message window, since Lingo has no other console.</p>
+  <p class="meta"><span>Computes it by itself.</span> <span>Handler form, repeat with, mod, set ... to, EMPTY and put to the Message window confirmed from secondary references. Not confirmed from a primary Director manual: put ... after on a variable (found only in errata notes to the Director 6 Lingo Dictionary) and the exact form the Message window shows. Not run.</span></p>
+  
+  <p class="sources"><a href="https://www3.cs.stonybrook.edu/~lori/classes/MM/lingo.html">www3.cs.stonybrook.edu</a> <a href="https://www.c3.hu/docs/lingo/Ldoc_Errors_601.html">c3.hu</a> <a href="https://en.wikipedia.org/wiki/Lingo_(programming_language)">en.wikipedia.org</a></p>
+</article>
+<article class="rival" data-family="classic" id="applescript">
+  <header>
+    <h2>AppleScript <span class="year">1993</span></h2>
+    <p class="tags"><span class="tag">English-like languages</span><span class="check check-documentation" title="Every construct was checked against the documentation cited. It was not run.">Checked</span><span class="tag">13 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">set theLines to ""
+repeat with n from 1 to 100
+    if n mod 15 is 0 then
+        set theLines to theLines &amp; "FizzBuzz" &amp; linefeed
+    else if n mod 3 is 0 then
+        set theLines to theLines &amp; "Fizz" &amp; linefeed
+    else if n mod 5 is 0 then
+        set theLines to theLines &amp; "Buzz" &amp; linefeed
+    else
+        set theLines to theLines &amp; n &amp; linefeed
+    end if
+end repeat
+theLines</pre>
+  <p class="note">Joining a number onto text turns the number into text, because the text is on the left. The script's last line is its result, which Script Editor and osascript display.</p>
+  <p class="meta"><span>Computes it by itself.</span> <span>repeat with ... from ... to, compound if with else if, mod, is, &amp; with text on the left, and the linefeed constant (AppleScript 2.0 and later) checked against the AppleScript Language Guide. No Mac to run it.</span></p>
+  
+  <p class="sources"><a href="https://developer.apple.com/library/archive/documentation/AppleScript/Conceptual/AppleScriptLangGuide/reference/ASLR_control_statements.html">developer.apple.com</a> <a href="https://developer.apple.com/library/archive/documentation/AppleScript/Conceptual/AppleScriptLangGuide/reference/ASLR_operators.html">developer.apple.com</a> <a href="https://developer.apple.com/library/archive/documentation/AppleScript/Conceptual/AppleScriptLangGuide/reference/ASLR_classes.html">developer.apple.com</a></p>
+</article>
+<article class="rival" data-family="classic" id="inform7">
+  <header>
+    <h2>Inform 7 <span class="year">2006</span></h2>
+    <p class="tags"><span class="tag">English-like languages</span><span class="check check-documentation" title="Every construct was checked against the documentation cited. It was not run.">Checked</span><span class="tag">13 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">The Lab is a room.
+
+To play FizzBuzz:
+	repeat with N running from 1 to 100:
+		if the remainder after dividing N by 15 is 0:
+			say "FizzBuzz[line break]";
+		otherwise if the remainder after dividing N by 3 is 0:
+			say "Fizz[line break]";
+		otherwise if the remainder after dividing N by 5 is 0:
+			say "Buzz[line break]";
+		otherwise:
+			say "[N][line break]".
+
+When play begins:
+	play FizzBuzz.</pre>
+  <p class="note">Inform needs a room before it will compile, so the story has one, and the lines are printed when play begins, before the game's banner. Blocks are indented with tabs, which Inform reads as its indentation.</p>
+  <p class="meta"><span>Computes it by itself.</span> <span>repeat with ... running from ... to, remainder after dividing ... by, if / otherwise if / otherwise, say with [N] and [line break], To phrases and When play begins checked against Writing with Inform and the Basic Inform phrase definitions. Not compiled.</span></p>
+  
+  <p class="sources"><a href="https://ganelson.github.io/inform/basic_inform/phdf.html">ganelson.github.io</a> <a href="https://ganelson.github.io/inform-website/book/WI_11_7.html">ganelson.github.io</a> <a href="https://ganelson.github.io/inform-website/book/WI_11_8.html">ganelson.github.io</a> <a href="https://ganelson.github.io/inform-website/book/WI_11_11.html">ganelson.github.io</a></p>
+</article>
+<article class="rival" data-family="classic" id="plain-english">
+  <header>
+    <h2>Osmosian Plain English <span class="year">2006</span></h2>
+    <p class="tags"><span class="tag">English-like languages</span><span class="check check-partly-checked" title="Some constructs could not be confirmed: the note says which.">Partly checked</span><span class="tag">12 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">To run:
+  Start up.
+  Loop.
+  If a counter is past 100, break.
+  If the counter is evenly divisible by 15, write "FizzBuzz"; repeat.
+  If the counter is evenly divisible by 3, write "Fizz"; repeat.
+  If the counter is evenly divisible by 5, write "Buzz"; repeat.
+  Convert the counter to a string.
+  Write the string.
+  Repeat.
+  Wait for the escape key.
+  Shut down.</pre>
+  <p class="note">"If a counter is past 100" both adds one to a new local counter and tests it, so the loop needs no separate counting step. Every conditional fits on one line, as the language requires.</p>
+  <p class="meta"><span>Computes it by itself.</span> <span>To run:, Start up., Loop. / Repeat. / break, If a counter is past ..., is evenly divisible by, one-line conditionals with semicolons, Convert ... to a string and Write checked against the Osmosian instructions. Not in the instructions: Wait for the escape key, which is taken from the language's published Hello World. Not run (the compiler is Windows-only and was not installed).</span></p>
+  
+  <p class="sources"><a href="http://www.osmosian.com/instructions.pdf">osmosian.com</a> <a href="https://rosettacode.org/wiki/Category:Plain_English">rosettacode.org</a></p>
+</article>
+<article class="rival" data-family="controlled" id="ace">
+  <header>
+    <h2>Attempto Controlled English <span class="year">1996</span></h2>
+    <p class="tags"><span class="tag">Controlled English</span><span class="check check-not-a-program" title="A specification, or a request to a model. It does not compute FizzBuzz itself.">Not a program</span><span class="tag">6 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">If there is a number N and there is a number K and there is an integer M and N = K * M then N is a multiple of K.
+If a number N is a multiple of 3 and N is a multiple of 5 then the output of N is "FizzBuzz".
+If a number N is a multiple of 3 and N is not a multiple of 5 then the output of N is "Fizz".
+If a number N is a multiple of 5 and N is not a multiple of 3 then the output of N is "Buzz".
+If a number N is not a multiple of 3 and N is not a multiple of 5 then the output of N is N.
+If there is an integer N and N &gt;= 1 and N =&lt; 100 then a program prints the output of N.</pre>
+  <p class="note">ACE has + - * / but no remainder, so "multiple" is defined with a multiplication. These sentences state the rules as logic; they do not run, and they say nothing about the order in which the lines appear.</p>
+  <p class="meta"><span>Does not compute it by itself.</span> <span>Variables in apposition, if ... then, is not, of-phrases, strings, integers, arithmetic with * and boolean formulas such as N =&lt; 100 checked against the ACE construction rules. Not parsed with APE, which was not available locally; the content words (multiple, output, program, prints) rely on APE's lexicon.</span></p>
+  
+  <p class="sources"><a href="https://web.archive.org/web/2024/http://attempto.ifi.uzh.ch/site/docs/ace_constructionrules.html">web.archive.org</a> <a href="https://en.wikipedia.org/wiki/Attempto_Controlled_English">en.wikipedia.org</a></p>
+</article>
+<article class="rival" data-family="controlled" id="peng">
+  <header>
+    <h2>PENG <span class="year">2002</span></h2>
+    <p class="tags"><span class="tag">Controlled English</span><span class="check check-partly-checked" title="Some constructs could not be confirmed: the note says which.">Partly checked</span><span class="tag">1 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">No sample is given. PENG's published papers show conditionals, universal quantifiers, negation and comparatives over user-defined words, but no arithmetic, no remainder and no output, so a FizzBuzz written in PENG would be invented rather than checked.</pre>
+  <p class="note">There is too little published about PENG's grammar to write FizzBuzz in it faithfully. Its editor offers only the words that may come next, so the sentences a writer can type depend on a lexicon that is not published.</p>
+  <p class="meta"><span>Does not compute it by itself.</span> <span>Schwitter's PENG papers (2002, 2003, 2006) and the PENG Light paper (2009) were read. None shows numbers used as values, arithmetic, a remainder or any output.</span></p>
+  
+  <p class="sources"><a href="https://aclanthology.org/2003.eamt-1.17.pdf">aclanthology.org</a> <a href="https://aclanthology.org/www.mt-archive.info/CLAW-2006-Schwitter.pdf">aclanthology.org</a> <a href="https://aclanthology.org/U09-1011.pdf">aclanthology.org</a></p>
+</article>
+<article class="rival" data-family="controlled" id="sbvr">
+  <header>
+    <h2>SBVR Structured English <span class="year">2008</span></h2>
+    <p class="tags"><span class="tag">Controlled English</span><span class="check check-not-a-program" title="A specification, or a request to a model. It does not compute FizzBuzz itself.">Not a program</span><span class="tag">5 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">It is obligatory that each integer that is greater than 0 and that is less than 101 is printed.
+It is obligatory that each integer that is a multiple of 3 and that is a multiple of 5 is printed as 'FizzBuzz'.
+It is obligatory that each integer that is a multiple of 3 and that is not a multiple of 5 is printed as 'Fizz'.
+It is obligatory that each integer that is a multiple of 5 and that is not a multiple of 3 is printed as 'Buzz'.
+It is obligatory that each integer that is not a multiple of 3 and that is not a multiple of 5 is printed as the numeral of the integer.</pre>
+  <p class="note">These are business rules: each says what must be true, not how to make it so, and nothing here runs. In the specification, terms, verbs, names and keywords are told apart by font and colour, which plain text loses, and rules cannot say what order the lines come in.</p>
+  <p class="meta"><span>Does not compute it by itself.</span> <span>The rule form (It is obligatory that each ... that ...), the keywords each, that, and, not, and the quoted names checked against the OMG SBVR 1.5 specification. The verbs (is greater than, is a multiple of, is printed as) would have to be defined in the business vocabulary.</span></p>
+  
+  <p class="sources"><a href="https://www.omg.org/spec/SBVR/1.5/PDF">omg.org</a></p>
+</article>
+<article class="rival" data-family="controlled" id="gherkin">
+  <header>
+    <h2>Gherkin <span class="year">2008</span></h2>
+    <p class="tags"><span class="tag">Controlled English</span><span class="check check-not-a-program" title="A specification, or a request to a model. It does not compute FizzBuzz itself.">Not a program</span><span class="tag">19 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">Feature: FizzBuzz
+  Each number from 1 to 100 is said as itself,
+  except that multiples of 3 are said as "Fizz",
+  multiples of 5 as "Buzz", and multiples of both as "FizzBuzz".
+
+  Scenario Outline: Saying a number
+    When I say the number &lt;number&gt;
+    Then I hear "&lt;words&gt;"
+
+    Examples:
+      | number | words    |
+      | 1      | 1        |
+      | 2      | 2        |
+      | 3      | Fizz     |
+      | 5      | Buzz     |
+      | 6      | Fizz     |
+      | 10     | Buzz     |
+      | 15     | FizzBuzz |
+      | 98     | 98       |
+      | 99     | Fizz     |
+      | 100    | Buzz     |</pre>
+  <p class="note">The feature file states examples of the behaviour; to run it, a programmer must write a step definition for each of the two step patterns, in a language such as Java, JavaScript or Ruby, plus the FizzBuzz code they call. It checks the ten numbers in the table, not all hundred.</p>
+  <p class="meta"><span>Does not compute it by itself.</span> <span>Parsed and compiled into 10 test cases with the official parser, gherkin-official 43.0.0. Not executed: there are no step definitions.</span></p>
+  
+  <p class="sources"><a href="https://cucumber.io/docs/gherkin/reference/">cucumber.io</a> <a href="https://github.com/cucumber/gherkin">github.com</a></p>
+</article>
+<article class="rival" data-family="teaching" id="quorum">
+  <header>
+    <h2>Quorum <span class="year">2011</span></h2>
+    <p class="tags"><span class="tag">For teaching</span><span class="check check-documentation" title="Every construct was checked against the documentation cited. It was not run.">Checked</span><span class="tag">13 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">integer n = 1
+repeat while n &lt;= 100
+    if n mod 15 = 0
+        output "FizzBuzz"
+    elseif n mod 3 = 0
+        output "Fizz"
+    elseif n mod 5 = 0
+        output "Buzz"
+    else
+        output n
+    end
+    n = n + 1
+end</pre>
+  <p class="note">Quorum's keywords were chosen by testing them on novices, which is why it says "repeat", "output" and "elseif", and uses one equals sign for comparison.</p>
+  <p class="meta"><span>Computes it by itself.</span> <span>integer declaration, repeat while ... end, if / elseif / else / end, mod, = as comparison and output checked against the Quorum language tutorials. Not run.</span></p>
+  
+  <p class="sources"><a href="https://quorumlanguage.com/tutorials/language/repeat.html">quorumlanguage.com</a> <a href="https://quorumlanguage.com/tutorials/language/if.html">quorumlanguage.com</a> <a href="https://quorumlanguage.com/tutorials/language/operators.html">quorumlanguage.com</a></p>
+</article>
+<article class="rival" data-family="teaching" id="hedy">
+  <header>
+    <h2>Hedy <span class="year">2020</span></h2>
+    <p class="tags"><span class="tag">For teaching</span><span class="check check-run" title="It was run, and what it printed is FizzBuzz exactly.">Run</span><span class="tag">18 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">three = 0
+five = 0
+for i in range(1, 100):
+    three = three + 1
+    five = five + 1
+    if three == 3 and five == 5:
+        print('FizzBuzz')
+        three = 0
+        five = 0
+    elif three == 3:
+        print('Fizz')
+        three = 0
+    else:
+        if five == 5:
+            print('Buzz')
+            five = 0
+        else:
+            print(i)</pre>
+  <p class="note">Hedy's level 14 grammar has no remainder operator, and its documentation shows none at any level, so the program keeps two counters and resets them. At level 14 an if may have only one elif, so the Buzz case is a nested if.</p>
+  <p class="meta"><span>Computes it by itself.</span> <span>Level 14. Transpiled with Hedy's own transpiler, hedylang 0.0.11 (the version pinned in Hedy's requirements-prod.txt), and run with Hedy's runtime prefix; output matched FizzBuzz exactly. Hedy pauses 0.1 s per loop pass, which was switched off for the run. The level 14 transpiler turns range(1, 100) into Python's range(1, 100 + step, step), so 100 is included.</span></p>
+  <details class="printed"><summary>What it printed</summary><pre>1
+2
+Fizz
+4
+Buzz
+…
+98
+Fizz
+Buzz</pre></details>
+  <p class="sources"><a href="https://github.com/hedyorg/hedylang">github.com</a> <a href="https://pypi.org/project/hedylang/">pypi.org</a> <a href="https://github.com/hedyorg/hedy/blob/main/grammars-Total/level14.en-Total.lark">github.com</a> <a href="https://github.com/hedyorg/hedy/blob/main/content/cheatsheets/en.yaml">github.com</a> <a href="https://github.com/hedyorg/hedy/blob/main/content/adventures/en.yaml">github.com</a> <a href="https://www.hedy.org/for-teachers/manual">hedy.org</a></p>
+</article>
+<article class="rival" data-family="model" id="jac">
+  <header>
+    <h2>Jac <span class="year">2024</span></h2>
+    <p class="tags"><span class="tag">Languages that ask a model</span><span class="check check-run" title="It was run, and what it printed is FizzBuzz exactly.">Run</span><span class="tag">13 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">with entry {
+    for n in range(1, 101) {
+        if n % 15 == 0 {
+            print("FizzBuzz");
+        } elif n % 3 == 0 {
+            print("Fizz");
+        } elif n % 5 == 0 {
+            print("Buzz");
+        } else {
+            print(n);
+        }
+    }
+}</pre>
+  <p class="note">This sample asks no model: it is plain Jac, a Python superset with braces and semicolons. range(1, 101) stops before 101, as in Python.</p>
+  <p class="meta"><span>Computes it by itself.</span> <span>Run with jaclang 0.16.7; output matched FizzBuzz exactly.</span></p>
+  <details class="printed"><summary>What it printed</summary><pre>1
+2
+Fizz
+4
+Buzz
+…
+98
+Fizz
+Buzz</pre></details>
+  <p class="sources"><a href="https://docs.jaseci.org/">docs.jaseci.org</a> <a href="https://pypi.org/project/jaclang/">pypi.org</a></p>
+</article>
+<article class="rival" data-family="model" id="jac-llm">
+  <header>
+    <h2>Jac with by llm <span class="year">2024</span></h2>
+    <p class="tags"><span class="tag">Languages that ask a model</span><span class="check check-not-a-program" title="A specification, or a request to a model. It does not compute FizzBuzz itself.">Not a program</span><span class="tag">10 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">import from byllm.lib { Model }
+
+glob llm: Model = Model(model_name="gpt-4o");
+
+def fizzbuzz(number: int) -&gt; str by llm();
+sem fizzbuzz = "Say what FizzBuzz says for the number: Fizz for a multiple of 3, Buzz for a multiple of 5, FizzBuzz for a multiple of both, and otherwise the number itself.";
+sem fizzbuzz.number = "A whole number from 1 to 100.";
+
+with entry {
+    for n in range(1, 101) {
+        print(fizzbuzz(n));
+    }
+}</pre>
+  <p class="note">The function has no body: a model is asked, a hundred times, to do arithmetic it may get wrong, and the str return type means a wrong word is accepted without complaint. Jac's stand-in model can make the program testable, but only with answers written down in advance.</p>
+  <p class="meta"><span>Does not compute it by itself.</span> <span>Passes jac check with jaclang 0.16.7 (warnings only, because the byllm plugin could not be installed here). Syntax checked against the by llm reference and jaclang's bundled jac-by-llm guide, which says to describe the function with sem, not a docstring. No model was called.</span></p>
+  
+  <p class="sources"><a href="https://docs.jaseci.org/reference/plugins/byllm/">docs.jaseci.org</a> <a href="https://arxiv.org/abs/2405.08965">arxiv.org</a></p>
+</article>
+<article class="rival" data-family="model" id="dspy">
+  <header>
+    <h2>DSPy <span class="year">2023</span></h2>
+    <p class="tags"><span class="tag">Languages that ask a model</span><span class="check check-not-a-program" title="A specification, or a request to a model. It does not compute FizzBuzz itself.">Not a program</span><span class="tag">11 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">import dspy
+
+dspy.configure(lm=dspy.LM("openai/gpt-4o-mini"))
+
+
+class FizzBuzz(dspy.Signature):
+    """Say what FizzBuzz says for a number: Fizz for a multiple of 3,
+    Buzz for a multiple of 5, FizzBuzz for a multiple of both,
+    and otherwise the number itself."""
+
+    number: int = dspy.InputField()
+    says: str = dspy.OutputField()
+
+
+fizzbuzz = dspy.Predict(FizzBuzz)
+
+for n in range(1, 101):
+    print(fizzbuzz(number=n).says)</pre>
+  <p class="note">The signature's docstring and field names become the prompt, and a model fills in says for each number. DSPy could tune the prompt against a metric, but each answer is still the model's guess.</p>
+  <p class="meta"><span>Does not compute it by itself.</span> <span>Signature, InputField, OutputField, Predict and dspy.LM checked against the DSPy signatures guide, and the program run end to end with dspy 3.5.0 and its DummyLM, which returns canned answers, to confirm the API. No real model was called.</span></p>
+  
+  <p class="sources"><a href="https://dspy.ai/learn/programming/signatures/">dspy.ai</a> <a href="https://github.com/stanfordnlp/dspy/blob/main/docs/docs/learn/programming/signatures.md">github.com</a></p>
+</article>
+<article class="rival" data-family="model" id="baml">
+  <header>
+    <h2>BAML <span class="year">2023</span></h2>
+    <p class="tags"><span class="tag">Languages that ask a model</span><span class="check check-not-a-program" title="A specification, or a request to a model. It does not compute FizzBuzz itself.">Not a program</span><span class="tag">16 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">function FizzBuzz(number: int) -&gt; string {
+  client "openai/gpt-4o-mini"
+  prompt #"
+    In FizzBuzz, a multiple of 3 is said as "Fizz", a multiple of 5 as "Buzz",
+    a multiple of both as "FizzBuzz", and any other number as itself.
+
+    What is said for {{ number }}?
+
+    {{ ctx.output_format }}
+  "#
+}
+
+test FifteenIsFizzBuzz {
+  functions [FizzBuzz]
+  args {
+    number 15
+  }
+  @@assert({{ this == "FizzBuzz" }})
+}</pre>
+  <p class="note">The function is a typed prompt; the host program would call it once per number. The test can assert that 15 gives FizzBuzz, but only by asking the model, so it can pass one day and fail the next.</p>
+  <p class="meta"><span>Does not compute it by itself.</span> <span>Passes baml-cli check (baml-cli 0.226.3, the BAML v0 language); a misspelt function name in the test was reported, so the check is real. Test syntax checked against the BAML testing guide. The test was not run, since it calls a live model.</span></p>
+  
+  <p class="sources"><a href="https://docs.boundaryml.com/guide/baml-basics/testing-functions">docs.boundaryml.com</a> <a href="https://docs.boundaryml.com/guide/introduction/why-baml.md">docs.boundaryml.com</a></p>
+</article>
+<article class="rival" data-family="model" id="typechat">
+  <header>
+    <h2>TypeChat <span class="year">2023</span></h2>
+    <p class="tags"><span class="tag">Languages that ask a model</span><span class="check check-not-a-program" title="A specification, or a request to a model. It does not compute FizzBuzz itself.">Not a program</span><span class="tag">21 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">// fizzBuzzSchema.ts
+// What FizzBuzz says for each number from 1 to 100, in order.
+export interface FizzBuzzResponse {
+    lines: (number | "Fizz" | "Buzz" | "FizzBuzz")[];
+}
+
+// main.ts
+import fs from "fs";
+import path from "path";
+import { createJsonTranslator, createLanguageModel } from "typechat";
+import { createTypeScriptJsonValidator } from "typechat/ts";
+import { FizzBuzzResponse } from "./fizzBuzzSchema";
+
+const model = createLanguageModel(process.env);
+const schema = fs.readFileSync(path.join(__dirname, "fizzBuzzSchema.ts"), "utf8");
+const validator = createTypeScriptJsonValidator&lt;FizzBuzzResponse&gt;(schema, "FizzBuzzResponse");
+const translator = createJsonTranslator(model, validator);
+
+async function main() {
+    const response = await translator.translate("Play FizzBuzz for the numbers 1 to 100.");
+    if (!response.success) {
+        console.log(response.message);
+        return;
+    }
+    console.log(response.data.lines.join("\n"));
+}
+
+main();</pre>
+  <p class="note">The TypeScript compiler checks that each entry is a number or one of the three words, and sends its errors back to the model to repair. It cannot check that the words are in the right places, or that there are a hundred of them.</p>
+  <p class="meta"><span>Does not compute it by itself.</span> <span>createLanguageModel, createJsonTranslator, createTypeScriptJsonValidator from typechat/ts, translate and response.success / data / message checked against TypeChat's README and its sentiment example. Not type-checked or run.</span></p>
+  
+  <p class="sources"><a href="https://github.com/microsoft/TypeChat/blob/main/typescript/README.md">github.com</a> <a href="https://github.com/microsoft/TypeChat/blob/main/typescript/examples/sentiment/src/main.ts">github.com</a></p>
+</article>
+<article class="rival" data-family="model" id="marsha">
+  <header>
+    <h2>Marsha <span class="year">2023</span></h2>
+    <p class="tags"><span class="tag">Languages that ask a model</span><span class="check check-not-a-program" title="A specification, or a request to a model. It does not compute FizzBuzz itself.">Not a program</span><span class="tag">1 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0"># func fizzbuzz(integer): string
+
+This function takes a whole number and returns what is said for it in FizzBuzz: 'Fizz' if the number is a multiple of 3, 'Buzz' if it is a multiple of 5, 'FizzBuzz' if it is a multiple of both, and otherwise the number written in digits.
+
+* fizzbuzz(1) = '1'
+* fizzbuzz(3) = 'Fizz'
+* fizzbuzz(5) = 'Buzz'
+* fizzbuzz(15) = 'FizzBuzz'
+* fizzbuzz(98) = '98'
+* fizzbuzz(0) throws an error</pre>
+  <p class="note">Marsha asks a model to write Python from the description and turns the examples into tests that the Python must pass. The answer is then computed by that generated Python, which is only as right as the five examples make it.</p>
+  <p class="meta"><span>Does not compute it by itself.</span> <span>The # func header, integer and string types, the description and the * example lines checked against Marsha's README and its fibonacci and roman_numerals examples. Not compiled, since compiling calls a model.</span></p>
+  
+  <p class="sources"><a href="https://github.com/alantech/marsha">github.com</a> <a href="https://github.com/alantech/marsha/blob/main/examples/general-purpose/fibonacci.mrsh">github.com</a></p>
+</article>
+<article class="rival" data-family="model" id="sudolang">
+  <header>
+    <h2>SudoLang <span class="year">2023</span></h2>
+    <p class="tags"><span class="tag">Languages that ask a model</span><span class="check check-not-a-program" title="A specification, or a request to a model. It does not compute FizzBuzz itself.">Not a program</span><span class="tag">6 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0"># FizzBuzz
+
+for each n in 1..100 {
+  if (n % 15 == 0) log("FizzBuzz")
+  else if (n % 3 == 0) log("Fizz")
+  else if (n % 5 == 0) log("Buzz")
+  else log(n)
+}</pre>
+  <p class="note">SudoLang looks like code, but its only interpreter is the model reading it, which must keep count and do the arithmetic in its reply. Nothing checks that it printed a hundred lines or got them right.</p>
+  <p class="meta"><span>Does not compute it by itself.</span> <span>for each, the 1..100 range, if / else, % and log() checked against the SudoLang specification. There is nothing to run it with but a model.</span></p>
+  
+  <p class="sources"><a href="https://github.com/paralleldrive/sudolang-llm-support/blob/main/sudolang.sudo.md">github.com</a></p>
+</article>
+<article class="rival" data-family="model" id="lmql">
+  <header>
+    <h2>LMQL <span class="year">2022</span></h2>
+    <p class="tags"><span class="tag">Languages that ask a model</span><span class="check check-not-a-program" title="A specification, or a request to a model. It does not compute FizzBuzz itself.">Not a program</span><span class="tag">7 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">argmax
+    "In FizzBuzz, multiples of 3 are Fizz, multiples of 5 are Buzz, "
+    "multiples of both are FizzBuzz, and other numbers are said as they are.\n"
+    for n in range(1, 101):
+        "{n}: [WORD]\n" where WORD in set(["Fizz", "Buzz", "FizzBuzz", str(n)])
+from
+    "openai/gpt-3.5-turbo-instruct"</pre>
+  <p class="note">The constraint lets the model write only Fizz, Buzz, FizzBuzz or the number itself on each line, so the shape is guaranteed. Which of the four it picks is still the model's guess.</p>
+  <p class="meta"><span>Does not compute it by itself.</span> <span>argmax, the from clause, a Python for loop in the prompt and inline where ... in set(...) constraints checked against the LMQL constraints documentation. Not confirmed: a constraint set that uses the loop variable, and the model name, which is not from the LMQL docs. Not run.</span></p>
+  
+  <p class="sources"><a href="https://lmql.ai/docs/language/constraints.html">lmql.ai</a></p>
+</article>
+<article class="rival" data-family="model" id="jev">
+  <header>
+    <h2>Jev <span class="year">2026</span></h2>
+    <p class="tags"><span class="tag">Languages that ask a model</span><span class="check check-not-a-program" title="A specification, or a request to a model. It does not compute FizzBuzz itself.">Not a program</span><span class="tag">19 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">from typesafe_sdk import Choice, TypeSafeClient
+
+with TypeSafeClient(model="jev-latest") as client:  # reads TYPESAFE_API_KEY
+    for n in range(1, 101):
+        response = client.system_one(
+            state=str(n),
+            questions={
+                "word": Choice(
+                    instructions="Which word does this number get in FizzBuzz",
+                    criteria={
+                        "Fizz": "A multiple of 3 but not of 5",
+                        "Buzz": "A multiple of 5 but not of 3",
+                        "FizzBuzz": "A multiple of both 3 and 5",
+                        "number": "A multiple of neither",
+                    },
+                ),
+            },
+        )
+        word = response.choices["word"].choice
+        print(n if word == "number" else word)</pre>
+  <p class="note">Jev writes no text and does no arithmetic: it gives a probability to each of four listed answers, so this sends a hundred requests to guess what one line of remainder arithmetic would compute exactly. It is the wrong tool for FizzBuzz, and its documentation says to keep questions simple and do the rest in code.</p>
+  <p class="meta"><span>Does not compute it by itself.</span> <span>TypeSafeClient, system_one, Choice with instructions and criteria, and response.choices[...].choice checked against TypeSafe's quickstart and Choice pages. No request was sent.</span></p>
+  
+  <p class="sources"><a href="https://docs.typesafe.ai/introduction/quickstart.md">docs.typesafe.ai</a> <a href="https://docs.typesafe.ai/primitives/choice.md">docs.typesafe.ai</a></p>
+</article>
+<article class="rival" data-family="model" id="instructor">
+  <header>
+    <h2>Instructor <span class="year">2023</span></h2>
+    <p class="tags"><span class="tag">Languages that ask a model</span><span class="check check-not-a-program" title="A specification, or a request to a model. It does not compute FizzBuzz itself.">Not a program</span><span class="tag">16 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">from typing import Literal
+
+import instructor
+from pydantic import BaseModel, Field
+
+
+class Line(BaseModel):
+    number: int
+    says: Literal["Fizz", "Buzz", "FizzBuzz"] | int
+
+
+class FizzBuzz(BaseModel):
+    lines: list[Line] = Field(min_length=100, max_length=100)
+
+
+client = instructor.from_provider("openai/gpt-4o-mini")
+
+result = client.create(
+    response_model=FizzBuzz,
+    messages=[{"role": "user", "content": "Play FizzBuzz for the numbers 1 to 100."}],
+    max_retries=3,
+)
+
+for line in result.lines:
+    print(line.says)</pre>
+  <p class="note">Pydantic checks that there are exactly a hundred lines and that each is a number or one of the three words, and Instructor asks again when it fails. A reply with Fizz in the wrong place passes.</p>
+  <p class="meta"><span>Does not compute it by itself.</span> <span>from_provider and create(response_model=..., messages=..., max_retries=...) checked against the Instructor docs and the signatures in instructor 1.17.0. The Pydantic response model was tested locally: it accepts a correct answer, rejects 99 lines, and accepts a wrong answer. No model was called.</span></p>
+  
+  <p class="sources"><a href="https://python.useinstructor.com/">python.useinstructor.com</a> <a href="https://python.useinstructor.com/concepts/retrying/">python.useinstructor.com</a></p>
+</article>
+<article class="rival" data-family="model" id="marvin">
+  <header>
+    <h2>Marvin <span class="year">2023</span></h2>
+    <p class="tags"><span class="tag">Languages that ask a model</span><span class="check check-not-a-program" title="A specification, or a request to a model. It does not compute FizzBuzz itself.">Not a program</span><span class="tag">8 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">import marvin
+
+lines = marvin.run(
+    "Play FizzBuzz for the numbers 1 to 100: Fizz for multiples of 3, "
+    "Buzz for multiples of 5, FizzBuzz for multiples of both, "
+    "and otherwise the number.",
+    result_type=list[str],
+)
+print("\n".join(lines))</pre>
+  <p class="note">Marvin turns the request and the result type into an agent task, and the model writes the hundred lines. The type makes sure a list of strings comes back, not that the strings are right.</p>
+  <p class="meta"><span>Does not compute it by itself.</span> <span>marvin.run with result_type checked against Marvin's README. Marvin could not be installed here (a dependency has no build for this machine), so it was not imported. No model was called.</span></p>
+  
+  <p class="sources"><a href="https://github.com/PrefectHQ/marvin">github.com</a> <a href="https://askmarvin.ai/">askmarvin.ai</a></p>
+</article>
+<article class="rival" data-family="model" id="outlines">
+  <header>
+    <h2>Outlines <span class="year">2023</span></h2>
+    <p class="tags"><span class="tag">Languages that ask a model</span><span class="check check-not-a-program" title="A specification, or a request to a model. It does not compute FizzBuzz itself.">Not a program</span><span class="tag">16 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">from typing import Literal
+
+import outlines
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+MODEL_NAME = "microsoft/Phi-4-mini-instruct"
+model = outlines.from_transformers(
+    AutoModelForCausalLM.from_pretrained(MODEL_NAME, device_map="auto"),
+    AutoTokenizer.from_pretrained(MODEL_NAME),
+)
+
+for n in range(1, 101):
+    answer = model(
+        "In FizzBuzz, multiples of 3 are Fizz, multiples of 5 are Buzz, "
+        "multiples of both are FizzBuzz, and other numbers are said as they are. "
+        f"What is said for {n}?",
+        Literal["Fizz", "Buzz", "FizzBuzz", str(n)],
+    )
+    print(answer)</pre>
+  <p class="note">Generation is constrained to the four allowed answers for each number, so the shape is guaranteed. The arithmetic is not: the model may still say Fizz for 5.</p>
+  <p class="meta"><span>Does not compute it by itself.</span> <span>from_transformers and model(prompt, output_type) with a Literal type checked against the Outlines README (version 1 API). A Literal built from str(n) at run time is ordinary Python but is not shown in the docs. Not run.</span></p>
+  
+  <p class="sources"><a href="https://github.com/dottxt-ai/outlines">github.com</a></p>
+</article>
+<article class="rival" data-family="model" id="guidance">
+  <header>
+    <h2>Guidance <span class="year">2023</span></h2>
+    <p class="tags"><span class="tag">Languages that ask a model</span><span class="check check-not-a-program" title="A specification, or a request to a model. It does not compute FizzBuzz itself.">Not a program</span><span class="tag">12 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">from guidance import select
+from guidance.models import Transformers
+
+lm = Transformers("microsoft/Phi-4-mini-instruct")
+lm += (
+    "In FizzBuzz, multiples of 3 are Fizz, multiples of 5 are Buzz, "
+    "multiples of both are FizzBuzz, and other numbers are said as they are.\n"
+)
+for n in range(1, 101):
+    lm += f"{n}: "
+    lm += select(["Fizz", "Buzz", "FizzBuzz", str(n)], name="says")
+    lm += "\n"
+    print(lm["says"])</pre>
+  <p class="note">select forces each line to be one of four strings, so the shape is guaranteed while the model writes. Which string it selects is the model's arithmetic, and is not guaranteed.</p>
+  <p class="meta"><span>Does not compute it by itself.</span> <span>models.Transformers, lm += text, select([...], name=...) and lm[name] checked against the Guidance README. Guidance could not be installed here, so it was not imported. Not run.</span></p>
+  
+  <p class="sources"><a href="https://github.com/guidance-ai/guidance">github.com</a></p>
+</article>
+<article class="rival" data-family="classic" id="naturaljava">
+  <header>
+    <h2>NaturalJava <span class="year">2000</span></h2>
+    <p class="tags"><span class="tag">English-like languages</span><span class="check check-partly-checked" title="Some constructs could not be confirmed: the note says which.">Partly checked</span><span class="tag">12 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">Create a for loop that iterates from 1 to 100.
+Declare a String called word and initialize it to "".
+Create an if statement controlled by i mod 3 equals 0.
+Assign word plus "Fizz" to word.
+Leave this if statement.
+Create an if statement controlled by i mod 5 equals 0.
+Assign word plus "Buzz" to word.
+Leave this if statement.
+Create an if statement controlled by word's isEmpty.
+Assign word plus i to word.
+Leave this if statement.
+Call System.out's println and pass it word.</pre>
+  <p class="note">NaturalJava builds a Java program from one typed request at a time, each holding a single action, which is why FizzBuzz becomes a dozen commands. The loop variable is assumed to be i, since the paper does not show the Java a for loop becomes.</p>
+  <p class="meta"><span>Does not compute it by itself.</span> <span>The paper shows the wording of the for-loop command, declarations, if statements, "Assign x plus y to z", method calls ("Call ... and pass it ...") and "Leave this loop". It shows no remainder, no printing, no else and no Java for a for loop, so those commands are extrapolated and the Java it would produce is not given.</span></p>
+  
+  <p class="sources"><a href="https://web.media.mit.edu/~lieber/IUI/Price/Price.pdf">web.media.mit.edu</a></p>
+</article>
+<article class="rival" data-family="classic" id="metafor">
+  <header>
+    <h2>Metafor <span class="year">2005</span></h2>
+    <p class="tags"><span class="tag">English-like languages</span><span class="check check-partly-checked" title="Some constructs could not be confirmed: the note says which.">Partly checked</span><span class="tag">1 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">There is a game with a player who counts from 1 to 100. Each time the player reaches a number, the player says it. If the number can be divided by 3 and by 5, the player says "FizzBuzz" instead; otherwise, if it can be divided by 3, the player says "Fizz"; otherwise, if it can be divided by 5, the player says "Buzz".</pre>
+  <p class="note">Metafor reads a story and drafts code to be finished by a programmer; its authors say the output may not run. A player who "says" something would become a method call on the player, not a print statement.</p>
+  <p class="meta"><span>Does not compute it by itself.</span> <span>Read the IUI 2005 and CHI 2005 papers. They show stories becoming Python-like scaffolding (classes, methods, if/else from "if ...; otherwise"), and say that people describe sets rather than loops. They show no counted loop, no arithmetic beyond a comparison and no printing, so what Metafor would produce from this story is not given.</span></p>
+  
+  <p class="sources"><a href="https://web.media.mit.edu/~lieber/Publications/Metafor-Visualizing-Stories.pdf">web.media.mit.edu</a> <a href="https://web.media.mit.edu/~lieber/Publications/Programmatic-Semantics.pdf">web.media.mit.edu</a> <a href="https://www.media.mit.edu/projects/metafor-programming-by-storytelling/overview/">media.mit.edu</a></p>
+</article>
+<article class="rival" data-family="classic" id="pegasus">
+  <header>
+    <h2>Pegasus <span class="year">2006</span></h2>
+    <p class="tags"><span class="tag">English-like languages</span><span class="check check-partly-checked" title="Some constructs could not be confirmed: the note says which.">Partly checked</span><span class="tag">1 lines</span></p>
+  </header>
+  <pre class="code" tabindex="0">The paper could not be read for this page, so no sample is given.</pre>
+  <p class="note">Pegasus aimed to read free English and generate Java; its site shows one worked example, a matrix printed and tested, but nothing close enough to FizzBuzz to write a faithful sample.</p>
+  <p class="meta"><span>Does not compute it by itself.</span> <span>The Onward! 2006 paper could not be obtained (ACM returned 403; no open copy was found). The project's own site was read; it gives examples, including "which can be divided by 3", but describes most of them as what Pegasus will be able to do.</span></p>
+  
+  <p class="sources"><a href="https://dl.acm.org/doi/10.1145/1176617.1176628">dl.acm.org</a> <a href="https://oopsla.org/2006/submission/onward/pegasus:_first_steps_towards_a_naturalistic_programming_language.html">oopsla.org</a> <a href="http://www.pegasus-project.org/en/Theory___Technique.html">pegasus-project.org</a></p>
+</article>
+    </div>
+    </div>
+  </section>
+</div>
+</main>
+<footer class="colophon" style="max-width: 48rem; margin: 3rem auto 0; padding: 2.5rem 16px 3rem; border-top: 3px double var(--ink);">
+  Printed from <a href="https://github.com/monstercameron/EnglishScript/blob/main/docs/rivals/fizzbuzz.json">docs/rivals/fizzbuzz.json</a> and <a href="https://github.com/monstercameron/EnglishScript/blob/main/examples/fizzbuzz.english">examples/fizzbuzz.english</a> by <code>tools/build_site.py</code>. The rivals' samples were written for this page; corrections are welcome.
+</footer>
+
+<script type="module">
+import { mountSnippets } from "./play/snippets.js";
+mountSnippets();
+</script>
+</body>
+</html>

@@ -19,7 +19,7 @@ import build_site  # noqa: E402
 
 REBUILD = "run: python tools/build_site.py"
 PAGES = ("index.html", "playground.html", "todo.html", "compare.html", "reference.html", "how.html",
-         "vulkan.html", "page.html", "concerns.html", "editors.html", "opposition.html", "systems.html")
+         "vulkan.html", "page.html", "concerns.html", "editors.html", "opposition.html", "systems.html", "fizzbuzz.html")
 
 
 def read(name):
@@ -99,6 +99,45 @@ class WhatTheSiteServes(unittest.TestCase):
             with self.subTest(example["id"]):
                 source = (ROOT / "examples" / f"{example['id']}.english").read_text(encoding="utf-8")
                 self.assertEqual(example["source"], source.replace("\r\n", "\n"), REBUILD)
+
+
+class FizzBuzzEveryWay(unittest.TestCase):
+    """docs/rivals/fizzbuzz.json, and the page printed from it."""
+
+    def test_every_sample_says_what_it_is_and_how_far_it_was_checked(self):
+        import rivals
+
+        found = rivals.rivals()
+        self.assertGreaterEqual(len(found), 2)
+        ids = [rival["id"] for rival in found]
+        self.assertEqual(len(ids), len(set(ids)), "two samples have one id")
+        families = {key for key, _ in rivals.FAMILIES}
+        for rival in found:
+            with self.subTest(rival["id"]):
+                self.assertIn(rival["family"], families)
+                self.assertIn(rival["checked"], rivals.CHECKS)
+                self.assertTrue(rival["code"].strip())
+                self.assertTrue(rival["note"].strip())
+                self.assertIsInstance(rival["year"], int)
+                for url in rival.get("sources", []):
+                    self.assertRegex(url, r"^https?://")
+                # A sample said to have been run shows what it printed, and that was FizzBuzz.
+                if rival["checked"] == "run":
+                    self.assertTrue(rival["runs"])
+                    expected = ["FizzBuzz" if n % 15 == 0 else "Fizz" if n % 3 == 0 else "Buzz" if n % 5 == 0 else str(n)
+                                for n in range(1, 101)]
+                    self.assertEqual(rival["output_head"], expected[:len(rival["output_head"])])
+                    self.assertEqual(rival["output_tail"], expected[len(expected) - len(rival["output_tail"]):])
+                if rival["checked"] == "not a program":
+                    self.assertFalse(rival["runs"])
+
+    def test_the_page_shows_every_sample_beside_englishscript(self):
+        import rivals
+
+        page = read("fizzbuzz.html")
+        self.assertEqual(page.count('class="rival"'), len(rivals.rivals()))
+        self.assertIn('data-expect="ok"', page)
+        self.assertIn("<pre class=\"output\">1\n2\nFizz\n4\nBuzz", page)
 
 
 class TheEngine(unittest.TestCase):
