@@ -38,7 +38,9 @@ from englishscript import EnglishError, compile_source, explain
 _kept = {}  # files left by the last finished run: name -> bytes
 
 
-class _NeedsReply(Exception):
+class _NeedsReply(BaseException):
+    # Not an Exception: it must pass through everything between the question
+    # and play() below, including the compiler's handling of a model that fails.
     def __init__(self, question):
         self.question = question
 
