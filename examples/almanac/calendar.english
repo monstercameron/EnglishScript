@@ -1,0 +1,70 @@
+# The calendar: leap years, the lengths of months, and the day of the week.
+#
+# This is a chapter of the almanac book. The first sentence says which of its
+# words other files may use. Everything else here is its own business.
+
+This chapter shares only leapness, month length, month title and weekday.
+
+Let the month row always be "January February March April May June July August September October November December".
+Let the day row always be "Monday Tuesday Wednesday Thursday Friday Saturday Sunday".
+
+# One word of a row of words, counting from 1.
+To work out the pick (text) at a spot (number) of a row (text):
+  Let the place be 0.
+  For each word in the words of the row:
+    Add 1 to the place.
+    If the place is the spot:
+      The answer is the word.
+  Fail because "there is no word {the spot} in ""{the row}""".
+
+# What is left of a count of days when the whole weeks are taken out.
+To work out the leftover (number) of a count (number):
+  Let the rest be the count.
+  While the rest is at least 7:
+    Subtract 7 from the rest.
+  The answer is the rest.
+
+# A year is a leap year if four divides it, except that a year a hundred
+# divides is not, unless four hundred does.
+To work out the leapness (yes or no) of a year (number):
+  If the year is divisible by 400:
+    The answer is yes.
+  If the year is divisible by 100:
+    The answer is no.
+  The answer is whether the year is divisible by 4.
+
+To work out the month length (number) of a month (number) for a year (number):
+  If the month is 2:
+    If the leapness of the year is yes:
+      The answer is 29.
+    The answer is 28.
+  If the month is 4 or the month is 6 or the month is 9 or the month is 11:
+    The answer is 30.
+  The answer is 31.
+
+To work out the month title (text) of a month (number):
+  The answer is the pick at the month of the month row.
+
+# The day of the week, counted forward from Monday, the first of January 1900.
+To work out the weekday (text) of a day (number) at a month (number) for a year (number):
+  If the year is less than 1900:
+    Fail because "this calendar starts in 1900".
+  Let the count be the day - 1.
+  Let the passing be 1.
+  While the passing is less than the month:
+    Add the month length of the passing for the year to the count.
+    Add 1 to the passing.
+  Let the turning be 1900.
+  While the turning is less than the year:
+    If the leapness of the turning is yes:
+      Add 366 to the count.
+    Otherwise:
+      Add 365 to the count.
+    Set the count to the leftover of the count.
+    Add 1 to the turning.
+  The answer is the pick at (the leftover of the count + 1) of the day row.
+
+For example, the leapness of 1900 is no and the leapness of 2000 is yes.
+For example, the month length of 2 for 2024 is 29.
+For example, the weekday of 1 at 1 for 1900 is "Monday".
+For example, the weekday of 1 at 1 for 2000 is "Saturday".

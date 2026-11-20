@@ -8,6 +8,10 @@ python -m englishscript examples/gpu_triangle.english
 
 That program draws a red, green and blue triangle and saves it as `gpu_triangle.png` in the folder it is run from.
 
+![A triangle shaded from red at the top to green at the right and blue at the left](assets/triangle-gpu.png)
+
+The [project page](https://monstercameron.github.io/EnglishScript/) explains the idea behind the language and runs the compiler in a browser. A browser cannot reach Vulkan, so this library works only from the command line.
+
 ## What it needs
 
 - A graphics card with a Vulkan driver. Most recent cards have one.

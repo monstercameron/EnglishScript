@@ -1,0 +1,49 @@
+# The Collatz puzzle: halve a number if it is even, otherwise treble it and
+# add one. Nobody has proved that this always comes down to 1, but it always has.
+
+# How many steps a number takes to reach 1.
+To work out the flight (number) of a start (number):
+  Let n be the start.
+  Let the steps be 0.
+  While n is not 1:
+    If n is divisible by 2:
+      Divide n by 2.
+    Otherwise:
+      Set n to 3 * n + 1.
+    Add 1 to the steps.
+  The answer is the steps.
+
+# The highest number reached on the way.
+To work out the peak (number) of a start (number):
+  Let n be the start.
+  Let the top be the start.
+  While n is not 1:
+    If n is divisible by 2:
+      Divide n by 2.
+    Otherwise:
+      Set n to 3 * n + 1.
+    If n is more than the top:
+      Set the top to n.
+  The answer is the top.
+
+For example, the flight of 1 is 0.
+For example, the flight of 6 is 8.
+For example, the flight of 27 is 111.
+For example, the peak of 27 is 9,232.
+
+# Which number below 30 takes longest? One loop, with a skip and an early stop.
+Let the best be 1.
+Let the longest be 0.
+Let the tried be 0.
+Repeat 1,000 times:
+  Add 1 to the tried.
+  If the tried is at least 30:
+    Stop repeating.
+  If the flight of the tried is at most the longest:
+    Skip this round.
+  Set the best to the tried.
+  Set the longest to the flight of the tried.
+
+Say "Below 30, the longest flight is {the longest} steps, from {the best}."
+Say "On the way, {the best} climbs as high as {the peak of the best}."
+For example, the best is 27.

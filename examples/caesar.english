@@ -1,0 +1,89 @@
+# Working with text: a Caesar cipher, a palindrome test, and counting.
+#
+# The language cannot ask for a letter's number, so the alphabet is a piece of
+# text, and a letter's number is its place in it.
+
+Let the alphabet always be "abcdefghijklmnopqrstuvwxyz".
+
+To work out the symbol (text) at a spot (number) of a line (text):
+  The answer is the first 1 letters of the last (the length of the line - the spot + 1) letters of the line.
+
+# Where a letter stands in the alphabet, or nothing if it is not a letter.
+To work out the standing (number, if any) of a mark (text):
+  Let the spot be 0.
+  Repeat 26 times:
+    Add 1 to the spot.
+    If the symbol at the spot of the alphabet is the mark:
+      The answer is the spot.
+  The answer is nothing.
+
+# One letter moved along the alphabet, going round at the end. Anything that is
+# not a letter is left as it is.
+To work out the turned (text) of a mark (text) by a shift (number):
+  Let the spot be the standing of the mark.
+  If the spot is nothing:
+    The answer is the mark.
+  Let the landing be the spot + the shift.
+  While the landing is more than 26:
+    Subtract 26 from the landing.
+  While the landing is less than 1:
+    Add 26 to the landing.
+  The answer is the symbol at the landing of the alphabet.
+
+To work out the cipher (text) of a message (text) by a shift (number):
+  Let the plain be the message in lower case.
+  Let the secret be "".
+  Let the spot be 0.
+  Repeat the length of the plain times:
+    Add 1 to the spot.
+    Set the secret to "{the secret}{the turned of the symbol at the spot of the plain by the shift}".
+  The answer is the secret.
+
+# Only the letters of a text, in lower case.
+To work out the letters only (text) of a message (text):
+  Let the plain be the message in lower case.
+  Let the kept be "".
+  Let the spot be 0.
+  Repeat the length of the plain times:
+    Add 1 to the spot.
+    Let the mark be the symbol at the spot of the plain.
+    If the standing of the mark is not nothing:
+      Set the kept to "{the kept}{the mark}".
+  The answer is the kept.
+
+To work out the backwards (text) of a message (text):
+  Let the reversed be "".
+  Let the spot be 0.
+  Repeat the length of the message times:
+    Add 1 to the spot.
+    Set the reversed to "{the symbol at the spot of the message}{the reversed}".
+  The answer is the reversed.
+
+# A palindrome reads the same both ways, once spaces and punctuation are set aside.
+To work out the mirroring (yes or no) of a message (text):
+  Let the bare be the letters only of the message.
+  The answer is whether the bare is the backwards of the bare.
+
+Let the order be "Attack at dawn, by the old bridge!".
+Let the hidden be the cipher of the order by 3.
+Let the shift back be -3.
+Say "Plain:  {the order}"
+Say "Secret: {the hidden}"
+Say "Again:  {the cipher of the hidden by the shift back}"
+For example, the hidden is "dwwdfn dw gdzq, eb wkh rog eulgjh!".
+For example, the cipher of the hidden by the shift back is "attack at dawn, by the old bridge!".
+
+For example, the mirroring of "A man, a plan, a canal: Panama!" is yes.
+For example, the mirroring of "A man, a plan, a canoe" is no.
+Let the riddle be "Was it a car or a cat I saw?".
+Say "Is ""{the riddle}"" a palindrome? {the mirroring of the riddle}."
+
+# Counting: the words of a line, and how many are long.
+Let the saying be "the quick brown fox jumps over the lazy dog".
+Let the long ones be 0.
+For each word in the words of the saying:
+  If the length of the word is more than 4:
+    Add 1 to the long ones.
+Say "{the number of items in the words of the saying} words, {the long ones} of them longer than four letters."
+If the saying contains "fox" and the saying starts with "the" and not the saying ends with "cat":
+  Say "It mentions a fox, begins with ""the"", and does not end with a cat."

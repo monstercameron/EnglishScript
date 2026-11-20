@@ -1,0 +1,64 @@
+# Roman numerals, into them and out of them.
+#
+# A chapter of the almanac book. It shares two words. The table of numerals it
+# works from is a kind of thing, and that kind is not shared: no other file can
+# count the numerals, change one or make another.
+
+This chapter shares only roman and reading.
+
+A numeral has a worth (number) and a sign (text).
+
+There is a numeral called Thousand whose worth is 1,000 and whose sign is "M".
+There is a numeral called Ninehundred whose worth is 900 and whose sign is "CM".
+There is a numeral called Fivehundred whose worth is 500 and whose sign is "D".
+There is a numeral called Fourhundred whose worth is 400 and whose sign is "CD".
+There is a numeral called Hundred whose worth is 100 and whose sign is "C".
+There is a numeral called Ninety whose worth is 90 and whose sign is "XC".
+There is a numeral called Fifty whose worth is 50 and whose sign is "L".
+There is a numeral called Forty whose worth is 40 and whose sign is "XL".
+There is a numeral called Ten whose worth is 10 and whose sign is "X".
+There is a numeral called Nine whose worth is 9 and whose sign is "IX".
+There is a numeral called Five whose worth is 5 and whose sign is "V".
+There is a numeral called Four whose worth is 4 and whose sign is "IV".
+There is a numeral called Unit whose worth is 1 and whose sign is "I".
+
+# Into Roman: take the largest numeral that still fits, as often as it fits.
+To work out the roman (text) of a sum (number):
+  Let the rest be the sum.
+  Let the line be "".
+  For each numeral:
+    While the rest is at least the numeral's worth:
+      Set the line to "{the line}{the numeral's sign}".
+      Subtract the numeral's worth from the rest.
+  The answer is the line.
+
+# What one Roman letter is worth, or nothing if it is not one.
+To work out the weight (number, if any) of a mark (text):
+  For each numeral whose sign is the mark:
+    The answer is the numeral's worth.
+  The answer is nothing.
+
+# Out of Roman: add up the letters, but a letter that stands before a bigger
+# one is taken away instead, as the I in IV is.
+To work out the reading (number) of a line (text):
+  Let the total be 0.
+  Let the spot be 0.
+  Let the size be the length of the line.
+  Repeat the size times:
+    Add 1 to the spot.
+    Let the mark be the first 1 letters of the last (the size - the spot + 1) letters of the line.
+    Let the here be the weight of the mark.
+    If the here is nothing:
+      Fail because "{the mark} is not a Roman numeral".
+    Let the after be 0.
+    If the spot is less than the size:
+      Let the following be the first 1 letters of the last (the size - the spot) letters of the line.
+      Set the after to the weight of the following or else 0.
+    If the here is less than the after:
+      Subtract the here from the total.
+    Otherwise:
+      Add the here to the total.
+  The answer is the total.
+
+For example, the roman of 1994 is "MCMXCIV".
+For example, the reading of "MCMXCIV" is 1994.

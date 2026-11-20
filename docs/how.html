@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The machinery of EnglishScript: a Python compiler in the browser</title>
+<meta name="description" content="How a compiler written in Python runs in a web browser: Python as WebAssembly, the bridge to the page, and what it costs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;family=IM+Fell+English:ital@0;1&amp;family=IM+Fell+English+SC&amp;family=UnifrakturMaguntia&amp;display=swap">
+<link rel="stylesheet" href="assets/english.css">
+<style>
+  figure.plate { margin: 2rem 0; }
+  figure.plate svg { display: block; width: 100%; height: auto; }
+  figure.plate figcaption { font: italic 1.05rem/1.4 var(--fell); color: var(--muted); margin-top: 0.8rem; text-align: center; text-wrap: balance; }
+  .plate .box { fill: var(--bg); stroke: var(--ink); stroke-width: 1.5; }
+  .plate .box.wasm { fill: var(--panel); }
+  .plate .shade { fill: var(--rule); }
+  .plate .name { font: 22px var(--fell); fill: var(--ink); }
+  .plate .what { font: italic 16px var(--fell); fill: var(--muted); }
+  .plate .tag { font: 13px var(--caps); letter-spacing: 0.14em; fill: var(--accent); text-transform: lowercase; }
+  .plate .arrow { stroke: var(--accent); stroke-width: 1.5; fill: none; }
+  .plate .head { fill: var(--accent); }
+  .plate .brace { stroke: var(--muted); stroke-width: 1; fill: none; }
+  .steps { counter-reset: step; list-style: none; padding-left: 0 !important; }
+  .steps > li { counter-increment: step; position: relative; padding-left: 3rem; margin-bottom: 1.1rem !important; }
+  .steps > li::before { content: counter(step, upper-roman) "."; position: absolute; left: 0; top: 0; width: 2.4rem; text-align: right; font: 1.2rem var(--fell); color: var(--accent); }
+  .measure td:nth-child(n+2), .measure th:nth-child(n+2) { text-align: right; white-space: nowrap; font-variant-numeric: lining-nums tabular-nums; }
+</style>
+</head>
+<body>
+
+<nav class="sitenav" aria-label="The pages of this site">
+  <div class="inner">
+    <a class="home" href="./">EnglishScript</a>
+    <a class="page" href="./">The treatise</a>
+    <a class="page" href="playground.html">The playground</a>
+    <a class="page" href="todo.html">A page</a>
+    <a class="page" href="compare.html">Compared</a>
+    <a class="page" href="reference.html">The grammar</a>
+    <a class="page" href="how.html" aria-current="page">The machinery</a>
+    <a class="page" href="https://github.com/monstercameron/EnglishScript">The source</a>
+  </div>
+</nav>
+
+<main class="doc plain">
+<article>
+<h1>The Machinery</h1>
+<p class="standfirst">How a compiler written in Python comes to run in a web browser, what really happens when you press Run, and what it costs.</p>
+
+<h2 id="short">The short answer</h2>
+
+<p>The EnglishScript compiler is ordinary Python: a few thousand lines of it, with no dependencies. A browser cannot run Python. It can run WebAssembly, and the Python interpreter itself has been compiled to WebAssembly by a project called <a href="https://pyodide.org">Pyodide</a>. So the page downloads a Python interpreter, hands it the compiler's files, and calls it.</p>
+
+<p>One thing is easy to get wrong, so it is worth saying plainly. <strong>Nothing here translates Python into WebAssembly.</strong> The interpreter, which is written in C, is what was compiled. It then reads the compiler's Python files exactly as they are in the repository, byte for byte, and runs them the way Python on your own computer would.</p>
+
+<p>The same is true one level up. <strong>Your EnglishScript program is not turned into WebAssembly either.</strong> The compiler turns each sentence into a small Python function, and the interpreter runs those.</p>
+
+<h2 id="layers">The layers</h2>
+
+<figure class="plate">
+<svg viewBox="0 0 720 560" role="img" aria-labelledby="plate-title plate-desc">
+  <title id="plate-title">The layers between a sentence and the screen</title>
+  <desc id="plate-desc">Five boxes stacked from top to bottom: your sentences; the EnglishScript compiler, which is Python source; the Python interpreter, which is WebAssembly; the browser's WebAssembly engine; and the page. The middle three sit inside the browser tab. An arrow runs down the stack and another returns from the compiler to the page.</desc>
+  <defs>
+    <marker id="tip" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path class="head" d="M0,0 L10,5 L0,10 z"/></marker>
+  </defs>
+
+  <rect class="shade" x="126" y="26" width="470" height="76"/>
+  <rect class="box" x="120" y="20" width="470" height="76"/>
+  <text class="tag" x="140" y="44">what you write</text>
+  <text class="name" x="140" y="70">Your sentences</text>
+  <text class="what" x="140" y="88">“A dragon has an age (number).”</text>
+
+  <rect class="shade" x="126" y="136" width="470" height="76"/>
+  <rect class="box" x="120" y="130" width="470" height="76"/>
+  <text class="tag" x="140" y="154">python source, 54 kb zipped</text>
+  <text class="name" x="140" y="180">The EnglishScript compiler</text>
+  <text class="what" x="140" y="198">reads each sentence, checks it, makes a function of it</text>
+
+  <rect class="shade" x="126" y="246" width="470" height="76"/>
+  <rect class="box wasm" x="120" y="240" width="470" height="76"/>
+  <text class="tag" x="140" y="264">webassembly, 9.9 mb</text>
+  <text class="name" x="140" y="290">The Python interpreter (Pyodide)</text>
+  <text class="what" x="140" y="308">CPython, written in C, compiled once by its makers</text>
+
+  <rect class="shade" x="126" y="356" width="470" height="76"/>
+  <rect class="box" x="120" y="350" width="470" height="76"/>
+  <text class="tag" x="140" y="374">part of every modern browser</text>
+  <text class="name" x="140" y="400">The browser's WebAssembly engine</text>
+  <text class="what" x="140" y="418">runs the interpreter at near the speed of the machine</text>
+
+  <rect class="shade" x="126" y="466" width="470" height="76"/>
+  <rect class="box" x="120" y="460" width="470" height="76"/>
+  <text class="tag" x="140" y="484">javascript and html</text>
+  <text class="name" x="140" y="510">The page</text>
+  <text class="what" x="140" y="528">sends your text in, and writes what comes back</text>
+
+  <path class="arrow" d="M355,96 L355,128" marker-end="url(#tip)"/>
+  <path class="arrow" d="M355,206 L355,238" marker-end="url(#tip)"/>
+  <path class="arrow" d="M355,316 L355,348" marker-end="url(#tip)"/>
+  <path class="arrow" d="M590,168 C668,168 668,498 594,498" marker-end="url(#tip)"/>
+  <text class="what" x="640" y="336" transform="rotate(90 640 336)" text-anchor="middle">what the program says</text>
+  <path class="arrow" d="M120,498 C44,498 44,58 116,58" marker-end="url(#tip)"/>
+  <text class="what" x="72" y="280" transform="rotate(-90 72 280)" text-anchor="middle">what you typed</text>
+</svg>
+<figcaption>Only the shaded box is WebAssembly. The compiler above it is plain Python text, and your program is plainer still.</figcaption>
+</figure>
+
+<h2 id="run">What happens when you press Run</h2>
+
+<p>The page does nothing with Python until you ask it to. The first press of <em>Run</em>, or the first visit to the playground, sets this off:</p>
+
+<ol class="steps">
+  <li><strong>The interpreter is fetched.</strong> A small script, <code>pyodide.js</code>, is loaded from a public file server. It fetches the interpreter (<code>pyodide.asm.wasm</code>) and Python's standard library, and the browser compiles the WebAssembly into the machine code of your computer.</li>
+  <li><strong>The compiler is fetched.</strong> The page downloads <code>play/englishscript.zip</code>, which holds the Python files of the <code>englishscript</code> package.</li>
+  <li><strong>The files are unpacked into a pretend disk.</strong> The interpreter has a file system that exists only in the tab's memory. The zip is unpacked there, and that folder is put on Python's search path, so <code>import englishscript</code> works as it does anywhere.</li>
+  <li><strong>A short bridge is defined.</strong> The page runs a few dozen lines of Python that define two functions, <code>play</code> and <code>check</code>. They call the compiler and give their results back as text in the JSON format, which both languages read easily.</li>
+  <li><strong>Your program is passed in.</strong> JavaScript calls <code>play</code> with the text of your program. Python compiles it, runs it, and returns a list of what happened: each line said, each question asked, or the compiler's refusal.</li>
+  <li><strong>The page writes it out.</strong> JavaScript turns that list into elements of the page.</li>
+</ol>
+
+<p>Steps one to four happen once. After that, pressing <em>Run</em> is only steps five and six, which is why the second run feels instant.</p>
+
+<p>The heart of it is short. This is from <code>docs/play/engine.js</code>, trimmed a little:</p>
+
+<pre class="form">const py = await loadPyodide({ indexURL: PYODIDE });
+const response = await fetch("play/englishscript.zip");
+py.FS.mkdirTree("/site");
+py.unpackArchive(await response.arrayBuffer(), "zip", { extractDir: "/site" });
+py.runPython(BRIDGE);                  // defines play() and check() in Python
+const play = py.globals.get("play");   // a Python function, callable from JavaScript
+
+const result = JSON.parse(play(source, "run", JSON.stringify(replies)));</pre>
+
+<h2 id="compile">What “compile” means here</h2>
+
+<p>The word is used loosely on this site, so here is exactly what the compiler does to a program. There are two stages, both in Python.</p>
+
+<p><strong>The lexer</strong> splits the text into sentences, one to a line, and each sentence into words, numbers, quoted text and punctuation. It also works out which sentences are indented under which.</p>
+
+<p><strong>The compiler</strong> then goes through the sentences once, in order. For each one it does three things together: it works out which of the sentence forms this is, it checks that every word has exactly one meaning at that point, and it builds a Python function that will carry the sentence out. A sentence such as</p>
+
+<pre class="form">Add 5 to the total.</pre>
+
+<p>becomes, in effect, this:</p>
+
+<pre class="form">lambda env: env.set("total", env.get("total") + 5)</pre>
+
+<p>No sentence is carried out until every sentence has been through this, which is why a mistake on the last line is reported before the first line runs. Running the program is then nothing more than calling those functions in order.</p>
+
+<p>So there is no bytecode of EnglishScript's own, and no WebAssembly is made from your program. A stricter name for the compiler would be a <em>checker that builds closures</em>. What makes it deserve the word is the checking: it settles every name, every pronoun and every type before anything happens.</p>
+
+<h2 id="input">Questions, without stopping the page</h2>
+
+<p>The to-do list asks for commands. At a terminal that is easy: the program stops and waits for a line. A web page cannot do that. Python here runs on the page's one and only thread, and a program that sat waiting would freeze the whole tab, input box included.</p>
+
+<p>The page gets round this with a trick that only works because EnglishScript programs are predictable. When a program asks a question that nobody has answered yet, it is stopped, and the page shows what it said so far with an input box. When you answer, <strong>the program is run again from the top</strong>, this time with your answer supplied. Ask a second question and it runs a third time, with both answers.</p>
+
+<p>Because a program has no clock and no chance in it, every run says the same things up to the point where the new answer is used. You see one continuous conversation. The cost is that an interactive program gets a little slower with each answer, which only matters for the heaviest example.</p>
+
+<h2 id="files">Files that are not really files</h2>
+
+<p>When the to-do list writes <code>todo.txt</code>, it writes to that pretend disk in the tab's memory. The page copies the files a program leaves behind and puts them back before the next run, so the list is still there when you run the program again. It is gone when you reload the page. Nothing is written to your computer and nothing is sent anywhere.</p>
+
+<h2 id="lint">Checking as you write</h2>
+
+<p>The playground underlines mistakes while you type. A third of a second after you stop, it passes the whole program to <code>check</code>, which compiles it without running it and returns every problem with its line and its place in the line. The page draws the underlines on a layer beneath the text box, so that they sit exactly under the letters.</p>
+
+<h2 id="cost">What it costs</h2>
+
+<p>These were measured in one browser on one computer. The sizes are of the files once unpacked; they travel compressed.</p>
+
+<div class="scroll">
+<table class="measure">
+  <thead><tr><th>What is fetched</th><th>Size</th></tr></thead>
+  <tbody>
+    <tr><td>The Python interpreter, as WebAssembly</td><td>9.9 MB</td></tr>
+    <tr><td>Python's standard library</td><td>2.3 MB</td></tr>
+    <tr><td>The script that starts the interpreter</td><td>1.2 MB</td></tr>
+    <tr><td>The EnglishScript compiler</td><td>54 KB</td></tr>
+  </tbody>
+</table>
+</div>
+
+<ul>
+  <li><strong>The first run is slow to start.</strong> Nearly all of the download is the interpreter, and the compiler is less than half of one per cent of it. The browser keeps a copy, so later visits start much sooner.</li>
+  <li><strong>It runs somewhat slower than on your own machine.</strong> Setting up the SHA-256 example took 0.7 seconds here and 0.4 with ordinary Python on the same computer.</li>
+  <li><strong>A long-running program freezes the tab</strong> until it finishes, because it shares the page's thread. A <code>While</code> loop is stopped after ten thousand rounds, which catches the usual accident.</li>
+  <li><strong>Some things are out of reach.</strong> A browser has no way to call a graphics driver, so the <a href="vulkan.html">vulkan library</a> reports that it cannot start.</li>
+  <li><strong>The page depends on two outside addresses:</strong> one for the interpreter and one for the typefaces. Without the first, the text and the printed outputs can still be read, but nothing runs.</li>
+</ul>
+
+<h2 id="honest">How the page is kept honest</h2>
+
+<p>A page like this could easily show outputs that the compiler no longer gives. Three things prevent it.</p>
+
+<ul>
+  <li><strong>The compiler is not a copy.</strong> A script, <code>tools/build_site.py</code>, zips the package from the repository. A test fails if the zip and the source differ.</li>
+  <li><strong>The printed outputs are produced, not typed.</strong> The same script runs every program printed in <a href="./">the treatise</a> and writes what the compiler says into the page.</li>
+  <li><strong>The grammar is run.</strong> Every example in <a href="reference.html">the grammar</a> is run by the test suite, and that page is printed from the same document the tests read.</li>
+</ul>
+
+<h2 id="next">What a real compiler to WebAssembly would take</h2>
+
+<p>Everything above carries an interpreter around in order to run a program. The alternative is to translate an EnglishScript program directly into WebAssembly, or into JavaScript, so that the result runs on its own. The checking would stay as it is; only the last step, building the functions, would be replaced by writing out instructions.</p>
+
+<p>That is not built. It would make programs start at once and run far faster, at the price of a second thing to keep in step with the first. For a language whose point is that it can be read, the slow and simple arrangement was the right one to begin with.</p>
+
+</article>
+<footer class="colophon">
+  The figures on this page were taken from the playground on this site, in one browser, on the day it was written.
+</footer>
+</main>
+
+</body>
+</html>

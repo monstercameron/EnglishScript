@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The page library of EnglishScript</title>
+<meta name="description" content="Web pages written in EnglishScript: seven kinds of thing that are elements of a page, bound both ways.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;family=IM+Fell+English:ital@0;1&amp;family=IM+Fell+English+SC&amp;family=UnifrakturMaguntia&amp;display=swap">
+<link rel="stylesheet" href="assets/english.css">
+</head>
+<body>
+
+<nav class="sitenav" aria-label="The pages of this site">
+  <div class="inner">
+    <a class="home" href="./">EnglishScript</a>
+    <a class="page" href="./">The treatise</a>
+    <a class="page" href="playground.html">The playground</a>
+    <a class="page" href="todo.html">A page</a>
+    <a class="page" href="compare.html">Compared</a>
+    <a class="page" href="reference.html">The grammar</a>
+    <a class="page" href="how.html">The machinery</a>
+    <a class="page" href="https://github.com/monstercameron/EnglishScript">The source</a>
+  </div>
+</nav>
+
+<main class="doc plain">
+<article>
+<h1>The Page Library</h1>
+<p class="standfirst">Things that are elements of a web page, and the sentences that answer a press or a keystroke.</p>
+<p><code>Use the page library.</code> lets an EnglishScript program be a web page. It adds seven kinds of thing, and each thing of one of those kinds <strong>is</strong> an element of the page. The program never touches the page. It makes things and changes them, and the page follows; a person presses and types, and the things change.</p>
+<p><code>examples/web_todo.english</code> is a to-do list written this way, and <a href="https://github.com/monstercameron/EnglishScript/blob/main/docs/todo.html">the page called "A page"</a> runs it. Its work is divided among four chapters of the book in <code>examples/tasks</code>: what is on the page, what a task is, which cards are in sight, and what is remembered.</p>
+<pre class="form">Use the page library.
+
+There is a heading called Banner whose wording is "A counter".
+There is a note called Tally whose wording is "0".
+There is a button called Clicker whose label is "One more".
+
+Let the count be 0.
+
+Whenever Clicker becomes pressed:
+  Add 1 to the count.
+  Set Tally's wording to "{the count}".</pre>
+<h2 id="what-is-on-a-page">What is on a page</h2>
+<div class="scroll"><table>
+<thead><tr><th>Kind</th><th>What it is</th><th>Properties</th><th>Adjectives</th></tr></thead>
+<tbody>
+<tr><td><code>panel</code></td><td>A box that holds other elements, side by side where they fit</td><td><code>title (text, if any)</code></td><td><code>hidden</code></td></tr>
+<tr><td><code>heading</code></td><td>A title</td><td><code>wording (text)</code>, <code>panel (panel, if any)</code></td><td><code>hidden</code></td></tr>
+<tr><td><code>note</code></td><td>A line of text</td><td><code>wording (text)</code>, <code>panel (panel, if any)</code></td><td><code>hidden</code></td></tr>
+<tr><td><code>field</code></td><td>A box to type in</td><td><code>wording (text)</code>, <code>hint (text, if any)</code>, <code>panel (panel, if any)</code></td><td><code>changed</code>, <code>entered</code>, <code>hidden</code></td></tr>
+<tr><td><code>button</code></td><td>Something to press</td><td><code>label (text)</code>, <code>panel (panel, if any)</code></td><td><code>pressed</code>, <code>chosen</code>, <code>hidden</code></td></tr>
+<tr><td><code>card</code></td><td>A line with a tick box, words that can be edited where they stand, a tag, a star, and a cross to dismiss it</td><td><code>wording (text)</code>, <code>tag (text, if any)</code>, <code>order (number, if any)</code>, <code>panel (panel, if any)</code></td><td><code>ticked</code>, <code>starred</code>, <code>reworded</code>, <code>dismissed</code>, <code>hidden</code></td></tr>
+<tr><td><code>gauge</code></td><td>A bar that shows how far along something is</td><td><code>level (number)</code>, <code>limit (number)</code>, <code>panel (panel, if any)</code></td><td><code>hidden</code></td></tr>
+</tbody></table></div>
+<p>These are ordinary kinds. Everything the language does with a kind works on them: <code>For each ticked card:</code>, <code>the number of cards</code>, <code>A card is open when it is not ticked.</code>, <code>Remove the card.</code></p>
+<p><strong>Where an element goes.</strong> Elements appear in the order their things were made. An element whose <code>panel</code> is given sits inside that panel, again in the order made. A panel lays its elements out in a row and wraps them; a card always takes a whole line.</p>
+<p><strong>The order of cards.</strong> A card may be given an <code>order</code>, which is a number. Cards with a lower order come first. Cards with the same order, or with none (which counts as 0), stay in the order they were made. The language has no sentence for sorting, and does not need one here: a program says which sort each card belongs to, and the page keeps them in place.</p>
+<pre class="form">For each card:
+  If the card is ticked:
+    Set the card's order to 2.
+  Otherwise if the card is starred:
+    Set the card's order to 0.
+  Otherwise:
+    Set the card's order to 1.</pre>
+<p>Only a card that is out of place is moved. The others are left exactly as they are.</p>
+<h2 id="the-binding">The binding</h2>
+<p>The program to the page:</p>
+<div class="scroll"><table>
+<thead><tr><th>The program says</th><th>The page shows</th></tr></thead>
+<tbody>
+<tr><td><code>There is a new card whose wording is "Buy milk".</code></td><td>A new line</td></tr>
+<tr><td><code>Set Tally's wording to "2 left".</code></td><td>The note's words change</td></tr>
+<tr><td><code>Set Entry's wording to "".</code></td><td>The box is emptied</td></tr>
+<tr><td><code>Now the card is ticked.</code></td><td>Its box is ticked</td></tr>
+<tr><td><code>Now the card is starred.</code></td><td>Its star is filled in</td></tr>
+<tr><td><code>Set the card's tag to "home".</code></td><td>A small label, <code>#home</code>, beside its words</td></tr>
+<tr><td><code>Set the card's order to 0.</code></td><td>It moves to stand before cards of a higher order</td></tr>
+<tr><td><code>Now the card is hidden.</code> / <code>Now the card is not hidden.</code></td><td>It leaves the page, or returns</td></tr>
+<tr><td><code>Now Everything is chosen.</code></td><td>The button is shown as the one in force</td></tr>
+<tr><td><code>Set Progress's level to 3.</code></td><td>The bar grows</td></tr>
+<tr><td><code>Remove the card.</code></td><td>The line is gone</td></tr>
+</tbody></table></div>
+<p>The page to the program:</p>
+<div class="scroll"><table>
+<thead><tr><th>A person</th><th>In the program</th></tr></thead>
+<tbody>
+<tr><td>types in a field</td><td>the field's <code>wording</code> is what they have typed, and the field becomes <code>changed</code></td></tr>
+<tr><td>presses Enter in a field</td><td>the field becomes <code>entered</code></td></tr>
+<tr><td>presses a button</td><td>the button becomes <code>pressed</code></td></tr>
+<tr><td>ticks or unticks a card's box</td><td>the card becomes <code>ticked</code>, or becomes not <code>ticked</code></td></tr>
+<tr><td>presses a card's star</td><td>the card becomes <code>starred</code>, or becomes not <code>starred</code></td></tr>
+<tr><td>edits a card's words where they stand, and leaves them</td><td>the card's <code>wording</code> is the new words, and the card becomes <code>reworded</code></td></tr>
+<tr><td>presses a card's cross</td><td>the card becomes <code>dismissed</code></td></tr>
+</tbody></table></div>
+<p>The program answers with <code>Whenever</code> (see <a href="reference.html">the reference</a>):</p>
+<pre class="form">Whenever a card becomes dismissed:
+  Remove the card.</pre>
+<p>Five of these adjectives are <strong>momentary</strong>: <code>pressed</code>, <code>changed</code>, <code>entered</code>, <code>reworded</code> and <code>dismissed</code> last only while the program's answer is being carried out. They do not "become not" afterwards, so a <code>Whenever ... becomes not pressed:</code> is never set off by them.</p>
+<p>A card's words are edited by clicking on them. Enter or leaving the words finishes the edit, and Escape gives it up. The words are kept as one line: spaces at the ends are dropped and runs of spaces become one. Leaving the words as they were is not a rewording.</p>
+<p>If an answer runs into a problem, such as a rule that would be broken or a <code>Fail because</code>, everything it changed is put back, as after a failed <code>Try</code>, and the problem is said.</p>
+<p>After every answer, the library compares the things with the elements and writes only what differs. An element stays the same element for as long as its thing exists, so a box that is being typed in is never rebuilt.</p>
+<h2 id="remembering">Remembering</h2>
+<pre class="form">Remember &lt;text&gt; under &lt;text&gt;.
+the memory of &lt;text&gt;</pre>
+<p><code>Remember</code> keeps a text under a key, in the browser's own storage, so that it is there the next time the page is opened. <code>the memory of</code> a key is that text, or <code>nothing</code> if nothing has been kept under it.</p>
+<pre class="form">Let the last be the memory of "visits" or else "never".
+Remember "once before" under "visits".</pre>
+<p>Nothing that is remembered leaves the browser.</p>
+<h2 id="without-a-browser">Without a browser</h2>
+<p>Run from the command line, there is no page to show. The library keeps a stand-in for one in memory, and when the program ends it sketches the page in text:</p>
+<pre class="form">$ python -m englishscript examples/web_todo.english
+
+The page, as it stands (there is no browser here to show it):
+  # Things to do
+  [_(What needs doing? Add a #tag if you like.)_]  [Add]
+  &lt;All (3)&gt;  [Still to do (3)]  [Done (0)]  [_(Find)_]
+  [ ] * Write a sentence the compiler refuses
+  [ ] Read the treatise
+  [ ] Tick this one off  #page
+  3 of 3 still to do.  |..........|
+  [Tick them all]</pre>
+<p>What is remembered there lasts only as long as Python runs. The tests use the stand-in to press, type and tick without a browser: see <code>tests/test_page.py</code>.</p>
+<h2 id="putting-a-program-on-a-page-of-your-own">Putting a program on a page of your own</h2>
+<p>The compiler is Python, and it runs in a browser as WebAssembly through Pyodide, as <a href="https://github.com/monstercameron/EnglishScript/blob/main/docs/how.html">the machinery</a> explains. A page needs three things:</p>
+<ol>
+<li>An element for the library to build in: <code>&lt;main id="englishscript-page"&gt;&lt;/main&gt;</code>. Without one, the library adds its own at the end of the document.</li>
+<li>The compiler, loaded into Pyodide. <code>docs/play/engine.js</code> does this for the pages of this site.</li>
+<li>A few lines of Python to compile the program and run it. Once its sentences have been carried out, the page stays alive and answers what people do:</li>
+</ol>
+<pre class="form">from englishscript import compile_source
+
+compile_source(source).run(out=show_a_line, ask=ask_a_question)</pre>
+<p>The library gives each element a class named after its kind (<code>es-heading</code>, <code>es-field</code>, <code>es-button</code>, <code>es-card</code>, <code>es-note</code>, <code>es-gauge</code>, <code>es-panel</code>) and the attributes <code>data-kind</code> and <code>data-name</code>. The parts of a card have classes of their own (<code>es-card-box</code>, <code>es-card-words</code>, <code>es-card-tag</code>, <code>es-card-star</code>, <code>es-card-cross</code>), and a card carries <code>data-ticked</code> and <code>data-starred</code>. It sets no styles of its own: how the page looks is the business of the page's style sheet. <code>docs/todo.html</code> is a complete example.</p>
+<p>When a thing is removed, its element is given the attribute <code>data-leaving</code> and stays for a quarter of a second before it goes, so that a style sheet can show it leave. A reader who has asked for reduced motion gets no such pause.</p>
+<h2 id="what-it-does-not-do">What it does not do</h2>
+<ul>
+<li>There are seven kinds of element. There are no pictures, links, tables or menus yet.</li>
+<li>Only cards can be put in an order of the program's choosing. Everything else stands in the order made.</li>
+<li>A program cannot ask where the pointer is, or what key was pressed, beyond Enter in a field.</li>
+<li>A panel cannot be put inside a panel.</li>
+<li>The program's own sentences are carried out before the page is first shown, so a long calculation at the top delays it.</li>
+</ul>
+</article>
+<footer class="colophon">
+  Printed from <a href="https://github.com/monstercameron/EnglishScript/blob/main/docs/PAGE.md">docs/PAGE.md</a> by <code>tools/build_site.py</code>.
+</footer>
+</main>
+
+</body>
+</html>

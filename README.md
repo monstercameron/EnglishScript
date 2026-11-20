@@ -1,51 +1,27 @@
-# EnglishScript
+<h1 align="center">EnglishScript</h1>
 
-There are two experiments in this repository:
+<p align="center"><em>or, English made strict enough to compile</em></p>
 
-1. **A strict-English compiler** (`englishscript/`, 2026): a plain Python parser, with no AI involved, for a subset of English in which every sentence has exactly one meaning.
-2. **The original LLM translator** (`run.ipynb`, 2023): GPT-3.5 turning loose English into JavaScript. Its README is kept [below](#the-original-experiment-english-to-javascript-with-gpt-35).
+<p align="center">
+A programming language made of English sentences, and a compiler that accepts a sentence<br>
+only if it has exactly one meaning. Anything that could be read two ways is refused,<br>
+with a message that says what is unclear and how to mend it.
+</p>
 
-## The strict-English compiler
+<p align="center">
+  <a href="https://monstercameron.github.io/EnglishScript/playground.html"><img alt="Write a program in your browser" src="https://img.shields.io/badge/Write_a_program_in_your_browser-%E2%96%B6-8f1d14?style=for-the-badge&labelColor=8f1d14"></a>
+</p>
 
-It needs Python 3 and nothing else (tested on Python 3.12).
+<p align="center">
+  <a href="https://monstercameron.github.io/EnglishScript/"><b>Read the treatise</b></a> &nbsp;·&nbsp;
+  <a href="https://monstercameron.github.io/EnglishScript/todo.html"><b>See a web page written in English</b></a> &nbsp;·&nbsp;
+  <a href="https://monstercameron.github.io/EnglishScript/reference.html"><b>The grammar</b></a> &nbsp;·&nbsp;
+  <a href="https://monstercameron.github.io/EnglishScript/compare.html"><b>Beside JavaScript and Java</b></a>
+</p>
 
-```bash
-python -m englishscript
-```
+<p align="center">❦</p>
 
-That runs a guided tour: a program about dragons, its output, how the compiler read it, and eleven sentences it refuses to compile. To run a program of your own:
-
-```bash
-python -m englishscript examples/invoices.english
-```
-
-Add `--explain` to see how each sentence was read without running it, or `--check` to compile only.
-
-For something interactive, try the to-do list. It asks for commands (`add Buy milk`, `done 1`, `list`, `quit`, and a few more) and keeps the list in `todo.txt`, in the folder you run it from:
-
-```bash
-python -m englishscript examples/todo.english
-```
-
-There is also a shaded triangle, drawn in characters. It follows the steps of a Vulkan "hello triangle" but does the graphics card's work itself; it does not use the real Vulkan API:
-
-```bash
-python -m englishscript examples/triangle.english
-```
-
-The same triangle can be drawn on the real graphics card. This one does use the Vulkan API, through the `vulkan` library, and saves `gpu_triangle.png`. It needs a card with a Vulkan driver and installs nothing; see [docs/VULKAN.md](docs/VULKAN.md):
-
-```bash
-python -m englishscript examples/gpu_triangle.english
-```
-
-The hardest example is SHA-256 worked out from first principles. The language has no bit operators, remainders or arrays, so the program builds shifts, rotations and exclusive-or out of halving and "is divisible by", and derives the algorithm's constants from primes and whole-number roots. It hashes what you type and agrees with other implementations:
-
-```bash
-python -m englishscript examples/sha256.english
-```
-
-### What a program looks like
+Nothing to install: **[the playground](https://monstercameron.github.io/EnglishScript/playground.html)** runs this same compiler in your browser, underlines what it cannot read as you write, and offers the correction.
 
 ```
 A dragon has an age (number).
@@ -66,28 +42,70 @@ Say "{Smaug's name} now sits on {Smaug's hoard}."
 For example, the hoard of Smaug is $2,700.
 ```
 
-### The idea
+The compiler is plain Python with no dependencies, and there is no AI in it. The same program always means the same thing.
 
-English is easy to read because it leaves things unsaid. The compiler allows that only where the unsaid part has exactly one possible reading; anywhere else it stops and says what is unclear.
+## The idea
 
-| English habit | Rule that makes it strict |
+English is easy to read because it leaves things unsaid. The compiler allows that only where the unsaid part has exactly one possible reading. Anywhere else it stops and says what is unclear.
+
+| English habit | The rule that makes it strict |
 |---|---|
 | Shared vocabulary | Every noun, adjective and verb must be defined before it is used. |
 | "its", "it" | Allowed only when exactly one thing is in view. |
-| "the dragon" | Must point at one dragon in the current sentence's context. |
+| "the dragon" | Must point at one dragon in the sentence's context. |
 | "treasures of the dragon" | Works only if a treasure is tied to a dragon by exactly one property. |
 | "send X against Y" | Prepositions name the verb's roles; each role is typed and required. |
 | "A and B or C" | Refused until brackets say which reading is meant. |
-| "$5", "10%" | Money, numbers and percentages are different types and do not mix. |
+| "$5", "10%" | Money, numbers and percentages are different kinds of value and do not mix. |
 | "never", "always" | A rule checked every time the property changes. |
 | "For example, ..." | A test that runs with the program. |
 | "if any" | A value that may be missing cannot be used until the program has checked it is there. |
 
-Layout carries the nesting: one sentence per line, a colon and an indent for a block.
+The argument at length is **[the treatise](https://monstercameron.github.io/EnglishScript/)**.
 
-### Sentence forms
+## The site
 
-The full reference is [docs/SYNTAX.md](docs/SYNTAX.md). Its examples are run by the test suite. In brief:
+| | |
+|---|---|
+| **[The treatise](https://monstercameron.github.io/EnglishScript/)** | The argument for the language, with examples that run where they stand, and a chapter on agents and what a program means. |
+| **[The playground](https://monstercameron.github.io/EnglishScript/playground.html)** | An editor that marks your program as a teacher would, with corrections you can accept, twenty-one examples and a list of how to say things. |
+| **[A page](https://monstercameron.github.io/EnglishScript/todo.html)** | A to-do list for the web written in EnglishScript, as a book of four chapters, with its files and the things behind the page shown beside it. |
+| **[Compared](https://monstercameron.github.io/EnglishScript/compare.html)** | The same programs in JavaScript and in Java, and where the three part company. |
+| **[The grammar](https://monstercameron.github.io/EnglishScript/reference.html)** | Every sentence the compiler accepts. Its examples run in the page, and the test suite runs them too. |
+| **[The machinery](https://monstercameron.github.io/EnglishScript/how.html)** | How a compiler written in Python runs in a browser, and what that costs. |
+| **[Risks and open questions](https://monstercameron.github.io/EnglishScript/concerns.html)** | Forty-two concerns about the design, each measured against the compiler and given a verdict. |
+
+The site is dressed as a printed English book: blackletter, the Fell types and Garamond.
+
+## Run it on your own computer
+
+It needs Python 3 and nothing else. It has been tested on Python 3.12.
+
+```bash
+python -m englishscript
+```
+
+That is a guided tour: a program about dragons, what it says, how the compiler read it, and eleven sentences it refuses. To run a program of your own:
+
+```bash
+python -m englishscript examples/invoices.english
+```
+
+| Option | What it does |
+|---|---|
+| `--explain` | Shows how each sentence was read, and runs nothing. |
+| `--check` | Compiles only. |
+| `--lint` | Lists every problem at once, with advice and warnings, and runs nothing. The exit status is 1 if there is an error. |
+| `--lint --json` | The same, as data, for an editor or an agent. |
+
+From Python, `englishscript.compile_file(path).run()` runs a program and `englishscript.lint(source)` gives its problems as a list.
+
+## What a program can say
+
+The full reference is [docs/SYNTAX.md](docs/SYNTAX.md). In brief:
+
+<details>
+<summary><b>The sentence forms</b></summary>
 
 | Purpose | Form |
 |---|---|
@@ -96,7 +114,7 @@ The full reference is [docs/SYNTAX.md](docs/SYNTAX.md). Its examples are run by 
 | Store an adjective | `A task can be done.` then `Now the task is done.` |
 | Define a worked-out property | `The tax of a dragon is 10% of its hoard.` |
 | State a rule | `A knight's purse is never less than $0.` |
-| Create a thing | `There is a dragon called Smaug whose age is 771.` |
+| Make a thing | `There is a dragon called Smaug whose age is 771.` |
 | Make, find and remove things while running | `There is a new task called the title whose position is 1.`, `Let the chick be a new dragon whose age is 0.`, `the dragon called "Smaug"`, `Remove the task.` |
 | Teach a verb | `To send a knight against a dragon:` |
 | Use a verb | `Send Gawain against Smaug.` |
@@ -105,8 +123,8 @@ The full reference is [docs/SYNTAX.md](docs/SYNTAX.md). Its examples are run by 
 | Values that may be missing | `a mount (horse, if any)`, `nothing`, `If Wat has a mount:`, `Wat's mount's speed or else 0` |
 | Work out a value | `To work out the bounty (money) for a dragon:` with `The answer is ...`, used as `the bounty for Smaug` |
 | Leave early | `Stop.`, `Stop repeating.`, `Skip this treasure.`, `End the program.` |
-| Output | `Say "{its name} is {its age}."` |
-| Input | `Ask "Age?" and let the age (number) be the reply.` |
+| Say | `Say "{its name} is {its age}."` |
+| Ask | `Ask "Age?" and let the age (number) be the reply.` |
 | Files | `the text of the file "notes.txt"`, `the lines of the file ...`, `Write ... to the file ...`, `Add ... to the file ...` |
 | Text | `the length of`, `in upper case`, `the first 3 letters of`, `the words of`, `as a number`, `contains`, `starts with`, `comes before`; `""` and `{new line}` inside quotes |
 | Yes or no | `Let done (yes or no) be no.`, `whether Smaug is ancient`, `If done is yes:` |
@@ -115,120 +133,110 @@ The full reference is [docs/SYNTAX.md](docs/SYNTAX.md). Its examples are run by 
 | Loop | `For each poor dragon:`, `For each rival in dragons:`, `For each word in the words of the line:`, `Repeat 3 times:`, `While ...:` |
 | Count and add up | `the number of ancient dragons`, `the total worth of Smaug's treasures`, `the number of items in the words` |
 | Recover from a problem | `Try:` then `If that fails:` with `the problem`; `Fail because "..."` |
-| Use a library | `Use the vulkan library.` (verbs and worked-out values carried out by Python code in `englishscript/libraries/`) |
+| React to a change | `Whenever a knight becomes broke:`, `Whenever Adder becomes pressed:`, `Whenever a card becomes not ticked:` |
+| Use a library | `Use the vulkan library.`, `Use the page library.` |
+| Use another file | `Use the calendar chapter.`, `Use the calendar chapter of the almanac book.`, and in the chapter, `This chapter shares only leapness and weekday.` |
 | Test | `For example, the hoard of Smaug is $12,000.` |
 
-Types are `number`, `money`, `text`, `percent`, `yes or no`, any kind you describe, and lists such as `list of text`. Comments start with `#`.
+</details>
 
-### Layout of the code
+Types are `number`, `money`, `text`, `percent`, `yes or no`, any kind you describe, and lists such as `list of text`. Comments start with `#`. Layout carries the nesting: one sentence to a line, a colon and an indent for a block.
 
-- `englishscript/lexer.py` splits the source into sentences and tokens.
-- `englishscript/compiler.py` parses, checks and compiles each sentence into a Python closure in one pass.
-- `englishscript/runtime.py` holds what exists while a program runs.
-- `englishscript/tour.py` is the guided tour.
-- `englishscript/libraries/` holds the libraries a program can `Use`: Python modules that add verbs and worked-out values. Its `__init__.py` explains how to write one.
-- `examples/` has the example programs, including the to-do list; `tests/` has the test suite.
+**Chapters and books.** A program can be split over files. A chapter is a file, a book is a folder of them, and a chapter says in its first sentence which of its words other files may use.
+
+**Libraries.** Two come with the compiler. [`page`](docs/PAGE.md) makes things that are elements of a web page, bound both ways. [`vulkan`](docs/VULKAN.md) draws shaded triangles on a real graphics card.
+
+## Examples
+
+<details>
+<summary><b>Programs that show the language at work</b></summary>
+
+| Program | What it shows |
+|---|---|
+| `examples/helloworld.english` | One sentence. |
+| `examples/fizzbuzz.english` | Loops, branches and `is divisible by`. |
+| `examples/dragons.english` | Kinds, adjectives, worked-out properties, verbs and rules. The tour uses it. |
+| `examples/invoices.english` | The same structures in a business setting. |
+| `examples/tournament.english` | Values that may be missing, worked-out values, and leaving early. |
+| `examples/todo.english` | A to-do list at the command line that saves to a file: asking, files, `Try`, making and removing things. |
+| `examples/web_todo.english` | A to-do list for the web, with tags, stars, editing in place, finding, and putting back what was removed. Its work is divided among four chapters of the book in `examples/tasks/`. |
+| `examples/almanac.english` | A program put together from the chapters of a book: `examples/almanac/` holds a calendar, Roman numerals and the feasts of the year. |
+| `examples/triangle.english` | A shaded triangle drawn in characters, following the steps of a Vulkan program without a graphics card. |
+| `examples/gpu_triangle.english` | The same triangle on a real graphics card, through the Vulkan API. |
+| `examples/sha256.english` | SHA-256 from first principles, in a language with no bit operators, remainders or arrays. It agrees with other implementations. |
+
+</details>
+
+<details>
+<summary><b>Smaller programs, each about one piece of arithmetic or one classic method</b></summary>
+
+| Program | What it shows |
+|---|---|
+| `examples/primes.english` | Testing for primes, listing them, factoring, and perfect numbers. |
+| `examples/euclid.english` | The greatest common measure two ways, and fractions in lowest terms. |
+| `examples/fibonacci.english` | A loop, a definition that uses itself, and a number of twenty-one digits. |
+| `examples/roots.english` | Square roots by Heron's method and by halving, and pi by Machin's formula, in exact fractions. |
+| `examples/sorting.english` | A row of things sorted by swapping neighbours, then searched by halving. |
+| `examples/hanoi.english` | The Tower of Hanoi: a verb that uses itself. |
+| `examples/collatz.english` | `While`, `Skip this round.` and `Stop repeating.` |
+| `examples/caesar.english` | A cipher, a palindrome test and counting words: text taken apart a letter at a time. |
+| `examples/roman.english` | Roman numerals, both ways, with a table made of things. |
+| `examples/bank.english` | Money, percentages, a rule that is never broken, and `Try`. |
+| `examples/life.english` | Conway's Game of Life on forty-nine cells, each a thing. |
+
+</details>
+
+## What it does not do
+
+- **It does not accept loose English.** Every sentence must fit one of the forms above.
+- **It is slow.** Numbers are exact fractions, and a program with no lists must search for things one at a time. The SHA-256 example manages about 300 bytes a second.
+- **Lists are only partly there.** They come from splitting text or reading a file, and can be counted and gone through, but not written out, changed or indexed.
+- **Several features are designed but not built:** dates and the clock, fixed sets of choices, units, remainders and rounding, picking and ordering within a group, and doing things at the same time. Sections 12 and 13 of [docs/SYNTAX.md](docs/SYNTAX.md) give each a syntax.
+- **Plurals are formed by rule** ("dragons", "ponies", "foxes"), so irregular ones such as "children" are not recognised.
+- **A name means one thing in the whole program.** A chapter chooses which of its words other files may use, but two chapters cannot give the same word two meanings, even privately.
+- **The libraries are small.** `page` has seven kinds of element and no pictures, links or tables. `vulkan` has run on one computer and draws off screen to a file.
+
+Where the design will strain has been looked at properly. Forty-two concerns were measured against the compiler one by one, and an adversarial review of the reference found twenty-four more things to settle. The verdicts, the figures and what matters most are in **[docs/CONCERNS.md](docs/CONCERNS.md)**.
+
+## The repository
+
+| Path | What is there |
+|---|---|
+| `englishscript/` | The compiler: `lexer.py` splits the source into sentences, `compiler.py` reads, checks and compiles each one into a Python function in a single pass, `runtime.py` holds what exists while a program runs, `linter.py` reports every problem at once, and `tour.py` is the guided tour. |
+| `englishscript/libraries/` | The libraries a program can `Use`. Its `__init__.py` explains how to write one. |
+| `examples/` | The example programs. `examples/almanac/` and `examples/tasks/` are books of chapters. |
+| `tests/` | The test suite. |
+| `docs/` | The reference and the other documents, and the site that GitHub Pages serves. |
+| `tools/` | `build_site.py` builds what the site loads, `pages.py` prints the Markdown documents as pages, and `research/` holds the scripts behind `docs/CONCERNS.md`. |
 
 ```bash
-python -m unittest discover tests
+python -m unittest discover -s tests
 ```
 
-### What it does not do
+The tests that draw on a graphics card skip themselves where there is no Vulkan driver.
 
-- Lists are only partly there: they come from splitting text or reading a file, and can be counted and looped over, but not written out, changed, sorted or said.
-- It has no dates or clock, no fixed sets of choices, units, remainders or rounding, no picking or ordering within a group, and no concurrency yet. Sections 12 and 13 of [docs/SYNTAX.md](docs/SYNTAX.md) give each of these a designed syntax that is not built.
-- Plurals are formed by rule ("dragons", "ponies", "foxes"), so irregular ones such as "people" are not recognised.
-- It does not accept loose English. The natural next step is the original experiment turned around: use a language model only to rewrite loose English into this strict form, and let this compiler be the judge of whether the result is unambiguous.
+After changing the compiler, an example or one of the Markdown documents in `docs`, rebuild what the site loads. Tests fail if any of it is out of date.
 
----
-
-# The original experiment: English to JavaScript with GPT-3.5
-
-The English Script Programming Language Compiler is a python application that uses OpenAI's GPT-3.5 model to translate English scripts into JavaScript. The application follows certain rules and uses an alias system to understand and transcribe the English scripts. It creates an output JavaScript file and also has the capability to execute this file.
-
-## Getting Started
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
-
-### Prerequisites
-
-- Python (>= 3.7)
-- [openai](https://github.com/openai/openai) Python package
-- [python-dotenv](https://pypi.org/project/python-dotenv/)
-- An OpenAI API key
-
-### Installing
-
-1. Clone this repository.
 ```bash
-git clone https://github.com/your-username/english-script-compiler
+python tools/build_site.py
 ```
 
-2. Navigate into the project directory.
+To look at the site on your own computer:
+
 ```bash
-cd english-script-compiler
+python -m http.server --directory docs
 ```
 
-3. Install the necessary packages.
-```bash
-pip install -r requirements.txt
-```
+## History
 
-### Usage
+This repository began in June 2023 as a notebook that asked GPT-3.5 to translate English sentences into JavaScript. That experiment's files have been removed; they are in the history at commit `90340fd`.
 
-To use this application, follow the below steps:
+The present compiler takes the opposite approach. It uses no language model, and it refuses what it cannot read in exactly one way. A language model's natural place is in front of it: rewriting loose English into this strict form, with the compiler as the judge of whether the result is unambiguous. That step is not built.
 
-1. Create a `.env` file in the root of your project directory and add your OpenAI API key:
-```bash
-OPENAI_API_KEY=your_api_key
-```
+Most of the code here was written by AI models (Claude) under a person's direction, with one model reviewing another's changes to the compiler.
 
-2. Now, you can run the main python script, `main.py`:
-```bash
-python main.py
-```
+<p align="center">❦</p>
 
-This script will read an English script and use the OpenAI GPT-3.5 model to translate it into a JavaScript file located at `output/index.js`.
-
-### Code Overview
-
-The application's workflow is as follows:
-
-1. Import necessary libraries and load environment variables.
-2. Retrieve and set OpenAI API key.
-3. Import and set the translation rules and aliases.
-4. Use OpenAI's API to perform a chat completion and function call, requesting a JavaScript translation of an English script.
-5. Extract the JavaScript translation from the API response and save it into a `.js` file.
-6. Execute the resulting JavaScript file.
-
-### Example
-
-Below is an example of how English scripts translate to JavaScript using rules and aliases:
-
-- English Script: `"I have a fixed number that is 1"`
-- JavaScript: `"const value = 1;"`
-
-- English Script: `"I have a number a that I add 1 and 2,"`
-- JavaScript: `"let a = 1 + 2;"`
-
-- English Script: `"I have a number a that I add a and b then divide by a,"`
-- JavaScript: `"let a = (a + b) / a;"`
-
-- English Script: `"show my number a"`
-- JavaScript: `"console.log(a);"`
-
-And here is an example of how aliases work:
-
-- Alias: `["const", "constant", "fixed"]`
-- This means 'const' in JavaScript can be represented by 'constant' or 'fixed' in English script.
-
-- Alias: `["log", "console", "display", "show"]`
-- This means 'console.log' in JavaScript can be represented by 'display' or 'show' in English script.
-
-### Contributing
-
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
-
-### License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+<p align="center">
+  <a href="https://monstercameron.github.io/EnglishScript/playground.html"><b>Open the playground and write a sentence the compiler refuses.</b></a>
+</p>

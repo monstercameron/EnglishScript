@@ -17,7 +17,7 @@ Let the alphabet always be " !""#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQR
 Let the hex digits always be "0123456789abcdef".
 Let the digest be "".
 
-# --- Four arrays, as things -----------------------------------------------------------
+# --- Five arrays, as things -----------------------------------------------------------
 
 A constant has a place (number) and a value (number).     # the 64 round constants
 A seed has a place (number) and a value (number).         # the 8 starting values

@@ -2,3 +2,4 @@
 __pycache__
 todo.txt
 gpu_triangle.png
+.claude/launch.json

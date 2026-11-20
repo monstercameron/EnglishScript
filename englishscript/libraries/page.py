@@ -1,0 +1,776 @@
+"""The page library: things that are elements of a web page.
+
+A program that says "Use the page library." gets seven kinds of thing. Each
+thing of one of those kinds *is* an element of the page:
+
+    panel     a box that holds other elements, side by side where they fit
+    heading   a title
+    note      a line of text
+    field     a box to type in
+    button    something to press
+    card      a line with a tick box, words that can be edited where they
+              stand, a tag, a star and a cross to dismiss it
+    gauge     a bar that shows how far along something is
+
+The binding goes both ways and there is nothing else to call.
+
+  * What the program changes, the page shows. Setting a note's wording changes
+    the words on the page; "Now the card is hidden." takes it off the page;
+    removing a thing removes its element; making a thing makes one.
+  * What a person does, the program sees. Typing changes the field's wording,
+    a tick box changes whether its card is ticked, and a press makes a button
+    "pressed". The program answers with "Whenever":
+
+        Whenever Adder becomes pressed:
+          There is a new card whose wording is Entry's wording.
+
+Five adjectives are momentary: a button is "pressed", a field is "changed"
+(something was typed in it) or "entered" (Enter was pressed in it), and a card
+is "reworded" (its words were edited) or "dismissed" (its cross was pressed)
+only while the program's answer to that is being carried out.
+
+Elements are laid out in the order their things were made. An element whose
+panel is given sits inside that panel, again in the order made. A card may be
+given an order, a number: cards with a lower order come first, and cards with
+the same order (or none, which counts as 0) stay in the order made.
+
+Outside a browser there is no page, so the library keeps a stand-in for one in
+memory, and sketches it in text when the program ends. The functions at the
+end of this module press, type and tick on that stand-in, which is how the
+tests use a page without a browser.
+
+In a browser (Pyodide), the page is built inside the element whose id is
+"englishscript-page", or at the end of the document if there is none. What is
+"remembered" is kept in the browser's local storage, so it is still there the
+next time the page is opened.
+"""
+from __future__ import annotations
+
+from fractions import Fraction
+
+from ..lexer import EnglishError
+
+SOURCE = '''
+A panel has a title (text, if any).
+A panel can be hidden.
+
+A heading has a wording (text) and a panel (panel, if any).
+A heading can be hidden.
+
+A note has a wording (text) and a panel (panel, if any).
+A note can be hidden.
+
+A field has a wording (text), a hint (text, if any), and a panel (panel, if any).
+A field can be entered.
+A field can be changed.
+A field can be hidden.
+
+A button has a label (text) and a panel (panel, if any).
+A button can be pressed.
+A button can be chosen.
+A button can be hidden.
+
+A card has a wording (text), a tag (text, if any), an order (number, if any), and a panel (panel, if any).
+A card can be ticked.
+A card can be starred.
+A card can be reworded.
+A card can be dismissed.
+A card can be hidden.
+
+A gauge has a level (number), a limit (number), and a panel (panel, if any).
+A gauge can be hidden.
+
+To remember a line (text) under a key (text) is done by the library.
+To work out the memory (text, if any) of a key (text) is done by the library.
+'''
+
+NAME = "page"
+KINDS = ("panel", "heading", "note", "field", "button", "card", "gauge")
+MOMENTARY = {"button": ("pressed",), "field": ("entered", "changed"), "card": ("dismissed", "reworded")}
+MOUNT = "englishscript-page"
+PREFIX = "englishscript:"
+LEAVING = 260  # milliseconds an element is given to leave the page, in a browser
+ROOT = 0  # things are numbered from 1, so 0 can stand for the page itself
+
+
+# --------------------------------------------------------------- a stand-in page
+
+
+class Node:
+    """An element of the stand-in page. It has the few members of a browser's
+    element that this library uses, under the same names, so that one piece of
+    code drives both."""
+
+    #: Put a list here to have every write to an element noted in it, as
+    #: (element, member, value). The tests use it to see what was written.
+    LOG = None
+
+    def __init__(self, tag):
+        self.tag = tag
+        self.attributes = {}
+        self.children = []
+        self.parent = None
+        self.listeners = {}
+        self.textContent = ""
+        self.value = ""
+        self.checked = False
+        self.hidden = False
+        self.className = ""
+
+    def __setattr__(self, name, value):
+        if Node.LOG is not None and name in ("textContent", "value", "checked", "hidden"):
+            Node.LOG.append((self, name, value))
+        object.__setattr__(self, name, value)
+
+    def setAttribute(self, name, value):
+        if Node.LOG is not None:
+            Node.LOG.append((self, name, str(value)))
+        self.attributes[name] = str(value)
+
+    def removeAttribute(self, name):
+        self.attributes.pop(name, None)
+
+    def appendChild(self, child):
+        if child.parent is not None:
+            child.parent.children.remove(child)
+        child.parent = self
+        self.children.append(child)
+        return child
+
+    def insertBefore(self, child, before):
+        if child.parent is not None:
+            child.parent.children.remove(child)
+        child.parent = self
+        self.children.insert(self.children.index(before), child)
+        return child
+
+    def removeChild(self, child):
+        self.children.remove(child)
+        child.parent = None
+        return child
+
+    def blur(self):
+        self.fire("blur")
+
+    def addEventListener(self, name, handler):
+        self.listeners.setdefault(name, []).append(handler)
+
+    def fire(self, name, **details):
+        """What a person does to this element: every listener hears of it."""
+        event = Happening(self, **details)
+        for handler in list(self.listeners.get(name, ())):
+            handler(event)
+
+    def __repr__(self):
+        return f"<{self.tag} {self.className}>"
+
+
+class Happening:
+    def __init__(self, target, **details):
+        self.target = target
+        self.key = details.get("key", "")
+
+    def preventDefault(self):
+        pass
+
+
+class Paper:
+    """The stand-in for a browser's document, with a dict for its storage."""
+
+    def __init__(self):
+        self.root = Node("main")
+        self.kept = {}
+
+    def createElement(self, tag):
+        return Node(tag)
+
+
+#: What the stand-in pages remember, by key, for as long as Python runs. A
+#: test (or a host) may put a dict of its own in ``STORE`` to see or seed it.
+STORE = {}
+
+
+# -------------------------------------------------------------- the two backends
+
+
+class Backend:
+    """Where the page is: a browser's document, or the stand-in."""
+
+    def __init__(self):
+        self.browser = False
+        self.proxies = []
+        try:
+            import js  # noqa: PLC0415 - only there under Pyodide
+            from pyodide.ffi import create_proxy  # noqa: PLC0415
+            document = js.document
+            document.createElement  # a worker has "js" but no document
+        except Exception:  # noqa: BLE001 - no browser: use the stand-in
+            self.document = Paper()
+            self.root = self.document.root
+            return
+        self.browser = True
+        self.js = js
+        self.create_proxy = create_proxy
+        self.document = document
+        root = document.getElementById(MOUNT)
+        if root is None:
+            root = document.createElement("main")
+            root.setAttribute("id", MOUNT)
+            document.body.appendChild(root)
+        root.textContent = ""  # a page run again starts from nothing
+        self.root = root
+
+    def discard(self, parent, node):
+        """Take an element off the page. In a browser it is marked as leaving
+        first, so that the page's style sheet can show it go."""
+        if not self.browser:
+            parent.removeChild(node)
+            return
+        js = self.js
+        self.hand_on(node)
+        try:
+            still = bool(js.matchMedia("(prefers-reduced-motion: reduce)").matches)
+        except Exception:  # noqa: BLE001 - an old browser: just remove it
+            still = True
+        if still:
+            parent.removeChild(node)
+            return
+
+        def gone(*_):
+            if node.parentNode is not None:  # the page may have been run again meanwhile
+                node.parentNode.removeChild(node)
+
+        from pyodide.ffi import create_once_callable  # noqa: PLC0415
+        node.setAttribute("data-leaving", "true")
+        js.setTimeout(create_once_callable(gone), LEAVING)
+
+    def active(self):
+        """Whatever on the page has the reader's attention, if this is a browser."""
+        if not self.browser:
+            return None
+        try:
+            return self.document.activeElement
+        except Exception:  # noqa: BLE001
+            return None
+
+    def attend(self, element):
+        """Give the reader's attention back to an element that was moved."""
+        if element is None:
+            return
+        try:
+            if bool(element.isConnected) and self.document.activeElement != element:
+                element.focus()
+        except Exception:  # noqa: BLE001 - not worth stopping for
+            pass
+
+    def hand_on(self, node):
+        """If the reader's attention is inside an element that is going, give it
+        to the element after it, or the one before, so that it is not lost."""
+        try:
+            active = self.document.activeElement
+            if active is None or not bool(node.contains(active)):
+                return
+            for neighbour in (node.nextElementSibling, node.previousElementSibling):
+                while neighbour is not None and neighbour.hasAttribute("data-leaving"):
+                    neighbour = neighbour.nextElementSibling
+                if neighbour is None:
+                    continue
+                target = neighbour.querySelector("input, button, [contenteditable]") or neighbour
+                target.focus()
+                return
+        except Exception:  # noqa: BLE001 - not worth stopping for
+            pass
+
+    def listen(self, node, name, handler):
+        if self.browser:
+            proxy = self.create_proxy(handler)
+            self.proxies.append(proxy)
+            node.addEventListener(name, proxy)
+        else:
+            node.addEventListener(name, handler)
+
+    def keep(self, key, line):
+        if not self.browser:
+            STORE[key] = line
+            return
+        try:
+            self.js.localStorage.setItem(PREFIX + key, line)
+        except Exception:  # noqa: BLE001 - storage can be switched off or full
+            raise EnglishError(f'The browser would not remember "{key}".',
+                               stage="run", recoverable=True) from None
+
+    def kept(self, key):
+        if not self.browser:
+            return STORE.get(key)
+        try:
+            line = self.js.localStorage.getItem(PREFIX + key)
+        except Exception:  # noqa: BLE001 - storage switched off: nothing is remembered
+            return None
+        return None if line is None else str(line)
+
+
+def _state(world):
+    state = world.libraries[NAME]
+    if "backend" not in state:
+        state["backend"] = Backend()
+        state["bound"] = {}  # a thing's serial -> its Binding
+        state["order"] = {}  # ROOT or a panel's serial -> the bindings inside it, in order
+        state["choices"] = set()  # ROOT or a panel's serial: where some button has been chosen
+        state["lists"] = {}  # ROOT or a panel's serial -> is it marked as a list?
+        state["live"] = False
+        state["problems"] = []
+    return state
+
+
+# ---------------------------------------------------------------------- bindings
+
+
+class Binding:
+    """One thing and the element that shows it."""
+
+    def __init__(self, thing, node, parts):
+        self.thing = thing
+        self.node = node  # the outermost element
+        self.parts = parts  # named inner elements
+        self.inside = None  # the node this binding's element is in
+        self.home = None  # which panel that is (its thing's serial), or ROOT
+        self.choice = False  # a button: is it one of a set of choices?
+        self.shown = {}  # what the element was last told, so only changes are written
+
+    def tell(self, key, value, write):
+        """Write a value to the page only if it differs from what is there."""
+        if self.shown.get(key, _UNSET) != value:
+            self.shown[key] = value
+            write(value)
+
+
+_UNSET = object()
+
+
+def _text(node):
+    return lambda value: setattr(node, "textContent", value)
+
+
+def _flag(node, name):
+    def write(value):
+        if value:
+            node.setAttribute(name, "true")
+        else:
+            node.setAttribute(name, "false")
+    return write
+
+
+def _make(world, state, thing):
+    """The element for a thing, with its listeners."""
+    backend = state["backend"]
+    new = backend.document.createElement
+    kind = thing.kind
+
+    def element(tag, css, parent=None):
+        node = new(tag)
+        node.className = css
+        if parent is not None:
+            parent.appendChild(node)
+        return node
+
+    if kind == "panel":
+        node = element("section", "es-panel")
+        binding = Binding(thing, node, {
+            "title": element("h2", "es-panel-title", node),
+            "body": element("div", "es-panel-body", node),
+        })
+    elif kind == "heading":
+        binding = Binding(thing, element("h1", "es-heading"), {})
+    elif kind == "note":
+        node = element("p", "es-note")
+        node.setAttribute("role", "status")  # so that a change is spoken to a reader who cannot see it
+        binding = Binding(thing, node, {})
+    elif kind == "field":
+        node = element("input", "es-field")
+        node.setAttribute("type", "text")
+        node.setAttribute("autocomplete", "off")
+        binding = Binding(thing, node, {})
+
+        def typed(event):
+            words = str(node.value)
+
+            def change():
+                thing.fields["wording"] = words
+                thing.marks.add("changed")
+            _act(world, change)
+
+        def keyed(event):
+            if str(event.key) == "Enter":
+                words = str(node.value)
+
+                def change():
+                    thing.fields["wording"] = words
+                    thing.marks.add("entered")
+                _act(world, change)
+
+        backend.listen(node, "input", typed)
+        backend.listen(node, "keydown", keyed)
+    elif kind == "button":
+        node = element("button", "es-button")
+        node.setAttribute("type", "button")
+        binding = Binding(thing, node, {})
+        backend.listen(node, "click", lambda event: _act(world, lambda: thing.marks.add("pressed")))
+    elif kind == "card":
+        node = element("div", "es-card")
+        node.setAttribute("role", "listitem")
+        box = element("input", "es-card-box", node)
+        box.setAttribute("type", "checkbox")
+        words = element("span", "es-card-words", node)
+        words.setAttribute("contenteditable", "plaintext-only")
+        words.setAttribute("role", "textbox")
+        words.setAttribute("spellcheck", "false")
+        tag = element("span", "es-card-tag", node)
+        star = element("button", "es-card-star", node)
+        star.setAttribute("type", "button")
+        cross = element("button", "es-card-cross", node)
+        cross.setAttribute("type", "button")
+        cross.setAttribute("title", "Remove")
+        cross.textContent = "\u00d7"
+        binding = Binding(thing, node, {"box": box, "words": words, "tag": tag, "star": star, "cross": cross})
+
+        def ticked(event):
+            if bool(box.checked):
+                _act(world, lambda: thing.marks.add("ticked"))
+            else:
+                _act(world, lambda: thing.marks.discard("ticked"))
+
+        def starred(event):
+            if "starred" in thing.marks:
+                _act(world, lambda: thing.marks.discard("starred"))
+            else:
+                _act(world, lambda: thing.marks.add("starred"))
+
+        def edited(event):
+            text = " ".join(str(words.textContent).split())  # one line, with no loose spaces
+            if text == thing.fields["wording"]:
+                if str(words.textContent) != text:
+                    words.textContent = text
+                return
+
+            def change():
+                thing.fields["wording"] = text
+                thing.marks.add("reworded")
+            _act(world, change)
+
+        def keyed(event):
+            key = str(event.key)
+            if key == "Enter":  # the words are one line: Enter finishes the edit
+                event.preventDefault()
+                words.blur()
+            elif key == "Escape":  # and Escape gives it up
+                words.textContent = thing.fields["wording"]
+                words.blur()
+
+        backend.listen(box, "change", ticked)
+        backend.listen(star, "click", starred)
+        backend.listen(words, "blur", edited)
+        backend.listen(words, "keydown", keyed)
+        backend.listen(cross, "click", lambda event: _act(world, lambda: thing.marks.add("dismissed")))
+    else:  # gauge
+        node = element("div", "es-gauge")
+        node.setAttribute("role", "progressbar")
+        node.setAttribute("aria-valuemin", "0")
+        node.setAttribute("aria-valuemax", "100")
+        binding = Binding(thing, node, {"bar": element("div", "es-gauge-bar", node)})
+    binding.node.setAttribute("data-kind", kind)
+    binding.node.setAttribute("data-name", thing.name)
+    return binding
+
+
+def _plain(number):
+    """A number as a person says it: 3, not 3/1."""
+    number = Fraction(number)
+    return str(number.numerator) if number.denominator == 1 else f"{float(number):g}"
+
+
+def _share(thing):
+    """How full a gauge is, from 0 to 100."""
+    level, limit = Fraction(thing.fields["level"]), Fraction(thing.fields["limit"])
+    if limit <= 0:
+        return 0
+    return int(max(Fraction(0), min(Fraction(100), level / limit * 100)))
+
+
+def _show(binding):
+    """Tell the element whatever about its thing has changed."""
+    thing, node, parts = binding.thing, binding.node, binding.parts
+    fields, marks, kind = thing.fields, thing.marks, thing.kind
+    binding.tell("hidden", "hidden" in marks, lambda value: setattr(node, "hidden", value))
+    if kind == "panel":
+        title = fields.get("title")
+        binding.tell("title", title or "", _text(parts["title"]))
+        binding.tell("titled", title is None, lambda value: setattr(parts["title"], "hidden", value))
+    elif kind in ("heading", "note"):
+        binding.tell("wording", fields["wording"], _text(node))
+    elif kind == "field":
+        wording = fields["wording"]
+        if str(node.value) != wording:  # never write back what was just typed: it moves the caret
+            node.value = wording
+        binding.tell("hint", fields.get("hint") or "", lambda value: (
+            node.setAttribute("placeholder", value),
+            # A hint disappears when something is typed. The name stays.
+            node.setAttribute("aria-label", value) if value else node.removeAttribute("aria-label")))
+    elif kind == "button":
+        binding.tell("label", fields["label"], _text(node))
+        # Only a button that is one of a set of choices is a switch. An ordinary
+        # button says nothing about being pressed, or it would be read out as one.
+        if binding.choice:
+            binding.tell("chosen", "chosen" in marks, _flag(node, "aria-pressed"))
+    elif kind == "card":
+        wording = fields["wording"]
+        if str(parts["words"].textContent) != wording:  # as with a field: leave what was just typed
+            parts["words"].textContent = wording
+        binding.tell("named", wording, lambda value: (
+            parts["box"].setAttribute("aria-label", f"Done: {value}"),
+            parts["words"].setAttribute("aria-label", f"Reword: {value}"),
+            parts["cross"].setAttribute("aria-label", f"Remove: {value}")))
+        ticked = "ticked" in marks
+        if bool(parts["box"].checked) != ticked:
+            parts["box"].checked = ticked
+        binding.tell("ticked", ticked, _flag(node, "data-ticked"))
+        tag = fields.get("tag")
+        binding.tell("tag", tag or "", _text(parts["tag"]))
+        binding.tell("tagged", not tag, lambda value: setattr(parts["tag"], "hidden", value))
+        starred = "starred" in marks
+        binding.tell("starred", starred, lambda value: (
+            _flag(node, "data-starred")(value),
+            _flag(parts["star"], "aria-pressed")(value),
+            parts["star"].setAttribute("aria-label", f"Star: {wording}"),
+            setattr(parts["star"], "textContent", "\u2605" if value else "\u2606")))
+    else:
+        share = _share(thing)
+        binding.tell("share", share, lambda value: (
+            parts["bar"].setAttribute("style", f"width: {value}%"),
+            node.setAttribute("aria-valuenow", value)))
+        binding.tell("spoken", (fields["level"], fields["limit"]), lambda value: node.setAttribute(
+            "aria-valuetext", f"{_plain(value[0])} of {_plain(value[1])}"))
+
+
+def sync(world):
+    """Make the page match the world: new elements for new things, changes for
+    changed ones, and nothing left of a thing that has been removed."""
+    state = _state(world)
+    backend, bound, order = state["backend"], state["bound"], state["order"]
+    things = sorted(
+        (thing for kind in KINDS for thing in world.things.get(kind, ()) if not thing.removed),
+        key=lambda thing: thing.serial,
+    )
+    for thing in things:
+        if thing.serial not in bound:
+            bound[thing.serial] = _make(world, state, thing)
+    present = {thing.serial for thing in things}
+    for serial in [serial for serial in bound if serial not in present]:
+        binding = bound.pop(serial)
+        if binding.inside is not None:
+            backend.discard(binding.inside, binding.node)
+        order.pop(serial, None)
+        state["lists"].pop(serial, None)
+        state["choices"].discard(serial)
+    # What belongs inside what. The page itself is 0; a panel is its thing's serial.
+    wanted = {ROOT: []}
+    wanted.update((thing.serial, []) for thing in things if thing.kind == "panel")
+    for thing in things:
+        binding = bound[thing.serial]
+        panel = thing.fields.get("panel") if thing.kind != "panel" else None
+        home = panel.serial if panel is not None and panel.serial in wanted else ROOT
+        binding.home = home
+        wanted[home].append(binding)
+        if thing.kind == "button" and "chosen" in thing.marks:
+            state["choices"].add(home)  # the buttons that stand with a chosen one are choices too
+    for thing in things:
+        binding = bound[thing.serial]
+        binding.choice = thing.kind == "button" and binding.home in state["choices"]
+        _show(binding)
+    active = backend.active()
+    for home, bindings in wanted.items():
+        parent = backend.root if home == ROOT else bound[home].parts["body"]
+        # A lower order comes first; with the same order (or none), the order made.
+        bindings.sort(key=lambda binding: (Fraction(binding.thing.fields.get("order") or 0), binding.thing.serial))
+        now = [binding for binding in order.get(home, ())
+               if binding.thing.serial in present and binding.home == home and binding.inside is parent]
+        for index, binding in enumerate(bindings):
+            if index < len(now) and now[index] is binding:
+                continue
+            if binding in now:
+                now.remove(binding)
+            # Only an element that is out of place is touched: one put in again is
+            # drawn again, and whatever had the reader's attention inside it loses it.
+            if index < len(now):
+                parent.insertBefore(binding.node, now[index].node)
+            else:
+                parent.appendChild(binding.node)
+            now.insert(index, binding)
+            binding.inside = parent
+        order[home] = bindings
+        # A place that holds nothing but cards is a list, and is told so once.
+        listed = bool(bindings) and all(binding.thing.kind == "card" for binding in bindings)
+        if state["lists"].get(home) != listed:
+            state["lists"][home] = listed
+            if listed:
+                parent.setAttribute("role", "list")
+            else:
+                parent.removeAttribute("role")
+    backend.attend(active)
+
+
+def _act(world, change):
+    """Something a person did: change the world, let the program answer, show the result."""
+    state = _state(world)
+    try:
+        world.event(change)
+    except EnglishError as error:
+        message = getattr(error, "message", None) or str(error)
+        state["problems"].append(message)
+        world.out(f"That could not be done: {message}")
+    finally:
+        _settle(world)
+
+
+def _settle(world):
+    """Momentary adjectives are over once the program has answered them."""
+    for kind, adjectives in MOMENTARY.items():
+        for thing in world.things.get(kind, ()):
+            thing.marks.difference_update(adjectives)
+    if _state(world)["live"]:
+        sync(world)
+
+
+# ------------------------------------------------------- what the compiler calls
+
+
+def verb_remember(world, line, key):
+    _state(world)["backend"].keep(key, line)
+
+
+def value_memory(world, key):
+    return _state(world)["backend"].kept(key)
+
+
+def live(world):
+    """The program's own sentences are done: show the page and start listening."""
+    state = _state(world)
+    state["live"] = True
+    _settle(world)
+
+
+def finish(world):
+    state = world.libraries.get(NAME) or {}
+    if state.get("live") and not state["backend"].browser:
+        world.out("")
+        world.out("The page, as it stands (there is no browser here to show it):")
+        for line in sketch(world).splitlines():
+            world.out("  " + line)
+
+
+# ------------------------------------------------- the stand-in page, for people
+
+
+def sketch(world):
+    """The page in plain text, one element to a line, as it would be laid out."""
+    state = _state(world)
+    lines = []
+
+    def draw(binding, indent):
+        thing = binding.thing
+        if "hidden" in thing.marks:
+            return
+        fields, marks, kind = thing.fields, thing.marks, thing.kind
+        pad = "  " * indent
+        if kind == "panel":
+            if fields.get("title") is not None:
+                lines.append(f"{pad}-- {fields['title']} --")
+            row, inner = [], state["order"].get(thing.serial, [])
+            for child in inner:
+                if "hidden" in child.thing.marks:
+                    continue
+                if child.thing.kind == "note" and not child.thing.fields["wording"]:
+                    continue
+                if child.thing.kind in ("field", "button", "note", "gauge"):
+                    row.append(_inline(child.thing))
+                else:
+                    if row:
+                        lines.append(pad + "  ".join(row))
+                        row = []
+                    draw(child, indent)
+            if row:
+                lines.append(pad + "  ".join(row))
+        elif kind == "heading":
+            lines.append(f"{pad}# {fields['wording']}")
+        elif kind == "note" and not fields["wording"]:
+            return  # a note with nothing to say takes no room
+        elif kind == "card":
+            star = "* " if "starred" in marks else ""
+            tag = f"  #{fields['tag']}" if fields.get("tag") else ""
+            lines.append(f"{pad}[{'x' if 'ticked' in marks else ' '}] {star}{fields['wording']}{tag}")
+        else:
+            lines.append(pad + _inline(thing))
+
+    for binding in state["order"].get(ROOT, []):
+        draw(binding, 0)
+    return "\n".join(lines)
+
+
+def _inline(thing):
+    fields, kind = thing.fields, thing.kind
+    if kind == "field":
+        words = fields["wording"] or (f"({fields['hint']})" if fields.get("hint") else "")
+        return f"[_{words}_]"
+    if kind == "button":
+        return f"<{fields['label']}>" if "chosen" in thing.marks else f"[{fields['label']}]"
+    if kind == "gauge":
+        filled = _share(thing) // 10
+        return "|" + "=" * filled + "." * (10 - filled) + "|"
+    return fields["wording"]
+
+
+def element(world, thing_or_name):
+    """The stand-in element of a thing, given the thing or its name."""
+    state = _state(world)
+    for binding in state["bound"].values():
+        thing = binding.thing
+        if thing is thing_or_name or thing.name.lower() == str(thing_or_name).lower():
+            return binding
+    raise LookupError(f"nothing on the page is called {thing_or_name}")
+
+
+def press(world, name):
+    """Press a button, as a person would."""
+    element(world, name).node.fire("click")
+
+
+def type_in(world, name, words, enter=False):
+    """Type into a field, and press Enter if asked."""
+    node = element(world, name).node
+    node.value = words
+    node.fire("input")
+    if enter:
+        node.fire("keydown", key="Enter")
+
+
+def tick(world, name, ticked=True):
+    """Tick or untick a card's box."""
+    box = element(world, name).parts["box"]
+    box.checked = ticked
+    box.fire("change")
+
+
+def star(world, name):
+    """Press a card's star: on if it was off, off if it was on."""
+    element(world, name).parts["star"].fire("click")
+
+
+def reword(world, name, words):
+    """Edit a card's words where they stand, and leave them."""
+    node = element(world, name).parts["words"]
+    node.textContent = words
+    node.fire("blur")
+
+
+def dismiss(world, name):
+    """Press a card's cross."""
+    element(world, name).parts["cross"].fire("click")

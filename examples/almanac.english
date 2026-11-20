@@ -1,0 +1,28 @@
+# An almanac for a year, put together from the chapters of a book.
+#
+# A chapter is a file, and a book is a folder of them. The book used here is
+# the folder "almanac" beside this file. Each of its chapters says at the top
+# which of its words it shares, and this program can use those and no others.
+
+Use the calendar chapter of the almanac book.
+Use the numerals chapter of the almanac book.
+Use the feasts chapter of the almanac book.
+
+Let the year be 2027.
+
+Say "An Almanack for the Year {the roman of the year},"
+If the leapness of the year is yes:
+  Say "being a leap year of 366 days."
+Otherwise:
+  Say "being a common year of 365 days."
+Say ""
+
+For each feast:
+  Say "{the feast} falls on a {the falling of the feast for the year}, {the feast's day} {the month title of the feast's month}."
+
+Say ""
+Say "{the number of wintry feasts} of the {the number of feasts} fall in the cold months."
+Say "February has {the month length of 2 for the year} days, and Michaelmas is in {the month title of Michaelmas's month}."
+
+For example, the reading of "MMXXVII" is the year.
+For example, the falling of Michaelmas for the year is "Wednesday".

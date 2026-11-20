@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A page written in English: a to-do list in EnglishScript</title>
+<meta name="description" content="A to-do list for the web written in EnglishScript. Every element of the page is a thing in the program, and the program answers clicks with sentences that begin Whenever.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;family=IM+Fell+English:ital@0;1&amp;family=IM+Fell+English+SC&amp;family=UnifrakturMaguntia&amp;display=swap">
+<link rel="stylesheet" href="assets/english.css">
+<style>
+  [hidden] { display: none !important; }
+  .doc.plain.wide { max-width: 62rem; }
+  .doc article > h1, .doc article > .standfirst { text-align: center; }
+  .doc article > .standfirst { max-width: 36rem; margin-left: auto; margin-right: auto; }
+  .doc article > p:not(.standfirst), .doc article > h2, .doc article > table { max-width: 45rem; margin-left: auto; margin-right: auto; }
+
+  /* The leaf the page is written on. */
+  .leaf {
+    position: relative; max-width: 34rem; margin: 2.2rem auto 1rem; padding: 1.6rem clamp(1rem, 4vw, 2.2rem) 1.4rem;
+    background: var(--bg); border: 1px solid var(--ink); outline: 1px solid var(--ink); outline-offset: 4px;
+    box-shadow: 10px 10px 0 var(--rule);
+  }
+  .leaf .status { font: italic 1.05rem/1.4 var(--fell); color: var(--muted); text-align: center; margin: 0.6rem 0 0; min-height: 1.4em; }
+  .leaf .status:empty { display: none; }
+  .leaf { transition: box-shadow 0.3s ease, transform 0.3s ease; }
+  @media (prefers-reduced-motion: no-preference) {
+    .leaf { animation: leaf-come 0.7s 0.15s ease-out both; }
+    .leaf:hover, .leaf:focus-within { box-shadow: 14px 14px 0 var(--rule); transform: translate(-2px, -2px); }
+    #things li { transition: background-color 0.3s ease; }
+  }
+
+  /* Two buttons of this page in particular. The rest of the dress is in assets/english.css. */
+  .es-button[data-name="Adder"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .es-button[data-name="Adder"]:hover { filter: brightness(1.08); }
+  .es-button[data-name="Sweeper"] { margin-left: auto; border-color: transparent; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+
+  /* The things behind the page, and the program. */
+  .behind { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; margin-top: 1.2rem; }
+  @media (min-width: 880px) { .behind { grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); align-items: start; } }
+  .pane > .title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 0.8rem; }
+  .pane > .title .grow { margin-right: auto; }
+  .pane .body { padding: 0.8rem 1rem; }
+  #program { margin: 0; max-height: 34rem; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .files { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--rule); background: var(--panel); }
+  .files button {
+    flex: 1 1 auto; font: 0.95rem var(--caps); letter-spacing: 0.08em; text-transform: lowercase; color: var(--muted);
+    background: none; border: 0; border-right: 1px solid var(--rule); padding: 0.4rem 0.7rem 0.45rem; cursor: pointer;
+    transition: color 0.2s ease, background-color 0.2s ease;
+  }
+  .files button:last-child { border-right: 0; }
+  .files button[aria-selected="true"] { color: var(--accent); background: var(--bg); box-shadow: inset 0 -2px 0 var(--accent); }
+  .files button.changed::after { content: " *"; color: var(--accent); }
+  .about { margin: 0; padding: 0.5rem 1rem 0.55rem; font: italic 1.02rem/1.35 var(--fell); color: var(--muted); border-bottom: 1px solid var(--rule); }
+  #source {
+    display: block; width: 100%; box-sizing: border-box; height: 34rem; resize: vertical; border: 0; padding: 0.8rem 1rem;
+    font: 1.05rem/1.5 var(--serif); font-variant-numeric: lining-nums; color: var(--ink); background: var(--bg); tab-size: 2;
+  }
+  #source:focus { outline: 2px solid var(--focus); outline-offset: -2px; }
+  #things { list-style: none; margin: 0; padding: 0; max-height: 34rem; overflow: auto; }
+  #things li { display: flex; flex-wrap: wrap; gap: 0 0.5rem; align-items: baseline; padding: 0.22rem 0; border-bottom: 1px dotted var(--rule); margin: 0; }
+  #things .kind { font: 0.9rem var(--caps); letter-spacing: 0.08em; text-transform: lowercase; color: var(--muted); flex: 0 0 4.2rem; }
+  #things .name { font: 1.05rem var(--serif); }
+  #things .words { font: italic 1rem var(--fell); color: var(--string); overflow-wrap: anywhere; min-width: 0; }
+  #things .mark { font: 0.9rem var(--caps); letter-spacing: 0.06em; text-transform: lowercase; color: var(--accent); }
+  #things li.changed { animation: es-flash 0.9s ease-out; }
+  @keyframes es-flash { from { background: var(--warn-bg); } to { background: transparent; } }
+  @media (prefers-reduced-motion: reduce) { #things li.changed { animation: none; } }
+  #said:empty { display: none; }
+  #said { margin-top: 1rem; }
+  table.bound td:first-child, table.bound th:first-child { width: 42%; }
+</style>
+</head>
+<body>
+
+<nav class="sitenav" aria-label="The pages of this site">
+  <div class="inner">
+    <a class="home" href="./">EnglishScript</a>
+    <a class="page" href="./">The treatise</a>
+    <a class="page" href="playground.html">The playground</a>
+    <a class="page" href="todo.html" aria-current="page">A page</a>
+    <a class="page" href="compare.html">Compared</a>
+    <a class="page" href="reference.html">The grammar</a>
+    <a class="page" href="how.html">The machinery</a>
+    <a class="page" href="https://github.com/monstercameron/EnglishScript">The source</a>
+  </div>
+</nav>
+
+<main class="doc plain wide">
+<article>
+
+<h1>A page written in English</h1>
+<p class="standfirst">The to-do list below is an EnglishScript program, in four chapters of a book. Each element of it is a thing in that program, and the program never touches the page: it changes things, and the page follows.</p>
+
+<div class="leaf">
+  <div id="englishscript-page" aria-live="polite"></div>
+  <div class="status" id="status" role="status">Loading…</div>
+</div>
+
+<div id="said" aria-live="polite"></div>
+
+<div class="behind">
+  <section class="pane">
+    <div class="title">
+      <span class="grow">The program, and its book</span>
+      <button class="button small" id="edit" type="button">Change it</button>
+      <button class="button small primary" id="again" type="button" hidden>Run it again</button>
+      <button class="button small" id="back" type="button" hidden>Put it back</button>
+    </div>
+    <div class="files" id="files" role="tablist" aria-label="The files of the program"></div>
+    <p class="about" id="about"></p>
+    <pre class="program body" id="program" tabindex="0" aria-label="The file that is chosen"></pre>
+    <textarea id="source" spellcheck="false" autocomplete="off" autocapitalize="off" aria-label="The program, to change" hidden></textarea>
+  </section>
+
+  <section class="pane">
+    <div class="title">
+      <span class="grow">The things behind the page</span>
+      <button class="button small" id="forget" type="button" title="Forget what the browser has kept, and start again">Forget</button>
+    </div>
+    <div class="body">
+      <ul id="things" aria-label="Every thing of the page, as the program holds it"></ul>
+    </div>
+  </section>
+</div>
+
+<h2 id="bound">How the page is bound to the program</h2>
+
+<p>The program says <code>Use the page library.</code> and from then on seven kinds of thing are elements of the page: a <em>panel</em>, a <em>heading</em>, a <em>note</em>, a <em>field</em>, a <em>button</em>, a <em>card</em> and a <em>gauge</em>. Making one puts it on the page, in the order made. Nothing else has to be called. Use the list above, and watch the things on the right change with it.</p>
+
+<table class="bound">
+  <thead><tr><th>On the page</th><th>In the program</th></tr></thead>
+  <tbody>
+    <tr><td>A line appears in the list</td><td><code>There is a new card whose wording is the line and whose panel is Roll.</code></td></tr>
+    <tr><td>Someone types in the box</td><td><code>Entry's wording</code> is what they have typed</td></tr>
+    <tr><td>Someone presses Add</td><td><code>Whenever Adder becomes pressed:</code></td></tr>
+    <tr><td>Someone ticks a box</td><td>The card is <code>ticked</code>, and <code>Whenever a card becomes ticked:</code> is carried out</td></tr>
+    <tr><td>Someone presses a card's star</td><td>The card is <code>starred</code>, and <code>Set the card's order to 0.</code> moves it to the head of the list</td></tr>
+    <tr><td>Someone edits a card's words where they stand</td><td><code>Whenever a card becomes reworded:</code></td></tr>
+    <tr><td>Someone types in the Find box</td><td><code>Whenever Finder becomes changed:</code></td></tr>
+    <tr><td>The count at the foot changes</td><td><code>Set Tally's wording to "{the remaining} of {the whole} still to do."</code></td></tr>
+    <tr><td>A task is not added, and the page says why</td><td><code>Fail because "there is nothing to write down".</code> inside a <code>Try</code></td></tr>
+    <tr><td>A line leaves the list</td><td><code>Remove the card.</code></td></tr>
+    <tr><td>A line is out of sight</td><td><code>Now the card is hidden.</code></td></tr>
+    <tr><td>The list is still there tomorrow</td><td><code>Remember the record under "tasks".</code></td></tr>
+  </tbody>
+</table>
+
+<p>The binding goes both ways and is kept by the library, which is a few hundred lines of Python. After every sentence that a click sets off, it compares the things with the elements and changes only what differs, so the box you are typing in is never rebuilt under you. The sentences beginning <code>Whenever</code> are part of the language, not of the library: <a href="reference.html">the grammar</a> describes them, and any program may use them.</p>
+
+<h2 id="book">Why it is a book</h2>
+
+<p>The program is five files. Four of them are chapters of a book called <em>tasks</em>, which is a folder, and the fifth is the program itself, which says <code>Use the layout chapter of the tasks book.</code> and so on. Each chapter does one job and says, in its first sentence, which of its words the other files may use.</p>
+
+<table class="bound">
+  <thead><tr><th>Chapter</th><th>What it does, and what it shares</th></tr></thead>
+  <tbody>
+    <tr><td><code>layout</code></td><td>Makes what is on the page. It shares the things the others change by name, such as <code>Entry</code> and <code>Tally</code>, and keeps the panels that only hold things in place to itself.</td></tr>
+    <tr><td><code>cards</code></td><td>Says what a task is. It shares the adjective <code>open</code> and the verbs <code>jot</code> and <code>arrange</code>.</td></tr>
+    <tr><td><code>showing</code></td><td>Decides which cards are in sight, and counts them. Which view is in force is its own business: no other file can read it or change it, except by asking it to <code>favour</code> a view.</td></tr>
+    <tr><td><code>keeping</code></td><td>Remembers the list between visits, and the last card removed. How a card is kept as a line of text is known only here.</td></tr>
+  </tbody>
+</table>
+
+<p>What is left in the program is a list of sentences beginning <code>Whenever</code>, which is the part worth reading first. A chapter that tried to use a word another chapter keeps to itself would be refused, with a message naming the chapter that keeps it. <a href="reference.html#s9-6">Section 9.6 of the grammar</a> gives the rules.</p>
+
+<p>As everywhere on this site, the compiler here is the real one, running as WebAssembly: <a href="how.html">the machinery</a> explains how. You can change any of the five files above and run the program again. Try making the heading say something else in <code>layout</code>, or making finished cards stand first in <code>cards</code>.</p>
+
+</article>
+<footer class="colophon">
+  The list is kept in this browser only. Nothing you write here is sent anywhere.
+</footer>
+</main>
+
+<script type="module">
+import { startEngine, tint, loader, painted } from "./play/engine.js";
+
+// The Python side of this page. open_page runs a program whose page the
+// library builds inside #englishscript-page; things() lists what it holds.
+const BRIDGE = `
+import json
+from englishscript import EnglishError, compile_source
+
+_world = None
+
+
+def open_page(source, say, ask):
+    global _world
+    _world = None
+    try:
+        program = compile_source(source)
+        _world = program.run(lambda text="": say("say", str(text)), lambda question: ask(question))
+    except EnglishError as error:
+        say("error", error.render())
+        return False
+    return True
+
+
+def put(path, text):
+    """Write a chapter where the program will look for it: a file under /work."""
+    import os
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    with open(path, "w", encoding="utf-8", newline="") as handle:
+        handle.write(text)
+
+
+def things():
+    if _world is None:
+        return "[]"
+    from englishscript.libraries import page
+    found = []
+    for kind in page.KINDS:
+        for thing in _world.things.get(kind, ()):
+            words = thing.fields.get("wording", thing.fields.get("label", thing.fields.get("title")))
+            if kind == "gauge":
+                words = f"{thing.fields['level']} of {thing.fields['limit']}"
+            if kind == "card" and thing.fields.get("tag"):
+                words = f"{words} #{thing.fields['tag']}"
+            found.append([thing.serial, kind, thing.name, words, sorted(thing.marks)])
+    return json.dumps([row[1:] for row in sorted(found)])
+`;
+
+const page = document.getElementById("englishscript-page");
+const status = document.getElementById("status");
+const said = document.getElementById("said");
+const program = document.getElementById("program");
+const source = document.getElementById("source");
+const list = document.getElementById("things");
+const tabs = document.getElementById("files");
+const about = document.getElementById("about");
+const buttons = { edit: document.getElementById("edit"), again: document.getElementById("again"), back: document.getElementById("back"), forget: document.getElementById("forget") };
+
+// The program and the chapters of its book. `path` is where Python finds the
+// file: the program has none, because it is handed over as text.
+const MAIN = "web_todo.english";
+const ABOUT = {
+  [MAIN]: "The program: which chapters it uses, and what happens whenever a person does something.",
+  "tasks/layout.english": "A chapter: what is on the page, from top to bottom.",
+  "tasks/cards.english": "A chapter: what a task is, how one is written down, and the order cards stand in.",
+  "tasks/showing.english": "A chapter: which cards are in sight, and the counts.",
+  "tasks/keeping.english": "A chapter: what is remembered between visits, and the last card removed.",
+};
+const ORDER = [MAIN, "tasks/layout.english", "tasks/cards.english", "tasks/showing.english", "tasks/keeping.english"];
+const files = new Map();     // name -> { original, text }
+let chosen = MAIN;
+
+let python = null;
+let before = new Map();
+
+function say(kind, text) {
+  const line = document.createElement("div");
+  line.className = "line " + kind;
+  line.textContent = text;
+  said.append(line);
+}
+
+// The things the program holds, with a mark on whatever has just changed.
+function showThings() {
+  if (!python) return;
+  const rows = JSON.parse(python.things());
+  const now = new Map();
+  list.replaceChildren();
+  for (const [kind, name, words, marks] of rows) {
+    const key = kind + " " + name;
+    const state = JSON.stringify([words, marks]);
+    now.set(key, state);
+    const item = document.createElement("li");
+    if (before.size && before.get(key) !== state) item.className = "changed";
+    const part = (css, text) => { const span = document.createElement("span"); span.className = css; span.textContent = text; item.append(span); };
+    part("kind", kind);
+    part("name", name);
+    if (words !== null && words !== "") part("words", "“" + words + "”");
+    for (const mark of marks) part("mark", mark);
+    list.append(item);
+  }
+  before = now;
+}
+
+// Two ways to say what is going on: large, while there is no page to show yet,
+// and small, when the page is being run again.
+const grandly = loader(status, { grand: true, initial: "T" });
+const quietly = loader(status);
+const leaf = document.querySelector(".leaf");
+
+async function run(tell = quietly) {
+  said.replaceChildren();
+  before = new Map();
+  tell("Reading the program", { step: 4, steps: 4, overall: 0.97 });
+  leaf.classList.add("working");
+  await painted();
+  // The chapters are files, where Python looks for them. The program is handed over as text.
+  for (const [name, file] of files) if (name !== MAIN) python.put(name, file.text);
+  const ok = python.open_page(files.get(MAIN).text, say, (question) => window.prompt(question));
+  leaf.classList.remove("working");
+  quietly(ok ? "" : "The program was refused. What the compiler said is below.");
+  if (!ok) page.replaceChildren();
+  showThings();
+}
+
+// ---- the five files, as tabs
+
+function showFile() {
+  const file = files.get(chosen);
+  about.textContent = ABOUT[chosen] || "";
+  program.innerHTML = tint(file.text);
+  source.value = file.text;
+  program.scrollTop = 0;
+  for (const tab of tabs.children) {
+    tab.setAttribute("aria-selected", String(tab.dataset.name === chosen));
+    tab.classList.toggle("changed", files.get(tab.dataset.name).text !== files.get(tab.dataset.name).original);
+  }
+}
+
+function makeTabs() {
+  tabs.replaceChildren();
+  for (const name of ORDER) {
+    const tab = document.createElement("button");
+    tab.type = "button";
+    tab.setAttribute("role", "tab");
+    tab.dataset.name = name;
+    tab.textContent = name === MAIN ? "the program" : name.replace("tasks/", "").replace(".english", "");
+    tab.title = name;
+    tab.addEventListener("click", () => { keep(); chosen = name; showFile(); });
+    tabs.append(tab);
+  }
+}
+
+// What has been typed belongs to the file that is chosen.
+function keep() { if (!source.hidden) files.get(chosen).text = source.value; }
+
+buttons.edit.addEventListener("click", () => {
+  const editing = source.hidden;
+  if (!editing) keep();
+  source.hidden = !editing;
+  program.hidden = editing;
+  buttons.again.hidden = buttons.back.hidden = !editing;
+  buttons.edit.textContent = editing ? "Only read it" : "Change it";
+  if (editing) source.focus();
+  else showFile();
+});
+source.addEventListener("input", () => {
+  files.get(chosen).text = source.value;
+  for (const tab of tabs.children) tab.classList.toggle("changed", files.get(tab.dataset.name).text !== files.get(tab.dataset.name).original);
+});
+buttons.again.addEventListener("click", () => { keep(); run(); });
+buttons.back.addEventListener("click", () => {
+  for (const file of files.values()) file.text = file.original;
+  showFile();
+  run();
+});
+buttons.forget.addEventListener("click", () => {
+  try { localStorage.removeItem("englishscript:tasks"); } catch (error) { /* nothing was kept */ }
+  keep();
+  run();
+});
+
+// Whatever a person does on the page, the library hears first (it listens on
+// the element itself). By the time the event reaches here the things have changed.
+for (const kind of ["click", "change", "input", "keydown", "focusout"]) {
+  page.addEventListener(kind, () => setTimeout(showThings, 0));
+}
+
+try {
+  const [main, shelf] = await Promise.all([fetch("play/" + MAIN), fetch("play/shelf.json")]);
+  if (!main.ok || !shelf.ok) throw new Error("could not load the program");
+  const chapters = await shelf.json();
+  const text = await main.text();
+  files.set(MAIN, { original: text, text });
+  for (const name of ORDER.slice(1)) files.set(name, { original: chapters[name], text: chapters[name] });
+  makeTabs();
+  showFile();
+  const engine = await startEngine(grandly);
+  engine.py.runPython(BRIDGE);
+  python = { open_page: engine.py.globals.get("open_page"), things: engine.py.globals.get("things"), put: engine.py.globals.get("put") };
+  await run(grandly);
+} catch (error) {
+  quietly("This page could not start Python: " + error.message + ". It needs a connection to cdn.jsdelivr.net the first time.");
+}
+</script>
+</body>
+</html>

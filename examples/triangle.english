@@ -1,8 +1,8 @@
 # Hello Triangle, in the shape of a Vulkan program.
 #
-# This is NOT the real Vulkan API. EnglishScript cannot call outside libraries
-# or reach a graphics card. The program follows the objects and steps of a
-# Vulkan "hello triangle", and does the graphics card's work itself: it finds
+# This is NOT the real Vulkan API, and it uses no graphics card. (For the real
+# thing, see gpu_triangle.english.) The program follows the objects and steps of
+# a Vulkan "hello triangle", and does the graphics card's work itself: it finds
 # which points are inside the triangle, shades each one, and draws with
 # characters. Each step is marked with the Vulkan call it stands for.
 #

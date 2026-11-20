@@ -1,0 +1,69 @@
+# Primes: testing a number, listing them, taking a number apart, and perfect numbers.
+#
+# Everything here is built on one test: "is divisible by".
+
+To work out the primeness (yes or no) of a candidate (number):
+  If the candidate is less than 2:
+    The answer is no.
+  Let the divisor be 2.
+  While the divisor * the divisor is at most the candidate:
+    If the candidate is divisible by the divisor:
+      The answer is no.
+    Add 1 to the divisor.
+  The answer is yes.
+
+# Every prime up to a limit, as one line of text.
+To work out the prime roll (text) to a limit (number):
+  Let the line be "".
+  Let n be 2.
+  While n is at most the limit:
+    If the primeness of n is yes:
+      If the line is "":
+        Set the line to "{n}".
+      Otherwise:
+        Set the line to "{the line}, {n}".
+    Add 1 to n.
+  The answer is the line.
+
+# A number written as a product of primes: keep dividing by the smallest thing that divides it.
+To work out the factoring (text) of a whole (number):
+  Let the rest be the whole.
+  Let the divisor be 2.
+  Let the line be "".
+  While the rest is more than 1:
+    If the rest is divisible by the divisor:
+      If the line is "":
+        Set the line to "{the divisor}".
+      Otherwise:
+        Set the line to "{the line} x {the divisor}".
+      Divide the rest by the divisor.
+    Otherwise:
+      Add 1 to the divisor.
+  The answer is the line.
+
+# A number is perfect when the numbers that divide it, itself aside, add up to it.
+To work out the perfection (yes or no) of a whole (number):
+  Let the sum be 0.
+  Let d be 1.
+  While d is less than the whole:
+    If the whole is divisible by d:
+      Add d to the sum.
+    Add 1 to d.
+  The answer is whether the sum is the whole.
+
+For example, the primeness of 97 is yes.
+For example, the primeness of 91 is no.
+For example, the primeness of 1 is no.
+For example, the factoring of 360 is "2 x 2 x 2 x 3 x 3 x 5".
+For example, the perfection of 28 is yes.
+
+Say "Primes to 60: {the prime roll to 60}."
+Say "360 = {the factoring of 360}"
+Say "1,001 = {the factoring of 1,001}"
+Say "97 = {the factoring of 97}"
+
+Let the tried be 2.
+While the tried is less than 500:
+  If the perfection of the tried is yes:
+    Say "{the tried} is perfect."
+  Add 1 to the tried.

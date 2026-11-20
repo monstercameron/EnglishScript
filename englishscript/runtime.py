@@ -29,17 +29,35 @@ def no_digit_limit():
         sys.set_int_max_str_digits(saved)
 
 
+REACTION_LIMIT = 200  # how deeply reactions may set off further reactions
+RECURSION_LIMIT = 20_000  # Python frames allowed while English runs: each English call costs several
+
+
+class _Signal(Exception):
+    """Not an error: how Stop, Skip, The answer is and End the program leave a block."""
+
+
+class _EndProgram(_Signal):
+    pass
+
+
 class Thing:
-    """One instance of a kind, e.g. the dragon called Smaug."""
+    """One instance of a kind, e.g. the dragon called Smaug.
 
-    __slots__ = ("kind", "name", "fields", "marks", "removed")
+    `serial` counts every thing made in a run, across all kinds, from 1, in the
+    order they were made. A failed "Try" does not put the count back, so a
+    serial is never given twice in one run.
+    """
 
-    def __init__(self, kind, name, fields, marks=()):
+    __slots__ = ("kind", "name", "fields", "marks", "removed", "serial")
+
+    def __init__(self, kind, name, fields, marks=(), serial=0):
         self.kind = kind
         self.name = name
         self.fields = fields
         self.marks = set(marks)  # stored adjectives that are "yes"
         self.removed = False
+        self.serial = serial
 
     def __repr__(self):
         return f"<{self.kind} {self.name}>"
@@ -90,6 +108,24 @@ def read_line(prompt):
         return None
 
 
+class Reaction:
+    """One "Whenever" sentence, once it has been reached."""
+
+    __slots__ = ("kind", "adjective", "test", "becomes", "thing", "run", "text")
+
+    def __init__(self, kind, adjective, test, becomes, thing, run, text):
+        self.kind = kind
+        self.adjective = adjective
+        self.test = test  # (world, thing) -> does it fit the adjective?
+        self.becomes = becomes  # True for "becomes", False for "becomes not"
+        self.thing = thing  # the lowercased name of the one thing watched, or None for every one of the kind
+        self.run = run  # (world, thing) -> None: carries out the block
+        self.text = text  # the sentence, for messages
+
+    def watches(self):
+        return (self.kind, self.adjective, self.thing)
+
+
 class World:
     def __init__(self, out=print, ask=None):
         self.out = out
@@ -101,12 +137,27 @@ class World:
         self.globals = Env(None, self)
         self.examples = 0
         self.depth = 0
+        self.serials = 0  # how many things have been made, of every kind (Thing.serial)
+        self.reactions = []  # [Reaction], in the order written, from when each "Whenever" is reached
+        self.reacting = 0  # how deeply reactions are nested
+        self.rules = {}  # kind -> [Rule] (.fn(world, thing), .text), for world.event
+        self.busy = False  # is a sentence or an event being carried out?
+        self.ended = False  # did the program end ("End the program.", or a problem)?
+
+    def new_serial(self):
+        self.serials += 1
+        return self.serials
 
     def snapshot(self, env):
-        """Everything a failed "Try" must put back. Returns a function that does it.
+        """Everything a failed "Try" must put back. Returns a function that does it."""
+        return self._snapshot(env)[0]
+
+    def _snapshot(self, env):
+        """(restore, states): a function that puts everything back, and each
+        thing with the fields, marks and removal it had.
 
         Values are never changed in place (lists are tuples), so copying each
-        table one level deep is enough.
+        table one level deep is enough. The serial count is not put back.
         """
         things = {kind: list(items) for kind, items in self.things.items()}
         states = [
@@ -127,7 +178,117 @@ class World:
                 table.vars.clear()
                 table.vars.update(values)
             self.made = made
-        return restore
+        return restore, states
+
+    # Reactions ("Whenever") -------------------------------------------------
+
+    def noting(self):
+        """What fits each watched adjective now, before something that may change it.
+
+        {(kind, adjective, thing): (test, [(thing, fits)])}. Each adjective is
+        worked out once per thing, however many reactions watch it.
+        """
+        watched = {}
+        for reaction in self.reactions:
+            key = reaction.watches()
+            if key in watched:
+                continue
+            if reaction.thing is None:
+                items = self.things.get(reaction.kind, ())
+            else:
+                one = self.named.get(reaction.thing)
+                items = () if one is None or one.removed else (one,)
+            test = reaction.test
+            watched[key] = (test, [(thing, bool(test(self, thing))) for thing in items])
+        return watched
+
+    def react(self, before):
+        """Carry out the reactions to what changed since `before` (from noting).
+
+        Only things that existed before can "become"; a thing removed since
+        becomes nothing. The things are taken in the order they were made, and
+        for each one the reactions in the order they were written.
+        """
+        due = []
+        for key, (test, fits) in before.items():
+            for thing, was in fits:
+                if thing.removed:
+                    continue
+                now = bool(test(self, thing))
+                if now == was:
+                    continue
+                for order, reaction in enumerate(self.reactions):
+                    if reaction.becomes == now and reaction.watches() == key:
+                        due.append((thing.serial, order, thing, reaction))
+        due.sort(key=lambda entry: (entry[0], entry[1]))
+        for _, _, thing, reaction in due:
+            if thing.removed:  # removed by an earlier reaction
+                continue
+            self.reacting += 1
+            try:
+                if self.reacting > REACTION_LIMIT:
+                    raise EnglishError(
+                        f'Reactions keep setting off reactions; I stopped after {REACTION_LIMIT} levels, at "{reaction.text}".',
+                        stage="run",
+                    )
+                reaction.run(self, thing)
+            finally:
+                self.reacting -= 1
+
+    # Events from outside the program ---------------------------------------
+
+    def event(self, change):
+        """Bring in something that happened outside the program, such as a click.
+
+        `change()` changes things directly (`thing.fields[...] = ...`,
+        `thing.marks.add(...)`, `thing.marks.discard(...)`). It is treated as one
+        sentence: the rules are checked for the things it changed, and the
+        reactions it sets off are carried out. On a problem, everything is put
+        back, as by a failed "Try", and the EnglishError is raised.
+
+        Returns True, or False without calling `change` once the program has
+        ended. See englishscript/libraries/__init__.py.
+        """
+        if self.busy:
+            raise RuntimeError(
+                "world.event() was called while a sentence or another event is being carried out; "
+                "an event can only come in between them."
+            )
+        if self.ended:
+            return False
+        self.busy = True
+        limit = sys.getrecursionlimit()
+        sys.setrecursionlimit(max(limit, RECURSION_LIMIT))
+        restore, states = self._snapshot(self.globals)
+        try:
+            with no_digit_limit():
+                before = self.noting() if self.reactions else None
+                change()
+                self._check_rules(states)
+                if before is not None:
+                    self.react(before)
+        except _EndProgram:
+            self.ended = True  # what was changed stays, as with "End the program." anywhere
+        except RecursionError:
+            restore()
+            raise EnglishError("This program nests more deeply than I can follow.", stage="run") from None
+        except BaseException:
+            restore()
+            raise
+        finally:
+            self.busy = False
+            sys.setrecursionlimit(limit)
+        return True
+
+    def _check_rules(self, states):
+        """The never/always rules of every thing whose properties an event changed."""
+        for thing, fields, _, _ in sorted(states, key=lambda state: state[0].serial):
+            if thing.removed or thing.fields == fields:
+                continue
+            for rule in self.rules.get(thing.kind, ()):
+                if not rule.fn(self, thing):
+                    raise EnglishError(f'That would break a rule: "{rule.text}"', stage="run", recoverable=True,
+                                       hint=f"(It was {thing.name} that changed.)")
 
 
 # ------------------------------------------------------------------ files

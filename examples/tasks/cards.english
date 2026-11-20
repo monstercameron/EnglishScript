@@ -1,0 +1,51 @@
+# What a task is, and how one is written down.
+#
+# A chapter of the tasks book. A task is a card of the page library. This
+# chapter adds what the library does not know: when a card counts as open, how
+# the words that were typed become a card, and what order cards stand in.
+
+This chapter shares only open, twin, jot and arrange.
+
+Use the page library.
+Use the layout chapter.
+
+A card is open when it is not ticked.
+
+# The card that already says this, if there is one.
+To work out the twin (card, if any) of a phrase (text):
+  For each card whose wording is the phrase:
+    The answer is the card.
+  The answer is nothing.
+
+# Write a new card from what was typed. A word that begins with # is the
+# card's tag and is left out of its wording, so "Buy milk #home" becomes the
+# card "Buy milk", tagged "home". Nothing is written twice, and nothing blank.
+To jot a line (text):
+  Let the phrase be "".
+  Let the mark (text, if any) be nothing.
+  For each word in the words of the line:
+    If the word starts with "#":
+      If the length of the word is more than 1:
+        Set the mark to the last (the length of the word - 1) letters of the word.
+    Otherwise if the phrase is "":
+      Set the phrase to the word.
+    Otherwise:
+      Set the phrase to "{the phrase} {the word}".
+  If the phrase is "":
+    Fail because "there is nothing to write down".
+  If the twin of the phrase is not nothing:
+    Fail because """{the phrase}"" is on the list already".
+  Let the card be a new card whose wording is the phrase and whose panel is Roll.
+  If the mark is not nothing:
+    Set the card's tag to the mark.
+
+# Starred cards stand first and finished ones last. Among cards of the same
+# sort, the one written first stands first: the page keeps that order itself.
+To arrange:
+  For each card:
+    If the card is ticked:
+      Set the card's order to 2.
+    Otherwise if the card is starred:
+      Set the card's order to 0.
+    Otherwise:
+      Set the card's order to 1.

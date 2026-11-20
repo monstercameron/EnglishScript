@@ -1,6 +1,6 @@
 # EnglishScript syntax
 
-This document describes every sentence the EnglishScript compiler accepts. Sections 1 to 11 describe the language as implemented in `englishscript/`. Sections 12 and 13 are proposed extensions that have been designed but not built; the parts of section 13 that have since been built are described in sections 2 to 9, and section 13 says which they are. Section 14 lists what has not been defined yet.
+This document describes every sentence the EnglishScript compiler accepts. Sections 1 to 11 describe the language as implemented in `englishscript/`. Sections 12 and 13 are proposed extensions that have been designed but not built; the parts of them that have since been built are described in sections 2 to 9, and sections 12 and 13 say which they are. Section 14 lists what has not been defined yet.
 
 The examples are checked by the test suite:
 
@@ -177,7 +177,7 @@ The compiler stops refusing once the program has checked. A check counts in four
 3. in the `Otherwise` of an `If` that showed it missing;
 4. after an `If` that showed it missing and whose block always leaves (section 8.4).
 
-A check stops counting when that property or variable is changed, and when a verb is used, because a verb may change anything.
+A check stops counting when that property or variable is changed, and when a verb is used, because a verb may change anything. In a program that has a `Whenever` (section 9.5), a check of a property or of a top-level variable also stops counting after any sentence that changes a thing, a top-level variable or a file, because a reaction may follow that sentence and change anything.
 
 ```englishscript
 A horse has a speed (number).
@@ -230,9 +230,9 @@ Three rules apply to every name:
 | Group | Reserved words |
 |---|---|
 | Articles and pronouns | `a` `an` `the` `it` `its` `they` `them` `their` |
-| Built-in verbs | `let` `set` `add` `subtract` `multiply` `divide` `say` `if` `for` `repeat` `while` `there` `stop` `skip` `end` `now` `remove` `ask` `write` `try` `fail` `use` |
+| Built-in verbs | `let` `set` `add` `subtract` `multiply` `divide` `say` `if` `for` `repeat` `while` `there` `stop` `skip` `end` `now` `remove` `ask` `write` `try` `fail` `use` `whenever` |
 | Types | `number` `money` `text` `percent` `yes` `no` `list` |
-| Linking words | `of` `is` `are` `be` `has` `called` `whose` `when` `each` `all` `otherwise` `example` `name` `nothing` `any` `else` `answer` `whether` `can` `in` `new` `reply` `problem` `items` |
+| Linking words | `of` `is` `are` `be` `has` `called` `whose` `when` `each` `all` `otherwise` `example` `name` `nothing` `any` `else` `answer` `whether` `can` `in` `new` `reply` `problem` `items` `becomes` |
 | Logic and comparison | `not` `and` `or` `never` `always` `than` `less` `more` `greater` `least` `most` `divisible` |
 | Arithmetic | `plus` `minus` `times` `divided` |
 | Prepositions | `with` `to` `from` `against` `for` `by` `on` `at` `into` `onto` `about` `over` `under` `as` `through` `toward` `towards` `upon` |
@@ -302,6 +302,7 @@ Now <thing> is [not] <adjective>.
 - A stored adjective is used exactly like a defined one: after `is`, and in front of a kind in a group or a `For each`.
 - It starts as "no", unless it is written in front of the kind when the thing is made: `There is a sworn knight called ...`.
 - `Now` is the only way to change it. `Now` is refused for an adjective defined with `when`, for a thing that may be nothing, and inside `To work out` (section 9.3).
+- A program can react when a thing becomes an adjective, stored or defined, with `Whenever` (section 9.5).
 
 ```englishscript
 A knight can be sworn.
@@ -866,17 +867,17 @@ Say the fuse.      #> 0
 ### 8.4 Stopping early
 
 ```text
-Stop.                  ends the verb being carried out
+Stop.                  ends the verb, or the reaction, being carried out
 Stop repeating.        ends the loop around this sentence
 Skip this <noun>.      goes on to the next thing in a For each
 Skip this round.       goes on to the next round of a Repeat or While
 End the program.
 ```
 
-- `Stop.` is refused outside a verb. Inside `To work out` (section 9.3), use `The answer is`.
+- `Stop.` is refused outside a verb or a reaction (section 9.5). Inside `To work out` (section 9.3), use `The answer is`.
 - `Skip this <noun>.` names its loop by the loop's noun, or by the name given in `For each <name> in ...`, so it is clear in nested loops.
 - `Stop repeating.` and `Skip this round.` are refused when more than one loop is around the sentence, because they could mean either. Move the inner loop into its own verb and use `Stop.` there.
-- A loop written outside a verb is not "around" the sentences inside that verb.
+- A loop written outside a verb is not "around" the sentences inside that verb, nor around the sentences of a reaction.
 
 A block that ends in one of these sentences, or in `Fail because` (section 8.5), **always leaves**. An `If` whose block always leaves works as a guard: the sentences after it can rely on its condition having been false (section 2, "Nothing").
 
@@ -930,7 +931,7 @@ the problem
 ```
 
 - `Try:` carries out its block. If a problem arises, the rest of the block is abandoned and the `If that fails:` block is carried out. `If that fails:` must follow directly, and is required.
-- **A failed `Try` leaves the world as it was.** Every change its block made is undone: to properties, to stored adjectives, to variables that existed before the `Try`, and to which things exist, including changes made by verbs it used. What was said, asked or written to a file stays.
+- **A failed `Try` leaves the world as it was.** Every change its block made is undone: to properties, to stored adjectives, to variables that existed before the `Try`, and to which things exist, including changes made by verbs it used and by reactions it set off (section 9.5). What was said, asked or written to a file stays. Putting things back does not set off reactions.
 - Inside `If that fails:`, `the problem` is text saying what went wrong. It means nothing anywhere else.
 - `Fail because <text>.` raises a problem of the program's own.
 - `Stop.`, `Skip`, `Stop repeating.`, `The answer is` and `End the program.` leaving a `Try` are not failures. They leave as usual, and the changes stay.
@@ -938,7 +939,7 @@ the problem
 
 These problems can be recovered from: a broken `never` or `always` rule; a division by zero, or a test for being divisible by zero; a file that cannot be read or written; a `Remove` that is refused; using a removed thing; `Repeat` with a fraction or a negative number; asking for a negative or fractional number of letters; and `Fail because`.
 
-These always end the program, because they are faults in the program rather than events in the world: a `For example` that does not hold, a `While` passing 10,000 rounds, and a verb or worked-out value using itself more than 200 levels deep.
+These always end the program, because they are faults in the program rather than events in the world: a `For example` that does not hold, a `While` passing 10,000 rounds, a verb or worked-out value using itself more than 200 levels deep, and reactions setting off reactions more than 200 levels deep.
 
 ```englishscript
 To move an amount (money) from a giver (knight) to a taker (knight):
@@ -1119,12 +1120,13 @@ A library gives a program words whose work is done by Python code: drawing on a 
 Use the <name> library.
 ```
 
-- This is allowed only at the top level, and a library may be used only once. Its name is one word.
+- This is allowed only at the top level. Its name is one word. A file may use a library only once; in a program of several files (section 9.6), each file that wants its words says so, and the library is loaded once, at the first.
 - The library's own sentences are read at that point, as if they were written there. The kinds, things, adjectives, rules, verbs and worked-out values it describes join the program's vocabulary from then on. A name in the library that the program has already given a meaning is refused, as any reused name is (section 3).
 - Its verbs and worked-out values are used like any others (sections 9.2 and 9.3). Some of them are carried out by the library's Python code, but the rules are the same: a verb may not be used inside `To work out`, and using one means checks for nothing no longer count (section 2); a worked-out value changes nothing.
 - A library may report a problem, such as a device that is not there. A `Try` can recover from it (section 8.5). A failed `Try` undoes the changes the library made to things in the world, but it cannot undo what the library did outside the world, such as what it showed on a screen.
 - If a library fails in a way it did not expect, the program stops with a message naming the library. That is a fault in the library, and `Try` does not recover from it.
 - When the program ends, for any reason, each library it used is told, so that it can let go of what it holds.
+- A library may go on working after the program's last sentence, as a page does that waits for clicks. It starts only when the sentences ran to their end, not after `End the program.` or a problem. What then happens outside, such as a click, comes in as a change to things, and is treated as one sentence: the rules are checked, and it sets off reactions (section 9.5) as a sentence would. If the change breaks a rule, or a reaction to it meets a problem, all of it is undone, as by a failed `Try`. A reaction that says `End the program.` ends the program, and nothing more comes in.
 - Only the libraries that come with EnglishScript can be used, from the folder `englishscript/libraries`. Naming any other is refused, and the message lists the libraries there are.
 - One library comes with EnglishScript today: `vulkan`, which draws shaded triangles on the graphics card. Its words are described in [VULKAN.md](VULKAN.md), and `examples/gpu_triangle.english` uses it.
 
@@ -1155,11 +1157,224 @@ A program cannot declare work to be done by a library:
 To splash a colour (text) on a dragon is done by the library.
 ```
 
+### 9.5 Reactions
+
+```text
+Whenever a | an <kind> becomes [not] <adjective>:
+Whenever <thing> becomes [not] <adjective>:
+```
+
+A reaction is a block that is carried out when a thing comes to fit an adjective, or, with `not`, stops fitting it.
+
+- This is a definition, allowed only at the top level. It applies from that sentence on: changes made before it is reached set nothing off.
+- The adjective may be stored (`A knight can be sworn.`) or defined (`A knight is broke when ...`), and must belong to the kind.
+- The second form watches one thing, named when the reaction is written. It must have been made, with `There is ... called`, by an earlier sentence.
+- Inside the block, the thing is `the <kind>`, and it is in view for pronouns, as in a verb. A thing watched by name may also be called by its name.
+- A thing **becomes** an adjective when a sentence leaves it fitting the adjective and it did not fit before that sentence. It **becomes not** the adjective when the sentence leaves it no longer fitting. The block is carried out at once, after that sentence and before the next one, wherever the sentence is: at the top level, in a verb, in a loop, in a `Try`, or in another reaction.
+- A thing made by the sentence does not "become" anything, even if it fits when it is made. A thing removed by the sentence becomes nothing, and nor does a thing removed by an earlier reaction before its turn comes.
+- **The order is fixed.** When one sentence makes several things become, they are taken in the order they were made. For each one, the reactions that match are carried out in the order they were written. All of them are carried out, even if an earlier reaction has changed the thing back.
+- A reaction may set off further reactions, to a depth of 200. Beyond that the program stops (section 8.5).
+- The block is like a verb's, without roles: `Stop.` leaves it; `Stop repeating.` and `Skip` are refused unless a loop inside the block is around them, because a loop outside a reaction is not around its sentences. It may use top-level variables and named things defined before it, and verbs.
+- Nothing changes inside `To work out`, so nothing is set off there. Putting things back after a failed `Try` sets nothing off either.
+- **A problem in a reaction is a problem in the sentence that set it off.** A `Try` around that sentence recovers from it, and undoes everything the sentence and its reactions changed. `never` and `always` rules hold inside reactions as everywhere.
+- If an adjective that is watched can't be worked out for some thing (it divides by zero, say), that is a problem in the sentence being carried out.
+- Only sentences that change a thing, a top-level variable or a file can make a thing become something, so only around those does the program look. A program without `Whenever` does no looking at all. In a program with one, checks for nothing do not survive such a sentence (section 2).
+
+```englishscript
+A knight is broke when its purse is $0.
+A knight can be sworn.
+
+Whenever a knight becomes broke:
+  Say "{the knight} is out of money."
+
+Whenever a knight becomes not broke:
+  Say "{it} has money again."
+
+Whenever Gawain becomes sworn:
+  Say "Gawain kneels."
+  Add $10 to the knight's purse.
+
+Subtract $20 from Robin's purse.     #> Robin is out of money.
+Now Gawain is sworn.                 #> Gawain kneels.
+Say Gawain's purse.                  #> $310
+Add $5 to Robin's purse.             #> Robin has money again.
+Now Robin is sworn.
+There is a new knight whose purse is $0 and whose courage is 1.
+Remove Robin.
+```
+
+Making the new knight, who is broke from the start, and removing Robin set nothing off.
+
+When one sentence changes several things, they are taken in the order they were made, and the reactions to each in the order written. A reaction's own changes are reacted to at once:
+
+```englishscript
+Let the poverty line be $10.
+A knight is poor when its purse is less than the poverty line.
+A knight can be pitied.
+
+Whenever a knight becomes poor:
+  Say "{the knight} is poor now."
+  Now the knight is pitied.
+
+Whenever a knight becomes pitied:
+  Say "Alms for {the knight}."
+
+Whenever a knight becomes poor:
+  Say "The herald notes it."
+
+Set the poverty line to $500.
+#> Gawain is poor now.
+#> Alms for Gawain.
+#> The herald notes it.
+#> Robin is poor now.
+#> Alms for Robin.
+#> The herald notes it.
+```
+
+A problem in a reaction is a problem in the sentence that set it off:
+
+```englishscript
+A knight is broke when its purse is $0.
+
+Whenever a knight becomes broke:
+  Say "{the knight} is broke."
+  If the knight is brave:
+    Fail because "{the knight} would rather fight"
+
+Try:
+  Set Robin's purse to $0.
+  Set Gawain's purse to $0.
+  Say "Both have paid."
+If that fails:
+  Say "No: {the problem}."
+Say "{Robin's purse} and {Gawain's purse}"
+#> Robin is broke.
+#> Gawain is broke.
+#> No: Gawain would rather fight.
+#> $20 and $300
+```
+
+Refused, because "ancient" is said of dragons, not knights:
+
+```refused
+Whenever a knight becomes ancient:
+  Say "A venerable knight."
+```
+
+Refused, because a reaction is a definition:
+
+```refused
+If Smaug is ancient:
+  Whenever a dragon becomes young:
+    Say "Strange."
+```
+
+Refused, because nothing is called Puff:
+
+```refused
+Whenever Puff becomes ancient:
+  Say "Puff is old."
+```
+
+### 9.6 Chapters and books
+
+A program can be split over several files. A **chapter** is a file `<name>.english`, and a **book** is a folder of chapters.
+
+```text
+Use the <name> chapter.
+Use the <name> chapter of the <book> book.
+This chapter shares only <name>, <name> and <name>.
+This chapter shares nothing.
+```
+
+**Finding the file.**
+
+- `Use the calendar chapter.` reads `calendar.english` in the same folder as the file that says it.
+- `Use the calendar chapter of the almanac book.` reads `almanac/calendar.english`, where the folder `almanac` is in the same folder as the file that says it.
+- Nothing else is searched. A chapter in a book uses the other chapters of its book with the first form. It cannot reach another book, nor a chapter outside its own folder.
+- A name is one or more words of letters only. In the file's name the words are written in lower case and joined by underscores: `Use the roman numerals chapter.` reads `roman_numerals.english`. A path, a dot or a slash can't be written.
+- Files are read as UTF-8. A chapter that is not there is refused at the `Use` sentence, and the message gives the file that was looked for and the chapters that are there.
+
+**What using a chapter does.**
+
+- `Use` is allowed only at the top level. A file may use a chapter only once.
+- A chapter is read **once** in a program, at the first `Use` that reaches it. Its sentences are carried out then, in order, before the file that uses it goes on: it is an ordinary program, read aloud once. Its things are made, its variables set, its `Say` and `For example` sentences carried out, and its rules and reactions apply from then on, to the whole world. A later `Use` of the same chapter, by another file, reads nothing again.
+- Chapters that use each other in a circle are refused, and the message names the circle: `calendar -> feasts -> calendar`.
+
+**One world, one meaning for each name.** Every name defined at the top level of any file (a kind, a thing, an adjective of a kind, a property, a verb, a worked-out value, a variable) has one meaning in the whole program. A second file giving it another meaning is refused, as a reused name is (section 3), and the message says which chapter has it.
+
+**What a file may say.** In a file, a name may be used if it was defined in that file, or in a chapter that this file itself uses, and that chapter shares it. What a chapter uses is not passed on: a file that wants a chapter's words uses that chapter itself.
+
+- A chapter with no `shares` sentence shares everything it defines.
+- `This chapter shares only A, B and C.` shares just those. `This chapter shares nothing.` shares none. Either must be the first sentence of its file (comments may come before it). A program may say it too, so that one file can be both a program and a chapter.
+- The names are written as they were defined, without an article, separated by commas and `and`. Each must be defined at the top level of the chapter by its end, and must be one thing: a name that is both a kind and a verb, say, is refused, because it would not be clear which is shared.
+- A shared kind brings its properties with it. Its adjectives, its worked-out properties and its things are names of their own, and are shared only if they are listed.
+- A worked-out value that is shared may take or give back a thing of a kind that is not shared. The thing can then be passed around, compared and said, but its kind can't be named, so its properties can't be read and nothing can be made of it.
+- Rules (`never`, `always`) and reactions (`Whenever`) are not names. Those of a chapter hold everywhere.
+- Roles and the variables of a block belong to their block, as always. Another file may use the same names for its own.
+
+A name that exists elsewhere, but may not be said here, is refused with a message that says why: the chapter does not share it, or the file does not use that chapter.
+
+**Libraries.** `Use the ... library.` is likewise said once in each file that wants the library's words. The library is loaded once for the whole program, at the first `Use`, and it is told when the program goes on working and when it ends once (section 9.4).
+
+The examples in this document use the book in `examples/almanac`, whose chapters are `calendar`, `numerals` and `feasts`. `calendar` shares `leapness`, `month length`, `month title` and `weekday`; `numerals` shares `roman` and `reading`; `feasts` shares the kind `feast`, the adjective `wintry`, the worked-out value `falling` and the thing `Michaelmas`, and uses `calendar` itself.
+
+```englishscript
+Use the numerals chapter of the almanac book.
+Use the feasts chapter of the almanac book.
+
+Say the roman of 1666.                         #> MDCLXVI
+Say the reading of "MMXXVI".                   #> 2,026
+Say the number of wintry feasts.               #> 3
+Say the falling of Michaelmas for 2027.        #> Wednesday
+For example, Michaelmas's month is 9.
+```
+
+The feasts chapter uses the calendar chapter, but that does not let this file say `weekday`. It must use the calendar itself:
+
+```refused
+Use the feasts chapter of the almanac book.
+Say the weekday of 1 at 1 for 2000.
+```
+
+Refused, because the numerals chapter does not share its kind `numeral`:
+
+```refused
+Use the numerals chapter of the almanac book.
+Say the number of numerals.
+```
+
+Refused, because there is no such chapter:
+
+```refused
+Use the moons chapter of the almanac book.
+```
+
+**Checking.** The linter (section 10) checks the file it is given. The problems inside a chapter it uses are given as one error, at the `Use` sentence, with the number of problems and the first of them. A name listed in `This chapter shares only` counts as used, so linting a chapter on its own does not warn that what it shares is never used. A problem in a chapter, before or while running, names the chapter's file and line, and the place it was used from.
+
 ## 10. How a sentence can go wrong
 
 Problems are reported at two stages.
 
-**Before anything runs**, the whole program is compiled. A sentence is refused if any word has no meaning yet, if a phrase could be read more than one way, or if the types don't fit. The message quotes the sentence, points at the part in question, and usually suggests a fix.
+**Before anything runs**, the whole program is compiled. A sentence is refused if any word has no meaning yet, if a phrase could be read more than one way, or if the types don't fit.
+
+Each problem is marked the way a teacher marks a paper:
+
+```text
+Spelling (line 14):
+
+    Say "{the number of dragns}".
+                        ^^^^^^
+                        dragons
+
+  I don't know the word "dragns". Did you mean "dragons"?
+  The rule: a kind is described with "A ... has ..." before it is used. (See section 4.1.)
+```
+
+- The first line names the **category** of the mistake and where it is: Spelling, Punctuation, Capital letters, Grammar, Vocabulary (a word with no meaning yet, or with one already), Meaning (a phrase that reads more than one way, or points at nothing), Kinds of value, Layout, From another language, Style, or While running. A warning says `, a suggestion` after it.
+- Then the sentence, with the words in question underlined. When the correction is certain and changes only those words, it is written under them; when it is certain but changes more, it is given as `Write: ...`.
+- Then what is wrong, how to mend it, and the **rule** to remember, the same each time it is broken, with the section of this document that teaches it.
+- A misspelt word (one letter off for a word of up to four letters, two for a longer one, two neighbouring letters swapped counting as one) gets "Did you mean ...?" when exactly one word of the right sort is that close: a kind where a kind belongs, a property of that kind after `'s`, an adjective of that kind, a verb at the start of a sentence, and the fixed words of a sentence form. Words of one or two letters get no such guess. Otherwise the words that would fit are listed, at most eight.
 
 **While running**, the program stops if:
 
@@ -1171,12 +1386,67 @@ Problems are reported at two stages.
 - a file cannot be read or written;
 - `Remove` is refused, or a removed thing is used;
 - `Fail because` is reached;
-- a `While` passes 10,000 rounds, or a verb or a worked-out value uses itself more than 200 levels deep;
+- a `While` passes 10,000 rounds, a verb or a worked-out value uses itself more than 200 levels deep, or reactions set off reactions more than 200 levels deep;
 - a library reports a problem, or fails in a way it did not expect (section 9.4).
 
 All of these except a `For example`, the 10,000 rounds, the 200 levels and a library's unexpected failure are problems that a `Try` can recover from (section 8.5). When input runs out during `Ask`, the program ends quietly; that is not a problem.
 
+A sentence of a chapter that can't be read, or a problem while running one, is reported with the chapter's file and line, such as `almanac/calendar.english, line 12`, followed by where the chapter is used from (section 9.6).
+
 A sentence of a library that can't be read is reported at the program's `Use` sentence, as the library's fault, with the library's own sentence shown underneath. A problem while running inside a verb that a library wrote in English gives the library's line, as `line 5 of the paint library`.
+
+### Sentences from other languages
+
+A sentence that starts the way another programming language would, or that uses one of its symbols, is refused with a note on how EnglishScript says it. A suggested sentence repeats the writer's own words only where it is certain to be accepted: a quoted text, a number or money, or a new name where any name will do. Anywhere else it leaves a gap, `...`, to fill in. A few of them:
+
+| Written | Advice |
+|---|---|
+| `print("Hello")`, `show x`, `display x` | `Say "Hello".` |
+| `x = 5`, `var x = 5` | `Let x be 5.`, or `Set x to 5.` if `x` already exists |
+| `Smaug is 771 years old.` | a sentence starts with a verb: `Let the age be 771.` makes a variable, `Set Smaug's age to 771.` changes a property |
+| `else:`, `else if ...:`, `elif ...:` | `Otherwise:`, `Otherwise if ...:` |
+| `return x` | `The answer is x.` inside `To work out` |
+| `If ... then` | end the condition with a colon |
+| `for x in ...:`, `for i = 1 to 10:` | `For each x in ...:`, `Repeat 10 times:` |
+| `end if`, `endif`, `}` | nothing: a block ends where the indentation ends |
+| `break`, `continue`, `exit` | `Stop repeating.`, `Skip this round.`, `End the program.` |
+| `==`, `!=`, `&&`, `\|\|`, `!` | `is`, `is not`, `and`, `or`, `not` |
+| `true`, `false`, `null` | `yes`, `no`, `nothing` |
+| `'single quotes'`, `;` | `"double quotes"`, one sentence per line |
+
+These are only advice: such sentences are still refused. A word the program has given a meaning of its own is never treated this way.
+
+```refused
+print("Hello")
+```
+
+```refused
+Let the total be 1.
+the total = 2.
+```
+
+### The linter
+
+The compiler stops at the first sentence it can't read. The linter reads on, and reports every problem in the program at once:
+
+```text
+python -m englishscript my_program.english --lint
+python -m englishscript my_program.english --lint --json
+```
+
+- It only compiles; it never runs the program or asks anything.
+- After a sentence it can't read, it goes on with the next sentence, in the same block where it can. A problem with the layout, such as a missing period or a line that doesn't line up, does not stop it either.
+- The block of a sentence it can't read is not compiled, so nothing there is reported except problems with the layout and the advice above for sentences from other languages.
+- When a definition is refused, the mistakes that follow only because its name is now unknown are left out, so one mistake in a kind's description gives one error, not ten. At most one error is given for each line.
+- It also gives **warnings**, for sentences that are allowed but are probably a mistake:
+  - a variable (made with `Let` or `Ask`), a verb, a worked-out value, an adjective, or a role of a verb or worked-out value, that is never used;
+  - a sentence that can never be reached, because the one before it in the same block always leaves (section 8.4);
+  - a sentence that starts with a small letter;
+  - `a` before a vowel sound or `an` before any other (`a egg`, `an weight`). Only words whose sound the spelling makes plain are judged, with a list of the usual exceptions (`an hour`, `a unit`, `a one`); for other words, such as most that start with `u`, nothing is said;
+  - `are` after one thing in a comparison (`If Gawain's purse are $300:`). When the last word of the thing ends in `s`, nothing is said.
+- A warning is never given for a sentence that is refused, nor for anything that comes from a library. A warning never stops a program compiling or running.
+- With `--json`, the problems are printed as a list of objects with the fields `line`, `col`, `width`, `kind` (`"error"` or `"warning"`), `message`, `hint`, `sentence`, `file` (the file of a chapter, or `null` for the file being linted), `category` (`"spelling"`, `"punctuation"`, `"capitals"`, `"grammar"`, `"vocabulary"`, `"meaning"`, `"kinds"`, `"layout"`, `"borrowed"`, `"style"` or `"running"`), `rule` (the rule to remember), `see` (the section of this document, such as `"4.1"`) and `fix`. `fix` is `null`, or, when the correction is certain, `{"line": <number>, "text": <the whole line as it should be>}`; the line may be another one than the problem's, as when the sentence under an empty block should be indented. A fix is only ever offered, never applied.
+- It ends with a tally, such as `2 things to mend: 1 of vocabulary, 1 of kinds of value. 1 suggestion.`, or `Nothing to mend: every sentence reads one way.`, and with status 1 if there is an error, and 0 otherwise, warnings included.
 
 ## 11. Grammar summary
 
@@ -1186,7 +1456,7 @@ Words in capitals are names from the program's own vocabulary. Quoted words are 
 sentence    = definition | action | block-opener
 
 definition  = kind | thing | adjective | stored-adj | property | rule | verb | work-out
-            | library                                                (top level only)
+            | reaction | library | chapter | shares                    (top level only)
 kind        = article KIND "has" field { sep field } "."
 field       = article NAME "(" type ")"
 thing       = "There is" article { ADJECTIVE } KIND "called" NAME [ whose { sep whose } ] "."
@@ -1197,7 +1467,11 @@ property    = "The" NAME "of" article KIND "is" expression "."
 rule        = article KIND "'s" PROPERTY "is" ( "never" | "always" ) tail "."
 verb        = "To" VERB [ role ] { PREPOSITION role } ":"
 work-out    = "To work out the" NAME "(" type ")" { ( PREPOSITION | "of" ) role } ":"
+reaction    = "Whenever" ( article KIND | THING ) "becomes" [ "not" ] ADJECTIVE ":"
 library     = "Use the" NAME "library" "."
+chapter     = "Use the" WORDS "chapter" [ "of the" WORDS "book" ] "."    (WORDS: plain words, letters only)
+shares      = "This chapter shares" ( "nothing" | "only" NAME { sep NAME } ) "."
+                                                          (the first sentence of its file)
 outside     = ( verb | work-out ) without its ":", then "is done by the library" "."
                                                           (only in a library's SOURCE, section 9.4)
 role        = article ( KIND | NAME "(" type ")" )
@@ -1283,7 +1557,7 @@ filter      = "whose" PROPERTY comparison
 
 ## 12. Proposed: time, and doing things at once
 
-> **Status: designed, not built.** The compiler does not accept the sentences in this section yet, and its examples are not run by the tests.
+> **Status: designed, partly built.** `Whenever` (12.6) has been built, and is described in section 9.5. The compiler does not accept the other sentences in this section yet, and its examples are not run by the tests.
 
 Other languages call these ideas "async" and "threading". EnglishScript does not use either word. It adds the two things English already says:
 
@@ -1393,20 +1667,9 @@ Every 10 seconds until the rounds is 3:
 
 ### 12.6 Whenever
 
-```text
-Whenever a | an <kind> becomes <adjective>:
-```
+**Built.** See section 9.5. It also takes a thing by name, and `becomes not`.
 
-This is a definition, allowed only at the top level. It applies from that sentence to the end of the program. A thing **becomes** an adjective when a sentence leaves it fitting the adjective's definition and it did not fit before. The block is then carried out at once, before any other strand continues, with the thing in view as `the <kind>`.
-
-A thing that already fits when it is created does not "become". A `Whenever` may set off another, to a depth of 200.
-
-```text
-A knight is broke when its purse is $0.
-
-Whenever a knight becomes broke:
-  Say "{the knight} is out of money."
-```
+What remains belongs to the rest of this section: with strands, a reaction is carried out at once, before any other strand continues, and a `Wait` inside a reaction is not yet designed.
 
 ### 12.7 The rules that keep it strict
 
@@ -1442,7 +1705,7 @@ Saying is not a conflict. Lines are said in the order they happen, which rule 5 
 
 ### 12.8 New words and grammar
 
-These words would become reserved: `wait` `until` `every` `whenever` `becomes` `same` `time` `second` `seconds` `minute` `minutes` `hour` `hours`.
+These words would become reserved: `wait` `until` `every` `same` `time` `second` `seconds` `minute` `minutes` `hour` `hours`. (`whenever` and `becomes` already are.)
 
 ```text
 type         = ... | "time"
@@ -1456,9 +1719,6 @@ block-opener = ...
              | "At the same time" ":"
              | "For each" { ADJECTIVE } KIND [ "of" value ] [ filter ] "at the same time" ":"
              | "Every" expression "until" condition ":"
-
-definition   = ... | reaction
-reaction     = "Whenever" article KIND "becomes" ADJECTIVE ":"
 ```
 
 ### 12.9 How it would run
@@ -1519,7 +1779,7 @@ Averages, largest and smallest (section 13.10) will leave out things whose prope
 
 **Built.** See "Yes or no" in section 2, and stored adjectives in section 4.3.
 
-Two parts wait for other subsections: a stored adjective will work in `Whenever` (section 12.6), and a list of yes-or-no values needs a plural type for it (section 13.7). `Now` is also refused for a thing that may be nothing, and inside `To work out`.
+A stored adjective works in `Whenever` (section 9.5). One part waits for another subsection: a list of yes-or-no values needs a plural type for it (section 13.7). `Now` is also refused for a thing that may be nothing, and inside `To work out`.
 
 ### 13.3 A fixed set of choices
 
@@ -1902,7 +2162,7 @@ group        = ... | group "in order of" PROPERTY | group "in reverse order of" 
 Sections 12 and 13 settle most of what used to be listed here. These remain open.
 
 **Programs**
-- Splitting a program across files. Libraries (section 9.4) are carried out by Python code; they are not a way to include another `.english` file.
+- Chapters and books (section 9.6) leave two limits. A file can reach only the chapters beside it and the books in its own folder, so a chapter in one book cannot use another book. And a name a chapter keeps to itself still has one meaning in the whole program, so no other file can define that name for its own use.
 - Chance: a number or a thing picked at random.
 - Rules that span several things, and rules about worked-out properties.
 - Lookup tables from one value to another. Today the nearest thing is finding a thing by its name.

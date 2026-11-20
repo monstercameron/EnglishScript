@@ -1,0 +1,39 @@
+# The Towers of Hanoi: a verb that uses itself.
+#
+# To move a stack of discs, move all but the biggest out of the way, move the
+# biggest, then move the rest back on top of it. "Out of the way" is the same
+# puzzle with one disc fewer, so the verb calls itself.
+
+A peg has a height (number).
+
+There is a peg called Oak whose height is 4.
+There is a peg called Ash whose height is 0.
+There is a peg called Elm whose height is 0.
+
+Let the moves be 0.
+
+To move a count (number) from a source (peg) to a target (peg) by a spare (peg):
+  If the count is 0:
+    Stop.
+  Move the count - 1 from the source to the spare by the target.
+  Subtract 1 from the source's height.
+  Add 1 to the target's height.
+  Add 1 to the moves.
+  Say "{the moves}. Disc {the count} goes from {the source} to {the target}."
+  Move the count - 1 from the spare to the target by the source.
+
+Move 4 from Oak to Elm by Ash.
+
+Say "Done in {the moves} moves."
+For example, the moves is 15.
+For example, Elm's height is 4 and Oak's height is 0 and Ash's height is 0.
+
+# For n discs it always takes one less than two multiplied by itself n times.
+To work out the fewest (number) for a count (number):
+  Let the doubling be 1.
+  Repeat the count times:
+    Multiply the doubling by 2.
+  The answer is the doubling - 1.
+
+For example, the fewest for 4 is 15.
+Say "Sixty-four discs, as in the legend, would take {the fewest for 64} moves."

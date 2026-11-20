@@ -1,0 +1,65 @@
+# Square roots and pi, by exact arithmetic.
+#
+# A number here is an exact fraction, never a rounded one. That makes two old
+# methods easy to follow, because nothing is lost along the way. Only what is
+# said is rounded, to four places.
+
+# Heron's method: take a guess, and average it with the number divided by it.
+# Each round roughly doubles the number of correct digits.
+To work out the heron root (number) of a square (number) over a count (number):
+  Let the guess be the square.
+  Repeat the count times:
+    Set the guess to (the guess + the square / the guess) / 2.
+  The answer is the guess.
+
+# The whole part of a square root, found by halving the gap between a number
+# that is too small and one that is too big.
+To work out the whole root (number) of a square (number):
+  Let the floor be 0.
+  Let the ceiling be the square + 1.
+  While the ceiling - the floor is more than 1:
+    Let the middle be the floor + the ceiling.
+    If the middle is not divisible by 2:
+      Subtract 1 from the middle.
+    Divide the middle by 2.
+    If the middle * the middle is at most the square:
+      Set the floor to the middle.
+    Otherwise:
+      Set the ceiling to the middle.
+  The answer is the floor.
+
+# The angle whose tangent is one over a number, by Gregory's series:
+# 1/x - 1/(3 x^3) + 1/(5 x^5) - ...
+To work out the arc (number) of a divisor (number) over a count (number):
+  Let the sum be 0.
+  Let the power be the divisor.
+  Let the odd be 1.
+  Let the sign be 1.
+  Repeat the count times:
+    Add the sign / (the odd * the power) to the sum.
+    Multiply the power by the divisor * the divisor.
+    Add 2 to the odd.
+    Set the sign to 0 - the sign.
+  The answer is the sum.
+
+For example, the whole root of 144 is 12.
+For example, the whole root of 150 is 12.
+# Heron's guesses come down on 12 from above and never quite land on it, and
+# an exact fraction does not pretend otherwise.
+For example, the heron root of 144 over 10 is more than 12 and the heron root of 144 over 10 is less than 12.000001.
+
+Let the root be the heron root of 2 over 6.
+Say "The square root of 2 is about {the root}."
+For example, the root * the root is more than 1.999999999999 and the root * the root is less than 2.000000000001.
+
+# Thirty-one digits of it: the whole root of 2 followed by sixty noughts.
+Let the scale be 1.
+Repeat 60 times:
+  Multiply the scale by 10.
+Say "Its first thirty-one digits: {the whole root of (2 * the scale)}"
+For example, the whole root of (2 * the scale) is 1,414,213,562,373,095,048,801,688,724,209.
+
+# Machin's formula of 1706: pi is 16 arcs of 5, less 4 arcs of 239.
+Let pi be 16 * the arc of 5 over 12 - 4 * the arc of 239 over 12.
+Say "Pi is about {pi}."
+For example, pi is more than 3.14159265358979 and pi is less than 3.1415926535898.

@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EnglishScript: English, strict enough to compile</title>
+<meta name="description" content="A programming language made of English sentences that each have exactly one meaning. The thesis, the evidence, and the compiler running in your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;family=IM+Fell+English:ital@0;1&amp;family=IM+Fell+English+SC&amp;family=UnifrakturMaguntia&amp;display=swap">
+<link rel="stylesheet" href="assets/english.css">
+<style>
+  .prose { max-width: 40rem; margin: 0 auto; padding: 0 16px; }
+  .wide { max-width: 70rem; margin: 0 auto; padding: 0 16px; }
+
+  /* The title page */
+  header.top { padding: 2.5rem 0 1rem; }
+  .titlepage { margin: 8px; padding: 2.5rem 1.25rem 2.25rem; text-align: center; border: 3px double var(--ink); outline: 1px solid var(--ink); outline-offset: 6px; }
+  .imprint { font: 1.05rem var(--caps); letter-spacing: 0.2em; text-transform: lowercase; color: var(--accent); margin: 0 0 1.25rem; }
+  h1 { font: 400 clamp(3rem, 12vw, 5.6rem)/1 var(--black); margin: 0; overflow-wrap: anywhere; }
+  .or { font: italic 1.6rem/1.25 var(--fell); margin: 0.9rem 0 0; text-wrap: balance; }
+  .lede { font-size: 1.25rem; line-height: 1.45; color: var(--muted); max-width: 31rem; margin: 1.4rem auto 1.6rem; text-wrap: pretty; }
+  .links { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; }
+
+  /* Chapters */
+  main { counter-reset: chapter; }
+  h2 { counter-increment: chapter; font: 400 2.2rem/1.15 var(--fell); text-align: center; margin: 0.6rem 0 1.4rem; text-wrap: balance; scroll-margin-top: 1rem; }
+  h2::before {
+    content: "Chapter " counter(chapter, upper-roman); display: block;
+    font: 1.05rem/2.1 var(--caps); letter-spacing: 0.22em; text-transform: lowercase; color: var(--accent);
+  }
+  h3 { font: italic 1.55rem/1.25 var(--fell); margin: 2.4rem 0 0.5rem; }
+  p { margin: 0 0 1rem; text-wrap: pretty; }
+  @media (min-width: 620px) { .prose > p:not(.fleuron), .prose li { text-align: justify; hyphens: auto; } }
+  ul, ol { padding-left: 1.4rem; margin: 0 0 1rem; }
+  li { margin-bottom: 0.4rem; }
+  ol > li::marker { font-family: var(--fell); color: var(--accent); }
+  strong { font-weight: 600; }
+
+  /* A chapter opens with a rubricated capital and a line of small capitals. */
+  p.opening::first-letter { font: 400 4.4rem/0.8 var(--black); text-transform: uppercase; float: left; padding: 0.25rem 0.55rem 0 0; color: var(--accent); }
+  p.opening::first-line { font-family: var(--caps); letter-spacing: 0.05em; text-transform: lowercase; }
+
+  blockquote.thesis { margin: 1.75rem 0 2rem; padding: 1.4rem 0.5rem; text-align: center; border-top: 3px double var(--ink); border-bottom: 3px double var(--ink); }
+  blockquote.thesis p { font: italic 1.95rem/1.28 var(--fell); margin: 0; text-wrap: balance; }
+
+  /* The playground on this page */
+  #play { margin: 4rem 0 0; padding: 0 0 3rem; background: var(--panel); border-top: 3px double var(--ink); border-bottom: 3px double var(--ink); }
+  #play .fleuron { margin-top: 2.5rem; }
+  .controls { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; margin: 1rem 0; }
+  .controls label { font: italic 1.1rem var(--fell); color: var(--muted); }
+  #note { font: italic 1.1rem var(--fell); color: var(--muted); margin: 0 0 0.75rem; min-height: 1.5em; }
+  .bench { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
+  @media (min-width: 900px) { .bench { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); } }
+  .bench .pane { display: flex; flex-direction: column; min-height: 20rem; }
+  textarea { flex: 1; width: 100%; min-height: 26rem; border: 0; resize: vertical; padding: 0.9rem 1.1rem; background: var(--bg); color: var(--ink); font: 1.12rem/1.5 var(--serif); font-variant-numeric: lining-nums; white-space: pre; overflow: auto; }
+  textarea:focus-visible { outline-offset: -2px; }
+  #result { flex: 1; padding: 0.9rem 1.1rem; overflow: auto; max-height: 34rem; }
+  #result:empty::before { content: "What the program says appears here."; color: var(--muted); font: italic 1.1rem var(--fell); }
+  #status { font: italic 1.05rem var(--fell); color: var(--muted); }
+  .small { font: italic 1.1rem/1.45 var(--fell); color: var(--muted); }
+
+  figure.picture { margin: 1.75rem 0; }
+  figure.picture img { display: block; width: 100%; height: auto; border: 1px solid var(--ink); box-shadow: 4px 4px 0 var(--rule); }
+  figcaption { font: italic 1.05rem/1.4 var(--fell); color: var(--muted); margin-top: 0.8rem; text-align: center; text-wrap: balance; }
+  footer { margin-top: 4rem; padding: 2.5rem 0 3.5rem; border-top: 3px double var(--ink); }
+</style>
+</head>
+<body>
+
+<nav class="sitenav" aria-label="The pages of this site">
+  <div class="inner">
+    <a class="home" href="./">EnglishScript</a>
+    <a class="page" href="./" aria-current="page">The treatise</a>
+    <a class="page" href="playground.html">The playground</a>
+    <a class="page" href="todo.html">A page</a>
+    <a class="page" href="compare.html">Compared</a>
+    <a class="page" href="reference.html">The grammar</a>
+    <a class="page" href="how.html">The machinery</a>
+    <a class="page" href="https://github.com/monstercameron/EnglishScript">The source</a>
+  </div>
+</nav>
+
+<header class="top">
+  <div class="prose">
+    <div class="titlepage">
+      <p class="imprint">A Treatise, with a Compiler</p>
+      <h1>EnglishScript</h1>
+      <p class="or">or, English made strict enough to compile</p>
+      <p class="lede">A programming language made of English sentences, and a compiler that accepts a sentence only if it has exactly one meaning. Herein the argument, the evidence, and the compiler itself, which runs upon this very page.</p>
+      <div class="links">
+        <a class="button primary" href="#play">Try it now</a>
+        <a class="button" href="playground.html">Open the playground</a>
+        <a class="button" href="reference.html">The grammar</a>
+        <a class="button" href="how.html">The machinery</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+<div class="prose">
+
+<p class="fleuron" aria-hidden="true">&#10086;</p>
+<h2 id="thesis">The thesis</h2>
+
+<blockquote class="thesis">
+  <p>Programming in English works when ambiguity is a compile error.</p>
+</blockquote>
+
+<p class="opening">English is easy to read because it leaves things unsaid. We say “its” and “the dragon” and “the treasures of the dragon” without spelling out which thing, which dragon or which link between them. That is safe exactly when the unsaid part can be recovered in one way only.</p>
+
+<p>So the compiler's job is not to guess what a sentence means. Its job is to check that there is only one thing it could mean, and to refuse the sentence, with an explanation, when there is more than one. Three claims follow from that, and the rest of this page argues for them.</p>
+
+<ol>
+  <li><strong>Readable and strict are not opposites.</strong> A program can read as plain English and still mean exactly one thing.</li>
+  <li><strong>The refusal is the interface.</strong> A writer learns the language from what the compiler declines and why.</li>
+  <li><strong>A language model belongs in front of such a compiler, not in place of it.</strong></li>
+</ol>
+
+<p>Here is a small program. The output under it was produced by the compiler. Press <em>Run it</em> to produce it again yourself.</p>
+
+<figure class="snippet">
+<pre class="program" data-expect="ok">A dragon has an age (number).
+A treasure has a worth (money) and an owner (dragon).
+
+The hoard of a dragon is the total worth of its treasures.
+A dragon is poor when its hoard is less than $1,000.
+
+There is a dragon called Smaug whose age is 771.
+There is a treasure called Goblet whose worth is $3,000 and whose owner is Smaug.
+There is a treasure called Cup whose worth is $500 and whose owner is Smaug.
+
+Say "{Smaug} is {Smaug's age} and sits on {Smaug's hoard}."
+If Smaug is not poor:
+  Say "Smaug is doing well."</pre>
+<pre class="output">Smaug is 771 and sits on $3,500.
+Smaug is doing well.</pre>
+</figure>
+
+<p class="fleuron" aria-hidden="true">&#10086;</p>
+<h2 id="history">Two ways this has failed before</h2>
+
+<p class="opening"><strong>Formal languages dressed as English.</strong> COBOL, HyperTalk and AppleScript were designed to read like English, and they do. Writing them is another matter. The parser accepts a narrow set of phrasings, and the English look of the language promises a freedom it does not have. You are left guessing which English it wants.</p>
+
+<p><strong>Prompts to a language model.</strong> Here any English is accepted, which is the opposite failure. The same request can produce different programs on different days, and nothing tells you when the model has guessed. This project began that way, in 2023, as a notebook that asked a language model to turn sentences into JavaScript under a list of written rules. The model ignored the rules and wrote sensible JavaScript anyway. The rules meant nothing, because nothing enforced them.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th></th><th>Accepts loose English</th><th>Means the same every time</th><th>Says when it is unsure</th></tr></thead>
+  <tbody>
+    <tr><td>English-like formal languages</td><td>No</td><td>Yes</td><td>Only as a syntax error</td></tr>
+    <tr><td>A language model as translator</td><td>Yes</td><td>No</td><td>No</td></tr>
+    <tr><td>EnglishScript</td><td>No</td><td>Yes</td><td>Yes, by design</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>EnglishScript gives up the first column on purpose. What it adds is the third.</p>
+
+<p class="fleuron" aria-hidden="true">&#10086;</p>
+<h2 id="implicit">Implicit is not the same as ambiguous</h2>
+
+<p class="opening">The word “its” is implicit. It does not name the thing it belongs to. Inside a loop over dragons there is only one thing it could belong to, so it is allowed.</p>
+
+<figure class="snippet">
+<pre class="program" data-expect="ok">A dragon has an age (number).
+There is a dragon called Smaug whose age is 771.
+There is a dragon called Norbert whose age is 1.
+
+For each dragon:
+  Say "{its name} is {its age}."</pre>
+<pre class="output">Smaug is 771.
+Norbert is 1.</pre>
+</figure>
+
+<p>Put a second loop inside the first and the same word becomes ambiguous. A person would probably guess the nearer thing. The compiler does not guess.</p>
+
+<figure class="snippet">
+<pre class="program" data-expect="refused">A dragon has an age (number).
+A treasure has a worth (money) and an owner (dragon).
+There is a dragon called Smaug whose age is 771.
+There is a treasure called Goblet whose worth is $3,000 and whose owner is Smaug.
+
+For each dragon:
+  For each treasure of the dragon:
+    Say its worth.</pre>
+<pre class="output refused">Meaning (line 8):
+
+    Say its worth.
+        ^^^
+
+  "its" can be read two ways here:
+    (1) the treasure's worth
+    (2) the dragon's worth
+  Say which one, such as "the treasure's worth".
+  The rule: a pronoun (it, its, they, them, their) points at the one thing in view, so there has to be exactly one. (See section 5.1.)</pre>
+</figure>
+
+<p>That message is the second claim in practice. It names the two readings and shows the sentence that removes the doubt. The language is learned from messages like it.</p>
+
+<p class="fleuron" aria-hidden="true">&#10086;</p>
+<h2 id="rules">The rules that make English strict</h2>
+
+<p class="opening">Each rule takes a habit of ordinary English and adds the condition under which it has one meaning.</p>
+
+<h3>A glossary comes first</h3>
+<p>English depends on shared vocabulary. Here the vocabulary is written down: every kind of thing, adjective and verb is defined before it is used, as in the definitions section of a contract. A word that has not been defined is refused, and the message shows how to define it.</p>
+
+<figure class="snippet">
+<pre class="program" data-expect="refused">A dragon has an age (number).
+There is a dragon called Smaug whose age is 771.
+
+If Smaug is sleepy:
+  Say "Shh."</pre>
+<pre class="output refused">Vocabulary (line 4):
+
+    If Smaug is sleepy:
+                ^^^^^^
+
+  I don't know what "sleepy" means for a dragon.
+  Define it first: "A dragon is sleepy when ...".
+  No adjective has been defined for a dragon yet.
+  The rule: an adjective is defined for a kind before it is used. (See section 4.3.)</pre>
+</figure>
+
+<h3>“Of” must mean one thing</h3>
+<p>“The treasures of Smaug” works because a treasure is tied to a dragon in exactly one way, through its owner. When there are two ways, the phrase is refused until the program says which.</p>
+
+<figure class="snippet">
+<pre class="program" data-expect="refused">A dragon has an age (number).
+A duel has a challenger (dragon) and a defender (dragon).
+There is a dragon called Smaug whose age is 771.
+
+Say the number of duels of Smaug.</pre>
+<pre class="output refused">Meaning (line 5):
+
+    Say the number of duels of Smaug.
+                      ^^^^^
+
+  "duels of Smaug" can be read two ways, because a duel is tied to a dragon by its challenger and defender:
+    (1) duels whose challenger is Smaug
+    (2) duels whose defender is Smaug
+  Say which, such as "duels whose challenger is Smaug".
+  The rule: "Of" between two kinds needs exactly one property that links them. (See section 5.5.)</pre>
+</figure>
+
+<h3>Prepositions name a verb's roles</h3>
+<p>English already has named arguments: “send the knight <em>against</em> the dragon”. A verb is taught with its prepositions and the kind of thing each one takes. Every role is then checked wherever the verb is used.</p>
+
+<figure class="snippet">
+<pre class="program" data-expect="refused">A dragon has an age (number).
+A knight has a purse (money).
+There is a dragon called Smaug whose age is 771.
+There is a knight called Gawain whose purse is $300.
+
+To send a knight against a dragon:
+  Say "{the knight} rides out against {the dragon}."
+
+Send Smaug against Gawain.</pre>
+<pre class="output refused">Grammar (line 9):
+
+    Send Smaug against Gawain.
+         ^^^^^
+
+  "Send" wants a knight here, but Smaug is a dragon.
+  It goes: Send &lt;a knight&gt; against &lt;a dragon&gt;.
+  The rule: each kind of sentence has a fixed form, word for word. (See section 11.)</pre>
+</figure>
+
+<h3>Brackets carry the type, and units do not mix</h3>
+<p>Whatever is not obvious from a name goes in brackets after it: <code>(money)</code>, <code>(number)</code>, <code>(horse, if any)</code>. Money, plain numbers and percentages are different things, as they are in speech. Nobody adds “five” to “three hundred dollars” without saying five what.</p>
+
+<figure class="snippet">
+<pre class="program" data-expect="refused">A knight has a purse (money).
+There is a knight called Gawain whose purse is $300.
+
+Add 5 to Gawain's purse.</pre>
+<pre class="output refused">Kinds of value (line 4):
+
+    Add 5 to Gawain's purse.
+        ^^^^^^^^^^^^^^^^^^^
+
+  I can't add a plain number to money.
+  If you meant money, write $5.
+  The rule: arithmetic needs values that go together: money with money, and plain numbers with plain numbers or money. (See section 5.3.)</pre>
+</figure>
+
+<h3>“And” with “or” needs brackets</h3>
+<p>Most programming languages settle this with a rule of precedence that the reader has to remember. English has no such rule, so the sentence is refused until brackets show which reading is meant.</p>
+
+<figure class="snippet">
+<pre class="program" data-expect="refused">Let the day be 3.
+If the day is 1 and the day is 2 or the day is 3:
+  Say "Which way?"</pre>
+<pre class="output refused">Meaning (line 2):
+
+    If the day is 1 and the day is 2 or the day is 3:
+                                     ^^
+
+  This mixes "and" with "or", so it can be read two ways:
+    (1) (the day is 1 and the day is 2) or the day is 3
+    (2) the day is 1 and (the day is 2 or the day is 3)
+  Put brackets round the part that belongs together.
+  The rule: "And" and "or" are not mixed without brackets. (See section 6.)</pre>
+</figure>
+
+<h3>What may be missing must be checked</h3>
+<p>A knight may have no horse. Writing <code>(horse, if any)</code> says so, and from then on the compiler will not let the horse be used until the program has checked that it is there.</p>
+
+<figure class="snippet">
+<pre class="program" data-expect="refused">A horse has a speed (number).
+A knight has a purse (money) and a mount (horse, if any).
+There is a knight called Robin whose purse is $20.
+
+Say Robin's mount's speed + 1.</pre>
+<pre class="output refused">Meaning (line 5):
+
+    Say Robin's mount's speed + 1.
+        ^^^^^^^^^^^^^^^^^^^^^
+
+  Robin's mount's speed may be nothing.
+  Check first with "If Robin has a mount:", or give a stand-in with "or else".
+  The rule: a value that may be nothing is checked before it is used. (See section 2.)</pre>
+</figure>
+
+<p>With the check, the same sentence is accepted:</p>
+
+<figure class="snippet">
+<pre class="program" data-expect="ok">A horse has a speed (number).
+A knight has a purse (money) and a mount (horse, if any).
+There is a horse called Shadowfax whose speed is 40.
+There is a knight called Gawain whose purse is $300 and whose mount is Shadowfax.
+There is a knight called Robin whose purse is $20.
+
+For each knight:
+  If the knight has a mount:
+    Say "{the knight} rides at {the knight's mount's speed + 1}."
+  Otherwise:
+    Say "{the knight} walks."</pre>
+<pre class="output">Gawain rides at 41.
+Robin walks.</pre>
+</figure>
+
+<h3>“Never” and “for example” are part of the language</h3>
+<p>A sentence with “never” or “always” is a rule, checked every time the thing changes. A sentence starting “For example” is a test that runs with the program. Both are things people write anyway, in comments and in separate test files.</p>
+
+<figure class="snippet">
+<pre class="program" data-expect="refused">A knight has a purse (money).
+A knight's purse is never less than $0.
+There is a knight called Robin whose purse is $20.
+
+For example, Robin's purse is $20.
+Subtract $500 from Robin's purse.</pre>
+<pre class="output refused">While running (line 6):
+
+    Subtract $500 from Robin's purse.
+
+  That would break a rule: "A knight's purse is never less than $0."
+  (Robin's purse is $20 and would become -$480.)
+  The rule: "Fail because" stops the program, unless a "Try" around it catches the problem. (See section 8.5.)</pre>
+</figure>
+
+</div>
+
+<section id="play" aria-labelledby="play-title">
+  <div class="wide">
+    <p class="fleuron" aria-hidden="true">&#10086;</p>
+    <h2 id="play-title">Try it</h2>
+    <p class="small">This is the real compiler, not a copy written for the web. It is Python, running in your browser as WebAssembly through <a href="https://pyodide.org">Pyodide</a>; <a href="how.html">the machinery</a> explains how. Nothing you type leaves this page. The first run downloads Python, which is large and takes a moment.</p>
+    <div class="controls">
+      <label for="pick">Program</label>
+      <select id="pick"><option>Loading…</option></select>
+      <button class="button primary" id="run" type="button">Run</button>
+      <button class="button" id="explain" type="button" title="Show how each sentence was read, without running it">Explain</button>
+      <button class="button" id="check" type="button" title="Compile only">Check</button>
+      <span id="status" role="status" aria-live="polite"></span>
+    </div>
+    <p id="note"></p>
+    <div class="bench">
+      <div class="pane">
+        <div class="title"><label for="source">The program</label></div>
+        <textarea id="source" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off"></textarea>
+      </div>
+      <div class="pane">
+        <div class="title">What it says</div>
+        <div id="result" aria-live="polite"></div>
+        <form class="reply" id="reply" hidden>
+          <label for="answer" id="question"></label>
+          <input id="answer" type="text" autocomplete="off">
+          <button class="button primary" type="submit">Send</button>
+          <button class="button" type="button" id="finish" title="Tell the program there is no more input">End input</button>
+        </form>
+      </div>
+    </div>
+    <p class="small" style="margin-top:1.25rem">Change any sentence and run it again. <em>Explain</em> shows what the compiler filled in for each sentence, such as which thing an “its” was taken to mean. A program that writes a file keeps it until you reload the page.</p>
+    <p class="small">To write a program of your own, <a href="playground.html">open the playground</a>. It has a larger editor that checks your sentences as you type, and a list of how to say things.</p>
+  </div>
+</section>
+
+<div class="prose">
+
+<p class="fleuron" aria-hidden="true">&#10086;</p>
+<h2 id="evidence">The evidence</h2>
+
+<p class="opening">A language is tested by what can be written in it. Three programs were written to push this one, and each is in the repository.</p>
+
+<h3>A to-do list</h3>
+<p>An ordinary small application: it asks for commands, makes and removes tasks, marks them done, and keeps the list in a file between runs. It is in the playground above. Its first run has no saved file, and it handles that with a sentence most people could read aloud: <code>Try:</code> to load the list, and <code>If that fails:</code> to start a new one.</p>
+
+<h3>SHA-256, from first principles</h3>
+<p>EnglishScript has no bit operators, no remainders and no arrays. This program builds them. A number's lowest bit is whether it is divisible by two, halving it shifts every bit one place to the right, and an array is a kind of thing with a place and a value. The algorithm's 72 constants are not typed in: the program finds the first 64 primes and takes their cube and square roots by bisection on whole numbers about 105 bits long.</p>
+<p>It gives the same answers as Python's own <code>hashlib</code>, including for messages several blocks long. It is also slow, at about 300 bytes a second. It is in the playground too.</p>
+
+<h3>A triangle on a graphics card</h3>
+<p>A program can say <code>Use the vulkan library.</code> and then draw with sentences such as <code>Draw Hello on Canvas.</code> Each sentence stands for a handful of calls to the real Vulkan API. This picture was drawn that way by an ordinary graphics card and read back:</p>
+
+<figure class="picture">
+  <img src="assets/triangle-gpu.png" width="800" height="600" alt="A triangle on a dark background, shaded smoothly from red at the top to green at the right and blue at the left.">
+  <figcaption>Drawn by <code>examples/gpu_triangle.english</code>. The program reads the middle pixel back from the card as 85, 85, 85: an even mix of the three corners.</figcaption>
+</figure>
+
+<p>A browser has no access to Vulkan, so that program is not in the playground. The playground's “A shaded triangle” draws the same shape in characters, by doing the card's work in EnglishScript.</p>
+
+<h3>The reference is tested</h3>
+<p>Every example in <a href="reference.html">the grammar</a> is run by the test suite, and so is every example on this page. If the compiler changes and the documents do not, a test fails.</p>
+
+<p class="fleuron" aria-hidden="true">&#10086;</p>
+<h2 id="cost">What it costs</h2>
+
+<ul>
+  <li><strong>You still have to learn which sentences are accepted.</strong> This is the old weakness of English-like languages, and it is not gone. The error messages are the defence against it, and whether they are enough is an open question that only people who did not write the compiler can answer.</li>
+  <li><strong>Arithmetic reads worse in words.</strong> For this reason sums are written in symbols, as English writing has done for centuries.</li>
+  <li><strong>It is slow.</strong> Each sentence becomes a Python closure and numbers are exact fractions. That suits bookkeeping and teaching, and it does not suit heavy computation.</li>
+  <li><strong>It is not finished.</strong> Lists are only partly there. Dates, units, picking from a group and doing things at the same time have a designed syntax and no implementation.</li>
+  <li><strong>Strictness is sometimes tedious.</strong> In a nested loop the compiler makes you write “the treasure's worth” where a person would have understood “its worth”.</li>
+</ul>
+
+<p class="fleuron" aria-hidden="true">&#10086;</p>
+<h2 id="models">Where a language model belongs</h2>
+
+<p class="opening">The first column of the table above is still “No”. EnglishScript does not accept loose English, and a parser never will.</p>
+
+<p>A language model can. The arrangement this thesis points to has two steps. A model rewrites what you said into strict sentences like the ones on this page. The compiler then accepts the result or refuses it and says why. The model does the part that needs judgement, and the compiler does the part that needs to be certain. Neither is asked to do the other's job. Because the strict form is English, a person can read what the model wrote and see whether it is what they meant.</p>
+
+<p>That step is not built here. What is built is the half that had to come first: a form of English precise enough to be worth translating into.</p>
+
+<p>There is one more thing to say plainly. Most of this compiler was itself written by language models, under a person's direction, with one model reviewing another's work. That fits the thesis. The models were useful because a strict checker, a test suite of more than 130 tests, stood behind everything they wrote.</p>
+
+<p class="fleuron" aria-hidden="true">&#10086;</p>
+<h2 id="agents">Agents, and what a program means</h2>
+
+<p class="opening">The last chapter spoke of a model as a translator: a person says something loose, and the model writes the strict form. That is no longer the usual arrangement. A person now describes a task, and an agent, which is a language model working in a loop with tools, writes the program, runs it, reads what went wrong and tries again. The person writes very little. What is left to them is to read.</p>
+
+<h3>The reader is the narrow place</h3>
+
+<p>An agent can write a thousand lines in the time it takes a person to read fifty. Code that is approved without being understood has not been reviewed, and most people who are asked to approve an agent's work are being asked to read a notation that was made for writing in, and often one they do not know well. The honest choices are to trust the agent or to slow it down to the speed of its reader.</p>
+
+<p>A language made of sentences changes who can do the reading, and how fast. Here is the kind of thing an agent might be asked for, and might hand back:</p>
+
+<figure class="snippet">
+<pre class="program" data-expect="ok">An account has a balance (money).
+An account's balance is never less than $0.
+There is an account called Ada whose balance is $40.
+
+To withdraw an amount (money) from an account:
+  Subtract the amount from the account's balance.
+
+Try:
+  Withdraw $50 from Ada.
+If that fails:
+  Say "Refused. {the problem}"
+Say "Ada still has {Ada's balance}."</pre>
+<pre class="output">Refused. That would break a rule: "An account's balance is never less than $0."
+Ada still has $40.</pre>
+</figure>
+
+<p>The person who asked for it can check the second sentence against what they wanted without knowing what a setter is. And that sentence is not a comment beside the code. It is the rule, and the attempt below it was stopped by it.</p>
+
+<h3>Two kinds of understanding</h3>
+
+<p>People say that a language model understands a sentence, and in a useful sense it does. It will nearly always pick the dragon you meant by “its hoard”. But its understanding is a likelihood. It cannot tell you which of its readings were certain and which were guesses, because to the model they are the same kind of thing.</p>
+
+<p>The compiler's understanding is narrower, and of another kind. It knows what each word refers to and what kind of value each phrase has, and nothing more. It has no idea whether taxing dragons is wise. But within those limits it either has one reading, and can show it, or has two, and shows both. The Explain button in <a href="playground.html">the playground</a> prints, under each sentence, how that sentence was read. That printout is common ground: the person, the agent and the machine are all looking at the same statement of what the sentence means.</p>
+
+<p>An agent needs both kinds. It needs judgement to get from an intention to a draft, and it needs something certain to tell it that the draft says one thing. A second model cannot be that something, because it is guessing as well.</p>
+
+<h3>What an agent needs from a language</h3>
+
+<ul>
+  <li><strong>Refusals it can act on.</strong> Every problem comes with its place, its reason and, where it is certain, the corrected sentence. The linter gives all of them at once, as data, with <code>--lint --json</code>. That is a loop an agent can run with nobody watching: write, check, mend, run.</li>
+  <li><strong>No silent choices.</strong> The dangerous line in an agent's work is the one that is plausible and wrong. A language that picks a reading for you lets that line through. A language that refuses to pick turns some of those lines into errors before anything has run.</li>
+  <li><strong>The intention kept in the program.</strong> “Never” and “for example” are sentences of the language, and they run. An agent that changes the program cannot drop one quietly. The change shows as an English sentence taken out, and that is a thing a reviewer notices.</li>
+  <li><strong>A judge that is not a model.</strong> The same program means the same thing every time, so what passed yesterday still passes today.</li>
+</ul>
+
+<h3>What has been tried, and what has not</h3>
+
+<p>This repository is a small trial of the idea, in one direction only. Its example programs were written by a model working from <a href="reference.html">the grammar</a>. The first drafts were often refused: a reserved word used in a name, a preposition the language does not have, a variable given the name of one already in view. One program claimed that sorting eight numbers took thirteen swaps. The compiler ran it and answered that it took fourteen. Each was put right from the message alone.</p>
+
+<p>What has not been tried is the claim that matters most. Nobody has measured whether a person reviewing an agent's work catches more mistakes in these sentences than in Python. There is a real danger on the other side, too: a sentence that reads easily may be read carelessly, and looking right is not the same as being right. The language is also wordier than code, which costs an agent time, and no model has been trained on it. And there is no agent here. There is only the language it would write in, and the checker that would stand behind it.</p>
+
+<p class="fleuron" aria-hidden="true">&#10086;</p>
+<h2 id="more">Read more</h2>
+<ul>
+  <li><a href="playground.html">The playground</a>, to write a program of your own.</li>
+  <li><a href="todo.html">A page</a>: a to-do list for the web, written in these sentences, with every element of the page a thing in the program.</li>
+  <li><a href="compare.html">Compared</a>: the same programs in JavaScript and in Java, and where the three part company.</li>
+  <li><a href="reference.html">The grammar</a>: every sentence the compiler accepts, and the parts that are designed but not built.</li>
+  <li><a href="how.html">The machinery</a>: how a compiler written in Python runs in a browser.</li>
+  <li><a href="vulkan.html">The vulkan library</a>: each English sentence beside the Vulkan calls it makes.</li>
+  <li><a href="concerns.html">Risks and open questions</a>: forty-two concerns raised about the language, each measured against the compiler and given a verdict.</li>
+  <li><a href="page.html">The page library</a>: the seven kinds of thing that are elements of a page, and how they are bound.</li>
+  <li><a href="https://github.com/monstercameron/EnglishScript">The source</a>, which needs only Python 3, and <a href="https://github.com/monstercameron/EnglishScript/tree/main/examples">the example programs</a>.</li>
+</ul>
+
+</div>
+</main>
+
+<footer>
+  <div class="prose colophon">
+    <span class="finis">Finis</span>
+    Set in Garamond and the Fell types, with capitals in blackletter. The compiler on this page is the one in the repository, bundled by <code>tools/build_site.py</code>.
+    <noscript><p>This page needs JavaScript to run programs. The text and the printed outputs can be read without it.</p></noscript>
+  </div>
+</footer>
+
+<script type="module">
+import { play, show, failed, loader } from "./play/engine.js";
+import { mountSnippets } from "./play/snippets.js";
+
+mountSnippets();
+
+const source = document.getElementById("source");
+const pick = document.getElementById("pick");
+
+// ---- the playground
+
+const result = document.getElementById("result");
+const status = document.getElementById("status");
+const note = document.getElementById("note");
+const replyForm = document.getElementById("reply");
+const question = document.getElementById("question");
+const answer = document.getElementById("answer");
+const buttons = [document.getElementById("run"), document.getElementById("explain"), document.getElementById("check")];
+let examples = [];
+let session = { source: "", replies: [] };
+
+function setNote(text) { note.textContent = text; }
+const setStatus = loader(status);
+function busy(yes, mode) {
+  for (const button of buttons) {
+    button.disabled = yes;
+    if (yes && button.id === mode) button.setAttribute("aria-busy", "true");
+    else button.removeAttribute("aria-busy");
+  }
+  result.closest(".pane").classList.toggle("working", yes);
+}
+
+async function step(mode) {
+  busy(true, mode);
+  replyForm.hidden = true;
+  try {
+    const outcome = await play(session.source, mode, session.replies, setStatus);
+    show(result, outcome.events);
+    if (outcome.state === "waiting") {
+      question.textContent = outcome.question;
+      replyForm.hidden = false;
+      answer.value = "";
+      answer.focus({ preventScroll: true });
+    }
+    result.scrollTop = result.scrollHeight;
+  } catch (error) {
+    setStatus("");
+    failed(result, error);
+  }
+  busy(false);
+}
+
+function startSession(mode) {
+  session = { source: source.value, replies: [] };
+  return step(mode);
+}
+
+function loadExample(id) {
+  const example = examples.find((item) => item.id === id);
+  if (!example) return;
+  source.value = example.source;
+  setNote(example.note);
+  result.replaceChildren();
+  replyForm.hidden = true;
+}
+
+buttons[0].addEventListener("click", () => startSession("run"));
+buttons[1].addEventListener("click", () => startSession("explain"));
+buttons[2].addEventListener("click", () => startSession("check"));
+pick.addEventListener("change", () => loadExample(pick.value));
+source.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) { event.preventDefault(); startSession("run"); }
+  if (event.key === "Tab" && !event.shiftKey && !event.altKey) {  // two spaces, as the language indents
+    event.preventDefault();
+    source.setRangeText("  ", source.selectionStart, source.selectionEnd, "end");
+  }
+});
+replyForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  session.replies.push(answer.value);
+  step("run");
+});
+document.getElementById("finish").addEventListener("click", () => {
+  session.replies.push(null);
+  step("run");
+});
+
+try {
+  const response = await fetch("play/examples.json");
+  examples = await response.json();
+  pick.replaceChildren(...examples.map((example) => new Option(example.title, example.id)));
+  pick.append(new Option("(your own)", ""));
+  pick.value = "dragons";
+  loadExample("dragons");
+} catch (error) {
+  pick.replaceChildren(new Option("(examples could not be loaded)", ""));
+  setNote("Type a program below and run it.");
+}
+</script>
+</body>
+</html>

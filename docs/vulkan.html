@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The vulkan library of EnglishScript</title>
+<meta name="description" content="Draw shaded triangles on a graphics card from EnglishScript, through the real Vulkan API.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;family=IM+Fell+English:ital@0;1&amp;family=IM+Fell+English+SC&amp;family=UnifrakturMaguntia&amp;display=swap">
+<link rel="stylesheet" href="assets/english.css">
+</head>
+<body>
+
+<nav class="sitenav" aria-label="The pages of this site">
+  <div class="inner">
+    <a class="home" href="./">EnglishScript</a>
+    <a class="page" href="./">The treatise</a>
+    <a class="page" href="playground.html">The playground</a>
+    <a class="page" href="todo.html">A page</a>
+    <a class="page" href="compare.html">Compared</a>
+    <a class="page" href="reference.html">The grammar</a>
+    <a class="page" href="how.html">The machinery</a>
+    <a class="page" href="https://github.com/monstercameron/EnglishScript">The source</a>
+  </div>
+</nav>
+
+<main class="doc plain">
+<article>
+<h1>The Vulkan Library</h1>
+<p class="standfirst">English sentences that draw on a real graphics card, each beside the Vulkan calls it makes.</p>
+<p>The <code>vulkan</code> library lets an EnglishScript program draw shaded triangles on the computer's graphics card, through the real Vulkan API.</p>
+<pre class="form">python -m englishscript examples/gpu_triangle.english</pre>
+<p>That program draws a red, green and blue triangle and saves it as <code>gpu_triangle.png</code> in the folder it is run from.</p>
+<p><img src="assets/triangle-gpu.png" alt="A triangle shaded from red at the top to green at the right and blue at the left"></p>
+<p>The <a href="https://monstercameron.github.io/EnglishScript/">project page</a> explains the idea behind the language and runs the compiler in a browser. A browser cannot reach Vulkan, so this library works only from the command line.</p>
+<h2 id="what-it-needs">What it needs</h2>
+<ul>
+<li>A graphics card with a Vulkan driver. Most recent cards have one.</li>
+<li>Nothing else. The library is plain Python and installs nothing: it calls the driver's own Vulkan loader (<code>vulkan-1.dll</code> on Windows, <code>libvulkan.so.1</code> on Linux) through Python's built-in <code>ctypes</code>.</li>
+</ul>
+<p>It has been run on one computer: Windows 11 with an NVIDIA card. The Linux path is written but untested, and macOS is not supported.</p>
+<p>If there is no usable card, <code>Start Vulkan.</code> reports a problem, which a program can catch with <code>Try:</code>.</p>
+<h2 id="a-program">A program</h2>
+<pre class="form">Use the vulkan library.
+
+There is a vertex called Apex whose x is 0, whose y is -0.5, and whose colour is Red.
+There is a vertex called East whose x is 0.5, whose y is 0.5, and whose colour is Green.
+There is a vertex called West whose x is -0.5, whose y is 0.5, and whose colour is Blue.
+There is a triangle called Hello whose top corner is Apex, whose right corner is East, and whose left corner is West.
+There is a picture called Canvas whose width is 800, whose height is 600, and whose background is Black.
+
+Start Vulkan.
+Say "Drawing on {Vulkan's card}."
+Prepare Canvas.
+Draw Hello on Canvas.
+Save Canvas as "triangle.png".
+Close Vulkan.</pre>
+<p>Positions run from -1 to 1 across the picture, and from -1 at the top to 1 at the bottom, as in Vulkan. Each colour part runs from 0 to 1.</p>
+<h2 id="what-the-library-gives-a-program">What the library gives a program</h2>
+<h3 id="kinds">Kinds</h3>
+<div class="scroll"><table>
+<thead><tr><th>Kind</th><th>Properties</th></tr></thead>
+<tbody>
+<tr><td><code>colour</code></td><td><code>red</code>, <code>green</code>, <code>blue</code> (numbers from 0 to 1)</td></tr>
+<tr><td><code>vertex</code></td><td><code>x</code>, <code>y</code> (numbers), <code>colour</code> (a colour)</td></tr>
+<tr><td><code>triangle</code></td><td><code>top corner</code>, <code>right corner</code>, <code>left corner</code> (vertices)</td></tr>
+<tr><td><code>picture</code></td><td><code>width</code>, <code>height</code> (whole numbers from 1 to 8,192), <code>background</code> (a colour)</td></tr>
+<tr><td><code>driver</code></td><td><code>card</code> (text: the name of the graphics card, or <code>not started</code>)</td></tr>
+</tbody></table></div>
+<h3 id="things">Things</h3>
+<ul>
+<li>Five colours: <code>Red</code>, <code>Green</code>, <code>Blue</code>, <code>Black</code> and <code>White</code>.</li>
+<li>One driver, called <code>Vulkan</code>.</li>
+</ul>
+<p>A program may describe more colours, vertices, triangles and pictures of its own.</p>
+<h3 id="verbs">Verbs</h3>
+<p>Each verb stands for the Vulkan calls beside it.</p>
+<div class="scroll"><table>
+<thead><tr><th>Sentence</th><th>What it does</th><th>Vulkan calls</th></tr></thead>
+<tbody>
+<tr><td><code>Start Vulkan.</code></td><td>Finds the best graphics card and opens it.</td><td><code>vkCreateInstance</code>, <code>vkEnumeratePhysicalDevices</code>, <code>vkCreateDevice</code>, <code>vkCreateCommandPool</code></td></tr>
+<tr><td><code>Prepare &lt;picture&gt;.</code></td><td>Makes the picture on the card, and everything needed to draw into it.</td><td><code>vkCreateImage</code>, <code>vkCreateImageView</code>, <code>vkCreateRenderPass</code>, <code>vkCreateFramebuffer</code>, <code>vkCreateShaderModule</code>, <code>vkCreateGraphicsPipelines</code></td></tr>
+<tr><td><code>Draw &lt;triangle&gt; on &lt;picture&gt;.</code></td><td>Draws one triangle, shading each point from the colours of its corners.</td><td><code>vkCreateBuffer</code>, <code>vkCmdBeginRenderPass</code>, <code>vkCmdBindPipeline</code>, <code>vkCmdBindVertexBuffers</code>, <code>vkCmdDraw</code>, <code>vkQueueSubmit</code></td></tr>
+<tr><td><code>Save &lt;picture&gt; as &lt;text&gt;.</code></td><td>Reads the picture back and writes it as a PNG file.</td><td><code>vkCmdCopyImageToBuffer</code>, <code>vkMapMemory</code></td></tr>
+<tr><td><code>Close Vulkan.</code></td><td>Gives everything back to the card.</td><td><code>vkDestroy...</code>, <code>vkDestroyDevice</code>, <code>vkDestroyInstance</code></td></tr>
+</tbody></table></div>
+<ul>
+<li>The first <code>Draw</code> on a picture clears it to its background. Later draws add to what is there.</li>
+<li>If a program ends without <code>Close Vulkan.</code>, the library closes it anyway.</li>
+</ul>
+<h3 id="a-worked-out-value">A worked-out value</h3>
+<pre class="form">the pixel of &lt;picture&gt; at &lt;number&gt; by &lt;number&gt;</pre>
+<p>This is one pixel read back from the card, as text such as <code>85, 85, 85</code>: red, green and blue, each from 0 to 255. The first number counts across from the left, the second down from the top, both starting at 0.</p>
+<h3 id="problems-a-program-can-recover-from">Problems a program can recover from</h3>
+<p>All of these can be caught with <code>Try:</code> (section 8.5 of <a href="reference.html">SYNTAX.md</a>):</p>
+<ul>
+<li>there is no graphics card that Vulkan can use;</li>
+<li>a verb is used before <code>Start Vulkan.</code>, or a picture before <code>Prepare</code>;</li>
+<li>Vulkan is started twice, or a picture is prepared twice;</li>
+<li>a picture's width or height is not a whole number from 1 to 8,192;</li>
+<li>a pixel is asked for outside the picture;</li>
+<li>the file cannot be written.</li>
+</ul>
+<p>A failed <code>Try</code> undoes changes to things in the program's world. It cannot undo what was already drawn on the card or written to a file.</p>
+<h2 id="what-it-does-not-do">What it does not do</h2>
+<ul>
+<li><strong>No window.</strong> The picture is drawn off screen and saved to a file.</li>
+<li><strong>No shaders of your own.</strong> The library has one vertex shader, which passes each corner's position and colour through, and one fragment shader, which gives each point the colour blended from the corners. A program chooses the vertices and colours.</li>
+<li><strong>Triangles only,</strong> in two dimensions, with no textures, depth or lighting.</li>
+<li><strong>No checking layer.</strong> Vulkan's validation layers come with its SDK, which this library does not need or use.</li>
+</ul>
+<h2 id="how-it-works">How it works</h2>
+<ul>
+<li><code>englishscript/libraries/vulkan.py</code> holds the library's EnglishScript sentences and the Python functions behind its verbs.</li>
+<li><code>englishscript/libraries/_vk.py</code> is the bridge to Vulkan: the C structures and functions, declared with <code>ctypes</code>, and the steps to draw into an off-screen picture and read it back.</li>
+<li><code>englishscript/libraries/_spirv.py</code> builds the two shaders. Vulkan takes shaders as SPIR-V, a binary form normally made by a compiler that comes with the Vulkan SDK. So that no SDK is needed, this module assembles the SPIR-V itself, instruction by instruction.</li>
+</ul>
+<p>For how a library is written in general, see section 9.4 of <a href="reference.html">SYNTAX.md</a> and <code>englishscript/libraries/__init__.py</code>.</p>
+<p><code>examples/triangle.english</code> draws the same triangle with no graphics card at all, by doing the card's work in EnglishScript and printing characters.</p>
+</article>
+<footer class="colophon">
+  Printed from <a href="https://github.com/monstercameron/EnglishScript/blob/main/docs/VULKAN.md">docs/VULKAN.md</a> by <code>tools/build_site.py</code>.
+</footer>
+</main>
+
+</body>
+</html>

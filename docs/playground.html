@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EnglishScript playground</title>
+<meta name="description" content="Write a program in English sentences. The compiler runs in your browser, underlines what it cannot read as you type, and says how to fix it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;family=IM+Fell+English:ital@0;1&amp;family=IM+Fell+English+SC&amp;family=UnifrakturMaguntia&amp;display=swap">
+<link rel="stylesheet" href="assets/english.css">
+<style>
+  :root { --code-size: 19px; --code-line: 29px; }
+  .wrap { max-width: 84rem; margin: 0 auto; padding: 0 16px; }
+
+  header.top .wrap { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 1.25rem; padding-top: 1.1rem; }
+  header.top h1 { font: 400 2rem/1.1 var(--fell); margin: 0; }
+  header.top p { margin: 0; color: var(--muted); font: italic 1.15rem/1.35 var(--fell); flex: 1 1 18rem; }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; margin: 1.1rem 0 0.5rem; }
+  .controls label { font: italic 1.1rem var(--fell); color: var(--muted); }
+  #status { font: italic 1.05rem var(--fell); color: var(--muted); }
+  #note { font: italic 1.1rem var(--fell); color: var(--muted); margin: 0 0 0.75rem; min-height: 1.5em; }
+
+  .work { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
+  @media (min-width: 960px) { .work { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); } }
+  .column { display: grid; gap: 20px; min-width: 0; }
+  .badge { margin-left: auto; font: italic 1rem var(--fell); letter-spacing: 0; text-transform: none; color: var(--muted); }
+  .badge.good { color: var(--good); }
+  .badge.bad { color: var(--bad); }
+  .badge.warn { color: var(--warn); }
+
+  /* The editor: a transparent text box over a painted copy of its text. Both
+     are set in the same face with kerning and ligatures off, and nothing in
+     the painted copy is italic or bold, so every letter sits exactly under
+     the one being typed. */
+  .editor { display: flex; height: 31rem; font: var(--code-size)/var(--code-line) var(--serif); font-variant-numeric: lining-nums; }
+  @media (max-width: 700px) { .editor { height: 23rem; } }
+  .gutter { flex: none; width: 2.6em; overflow: hidden; padding: 12px 0; text-align: right; color: var(--muted); background: var(--panel); border-right: 1px solid var(--rule); user-select: none; font-family: var(--fell); font-variant-numeric: oldstyle-nums; }
+  .gutter div { padding-right: 0.55em; height: var(--code-line); }
+  .gutter .bad { color: var(--bad); box-shadow: inset 4px 0 0 var(--bad); }
+  .gutter .warn { color: var(--warn); box-shadow: inset 4px 0 0 var(--warn); }
+  .code { position: relative; flex: 1; min-width: 0; }
+  .paint, #source {
+    position: absolute; inset: 0; margin: 0; border: 0; padding: 12px 16px;
+    font: inherit; letter-spacing: 0; word-spacing: 0.14em; tab-size: 2; white-space: pre; overflow-wrap: normal;
+    font-variant-ligatures: none; font-kerning: none; text-rendering: optimizeSpeed;
+  }
+  .paint { overflow: hidden; pointer-events: none; color: var(--ink); }
+  .paint .s { color: var(--string); }
+  .paint .c { color: var(--comment); }
+  .paint .bad { text-decoration: underline wavy var(--bad); text-decoration-skip-ink: none; text-underline-offset: 4px; background: var(--bad-bg); }
+  .paint .warn { text-decoration: underline wavy var(--warn); text-decoration-skip-ink: none; text-underline-offset: 4px; background: var(--warn-bg); }
+  #source { overflow: auto; resize: none; background: transparent; color: transparent; caret-color: var(--accent); outline-offset: -2px; }
+  #source::selection { background: var(--select); }
+
+  #problems { list-style: none; margin: 0; padding: 0; max-height: 19rem; overflow: auto; }
+  #problems li { padding: 0.6rem 0.9rem 0.7rem; border-bottom: 1px solid var(--rule); border-left: 4px solid var(--bad); cursor: pointer; }
+  #problems li:last-child { border-bottom: 0; }
+  #problems li.warning { border-left-color: var(--warn); }
+  #problems li:hover { background: var(--panel); }
+  #problems .where { font: 0.95rem var(--caps); letter-spacing: 0.1em; text-transform: lowercase; color: var(--bad); background: none; border: 0; padding: 0; cursor: pointer; }
+  #problems li.warning .where { color: var(--warn); }
+  #problems .message { margin: 0.1rem 0 0; font-size: 1.15rem; line-height: 1.35; }
+  #problems-title .grow { margin-right: auto; }
+  #problems .correction { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.6rem; margin: 0.35rem 0 0; }
+  #problems .correction .caret { color: var(--accent); font: 1.4rem/0.6 var(--fell); transform: translateY(0.2rem); }
+  #problems .correction .written { font: italic 1.2rem/1.35 var(--fell); color: var(--accent); margin-right: auto; overflow-wrap: anywhere; min-width: 0; }
+  #problems .rulenote { margin: 0.45rem 0 0; font-size: 1rem; line-height: 1.4; color: var(--muted); }
+  #problems .rulenote .label { font: 0.88rem var(--caps); letter-spacing: 0.1em; text-transform: lowercase; color: var(--ink); }
+  #problems .hint { margin: 0.3rem 0 0; font: italic 1.05rem/1.4 var(--fell); color: var(--muted); white-space: pre-wrap; }
+  .empty { padding: 0.9rem; color: var(--muted); font: italic 1.1rem var(--fell); margin: 0; }
+
+  .tabs { display: flex; border-bottom: 3px double var(--ink); background: var(--panel); }
+  .tabs button { flex: 1; font: 1rem var(--caps); letter-spacing: 0.1em; text-transform: lowercase; padding: 0.55rem 0.6rem 0.6rem; border: 0; background: none; color: var(--muted); cursor: pointer; }
+  .tabs button + button { border-left: 1px solid var(--rule); }
+  .tabs button[aria-selected="true"] { color: var(--accent); background: var(--bg); }
+  [role="tabpanel"][hidden] { display: none; }
+  #result { padding: 0.9rem 1.1rem; min-height: 12rem; max-height: 31rem; overflow: auto; }
+  @media (min-width: 960px) { #result { min-height: 27rem; } }
+  #result:empty::before { content: "Press Run. What the program says appears here."; color: var(--muted); font: italic 1.1rem var(--fell); }
+
+  #phrases { list-style: none; margin: 0; padding: 0; max-height: 42rem; overflow: auto; }
+  #phrases li { padding: 0.8rem 0.9rem 0.9rem; border-bottom: 1px solid var(--rule); }
+  #phrases li:last-child { border-bottom: 0; }
+  #phrases h3 { font: italic 1.3rem/1.2 var(--fell); margin: 0 0 0.45rem; display: flex; align-items: center; gap: 0.5rem; }
+  #phrases h3 .button { margin-left: auto; flex: none; }
+  #phrases pre { margin: 0; padding: 0.5rem 0.75rem; background: var(--panel); border-left: 3px solid var(--accent); font: 1.05rem/1.45 var(--serif); font-variant-numeric: lining-nums; white-space: pre-wrap; overflow-wrap: anywhere; }
+  #phrases pre .s { color: var(--string); }
+  #phrases p { margin: 0.4rem 0 0; font: italic 1.02rem/1.4 var(--fell); color: var(--muted); }
+  footer { margin: 2.5rem 0 3rem; padding-top: 1.5rem; border-top: 3px double var(--ink); }
+  .made { padding: 1rem 1rem 1.1rem; }
+  .made .es-heading { font-size: 2.1rem; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<nav class="sitenav" aria-label="The pages of this site">
+  <div class="inner">
+    <a class="home" href="./">EnglishScript</a>
+    <a class="page" href="./">The treatise</a>
+    <a class="page" href="playground.html" aria-current="page">The playground</a>
+    <a class="page" href="todo.html">A page</a>
+    <a class="page" href="compare.html">Compared</a>
+    <a class="page" href="reference.html">The grammar</a>
+    <a class="page" href="how.html">The machinery</a>
+    <a class="page" href="https://github.com/monstercameron/EnglishScript">The source</a>
+  </div>
+</nav>
+
+<header class="top">
+  <div class="wrap">
+    <h1>The Playground</h1>
+    <p>Write a program in English sentences. Whatever the compiler cannot read is underlined as you write, with a way to mend it.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="controls">
+    <label for="pick">Start from</label>
+    <select id="pick"><option value="">Loading…</option></select>
+    <button class="button primary" id="run" type="button" title="Ctrl+Enter">Run</button>
+    <button class="button" id="explain" type="button" title="Show how each sentence was read, without running it">Explain</button>
+    <button class="button" id="share" type="button" title="Copy a link that opens this program">Copy link</button>
+    <span id="status" role="status" aria-live="polite"></span>
+  </div>
+  <p id="note"></p>
+
+  <div class="work">
+    <div class="column">
+      <section class="pane" aria-labelledby="editor-title">
+        <div class="title"><label id="editor-title" for="source">Your program</label><span class="badge" id="badge">Starting…</span></div>
+        <div class="editor">
+          <div class="gutter" id="gutter" aria-hidden="true"></div>
+          <div class="code">
+            <pre class="paint" id="paint" aria-hidden="true"></pre>
+            <textarea id="source" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-describedby="badge"></textarea>
+          </div>
+        </div>
+      </section>
+      <section class="pane" aria-labelledby="problems-title">
+        <div class="title" id="problems-title"><span class="grow">The marks on your program</span>
+          <button class="button small" id="mendall" type="button" hidden title="Make every correction that is certain">Mend all that can be</button></div>
+        <ul id="problems" aria-live="polite"></ul>
+      </section>
+    </div>
+
+    <div class="column">
+      <section class="pane">
+        <div class="tabs" role="tablist" aria-label="Output and help">
+          <button role="tab" id="tab-says" aria-controls="panel-says" aria-selected="true" type="button">What it says</button>
+          <button role="tab" id="tab-how" aria-controls="panel-how" aria-selected="false" type="button">How to say it</button>
+        </div>
+        <div role="tabpanel" id="panel-says" aria-labelledby="tab-says">
+          <div id="result" aria-live="polite"></div>
+          <form class="reply" id="reply" hidden>
+            <label for="answer" id="question"></label>
+            <input id="answer" type="text" autocomplete="off">
+            <button class="button primary" type="submit">Send</button>
+            <button class="button" type="button" id="finish" title="Tell the program there is no more input">End input</button>
+          </form>
+        </div>
+        <div role="tabpanel" id="panel-how" aria-labelledby="tab-how" hidden>
+          <ul id="phrases"></ul>
+        </div>
+      </section>
+      <section class="pane" id="pagepane" aria-labelledby="page-title" hidden>
+        <div class="title" id="page-title">The page it makes</div>
+        <div class="made"><div id="englishscript-page"></div></div>
+      </section>
+    </div>
+  </div>
+
+  <footer class="colophon">
+    This is the real compiler, running in your browser as WebAssembly through <a href="https://pyodide.org">Pyodide</a>. Nothing you write leaves this page, unless you share a link, which carries the program in its address. Your program is kept in this browser between visits.
+    <noscript><p>The playground needs JavaScript.</p></noscript>
+  </footer>
+</main>
+
+<script type="module">
+import { play, lint, show, failed, escapeHtml, commentStart, tint, toLink, fromLink, addLine, loader } from "./play/engine.js";
+
+const DRAFT = "englishscript.playground.draft";
+const STARTER = `# Write sentences here. Whatever the compiler cannot read is underlined,
+# and the Problems list below says why and how to fix it.
+
+A pet has an age (number).
+There is a pet called Rex whose age is 3.
+
+Say "{Rex} is {Rex's age} years old."
+`;
+
+const source = document.getElementById("source");
+const paintBox = document.getElementById("paint");
+const gutter = document.getElementById("gutter");
+const badge = document.getElementById("badge");
+const problemList = document.getElementById("problems");
+const mendAll = document.getElementById("mendall");
+const pick = document.getElementById("pick");
+const note = document.getElementById("note");
+const status = document.getElementById("status");
+const result = document.getElementById("result");
+const replyForm = document.getElementById("reply");
+const question = document.getElementById("question");
+const answer = document.getElementById("answer");
+const runButton = document.getElementById("run");
+const explainButton = document.getElementById("explain");
+
+let examples = [];
+let problems = [];        // from the last check
+let checked = null;       // the text those problems are about
+let session = { source: "", replies: [] };
+
+const setStatus = loader(status);
+const setNote = (text) => { note.textContent = text; };
+
+// ---- remembering the program in this browser, and in a shared link
+
+function remember(text) {
+  try { localStorage.setItem(DRAFT, text); } catch (error) { /* private windows may refuse */ }
+}
+function remembered() {
+  try { return localStorage.getItem(DRAFT); } catch (error) { return null; }
+}
+// ---- painting the program, with its problems underlined
+
+function paintLine(text, marks) {
+  const kinds = new Array(text.length).fill("");
+  const cut = commentStart(text);
+  let quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    if (i >= cut) kinds[i] = "c";
+    else if (text[i] === '"') { kinds[i] = "s"; quoted = !quoted; }
+    else if (quoted) kinds[i] = "s";
+  }
+  let atEnd = "";
+  for (const mark of marks) {
+    const name = mark.kind === "warning" ? "warn" : "bad";
+    let start = mark.col, end = mark.col === null ? 0 : mark.col + mark.width;
+    if (start === null) {  // no place given: the whole sentence
+      start = text.length - text.trimStart().length;
+      end = text.slice(0, cut).trimEnd().length;
+    }
+    if (start >= text.length) { atEnd = atEnd === "bad" ? "bad" : name; continue; }
+    for (let i = start; i < Math.min(end, text.length); i++) {
+      if (!kinds[i].includes("bad")) kinds[i] = (kinds[i].replace(" warn", "") + " " + name).trim();
+    }
+  }
+  let html = "";
+  for (let i = 0; i < text.length;) {
+    let j = i;
+    while (j < text.length && kinds[j] === kinds[i]) j++;
+    const piece = escapeHtml(text.slice(i, j));
+    html += kinds[i] ? `<span class="${kinds[i]}">${piece}</span>` : piece;
+    i = j;
+  }
+  return html + (atEnd ? `<span class="${atEnd}"> </span>` : "");
+}
+
+function paint() {
+  const lines = source.value.split("\n");
+  const current = checked === source.value ? problems : [];
+  const byLine = new Map();
+  for (const problem of current) {
+    if (!byLine.has(problem.line)) byLine.set(problem.line, []);
+    byLine.get(problem.line).push(problem);
+  }
+  paintBox.innerHTML = lines.map((text, i) => paintLine(text, byLine.get(i + 1) || [])).join("\n") + "\n ";
+  gutter.innerHTML = lines.map((_, i) => {
+    const marks = byLine.get(i + 1);
+    if (!marks) return `<div>${i + 1}</div>`;
+    const name = marks.some((mark) => mark.kind === "error") ? "bad" : "warn";
+    return `<div class="${name}">${i + 1}</div>`;
+  }).join("");
+  syncScroll();
+}
+
+function syncScroll() {
+  paintBox.scrollTop = source.scrollTop;
+  paintBox.scrollLeft = source.scrollLeft;
+  gutter.scrollTop = source.scrollTop;
+}
+
+function goTo(problem) {
+  const lines = source.value.split("\n");
+  let offset = 0;
+  for (let i = 0; i < problem.line - 1 && i < lines.length; i++) offset += lines[i].length + 1;
+  const line = lines[problem.line - 1] || "";
+  const col = problem.col === null ? line.length - line.trimStart().length : Math.min(problem.col, line.length);
+  const width = problem.col === null ? line.trim().length : problem.width;
+  source.focus();
+  source.setSelectionRange(offset + col, Math.min(offset + col + width, offset + line.length));
+  const lineHeight = parseFloat(getComputedStyle(source).lineHeight);
+  source.scrollTop = Math.max(0, (problem.line - 1) * lineHeight - source.clientHeight / 2);
+  syncScroll();
+}
+
+// What a mark is about, as a teacher would head it.
+const CATEGORIES = {
+  spelling: "Spelling", punctuation: "Punctuation", capitals: "Capital letters", grammar: "Grammar",
+  vocabulary: "Vocabulary", meaning: "Meaning", kinds: "Kinds of value", layout: "Layout",
+  borrowed: "From another language", style: "Style", running: "While running",
+};
+
+// Put a corrected line in place of the line as written. It goes in as typing
+// does, so that Ctrl+Z takes it out again.
+function mend(fixes) {
+  const lines = source.value.split("\n");
+  let done = 0;
+  // From the foot of the program up, so that the lines above keep their places.
+  for (const fix of [...fixes].sort((a, b) => b.line - a.line)) {
+    if (fix.line < 1 || fix.line > lines.length || lines[fix.line - 1] === fix.text) continue;
+    const from = lines.slice(0, fix.line - 1).reduce((sum, line) => sum + line.length + 1, 0);
+    source.focus({ preventScroll: true });
+    source.setSelectionRange(from, from + lines[fix.line - 1].length);
+    if (!document.execCommand || !document.execCommand("insertText", false, fix.text)) {
+      source.setRangeText(fix.text, from, from + lines[fix.line - 1].length, "end");
+    }
+    lines[fix.line - 1] = fix.text;
+    done += 1;
+  }
+  if (done) source.dispatchEvent(new Event("input"));
+  return done;
+}
+
+function showProblems() {
+  problemList.replaceChildren();
+  const errors = problems.filter((problem) => problem.kind === "error").length;
+  const warnings = problems.length - errors;
+  const mendable = problems.filter((problem) => problem.fix);
+  mendAll.hidden = mendable.length < 2;
+  if (!problems.length) {
+    const empty = document.createElement("p");
+    empty.className = "empty";
+    empty.textContent = "Nothing to mend: every sentence reads one way. Press Run.";
+    problemList.append(empty);
+    badge.textContent = "Nothing to mend";
+    badge.className = "badge good";
+    return;
+  }
+  const count = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+  badge.textContent = [errors ? `${errors} to mend` : "", warnings ? count(warnings, "suggestion") : ""].filter(Boolean).join(", ");
+  badge.className = "badge " + (errors ? "bad" : "warn");
+  const add = (parent, tag, css, text) => {
+    const node = document.createElement(tag);
+    node.className = css;
+    if (text !== undefined) node.textContent = text;
+    parent.append(node);
+    return node;
+  };
+  for (const problem of problems) {
+    const item = document.createElement("li");
+    item.className = problem.kind;
+    const about = CATEGORIES[problem.category] || (problem.kind === "warning" ? "A suggestion" : "A mistake");
+    const where = add(item, "button", "where", about + (problem.kind === "warning" && problem.category ? ", a suggestion" : "") + ", line " + problem.line);
+    where.type = "button";
+    add(item, "p", "message", problem.message);
+    if (problem.fix) {
+      // The correction, written in as a teacher writes it: in red, with a way to accept it.
+      const correction = add(item, "p", "correction");
+      add(correction, "span", "caret", "‸");
+      add(correction, "span", "written", problem.fix.text.trim());
+      const button = add(correction, "button", "button small", "Mend it");
+      button.type = "button";
+      button.addEventListener("click", (event) => { event.stopPropagation(); mend([problem.fix]); });
+    }
+    if (problem.hint) add(item, "p", "hint", problem.hint);
+    if (problem.rule) {
+      const rule = add(item, "p", "rulenote");
+      add(rule, "span", "label", "The rule ");
+      add(rule, "span", "", problem.rule + " ");
+      if (problem.see) {
+        const link = add(rule, "a", "", "Section " + problem.see + " of the grammar");
+        link.href = "reference.html#s" + String(problem.see).replace(/\./g, "-");
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.addEventListener("click", (event) => event.stopPropagation());
+      }
+    }
+    item.addEventListener("click", () => goTo(problem));
+    problemList.append(item);
+  }
+}
+
+mendAll.addEventListener("click", () => mend(problems.filter((problem) => problem.fix).map((problem) => problem.fix)));
+
+// ---- checking as you type
+
+let timer = 0;
+let latest = 0;
+
+async function check() {
+  const text = source.value;
+  const mine = ++latest;
+  try {
+    const found = await lint(text, setStatus);
+    setStatus("");
+    if (mine !== latest || text !== source.value) return;  // the program has changed since
+    problems = found;
+    checked = text;
+    paint();
+    showProblems();
+  } catch (error) {
+    setStatus("");
+    badge.textContent = "Not checking";
+    badge.className = "badge bad";
+    const empty = document.createElement("p");
+    empty.className = "empty";
+    empty.textContent = "This page could not start Python, so it cannot check your program. It needs a connection to cdn.jsdelivr.net the first time.";
+    problemList.replaceChildren(empty);
+  }
+}
+
+function changed() {
+  remember(source.value);
+  paint();  // straight away, without the old underlines
+  badge.textContent = "Checking…";
+  badge.className = "badge";
+  clearTimeout(timer);
+  timer = setTimeout(check, 350);
+}
+
+function setProgram(text) {
+  source.value = text;
+  source.scrollTop = 0;
+  result.replaceChildren();
+  replyForm.hidden = true;
+  changed();
+}
+
+source.addEventListener("input", () => { pick.value = ""; changed(); });
+source.addEventListener("scroll", syncScroll);
+source.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+    event.preventDefault();
+    start("run");
+  } else if (event.key === "Tab" && !event.shiftKey && !event.altKey && !event.ctrlKey) {
+    event.preventDefault();
+    source.setRangeText("  ", source.selectionStart, source.selectionEnd, "end");
+    source.dispatchEvent(new Event("input"));
+  } else if (event.key === "Enter" && !event.shiftKey && !event.altKey) {
+    // Keep the indent of the line being left, and go one deeper after a colon.
+    const before = source.value.slice(0, source.selectionStart);
+    const line = before.slice(before.lastIndexOf("\n") + 1);
+    const indent = line.match(/^ */)[0] + (line.trimEnd().endsWith(":") ? "  " : "");
+    event.preventDefault();
+    source.setRangeText("\n" + indent, source.selectionStart, source.selectionEnd, "end");
+    source.dispatchEvent(new Event("input"));
+  }
+});
+
+// ---- running
+
+const pagePane = document.getElementById("pagepane");
+const pageMount = document.getElementById("englishscript-page");
+
+function busy(yes, button) {
+  runButton.disabled = yes;
+  explainButton.disabled = yes;
+  for (const each of [runButton, explainButton]) each.removeAttribute("aria-busy");
+  if (yes && button) button.setAttribute("aria-busy", "true");
+  result.closest(".pane").classList.toggle("working", yes);
+  pagePane.classList.toggle("working", yes);
+}
+
+async function step(mode) {
+  busy(true, mode === "explain" ? explainButton : runButton);
+  replyForm.hidden = true;
+  selectTab("says");
+  try {
+    // A program that uses the page library builds its page in #englishscript-page.
+    pageMount.replaceChildren();
+    const outcome = await play(session.source, mode, session.replies, setStatus, (text) => {
+      addLine(result, "say", text);
+      result.scrollTop = result.scrollHeight;
+    });
+    show(result, outcome.events);
+    pagePane.hidden = pageMount.childElementCount === 0;
+    if (outcome.state === "waiting") {
+      question.textContent = outcome.question;
+      replyForm.hidden = false;
+      answer.value = "";
+      answer.focus({ preventScroll: true });
+    }
+    result.scrollTop = result.scrollHeight;
+  } catch (error) {
+    setStatus("");
+    failed(result, error);
+  }
+  busy(false);
+}
+
+function start(mode) {
+  session = { source: source.value, replies: [] };
+  return step(mode);
+}
+
+runButton.addEventListener("click", () => start("run"));
+explainButton.addEventListener("click", () => start("explain"));
+replyForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  session.replies.push(answer.value);
+  step("run");
+});
+document.getElementById("finish").addEventListener("click", () => {
+  session.replies.push(null);
+  step("run");
+});
+
+document.getElementById("share").addEventListener("click", async () => {
+  history.replaceState(null, "", "#p=" + toLink(source.value));
+  try {
+    await navigator.clipboard.writeText(location.href);
+    setStatus("Link copied.");
+  } catch (error) {
+    setStatus("The link is in the address bar.");
+  }
+});
+
+// ---- tabs
+
+const tabs = { says: document.getElementById("tab-says"), how: document.getElementById("tab-how") };
+function selectTab(name) {
+  for (const [key, tab] of Object.entries(tabs)) {
+    tab.setAttribute("aria-selected", key === name ? "true" : "false");
+    document.getElementById("panel-" + key).hidden = key !== name;
+  }
+}
+tabs.says.addEventListener("click", () => selectTab("says"));
+tabs.how.addEventListener("click", () => selectTab("how"));
+
+// ---- "How to say it"
+
+async function loadPhrases() {
+  const list = document.getElementById("phrases");
+  try {
+    const phrases = await (await fetch("play/phrases.json")).json();
+    for (const phrase of phrases) {
+      const item = document.createElement("li");
+      const heading = document.createElement("h3");
+      heading.textContent = phrase.want;
+      const add = document.createElement("button");
+      add.type = "button";
+      add.className = "button small";
+      add.textContent = "Add to my program";
+      heading.append(add);
+      const sentences = document.createElement("pre");
+      sentences.innerHTML = tint(phrase.sentences);
+      const about = document.createElement("p");
+      about.textContent = phrase.note;
+      item.append(heading, sentences, about);
+      add.addEventListener("click", () => {
+        const text = source.value.replace(/\s+$/, "");
+        pick.value = "";
+        source.value = (text ? text + "\n\n" : "") + phrase.sentences + "\n";
+        changed();
+        source.focus();
+        source.setSelectionRange(source.value.length, source.value.length);
+        source.scrollTop = source.scrollHeight;
+        syncScroll();
+      });
+      list.append(item);
+    }
+  } catch (error) {
+    const empty = document.createElement("p");
+    empty.className = "empty";
+    empty.textContent = "The list could not be loaded.";
+    list.append(empty);
+  }
+}
+
+// ---- starting up
+
+async function loadExamples() {
+  try {
+    examples = await (await fetch("play/examples.json")).json();
+  } catch (error) {
+    examples = [];
+  }
+  pick.replaceChildren(new Option("A fresh start", "starter"), ...examples.map((example) => new Option(example.title, example.id)), new Option("(your own)", ""));
+}
+
+pick.addEventListener("change", () => {
+  if (pick.value === "starter") { setNote(""); setProgram(STARTER); pick.value = "starter"; return; }
+  const example = examples.find((item) => item.id === pick.value);
+  if (!example) return;
+  setNote(example.note);
+  setProgram(example.source);
+  pick.value = example.id;
+});
+
+await loadExamples();
+let first = null;
+if (location.hash.startsWith("#p=")) {
+  try { first = fromLink(location.hash.slice(3)); } catch (error) { first = null; }
+  if (first !== null) setNote("A program from a shared link.");
+}
+if (first === null) first = remembered();
+if (first === null || !first.trim()) { first = STARTER; pick.value = "starter"; } else { pick.value = ""; }
+source.value = first;
+changed();
+loadPhrases();
+</script>
+</body>
+</html>

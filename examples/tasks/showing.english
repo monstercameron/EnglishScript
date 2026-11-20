@@ -1,0 +1,61 @@
+# Which cards are in sight, and what the page says about them.
+#
+# A chapter of the tasks book. It keeps one thing to itself: which of the
+# three views is in force. No other file can read that or change it, except by
+# asking this chapter to "favour" a view.
+
+This chapter shares only favour, sift and reckon.
+
+Use the page library.
+Use the layout chapter.
+Use the cards chapter.
+
+# The view in force: "all", "open" or "done".
+Let the showing be "all".
+
+To favour a pick (button) for a choice (text):
+  For each button:
+    Now the button is not chosen.
+  Now the pick is chosen.
+  Set the showing to the choice.
+
+# Hide what the view leaves out, and what the Find box does not match. Finding
+# looks at a card's words and its tag, without regard to capitals.
+To sift:
+  Let the sought be Finder's wording in lower case.
+  For each card:
+    Now the card is not hidden.
+    If the showing is "open" and the card is ticked:
+      Now the card is hidden.
+    If the showing is "done" and the card is open:
+      Now the card is hidden.
+    Let the matter be the card's wording in lower case.
+    If the card has a tag:
+      Set the matter to "{the matter} #{the card's tag in lower case}".
+    If not the matter contains the sought:
+      Now the card is hidden.
+
+# Count the cards, and say so wherever the page shows a count.
+To reckon:
+  Let the whole be the number of cards.
+  Let the remaining be the number of open cards.
+  Set Everything's label to "All ({the whole})".
+  Set Waiting's label to "Still to do ({the remaining})".
+  Set Finished's label to "Done ({the number of ticked cards})".
+  If the whole is 0:
+    Set Tally's wording to "Nothing to do. Write something above."
+  Otherwise if the remaining is 0:
+    Set Tally's wording to "All {the whole} done."
+  Otherwise:
+    Set Tally's wording to "{the remaining} of {the whole} still to do."
+  Set Progress's level to the number of ticked cards.
+  Set Progress's limit to the whole.
+  # A button that would do nothing is put out of sight.
+  If the remaining is 0:
+    Now Finisher is hidden.
+  Otherwise:
+    Now Finisher is not hidden.
+  If the number of ticked cards is 0:
+    Now Sweeper is hidden.
+  Otherwise:
+    Now Sweeper is not hidden.

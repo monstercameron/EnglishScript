@@ -1,0 +1,56 @@
+# A small bank: money, percentages, rules, and recovering from a refusal.
+
+An account has a balance (money), a rate (percent), and a partner (account, if any).
+An account can be frozen.
+
+# No account may ever be overdrawn. This is checked on every change.
+An account's balance is never less than $0.
+
+# An account is thriving when it holds a good sum and nothing stands in its way.
+An account is thriving when its balance is at least $1,000 and it is not frozen.
+
+There is an account called Ada whose balance is $1,000 and whose rate is 5%.
+There is an account called Bo whose balance is $40 and whose rate is 2%.
+There is an account called Cy whose balance is $250 and whose rate is 3.5% and whose partner is Ada.
+
+To pay an amount (money) from a giver (account) to a taker (account):
+  If the giver is frozen:
+    Fail because "{the giver}'s account is frozen".
+  If the amount is at most $0:
+    Fail because "a payment has to be more than nothing".
+  Add the amount to the taker's balance.
+  Subtract the amount from the giver's balance.
+  Say "{the giver} pays {the taker} {the amount}."
+
+# A payment either happens whole or not at all: a failed Try puts the world back.
+To attempt an amount (money) from a giver (account) to a taker (account):
+  Try:
+    Pay the amount from the giver to the taker.
+  If that fails:
+    Say "No payment from {the giver}: {the problem}"
+
+Attempt $60 from Ada to Bo.
+Attempt $500 from Bo to Ada.
+For example, Ada's balance is $940 and Bo's balance is $100.
+
+Now Cy is frozen.
+Attempt $10 from Cy to Bo.
+Now Cy is not frozen.
+Attempt $0 from Cy to Bo.
+
+# A year's interest, ten years running. "5% of" a sum is a sum.
+Repeat 10 times:
+  For each account:
+    Add the account's rate of the account's balance to the account's balance.
+
+For each account:
+  If the account has a partner:
+    Say "{the account} has {the account's balance}, and shares with {the account's partner}."
+  Otherwise:
+    Say "{the account} has {the account's balance}."
+
+Say "Thriving: {the number of thriving accounts} of {the number of accounts}."
+Say "The bank holds {the total balance of all accounts}."
+
+# $940 at 5% for ten years, to the cent.
+For example, Ada's balance is more than $1,531.16 and Ada's balance is less than $1,531.17.

@@ -1,0 +1,82 @@
+# Conway's Game of Life, on a small board.
+#
+# Each cell is alive or dead. At every tick, a live cell with two or three live
+# neighbours stays alive, a dead cell with exactly three comes alive, and every
+# other cell is dead. A "glider" is five cells that walk across the board.
+
+A cell has a row (number) and a column (number).
+A cell can be alive.
+A cell can be chosen.
+
+Let the size always be 7.
+
+# Make the board, a row at a time.
+Let the across be 0.
+Let the down be 0.
+Repeat the size times:
+  Add 1 to the down.
+  Set the across to 0.
+  Repeat the size times:
+    Add 1 to the across.
+    There is a new cell whose row is the down and whose column is the across.
+
+To wake a rank (number) by a file (number):
+  For each cell whose row is the rank:
+    If the cell's column is the file:
+      Now the cell is alive.
+
+# How many of the eight cells around a cell are alive.
+To work out the company (number) of a cell:
+  Let the count be 0.
+  For each other in alive cells:
+    Let the rows apart be the other's row - the cell's row.
+    Let the columns apart be the other's column - the cell's column.
+    If the rows apart is at least -1 and the rows apart is at most 1 and the columns apart is at least -1 and the columns apart is at most 1:
+      If the other is not the cell:
+        Add 1 to the count.
+  The answer is the count.
+
+# One tick. Every cell is judged by the board as it stands, so the choice is
+# marked first and only then carried out.
+To tick:
+  For each cell:
+    Let the near be the company of the cell.
+    If the near is 3 or (the near is 2 and the cell is alive):
+      Now the cell is chosen.
+    Otherwise:
+      Now the cell is not chosen.
+  For each cell:
+    If the cell is chosen:
+      Now the cell is alive.
+    Otherwise:
+      Now the cell is not alive.
+
+To show:
+  Set the down to 0.
+  Repeat the size times:
+    Add 1 to the down.
+    Let the line be "".
+    For each cell whose row is the down:
+      If the cell is alive:
+        Set the line to "{the line}# ".
+      Otherwise:
+        Set the line to "{the line}. ".
+    Say the line.
+  Say ""
+
+# A glider in the top corner.
+Wake 1 by 2.
+Wake 2 by 3.
+Wake 3 by 1.
+Wake 3 by 2.
+Wake 3 by 3.
+
+Say "At the start:"
+Show.
+Repeat 4 times:
+  Tick.
+Say "After four ticks, the same shape, one step down and one across:"
+Show.
+
+For example, the number of alive cells is 5.
+For example, the number of alive cells whose row is 4 is 3.

@@ -1,0 +1,460 @@
+/* EnglishScript: the look of a printed English book.
+
+   The text is set in Garamond, the headings in the Fell types (cut for the
+   Oxford press in the 1670s), and the masthead and drop capitals in
+   blackletter. Colours are vellum and iron-gall ink, with rubric red for
+   whatever a scribe would have written in red. In the dark, it is the same
+   page by candlelight.
+
+   What a person writes is set in the book's serif face. Only what the
+   compiler says back is set in a typewriter face. */
+
+:root {
+  --bg: #f5eedc; --panel: #ece2c8; --ink: #2a2118; --muted: #6b5d4a; --rule: #cbbd9c;
+  --accent: #8f1d14; --accent-ink: #fbf5e6; --gilt: #a8842c;
+  --good: #3d5f2c; --bad: #9a1f14; --bad-bg: #f3dccf; --warn: #7a5200; --warn-bg: #f1e3bd;
+  --string: #3d5f2c; --comment: #8a7a60; --focus: #1c4f8f; --select: rgba(143, 29, 20, 0.2);
+  --black: "UnifrakturMaguntia", "Old English Text MT", "Luminari", "IM Fell English", Georgia, serif;
+  --fell: "IM Fell English", "EB Garamond", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --caps: "IM Fell English SC", "IM Fell English", "EB Garamond", Georgia, serif;
+  --serif: "EB Garamond", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  --mono: ui-monospace, "Cascadia Code", "SF Mono", Consolas, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1b1611; --panel: #261f17; --ink: #ecdfc4; --muted: #a8987c; --rule: #4a3e2e;
+    --accent: #df7d68; --accent-ink: #1b1611; --gilt: #c9a659;
+    --good: #a3c990; --bad: #eda392; --bad-bg: #37211b; --warn: #e2c070; --warn-bg: #302814;
+    --string: #a9cf97; --comment: #96876c; --focus: #8ab4f8; --select: rgba(223, 125, 104, 0.3);
+  }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 1.3rem/1.5 var(--serif); font-variant-numeric: oldstyle-nums;
+  text-rendering: optimizeLegibility;
+}
+a { color: var(--accent); text-underline-offset: 0.15em; text-decoration-thickness: 1px; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+code { font-variant-ligatures: none; font: 0.72em var(--mono); background: var(--panel); padding: 0.1em 0.3em; border-radius: 3px; font-variant-numeric: normal; }
+em { font-family: var(--fell); }
+
+/* The masthead: a title page. */
+.black { font-family: var(--black); font-weight: 400; letter-spacing: 0.01em; }
+.smallcaps { font-family: var(--caps); letter-spacing: 0.12em; text-transform: lowercase; }
+
+/* Buttons are small printed labels. */
+.button {
+  font: 1.05rem/1 var(--caps); letter-spacing: 0.06em; text-transform: lowercase;
+  padding: 0.55rem 0.95rem 0.6rem; border-radius: 2px; border: 1px solid var(--ink);
+  background: transparent; color: var(--ink); cursor: pointer; text-decoration: none; display: inline-block;
+}
+.button:hover { background: var(--panel); }
+.button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.button.primary:hover { filter: brightness(1.08); }
+.button:disabled { opacity: 0.55; cursor: progress; }
+.button.small { font-size: 0.9rem; padding: 0.35rem 0.6rem 0.4rem; }
+select {
+  font: 1.05rem var(--serif); padding: 0.4rem 0.6rem; border-radius: 2px; border: 1px solid var(--ink);
+  background: var(--bg); color: var(--ink); max-width: 100%;
+}
+
+/* A fleuron between parts. */
+.fleuron { text-align: center; color: var(--accent); font-size: 2rem; line-height: 1; margin: 4rem 0 0; user-select: none; }
+
+/* Tables, ruled like a ledger. */
+table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 1.1rem; line-height: 1.35; }
+th, td { text-align: left; vertical-align: top; padding: 0.5rem 0.7rem; border-bottom: 1px solid var(--rule); }
+thead th { font: 1rem var(--caps); letter-spacing: 0.08em; text-transform: lowercase; color: var(--accent); border-bottom: 3px double var(--ink); }
+table { border-top: 3px double var(--ink); border-bottom: 3px double var(--ink); }
+tbody tr:last-child td { border-bottom: 0; }
+.scroll { overflow-x: auto; }
+
+/* A program, set as prose, and under it what the compiler says, in type. */
+pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.program { font: 1.12rem/1.5 var(--serif); font-variant-numeric: lining-nums; }
+.program .s { color: var(--string); }
+.program .c { color: var(--comment); font-style: italic; }
+.in { white-space: pre; word-spacing: 0.5em; }  /* the indent of a line, made wide enough to see */
+.line, pre.output { font: 0.8rem/1.55 var(--mono); font-variant-numeric: normal; }
+.line { white-space: pre-wrap; overflow-wrap: anywhere; min-height: 1.3em; }
+.line.error { background: var(--bad-bg); border-left: 3px solid var(--bad); padding: 0.5rem 0.75rem; margin: 0.4rem 0; }
+.line.note { color: var(--muted); font: italic 1rem/1.4 var(--fell); margin-top: 0.5rem; }
+.line.ask { color: var(--muted); }
+.line.reply { color: var(--accent); }
+.line.reply::before { content: "› "; }
+
+form.reply { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.7rem 0.8rem; border-top: 1px solid var(--rule); background: var(--panel); }
+form.reply[hidden] { display: none; }
+form.reply label { flex-basis: 100%; font: italic 1.05rem var(--fell); color: var(--muted); }
+form.reply input {
+  flex: 1; min-width: 8rem; font: 1.1rem var(--serif); padding: 0.4rem 0.6rem;
+  border: 1px solid var(--ink); border-radius: 2px; background: var(--bg); color: var(--ink);
+}
+
+/* A framed panel, with a small-caps heading. */
+.pane { border: 1px solid var(--ink); background: var(--bg); overflow: hidden; min-width: 0; box-shadow: 4px 4px 0 var(--rule); }
+.pane > .title {
+  display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem 0.8rem 0.45rem;
+  font: 1rem var(--caps); letter-spacing: 0.1em; text-transform: lowercase; color: var(--accent);
+  border-bottom: 3px double var(--ink); background: var(--panel);
+}
+
+.colophon { text-align: center; font: italic 1.05rem/1.5 var(--fell); color: var(--muted); }
+.colophon .finis { display: block; font: 1.6rem var(--black); color: var(--accent); margin-bottom: 0.5rem; font-style: normal; }
+
+/* The way around the book: the same bar on every page. */
+.sitenav { border-bottom: 3px double var(--ink); }
+.sitenav .inner { max-width: 84rem; margin: 0 auto; padding: 0.55rem 16px 0.6rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 1.4rem; }
+.sitenav .home { font: 1.75rem/1.1 var(--black); color: var(--ink); text-decoration: none; margin-right: auto; }
+.sitenav .page { font: 1.05rem var(--caps); letter-spacing: 0.1em; text-transform: lowercase; text-decoration: none; color: var(--ink); border-bottom: 1px solid transparent; }
+.sitenav .page:hover, .sitenav .page[aria-current="page"] { color: var(--accent); }
+
+/* A program printed in the text, with what the compiler says under it. */
+figure.snippet { margin: 1.5rem 0 2rem; border: 1px solid var(--ink); background: var(--bg); box-shadow: 4px 4px 0 var(--rule); }
+pre.program { padding: 0.9rem 1.1rem; }
+.snippet .bar { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; padding: 0.4rem 0.6rem; border-top: 1px solid var(--rule); background: var(--panel); }
+.snippet .bar + .output { border-top: 1px solid var(--rule); }
+.snippet .bar .label { margin-right: auto; font: 0.95rem var(--caps); letter-spacing: 0.1em; text-transform: lowercase; color: var(--muted); }
+.snippet .bar .label.refused { color: var(--bad); }
+.snippet .bar .label.ok { color: var(--good); }
+pre.output, .output { padding: 0.9rem 1.1rem; }
+pre.output.refused { background: var(--bad-bg); }
+
+/* A page of documentation: contents at the side, the text in a column. */
+.doc { max-width: 84rem; margin: 0 auto; padding: 0 16px 1rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 3rem; }
+@media (min-width: 1040px) { .doc.sided { grid-template-columns: 16rem minmax(0, 43rem); justify-content: center; } }
+.doc.plain { max-width: 45rem; }
+.contents { font-size: 1.08rem; line-height: 1.35; margin: 1.5rem 0 0; padding: 0.8rem 1rem; border: 1px solid var(--rule); max-height: 15rem; overflow: auto; }
+@media (min-width: 1040px) { .contents { position: sticky; top: 1rem; align-self: start; max-height: calc(100vh - 2rem); margin-top: 3.2rem; border: 0; border-right: 1px solid var(--rule); padding: 0 1rem 0 0; } }
+.contents h2 { font: 1rem var(--caps); letter-spacing: 0.14em; text-transform: lowercase; color: var(--accent); margin: 0 0 0.5rem; text-align: left; }
+.contents ol { list-style: none; margin: 0; padding: 0; }
+.contents li { margin: 0 0 0.35rem; }
+.contents a { text-decoration: none; color: var(--ink); }
+.contents a:hover { color: var(--accent); text-decoration: underline; }
+.contents .later { color: var(--muted); font-style: italic; }
+
+.doc article { min-width: 0; }
+.doc article > h1 { font: 400 clamp(2.4rem, 8vw, 3.7rem)/1.05 var(--fell); margin: 2.5rem 0 0.4rem; text-wrap: balance; }
+.doc article > .standfirst { font: italic 1.35rem/1.4 var(--fell); color: var(--muted); margin: 0 0 1.5rem; text-wrap: pretty; }
+.doc article h2 { font: 400 2rem/1.15 var(--fell); margin: 3.2rem 0 1rem; padding-top: 1.1rem; border-top: 3px double var(--ink); text-wrap: balance; scroll-margin-top: 1rem; }
+.doc article h3 { font: italic 1.5rem/1.25 var(--fell); margin: 2.3rem 0 0.5rem; scroll-margin-top: 1rem; }
+.doc article h4 { font: 1.1rem var(--caps); letter-spacing: 0.1em; text-transform: lowercase; color: var(--accent); margin: 1.8rem 0 0.4rem; }
+.doc article p { margin: 0 0 1rem; text-wrap: pretty; }
+.doc article ul, .doc article ol { padding-left: 1.4rem; margin: 0 0 1rem; }
+.doc article li { margin-bottom: 0.4rem; }
+.doc article li > ul, .doc article li > ol { margin: 0.4rem 0 0; }
+.doc article blockquote { margin: 1.2rem 0; padding: 0.8rem 1.1rem; border-left: 4px solid var(--accent); background: var(--panel); }
+.doc article blockquote p:last-child { margin-bottom: 0; }
+.doc article img { display: block; max-width: 100%; height: auto; border: 1px solid var(--ink); box-shadow: 4px 4px 0 var(--rule); margin: 1.5rem 0; }
+.doc article strong { font-weight: 600; }
+pre.form { margin: 1.1rem 0 1.4rem; padding: 0.8rem 1rem; background: var(--panel); border-left: 3px solid var(--rule); font: 0.8rem/1.6 var(--mono); font-variant-numeric: normal; white-space: pre; overflow-x: auto; }
+.doc footer { grid-column: 1 / -1; margin-top: 4rem; padding: 2.5rem 0 3rem; border-top: 3px double var(--ink); }
+
+/* ---- the page library: what a program that says "Use the page library." puts on a page ---- */
+.es-page [hidden], #englishscript-page [hidden] { display: none !important; }
+.es-heading { font: 400 clamp(2.2rem, 9vw, 3.1rem)/1.05 var(--black); text-align: center; margin: 0 0 1.1rem; color: var(--ink); }
+.es-heading::first-letter { color: var(--accent); }
+.es-panel { margin: 0 0 1rem; }
+.es-panel:last-child { margin-bottom: 0; }
+.es-panel-title { font: 0.95rem var(--caps); letter-spacing: 0.12em; text-transform: lowercase; color: var(--muted); margin: 0 0 0.3rem; }
+.es-panel-body { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.6rem; }
+.es-field {
+  flex: 1 1 12rem; min-width: 0; font: 1.3rem/1.3 var(--serif); color: var(--ink); background: transparent;
+  border: 0; border-bottom: 1px solid var(--ink); border-radius: 0; padding: 0.3rem 0.1rem 0.25rem;
+}
+.es-field::placeholder { font-style: italic; color: var(--muted); opacity: 1; }
+.es-field:focus { outline: none; border-bottom: 2px solid var(--accent); padding-bottom: calc(0.25rem - 1px); }
+.es-button {
+  font: 1rem var(--caps); letter-spacing: 0.08em; text-transform: lowercase; color: var(--ink); background: transparent;
+  border: 1px solid var(--ink); border-radius: 0; padding: 0.3rem 0.75rem 0.38rem; cursor: pointer;
+}
+.es-button:hover { background: var(--panel); }
+.es-button:focus-visible, .es-card-cross:focus-visible, .es-card-star:focus-visible, .es-card-box:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.es-button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.es-card {
+  flex: 1 1 100%; display: flex; align-items: baseline; gap: 0.5rem; min-width: 0;
+  border-bottom: 1px dotted var(--muted); padding: 0.42rem 0 0.38rem;
+}
+.es-card-box {
+  appearance: none; -webkit-appearance: none; flex: 0 0 auto; width: 1.05rem; height: 1.05rem; margin: 0; align-self: center;
+  border: 1px solid var(--ink); background: transparent; cursor: pointer; position: relative;
+}
+.es-card-box:checked::after {
+  content: "✓"; position: absolute; left: 0.05rem; top: -0.62rem; font: 1.5rem/1 var(--fell); color: var(--accent);
+}
+.es-card-words { flex: 0 1 auto; min-width: 2rem; margin-left: 0.2rem; font: 1.28rem/1.35 var(--serif); overflow-wrap: anywhere; cursor: text; border-radius: 0; }
+.es-card-words:focus { outline: none; box-shadow: 0 2px 0 var(--accent); }
+/* A tag is a small label tied to the card, and the star is drawn, not printed. */
+.es-card-tag { flex: 0 0 auto; font: 0.85rem/1.2 var(--caps); letter-spacing: 0.08em; text-transform: lowercase; color: var(--muted); border: 1px solid var(--rule); padding: 0.05rem 0.4rem 0.12rem; }
+.es-card-tag::before { content: "#"; color: var(--accent); }
+.es-card-star { flex: 0 0 auto; margin-left: auto; font: 1.25rem/1 var(--serif); color: var(--gilt); background: transparent; border: 0; padding: 0 0.2rem; cursor: pointer; opacity: 0.45; }
+.es-card[data-starred="true"] .es-card-star, .es-card:hover .es-card-star, .es-card-star:focus-visible { opacity: 1; }
+.es-card[data-starred="true"] { box-shadow: inset 3px 0 0 var(--gilt); padding-left: 0.5rem; }
+@media (hover: none) { .es-card-star { opacity: 0.8; } }
+.es-card[data-ticked="true"] .es-card-words { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--accent); text-decoration-thickness: 1px; }
+.es-card-cross { flex: 0 0 auto; font: 1.4rem/1 var(--fell); color: var(--accent); background: transparent; border: 0; padding: 0 0.3rem; cursor: pointer; opacity: 0.35; }
+.es-card:hover .es-card-cross, .es-card-cross:focus-visible { opacity: 1; }
+@media (hover: none) { .es-card-cross { opacity: 0.8; } }
+.es-note { flex: 1 1 10rem; margin: 0; font: italic 1.1rem/1.3 var(--fell); color: var(--muted); }
+.es-gauge { flex: 0 0 7rem; height: 0.55rem; border: 1px solid var(--ink); background: transparent; }
+.es-gauge-bar { height: 100%; width: 0; background: var(--accent); transition: width 0.35s ease; }
+
+/* ==== finish: scroll bars, grain, and motion ====
+
+   Everything that moves is inside "prefers-reduced-motion: no-preference",
+   so a reader who has asked for stillness gets a still page. */
+
+/* Scroll bars: a rubric ribbon in a ruled channel. */
+html { scrollbar-gutter: stable; }
+@supports not selector(::-webkit-scrollbar) {
+  * { scrollbar-width: thin; scrollbar-color: var(--accent) var(--panel); }
+}
+::-webkit-scrollbar { width: 14px; height: 14px; }
+::-webkit-scrollbar-track { background: var(--panel); border-left: 1px solid var(--rule); }
+::-webkit-scrollbar-track:horizontal { border-left: 0; border-top: 1px solid var(--rule); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 72%, #000) 55%, var(--accent));
+  border: 3px solid var(--panel); border-radius: 0; min-height: 3rem;
+}
+::-webkit-scrollbar-thumb:horizontal { background: linear-gradient(0deg, var(--accent), color-mix(in srgb, var(--accent) 72%, #000) 55%, var(--accent)); min-width: 3rem; }
+::-webkit-scrollbar-thumb:hover { border-width: 2px; }
+::-webkit-scrollbar-thumb:active { border-width: 1px; }
+::-webkit-scrollbar-corner { background: var(--panel); }
+/* Inside a frame the channel is narrower and the ribbon is ink until touched. */
+.pane ::-webkit-scrollbar, .contents::-webkit-scrollbar, pre.form::-webkit-scrollbar, .scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+.pane ::-webkit-scrollbar-thumb, .contents::-webkit-scrollbar-thumb, pre.form::-webkit-scrollbar-thumb, .scroll::-webkit-scrollbar-thumb { background: var(--muted); border-width: 2px; }
+.pane ::-webkit-scrollbar-thumb:hover, .contents::-webkit-scrollbar-thumb:hover, pre.form::-webkit-scrollbar-thumb:hover, .scroll::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+.contents::-webkit-scrollbar-track, pre.form::-webkit-scrollbar-track { background: transparent; border-color: transparent; }
+
+::selection { background: var(--select); }
+
+/* Vellum has a grain, and a page is darker toward its edges. */
+:root {
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0.36 0 0 0 0 0.26 0 0 0 0 0.12 0 0 0 0.085 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --edge: rgba(110, 78, 30, 0.13);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0.93 0 0 0 0 0.85 0 0 0 0 0.7 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    --edge: rgba(0, 0, 0, 0.42);
+  }
+}
+body { background-image: var(--grain); }
+body::after {
+  content: ""; position: fixed; inset: 0; z-index: 40; pointer-events: none;
+  background: radial-gradient(ellipse 120% 90% at 50% 45%, transparent 58%, var(--edge) 100%);
+}
+@media print { body { background-image: none; } body::after { display: none; } }
+
+/* Things that answer the hand, whether or not they may move. */
+a { transition: color 0.2s ease, text-decoration-color 0.2s ease, text-underline-offset 0.2s ease; }
+a:hover { text-underline-offset: 0.28em; }
+.button, .es-button {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.14s ease, transform 0.14s ease, filter 0.2s ease;
+}
+.sitenav .page {
+  border-bottom: 0; padding-bottom: 2px;
+  background: linear-gradient(var(--accent), var(--accent)) no-repeat 0 100% / 0 1px;
+  transition: color 0.2s ease, background-size 0.3s ease;
+}
+.sitenav .page:hover, .sitenav .page[aria-current="page"] { background-size: 100% 1px; }
+.sitenav .home { transition: color 0.25s ease, letter-spacing 0.4s ease; }
+.sitenav .home:hover { color: var(--accent); }
+select, form.reply input { transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+select:hover, form.reply input:focus { box-shadow: 2px 2px 0 var(--rule); }
+figure.snippet, .doc article img, figure.picture img { transition: box-shadow 0.25s ease, transform 0.25s ease; }
+th, td { transition: background-color 0.2s ease; }
+tbody tr:hover td { background: color-mix(in srgb, var(--panel) 60%, transparent); }
+.contents a { transition: color 0.2s ease, padding-left 0.2s ease; }
+.contents a:hover { padding-left: 0.25rem; }
+.tabs button { transition: color 0.2s ease, background-color 0.2s ease; }
+#problems li { transition: background-color 0.2s ease, border-left-width 0.15s ease; }
+#problems li:hover { border-left-width: 7px; }
+
+/* The page library. The underline of a box is drawn in red as it is entered,
+   and a line is struck through from left to right when its card is ticked. */
+.es-field {
+  background: linear-gradient(var(--accent), var(--accent)) no-repeat 0 100% / 0 2px;
+  transition: background-size 0.35s ease;
+}
+.es-field:focus { border-bottom: 1px solid var(--ink); padding-bottom: 0.25rem; background-size: 100% 2px; }
+.es-card { transition: background-color 0.2s ease; }
+.es-card:hover { background: color-mix(in srgb, var(--panel) 55%, transparent); }
+.es-card-box { transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+.es-card-box:hover { box-shadow: 2px 2px 0 var(--rule); }
+.es-card-words {
+  background: linear-gradient(var(--accent), var(--accent)) no-repeat 0 58% / 0 1px;
+  transition: color 0.3s ease, background-size 0.4s ease;
+}
+.es-card[data-ticked="true"] .es-card-words { text-decoration: none; background-size: 100% 1px; }
+.es-card-cross { transition: opacity 0.2s ease, transform 0.2s ease; }
+.es-card-cross:hover { transform: rotate(90deg) scale(1.15); }
+.es-card-star { transition: opacity 0.2s ease, transform 0.2s ease, color 0.2s ease; }
+.es-card-star:hover { transform: scale(1.25) rotate(-12deg); }
+.es-card { transition: background-color 0.2s ease, box-shadow 0.25s ease, padding-left 0.25s ease; }
+.es-card-words { transition: color 0.3s ease, background-size 0.4s ease, box-shadow 0.2s ease; }
+.es-gauge-bar { transition: width 0.5s cubic-bezier(0.2, 0.9, 0.3, 1); }
+.es-note { transition: color 0.2s ease; }
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+
+  /* From one page of the site to the next, the leaf turns. */
+  @view-transition { navigation: auto; }
+  .sitenav { view-transition-name: sitenav; }
+  ::view-transition-old(root) { animation: leaf-away 0.22s ease-in both; }
+  ::view-transition-new(root) { animation: leaf-come 0.38s ease-out both; }
+
+  /* Buttons are pressed into the paper. */
+  .button:hover, .es-button:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--rule); }
+  .button:active, .es-button:active { transform: translate(1px, 1px); box-shadow: 0 0 0 var(--rule); transition-duration: 0.05s; }
+  .button:disabled { transform: none; box-shadow: none; }
+  figure.snippet:hover, .doc article img:hover, figure.picture img:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--rule); }
+  .sitenav .home:hover { letter-spacing: 0.03em; }
+
+  /* The title page is inked in: the frame, then the name, then the rest. */
+  .titlepage { animation: leaf-come 0.7s ease-out both; }
+  .titlepage h1 { animation: ink 1.1s 0.15s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  .titlepage .imprint { animation: rise 0.6s 0.05s ease-out both; }
+  .titlepage .or { animation: rise 0.6s 0.55s ease-out both; }
+  .titlepage .lede { animation: rise 0.6s 0.75s ease-out both; }
+  .titlepage .links { animation: rise 0.6s 0.95s ease-out both; }
+  .doc article > h1 { animation: ink 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  .doc article > .standfirst { animation: rise 0.6s 0.3s ease-out both; }
+  .contents { animation: rise 0.6s 0.35s ease-out both; }
+  p.opening::first-letter { animation: rubricate 1.4s 0.2s ease-out both; }
+
+  /* What the compiler says arrives a line at a time, and a refusal is felt. */
+  .line { animation: line-in 0.28s ease-out both; }
+  .line:nth-child(2) { animation-delay: 0.03s; } .line:nth-child(3) { animation-delay: 0.06s; }
+  .line:nth-child(4) { animation-delay: 0.09s; } .line:nth-child(5) { animation-delay: 0.12s; }
+  .line:nth-child(6) { animation-delay: 0.15s; } .line:nth-child(7) { animation-delay: 0.18s; }
+  .line:nth-child(8) { animation-delay: 0.21s; } .line:nth-child(9) { animation-delay: 0.24s; }
+  .line:nth-child(n+10) { animation-delay: 0.27s; }
+  .line.error { animation: refuse 0.45s ease-out both; }
+  pre.output { animation: line-in 0.35s ease-out both; }
+  form.reply:not([hidden]) { animation: rise 0.3s ease-out both; }
+
+  /* The page library: a card is written in, a tick is struck, a card leaves. */
+  .es-heading { animation: ink 1s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  .es-heading::first-letter { animation: rubricate 1.6s 0.3s ease-out both; }
+  .es-card { animation: es-arrive 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; transform-origin: 0 50%; }
+  .es-card-box:checked::after { animation: es-tick 0.32s cubic-bezier(0.2, 1.6, 0.4, 1) both; transform-origin: 20% 80%; }
+  .es-card[data-leaving] { animation: es-leave 0.26s ease-in both; pointer-events: none; }
+  .es-card[data-starred="true"] .es-card-star { animation: es-tick 0.35s cubic-bezier(0.2, 1.6, 0.4, 1) both; }
+  .es-button[aria-pressed="true"] { animation: es-chosen 0.3s ease-out; }
+  .es-note { animation: rise 0.4s ease-out both; }
+  .es-gauge { animation: rise 0.4s 0.1s ease-out both; }
+
+  /* As the reader scrolls: a red rule across the top grows with the reading,
+     and figures, tables and ornaments come up onto the page. */
+  @supports (animation-timeline: view()) {
+    body::before {
+      content: ""; position: fixed; z-index: 60; top: 0; left: 0; width: 100%; height: 3px;
+      background: var(--accent); transform-origin: 0 50%; pointer-events: none;
+      animation: reading linear both; animation-timeline: scroll(root block);
+    }
+    figure.snippet, .doc article table, .prose table, figure.plate, figure.picture, blockquote, .bench, .behind, pre.form {
+      animation: come-up linear backwards; animation-timeline: view(); animation-range: entry 0% cover 24%;
+    }
+    .fleuron { animation: flourish linear backwards; animation-timeline: view(); animation-range: entry 0% cover 30%; }
+    main h2 { animation: come-up linear backwards; animation-timeline: view(); animation-range: entry 0% cover 18%; }
+  }
+}
+
+@keyframes leaf-come { from { opacity: 0; transform: translateY(0.9rem); } to { opacity: 1; transform: none; } }
+@keyframes leaf-away { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(-0.6rem); } }
+@keyframes rise { from { opacity: 0; transform: translateY(0.5rem); } to { opacity: 1; transform: none; } }
+@keyframes ink { from { opacity: 0; filter: blur(7px); letter-spacing: 0.06em; } 60% { filter: blur(0); } to { opacity: 1; filter: none; letter-spacing: normal; } }
+@keyframes rubricate { from { color: var(--ink); } to { color: var(--accent); } }
+@keyframes line-in { from { opacity: 0; transform: translateX(-0.4rem); } to { opacity: 1; transform: none; } }
+@keyframes refuse {
+  0% { opacity: 0; transform: translateX(-0.5rem); } 35% { opacity: 1; transform: translateX(0.35rem); }
+  55% { transform: translateX(-0.22rem); } 75% { transform: translateX(0.1rem); } 100% { transform: none; }
+}
+@keyframes come-up { from { opacity: 0.2; transform: translateY(1.4rem); } to { opacity: 1; transform: none; } }
+@keyframes flourish { from { opacity: 0; transform: rotate(-70deg) scale(0.4); } to { opacity: 1; transform: none; } }
+@keyframes reading { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes es-arrive { from { opacity: 0; transform: translateX(-0.9rem) scaleY(0.6); } to { opacity: 1; transform: none; } }
+@keyframes es-tick { from { opacity: 0; transform: scale(0.2) rotate(-25deg); } to { opacity: 1; transform: none; } }
+@keyframes es-leave { to { opacity: 0; transform: translateX(1.4rem); } }
+@keyframes es-chosen { from { transform: scale(0.92); } 60% { transform: scale(1.04); } to { transform: none; } }
+/* ==== loaders: what is shown while something is fetched or worked out ====
+
+   A swinging fleuron, the words for what is happening, a ruled channel that
+   fills as bytes arrive, and a count in small capitals. Everything that moves
+   here moves by transform alone, so it goes on moving while Python has the
+   page's attention during a long run. */
+@property --inked { syntax: "<percentage>"; inherits: true; initial-value: 0%; }
+
+.loader {
+  display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.6rem; max-width: 100%; vertical-align: middle;
+  font: italic 1.05rem/1.2 var(--fell); color: var(--muted);
+}
+.loader-mark {
+  display: inline-block; font-style: normal; font-size: 1.3rem; line-height: 1; color: var(--accent);
+  transform-origin: 50% 12%; will-change: transform; animation: loader-swing 0.95s ease-in-out infinite alternate;
+}
+.loader-initial { display: none; }
+.loader-bar {
+  position: relative; flex: 0 0 7.5rem; height: 0.55rem; overflow: hidden;
+  border: 1px solid var(--ink); background: color-mix(in srgb, var(--panel) 70%, transparent);
+}
+.loader-fill {
+  position: absolute; inset: 0; background: var(--accent); transform-origin: 0 50%;
+  transform: scaleX(var(--done, 0)); transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1); will-change: transform;
+}
+/* A light passes along the channel while the work is going on. */
+.loader-bar::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 45%; will-change: transform;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--bg) 75%, transparent), transparent);
+  transform: translateX(-110%); animation: loader-sweep 1.25s linear infinite;
+}
+/* When there is nothing to measure, a ribbon goes to and fro instead. */
+.loader.unmeasured .loader-fill { right: auto; width: 36%; transform: none; transition: none; animation: loader-shuttle 1.1s ease-in-out infinite alternate; }
+.loader.unmeasured .loader-bar::after { animation: none; }
+.loader-note { font: normal 0.85rem/1.2 var(--caps); letter-spacing: 0.1em; text-transform: lowercase; font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
+.loader-note:empty { display: none; }
+.loader.done .loader-mark { animation: none; }
+
+/* The grand loader: an initial in a frame, inked from the foot as the work goes. */
+.loader.grand { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; padding: 1.6rem 0 1.2rem; text-align: center; font-size: 1.25rem; }
+.loader.grand .loader-mark { display: none; }
+.loader.grand .loader-initial {
+  display: grid; place-items: center; width: 6.4rem; height: 6.4rem; margin-bottom: 0.4rem;
+  border: 3px double var(--ink); outline: 1px solid var(--ink); outline-offset: 4px;
+  font: normal 400 4.8rem/1 var(--black); color: transparent; -webkit-text-stroke: 1px var(--ink);
+  background-image: linear-gradient(to top, var(--accent) var(--inked), transparent var(--inked));
+  -webkit-background-clip: text; background-clip: text; transition: --inked 0.45s ease;
+}
+.loader.grand .loader-bar { flex: none; width: min(17rem, 82%); height: 0.6rem; }
+.loader.grand.unmeasured .loader-initial { animation: loader-breathe 1.4s ease-in-out infinite alternate; }
+
+/* A frame that is at work: a ribbon runs along its head and what it holds is dimmed. */
+.working { position: relative; }
+.working::after {
+  content: ""; position: absolute; z-index: 3; top: 0; left: 0; width: 34%; height: 3px; background: var(--accent);
+  pointer-events: none; will-change: transform; animation: loader-run 1.15s ease-in-out infinite alternate;
+}
+.working > .output, .working #result, .working > [role="tabpanel"] > #result, .working #englishscript-page { opacity: 0.4; }
+.output, #result, #englishscript-page { transition: opacity 0.25s ease; }
+
+/* A button that has been pressed and is waiting says so with the same fleuron. */
+.button[aria-busy="true"]::before {
+  content: "\2766"; display: inline-block; margin-right: 0.45em; transform-origin: 50% 12%;
+  animation: loader-swing 0.95s ease-in-out infinite alternate;
+}
+.button[aria-busy="true"] { opacity: 0.85; }
+
+@keyframes loader-swing { from { transform: rotate(-30deg); } to { transform: rotate(30deg); } }
+@keyframes loader-sweep { from { transform: translateX(-110%); } to { transform: translateX(240%); } }
+@keyframes loader-shuttle { from { transform: translateX(0); } to { transform: translateX(178%); } }
+@keyframes loader-run { from { transform: translateX(0); } to { transform: translateX(194%); } }
+@keyframes loader-breathe { from { opacity: 0.45; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}

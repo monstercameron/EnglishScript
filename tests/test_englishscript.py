@@ -102,7 +102,7 @@ class Values(Base):
 
     def test_text_is_filled_in(self):
         self.assertEqual(run('Let n be 3.\nSay "n is {n} and twice n is {n * 2}."'), ["n is 3 and twice n is 6."])
-        self.refuses('Say "oops {1 + ".', "never closed")
+        self.refuses('Say "oops {1 + ".', 'has no "}" to close it')
         self.refuses('Say "oops {}".', "nothing between")
         self.refuses('Say "oops {nobody}".', "don't know what")
 
@@ -126,7 +126,7 @@ class Variables(Base):
 
     def test_unknown_names(self):
         self.refuses("Say y.", 'don\'t know what "y"')
-        self.refuses("Say the y.", 'don\'t know what "the y"')
+        self.refuses("Say the y.", 'I don\'t know "the y": no sentence before this one has made it.')
         self.refuses("Set 5 to 6.", "isn't something that can be changed")
 
 
@@ -172,14 +172,14 @@ class Control(Base):
         self.refuses("Repeat 2.5 times:\n  Say 1.", "2.5 times", stage="run")
 
     def test_layout(self):
-        self.refuses("Say 1", "ends with a period")
-        self.refuses("Say 1.\n  Say 2.", "doesn't open a block")
+        self.refuses("Say 1", "has no period at the end")
+        self.refuses("Say 1.\n  Say 2.", "does not open a block")
         self.refuses("If 1 is 1:\nSay 2.", "nothing is indented")
-        self.refuses("If 1 is 1.\nSay 2.", "needs a block")
-        self.refuses("Say 1:\n  Say 2.", "should end with a period")
-        self.refuses("If 1 is 1:\n    Say 1.\n  Say 2.", "doesn't line up")
+        self.refuses("If 1 is 1.\nSay 2.", "ends with a colon, not a period")
+        self.refuses("Say 1:\n  Say 2.", "so it ends with a period, not a colon")
+        self.refuses("If 1 is 1:\n    Say 1.\n  Say 2.", "does not line up")
         self.refuses("Otherwise:\n  Say 1.", "straight after")
-        self.refuses('Say "unclosed.', "never closed")
+        self.refuses('Say "unclosed.', "has no closing quote")
         self.refuses("If 1 is 1:\n  A cat has an age (number).", "top level")
 
     def test_unknown_verbs(self):
@@ -224,7 +224,7 @@ class Things(Base):
 
     def test_describing_kinds(self):
         self.refuses("A cat has a tail.", "What sort of value")
-        self.refuses("A cat has a tail (fluffy).", "isn't a type I know")
+        self.refuses("A cat has a tail (fluffy).", '"fluffy" is not a type')
         self.refuses("A cat has a name (text).", "already has a meaning")
         self.refuses("A cat has an age (number).\nA cat has an age (number).", "already described")
         self.refuses("A cat has an age (number).\nA cat is old when its tail is 1.", 'no "tail"')
@@ -264,7 +264,7 @@ class Verbs(Base):
         self.assertIn("would become -$480", error.hint)
 
     def test_two_of_a_kind_make_pronouns_ambiguous(self):
-        self.refuses(self.PAY + "To rob a giver (knight) for a taker (knight):\n  Say its purse.", "ambiguous")
+        self.refuses(self.PAY + "To rob a giver (knight) for a taker (knight):\n  Say its purse.", "can be read two ways")
         self.refuses(WORLD + "To duel a knight against a knight:\n  Say 1.", "two things called")
 
     def test_verbs_can_call_themselves(self):
@@ -281,7 +281,7 @@ class Verbs(Base):
     def test_defining_verbs(self):
         self.refuses("To say a number:\n  Say 1.", "already has a meaning")
         self.refuses("To hug a bear:\n  Say 1.", "What is a bear?")
-        self.refuses("To hug an amount (money) an other (money):\n  Say 1.", "preposition")
+        self.refuses("To hug an amount (money) an other (money):\n  Say 1.", "linking word")
         self.refuses("To hug:\n  Say 1.\nTo hug:\n  Say 2.", "already know how")
 
     def test_a_loop_cannot_reuse_a_noun_already_in_view(self):
@@ -810,7 +810,7 @@ class InputAndFiles(InTemporaryFolder, Base):
 
     def test_ask_is_checked(self):
         self.refuses('Let x be 1.\nAsk "?" and let x (number) be the reply.', "already means something")
-        self.refuses('Ask "?" and let x (dragon) be the reply.', "isn't a type I know")
+        self.refuses('Ask "?" and let x (dragon) be the reply.', '"dragon" is not a type')
         self.refuses('Ask "?" and let x (text, if any) be the reply.', "can't ask for")
         self.refuses('Ask "?" and let x be the reply.', "What sort of reply")
         self.refuses('Ask 5 and let x (text) be the reply.', "The question is text")
@@ -914,7 +914,7 @@ class Recovering(InTemporaryFolder, Base):
         self.refuses("Try:\n  Say 1.\nSay 2.", '"If that fails:" block straight after')
         self.refuses("If that fails:\n  Say 1.", 'straight after a "Try:"')
         self.refuses("Say the problem.", "only means something inside")
-        self.refuses("Try.", "needs a block")
+        self.refuses("Try.", "ends with a colon, not a period")
         self.refuses('Fail because 5.', "The reason is text")
 
     def test_checks_for_nothing_after_a_try(self):
@@ -979,7 +979,7 @@ class ReviewFixes(InTemporaryFolder, Base):
     def test_a_fill_in_with_quotes_is_explained(self):
         error = self.refuses('Say "{the length of "abc"}"', "can't contain quotes")
         self.assertIn("variable first", error.hint)
-        self.refuses('Say "oops {1 + ".', "never closed")
+        self.refuses('Say "oops {1 + ".', 'has no "}" to close it')
 
     def test_a_group_where_a_list_is_wanted_is_explained(self):
         head = (
@@ -1250,6 +1250,25 @@ class Libraries(Base):
         self.module.SOURCE = "A canvas has a width (number).\n"
         error = self.refuses("A canvas has a size (number).\nUse the paint library.", "already described on line 1")
 
+    def test_a_change_made_by_a_librarys_verb_sets_off_reactions(self):
+        source = (
+            "Use the paint library.\n"
+            "A canvas can be framed.\n"
+            "Whenever a canvas becomes wide:\n  Say \"{the canvas} is wide at {its width}.\"\n"
+            "To decorate a canvas:\n  Splash \"red\" on the canvas with no.\n  Say \"decorated\"\n"
+            "Decorate Easel.\n"
+        )
+        self.assertEqual(run(source), ["Easel is wide at 13.", "decorated"])
+
+    def test_a_librarys_source_may_say_whenever(self):
+        self.module.SOURCE += "Whenever a canvas becomes wide:\n  Say \"wide {the canvas}\"\n"
+        source ="Use the paint library.\nTo stretch:\n  Set Easel's width to 50.\n  Say \"stretched\"\nStretch.\n"
+        program = compile_source(source)
+        self.assertTrue(program.compiler.reactive)
+        out = []
+        program.run(out.append)
+        self.assertEqual(out, ["wide Easel", "stretched"])
+
     def test_a_problem_inside_a_librarys_own_verb_names_the_library(self):
         self.module.SOURCE = (
             "A canvas has a width (number).\nA canvas's width is never less than 0.\n"
@@ -1261,6 +1280,683 @@ class Libraries(Base):
         rendered = error.render("drawing.english")
         self.assertIn("line 5 of the paint library", rendered)
         self.assertIn("(while doing line 3: Shrink Easel.)", rendered)
+
+
+class Reactions(Base):
+    """Whenever a thing becomes an adjective (or stops being one)."""
+
+    KNIGHTS = WORLD + (
+        "A knight is broke when its purse is $0.\n"
+        "A knight can be sworn.\n"
+    )
+
+    def test_a_kind_becomes_a_defined_adjective_and_stops_being_it(self):
+        source = self.KNIGHTS + (
+            "Whenever a knight becomes broke:\n  Say \"{the knight} is broke.\"\n"
+            "Whenever a knight becomes not broke:\n  Say \"{it} has money.\"\n"
+            "Set Robin's purse to $0.\n"
+            "Set Robin's purse to $0.\n"  # already broke: nothing becomes
+            "Say \"between\".\n"
+            "Add $1 to Robin's purse.\n"
+        )
+        self.assertEqual(run(source), ["Robin is broke.", "between", "Robin has money."])
+
+    def test_a_named_thing_becomes_a_stored_adjective(self):
+        source = self.KNIGHTS + (
+            "Whenever Gawain becomes sworn:\n"
+            "  Say \"{Gawain} {the knight} {it} {its purse}\"\n"
+            "Whenever Gawain becomes not sworn:\n  Say \"unsworn\"\n"
+            "Now Robin is sworn.\n"
+            "Now Gawain is sworn.\n"
+            "Now Gawain is sworn.\n"
+            "Now Gawain is not sworn.\n"
+        )
+        self.assertEqual(run(source), ["Gawain Gawain Gawain $300", "unsworn"])
+
+    def test_a_reaction_applies_from_its_sentence_on(self):
+        source = self.KNIGHTS + (
+            "Now Robin is sworn.\n"
+            "Whenever a knight becomes sworn:\n  Say \"{the knight} swears.\"\n"
+            "Now Gawain is sworn.\n"
+        )
+        self.assertEqual(run(source), ["Gawain swears."])
+
+    def test_several_things_go_in_the_order_made_and_reactions_in_the_order_written(self):
+        source = WORLD + (
+            "Let the line be $10.\n"
+            "A knight is poor when its purse is less than the line.\n"
+            "There is a knight called Kay whose purse is $5 and whose courage is 1.\n"
+            "Whenever a knight becomes poor:\n  Say \"first {the knight}\"\n"
+            "Whenever Robin becomes poor:\n  Say \"second Robin\"\n"
+            "Whenever a knight becomes poor:\n  Say \"third {the knight}\"\n"
+            "Set the line to $1,000.\n"
+        )
+        self.assertEqual(run(source), [
+            "first Gawain", "third Gawain", "first Robin", "second Robin", "third Robin",
+        ])
+
+    def test_the_order_made_holds_across_kinds(self):
+        source = WORLD + (
+            "There is a new dragon whose age is 3.\n"
+            "Let the mark be 0.\n"
+            "A dragon is marked when the mark is 1.\n"
+            "A knight is marked when the mark is 1.\n"
+            "Whenever a knight becomes marked:\n  Say the knight.\n"
+            "Whenever a dragon becomes marked:\n  Say the dragon.\n"
+            "Set the mark to 1.\n"
+        )
+        self.assertEqual(run(source), ["Smaug", "Norbert", "Gawain", "Robin", "dragon 3"])
+
+    def test_reactions_set_off_reactions_at_once(self):
+        source = self.KNIGHTS + (
+            "Whenever a knight becomes broke:\n"
+            "  Say \"{the knight} is broke.\"\n"
+            "  Now the knight is sworn.\n"
+            "  Say \"after swearing\"\n"
+            "Whenever a knight becomes sworn:\n  Say \"{the knight} swears.\"\n"
+            "Set Robin's purse to $0.\n"
+            "Say \"done\"\n"
+        )
+        self.assertEqual(run(source), ["Robin is broke.", "Robin swears.", "after swearing", "done"])
+
+    def test_reactions_that_never_settle_stop_at_200_levels(self):
+        source = self.KNIGHTS + (
+            "Whenever Robin becomes sworn:\n  Now Robin is not sworn.\n"
+            "Whenever Robin becomes not sworn:\n  Now Robin is sworn.\n"
+            "Try:\n  Now Robin is sworn.\nIf that fails:\n  Say \"caught\"\n"
+        )
+        error = self.refuses(source, "200 levels", stage="run")
+        self.assertFalse(error.recoverable)
+        # 197 levels are fine.
+        source = self.KNIGHTS + (
+            "Let the left be 99.\n"
+            "Whenever Robin becomes sworn:\n  Subtract 1 from the left.\n  If the left is more than 0:\n"
+            "    Now Robin is not sworn.\n"
+            "Whenever Robin becomes not sworn:\n  Now Robin is sworn.\n"
+            "Now Robin is sworn.\nSay the left.\n"
+        )
+        self.assertEqual(run(source), ["0"])
+
+    def test_reactions_happen_inside_verbs_and_loops_straight_after_the_sentence(self):
+        source = self.KNIGHTS + (
+            "Whenever a knight becomes broke:\n  Say \"{the knight} is broke.\"\n"
+            "To spend for a knight:\n  Set the knight's purse to $0.\n  Say \"spent\"\n"
+            "Spend for Gawain.\n"
+            "For each knight:\n  Add $1 to its purse.\n  Set its purse to $0.\n  Say \"next\"\n"
+        )
+        self.assertEqual(run(source), [
+            "Gawain is broke.", "spent", "Gawain is broke.", "next", "Robin is broke.", "next",
+        ])
+
+    def test_a_problem_in_a_reaction_belongs_to_the_sentence_and_try_undoes_it_all(self):
+        source = self.KNIGHTS + (
+            "Let the count be 0.\n"
+            "Whenever a knight becomes broke:\n"
+            "  Add 1 to the count.\n"
+            "  Now the knight is sworn.\n"
+            "  If the knight is brave:\n    Fail because \"{the knight} refuses\"\n"
+            "Try:\n  Set Robin's purse to $0.\n  Set Gawain's purse to $0.\nIf that fails:\n"
+            "  Say \"{the problem}: {the count} {Robin's purse} {Gawain's purse}\"\n"
+            "Say the number of sworn knights.\n"
+        )
+        self.assertEqual(run(source), ["Gawain refuses: 0 $20 $300", "0"])
+        error = self.refuses(self.KNIGHTS + (
+            "Whenever a knight becomes broke:\n  Say \"ok\"\n  Fail because \"no\"\n"
+            "Set Robin's purse to $0.\n"
+        ), "no", stage="run")
+        self.assertEqual(error.line.text.strip(), 'Fail because "no"')
+        self.assertIn("(while doing line 20: Set Robin's purse to $0.)", error.render())
+
+    def test_rules_hold_inside_reactions(self):
+        source = self.KNIGHTS + (
+            "Whenever Robin becomes sworn:\n  Subtract $100 from Robin's purse.\n"
+            "Try:\n  Now Robin is sworn.\nIf that fails:\n  Say \"{the problem} {the number of sworn knights}\"\n"
+        )
+        self.assertEqual(run(source), ['That would break a rule: "A knight\'s purse is never less than $0." 0'])
+
+    def test_stop_leaves_a_reaction(self):
+        source = self.KNIGHTS + (
+            "Whenever a knight becomes sworn:\n  If the knight is not brave:\n    Stop.\n  Say \"{the knight} rides.\"\n"
+            "Now Robin is sworn.\nNow Gawain is sworn.\nSay \"end\"\n"
+        )
+        self.assertEqual(run(source), ["Gawain rides.", "end"])
+
+    def test_end_the_program_in_a_reaction_ends_it(self):
+        source = self.KNIGHTS + "Whenever Robin becomes sworn:\n  End the program.\nNow Robin is sworn.\nSay 1.\n"
+        self.assertEqual(run(source), [])
+
+    def test_a_thing_made_fitting_does_not_become_and_a_removed_one_becomes_nothing(self):
+        source = self.KNIGHTS + (
+            "A knight is rich when its purse is more than $100.\n"
+            "Whenever a knight becomes broke:\n  Say \"broke {the knight}\"\n"
+            "Whenever a knight becomes sworn:\n  Say \"sworn {the knight}\"\n"
+            "Whenever a knight becomes not rich:\n  Say \"not rich {the knight}\"\n"
+            "There is a new knight called \"Pauper\" whose purse is $0 and whose courage is 1.\n"
+            "There is a new sworn knight called \"Squire\" whose purse is $1 and whose courage is 1.\n"
+            "Let the third be a new knight called \"Third\" whose purse is $0 and whose courage is 1.\n"
+            "Remove Gawain.\n"
+            "Say \"quiet\"\n"
+        )
+        self.assertEqual(run(source), ["quiet"])
+
+    def test_a_thing_removed_by_an_earlier_reaction_is_skipped(self):
+        source = WORLD + (
+            "Let the line be $10.\n"
+            "A knight is poor when its purse is less than the line.\n"
+            "Whenever a knight becomes poor:\n  Say \"poor {the knight}\"\n  If the knight is Gawain:\n    Remove Robin.\n"
+            "Set the line to $1,000.\n"
+        )
+        self.assertEqual(run(source), ["poor Gawain"])
+
+    def test_working_out_sets_nothing_off(self):
+        source = self.KNIGHTS + (
+            "To work out the double (number) of a value (number):\n"
+            "  Let the result be 0.\n  Set the result to the value * 2.\n  The answer is the result.\n"
+            "A knight is bold when the double of its courage is more than 10.\n"
+            "Whenever a knight becomes bold:\n  Say \"bold {the knight}\"\n"
+            "Set Robin's courage to 6.\nSay the double of 2.\n"
+        )
+        self.assertEqual(run(source), ["bold Robin", "4"])
+
+    def test_what_is_refused(self):
+        cases = {
+            "Whenever a wizard becomes broke:\n  Say 1.\n": "what a wizard is",
+            "Whenever a knight becomes ancient:\n  Say 1.\n": 'what "ancient" means for a knight',
+            "Whenever Puff becomes broke:\n  Say 1.\n": 'what "Puff" refers to',
+            "Whenever knight becomes broke:\n  Say 1.\n": 'Write "a knight"',
+            "Whenever Robin is broke:\n  Say 1.\n": '"becomes"',
+            "Whenever Robin becomes broke.\n": "ends with a colon, not a period",
+            "If 1 is 1:\n  Whenever Robin becomes broke:\n    Say 1.\n": "top level",
+            "To work out the x (number):\n  Whenever Robin becomes broke:\n    Say 1.\n  The answer is 1.\n": "top level",
+            "To go:\n  Whenever Robin becomes broke:\n    Say 1.\nGo.\n": "top level",
+            "Whenever Robin becomes broke:\n  Stop repeating.\n": "needs a loop",
+            "For each knight:\n  Whenever it becomes broke:\n    Say 1.\n": "top level",
+            "Whenever Robin becomes broke:\n  Say the dragon.\n": "the dragon",
+            "Say 1.\nWhenever Kay becomes broke:\n  Say 1.\nThere is a knight called Kay whose purse is $1 and whose courage is 1.\n":
+                'what "Kay" refers to',
+            "Let whenever be 1.\n": "already has a meaning",
+            "Let becomes be 1.\n": "already has a meaning",
+        }
+        for body, fragment in cases.items():
+            with self.subTest(body.splitlines()[0]):
+                self.refuses(self.KNIGHTS + body, fragment)
+
+    def test_checks_for_nothing_do_not_survive_a_change_when_there_are_reactions(self):
+        body = (
+            "A horse has a speed (number).\nA squire has a wage (money) and a mount (horse, if any).\n"
+            "A squire can be paid.\n"
+            "There is a horse called Shadowfax whose speed is 40.\n"
+            "There is a squire called Wat whose wage is $3 and whose mount is Shadowfax.\n"
+            "If Wat has a mount:\n  Set Wat's wage to $5.\n  Say Wat's mount's speed + 1.\n"
+        )
+        self.assertEqual(run(body), ["41"])
+        reaction = "Whenever Wat becomes paid:\n  Set Wat's mount to nothing.\n"
+        self.refuses(body + reaction, "may be nothing")
+        # A check of a variable of a block survives, since no reaction can reach it.
+        source = body.split("If Wat", 1)[0] + reaction + (
+            "To go:\n  Let n be \"1\" as a number.\n  If n is not nothing:\n    Now Wat is paid.\n    Say n + 1.\nGo.\n"
+            "Say Wat's mount.\n"
+        )
+        self.assertEqual(run(source), ["2", "nothing"])
+
+    def test_the_trace_and_line_of_a_problem_in_a_reaction(self):
+        source = self.KNIGHTS + "Whenever Robin becomes sworn:\n  Say 1 / 0.\nNow Robin is sworn.\n"
+        error = self.refuses(source, "divide by zero", stage="run")
+        self.assertEqual(error.line.number, 18)
+        self.assertEqual([line.number for line in error.trace], [19])
+
+    def test_a_program_without_whenever_watches_nothing(self):
+        program = compile_source(self.KNIGHTS + "Set Robin's purse to $0.\n")
+        self.assertFalse(program.compiler.reactive)
+        self.assertTrue(compile_source(self.KNIGHTS + "Whenever Robin becomes broke:\n  Say 1.\n").compiler.reactive)
+
+    def test_serials_count_things_of_every_kind_in_the_order_made(self):
+        source = WORLD + (
+            "There is a new dragon whose age is 2.\n"
+            "Try:\n  There is a new knight whose purse is $1 and whose courage is 1.\n  Fail because \"no\".\n"
+            "If that fails:\n  Say 1.\n"
+            "There is a new treasure whose worth is $1 and whose owner is Smaug.\n"
+            "A dragon's age is never more than 1,000.\n"
+        )
+        world = compile_source(source + "Try:\n  There is a new dragon whose age is 5,000.\nIf that fails:\n  Say 2.\n"
+                               "There is a new dragon whose age is 3.\n").run(lambda text: None)
+        things = sorted((t for items in world.things.values() for t in items), key=lambda t: t.serial)
+        self.assertEqual([t.name for t in things],
+                         ["Smaug", "Norbert", "Goblet", "Cup", "Gawain", "Robin", "dragon 3", "treasure 3", "dragon 4"])
+        serials = [t.serial for t in things]
+        self.assertEqual(serials[:7], [1, 2, 3, 4, 5, 6, 7])
+        self.assertEqual(len(set(serials)), len(serials))
+        self.assertEqual(serials, sorted(serials))
+        self.assertGreater(serials[7], 8)  # the knight made in the failed Try kept number 8
+
+
+class LiveLibraries(Base):
+    """A library that goes on working after the sentences: live(world) and world.event."""
+
+    SOURCE = (
+        "A switch has a label (text) and a count (number).\n"
+        "A switch can be lit.\n"
+        "A switch can be done.\n"
+        "A switch's count is never more than 3.\n"
+        "A switch is busy when its count is at least 2.\n"
+        "To flick a switch is done by the library.\n"
+    )
+    PROGRAM = (
+        "Use the clicker library.\n"
+        "There is a switch called Lamp whose label is \"lamp\" and whose count is 0.\n"
+        "There is a switch called Fan whose label is \"fan\" and whose count is 0.\n"
+        "Whenever a switch becomes lit:\n  Say \"{the switch} on\"\n  Add 1 to the switch's count.\n"
+        "Whenever Lamp becomes not lit:\n  Say \"Lamp off\"\n"
+        "Whenever a switch becomes busy:\n  Say \"{the switch} busy\"\n  If the switch is Fan:\n"
+        "    Fail because \"the fan is too busy\"\n"
+        "Whenever a switch becomes done:\n  Say \"bye\"\n  End the program.\n"
+    )
+
+    def setUp(self):
+        import types
+        self.log = []
+        module = types.ModuleType("englishscript.libraries.clicker")
+        module.SOURCE = self.SOURCE
+        module.live = lambda world: self.log.append(("live", world.busy, world.ended))
+        module.finish = lambda world: self.log.append(("finish",))
+
+        def flick(world, switch):
+            world.event(lambda: switch.marks.add("lit"))
+        module.verb_flick = flick
+        self.module = module
+        sys.modules[module.__name__] = module
+        self.addCleanup(sys.modules.pop, module.__name__, None)
+
+    def start(self, extra=""):
+        out = []
+        world = compile_source(self.PROGRAM + extra).run(out.append)
+        return world, out
+
+    def test_live_is_called_once_before_finish_when_the_sentences_end(self):
+        world, _ = self.start()
+        self.assertEqual(self.log, [("live", False, False), ("finish",)])
+        self.assertFalse(world.ended)
+
+    def test_live_is_not_called_after_end_the_program_or_a_problem(self):
+        world, _ = self.start("End the program.\n")
+        self.assertEqual(self.log, [("finish",)])
+        self.assertTrue(world.ended)
+        self.log.clear()
+        with self.assertRaises(EnglishError):
+            self.start('Fail because "no".\n')
+        self.assertEqual(self.log, [("finish",)])
+
+    def test_a_failure_in_live_is_reported_like_one_in_finish(self):
+        def broken(world):
+            raise ValueError("no screen")
+        self.module.live = broken
+        with self.assertRaises(EnglishError) as caught:
+            self.start()
+        self.assertIn("no screen", caught.exception.message)
+        self.assertIn("clicker library", caught.exception.message)
+        self.assertEqual(self.log, [("finish",)])
+
+    def test_an_event_after_the_run_sets_off_reactions(self):
+        world, out = self.start()
+        lamp, fan = world.named["lamp"], world.named["fan"]
+        self.assertTrue(world.event(lambda: lamp.marks.add("lit")))
+        self.assertEqual(out, ["Lamp on"])
+        self.assertEqual(lamp.fields["count"], 1)
+        self.assertTrue(world.event(lambda: lamp.marks.discard("lit")))
+        self.assertEqual(out, ["Lamp on", "Lamp off"])
+        # A property changed from outside sets off a defined adjective.
+        world.event(lambda: lamp.fields.__setitem__("count", 2))
+        self.assertEqual(out[-1], "Lamp busy")
+        # Things changed by one event go in the order they were made, not the order changed.
+        out.clear()
+
+        def both():
+            fan.marks.add("lit")
+            lamp.marks.add("lit")
+        self.assertTrue(world.event(both))
+        self.assertEqual(out, ["Lamp on", "Fan on"])
+        self.assertEqual((lamp.fields["count"], fan.fields["count"]), (3, 1))
+
+    def test_an_event_with_a_problem_puts_everything_back(self):
+        world, out = self.start()
+        lamp, fan = world.named["lamp"], world.named["fan"]
+        # A broken rule.
+        with self.assertRaises(EnglishError) as caught:
+            world.event(lambda: lamp.fields.__setitem__("count", 5))
+        self.assertIn("break a rule", caught.exception.message)
+        self.assertTrue(caught.exception.recoverable)
+        self.assertEqual(lamp.fields["count"], 0)
+        # A reaction that fails: its changes, and the event's, are undone.
+        fan.fields["count"] = 1
+        with self.assertRaises(EnglishError) as caught:
+            world.event(lambda: fan.marks.add("lit"))
+        self.assertEqual(caught.exception.message, "the fan is too busy")
+        self.assertEqual(out, ["Fan on", "Fan busy"])  # what was said stays said
+        self.assertEqual((fan.fields["count"], fan.marks), (1, set()))
+        # Any other exception also puts the world back, and passes through.
+
+        def careless():
+            lamp.marks.add("lit")
+            raise KeyError("oops")
+        with self.assertRaises(KeyError):
+            world.event(careless)
+        self.assertEqual(lamp.marks, set())
+        # The world still works.
+        self.assertTrue(world.event(lambda: lamp.marks.add("lit")))
+        self.assertEqual(lamp.fields["count"], 1)
+
+    def test_end_the_program_in_a_reaction_ends_the_events(self):
+        world, out = self.start()
+        lamp = world.named["lamp"]
+        self.assertTrue(world.event(lambda: lamp.marks.add("done")))
+        self.assertEqual(out, ["bye"])
+        self.assertTrue(world.ended)
+        self.assertIn("done", lamp.marks)  # what the event changed stays
+        called = []
+        self.assertFalse(world.event(lambda: called.append(1)))
+        self.assertEqual(called, [])
+        # After the program's own "End the program.", events do nothing either.
+        world, _ = self.start("End the program.\n")
+        self.assertFalse(world.event(lambda: called.append(1)))
+        self.assertEqual(called, [])
+
+    def test_an_event_cannot_come_in_while_a_sentence_or_an_event_is_carried_out(self):
+        # From a verb of the library, while the program's sentences run: a fault in the library.
+        with self.assertRaises(EnglishError) as caught:
+            self.start("Flick Lamp.\n")
+        self.assertIn("RuntimeError", caught.exception.message)
+        self.assertIn("world.event", caught.exception.message)
+        # From inside an event.
+        world, _ = self.start()
+        lamp = world.named["lamp"]
+        with self.assertRaises(RuntimeError):
+            world.event(lambda: world.event(lambda: None))
+        # From world.out during a reaction.
+        world.out = lambda text: world.event(lambda: None)
+        with self.assertRaises(RuntimeError):
+            world.event(lambda: lamp.marks.add("lit"))
+        self.assertEqual((lamp.marks, lamp.fields["count"]), (set(), 0))
+        self.assertFalse(world.busy)
+
+    def test_an_event_works_without_reactions_and_checks_rules(self):
+        module_source = "Use the clicker library.\nThere is a switch called Lamp whose label is \"l\" and whose count is 0.\n"
+        world = compile_source(module_source).run(lambda text: None)
+        lamp = world.named["lamp"]
+        self.assertTrue(world.event(lambda: lamp.fields.__setitem__("count", 3)))
+        with self.assertRaises(EnglishError):
+            world.event(lambda: lamp.fields.__setitem__("count", 4))
+        self.assertEqual(lamp.fields["count"], 3)
+
+    def test_an_event_lifts_the_limits_a_run_lifts(self):
+        world, out = self.start(
+            "A switch is cold when its count is less than 0.\n"
+            "Whenever a switch becomes cold:\n  Say the switch's count.\n"
+        )
+        lamp = world.named["lamp"]
+        big = 10 ** 5000  # more digits than Python turns into text by default
+        world.event(lambda: lamp.fields.__setitem__("count", Fraction(-big)))  # the rule allows it
+        self.assertTrue(out[-1].startswith("-100,000,"))
+        self.assertGreater(len(out[-1]), 5000)
+        limit = sys.getrecursionlimit()
+        seen = []
+        world.event(lambda: seen.append(sys.getrecursionlimit()))
+        self.assertGreaterEqual(seen[0], 20_000)
+        self.assertEqual(sys.getrecursionlimit(), limit)
+
+
+class Chapters(InTemporaryFolder, Base):
+    """A program split over files: chapters, and books of them."""
+
+    def write(self, name, text):
+        path = self.folder / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+        return path
+
+    def run_main(self, source, name="main.english"):
+        out = []
+        world = compile_source(source, self.folder, name).run(out.append)
+        return out, world
+
+    def refuses_main(self, source, fragment, stage="compile"):
+        with self.assertRaises(EnglishError) as caught:
+            self.run_main(source)
+        error = caught.exception
+        self.assertIn(fragment, error.message + " " + (error.hint or ""))
+        self.assertEqual(error.stage, stage)
+        return error
+
+    def test_both_forms_and_names_of_several_words(self):
+        self.write("roman_numerals.english", 'To work out the shout (text):\n  The answer is "hey".\n')
+        self.write("old_shelf/fairy_tales.english", 'Let the moral be "be kind".\n')
+        said, _ = self.run_main(
+            "Use the roman numerals chapter.\nUse the fairy tales chapter of the old shelf book.\n"
+            "Say the shout.\nSay the moral.\n"
+        )
+        self.assertEqual(said, ["hey", "be kind"])
+        self.refuses_main("Use the roman_numerals chapter.\n", "plain words")
+        self.refuses_main("Use the roman numerals chapter of the shelf.\n", '"book"')
+
+    def test_a_chapter_is_read_once_where_it_is_first_used(self):
+        self.write("a.english", 'Say "a is read".\nLet the count be 1.\n')
+        self.write("b.english", 'Use the a chapter.\nSay "b is read".\nAdd 1 to the count.\n')
+        said, world = self.run_main(
+            'Say "start".\nUse the b chapter.\nUse the a chapter.\nSay "main {the count}".\n'
+        )
+        self.assertEqual(said, ["start", "a is read", "b is read", "main 2"])
+        self.refuses_main("Use the a chapter.\nUse the a chapter.\n", "already uses the a chapter (line 1)")
+
+    def test_chapters_in_a_circle_are_refused(self):
+        self.write("a.english", "Use the b chapter.\n")
+        self.write("b.english", "Use the c chapter.\n")
+        self.write("c.english", "Use the a chapter.\n")
+        error = self.refuses_main("Use the a chapter.\n", "a -> b -> c -> a")
+        self.assertEqual(error.line.number, 1)
+        self.assertIn("c.english, line 1", error.render("main.english"))
+        # A chapter that uses the program itself is a circle too.
+        self.write("d.english", "Use the main chapter.\n")
+        self.refuses_main("Use the d chapter.\n", "main -> d -> main")
+
+    def test_a_missing_chapter_is_refused_saying_where_it_was_looked_for(self):
+        self.write("calendar.english", "Let x be 1.\n")
+        error = self.refuses_main("Use the moons chapter.\n", "moons.english")
+        self.assertIn(str(self.folder / "moons.english"), error.message)
+        self.assertIn("Chapters there: calendar.", error.hint)
+        error = self.refuses_main("Use the moons chapter of the almanac book.\n", "almanac")
+        self.assertIn("There is no folder", error.hint)
+
+    def test_what_a_chapter_shares(self):
+        self.write("all.english", "A gem has a size (number).\nThere is a gem called Ruby whose size is 3.\n"
+                                  "A gem is big when its size is more than 2.\n")
+        self.write("none.english", "This chapter shares nothing.\nLet the secret be 7.\n")
+        self.write("some.english", "# A comment may come first.\n\nThis chapter shares only hat and Crown.\n"
+                                   "A hat has a size (number).\nThere is a hat called Crown whose size is 5.\n"
+                                   "There is a hat called Cap whose size is 1.\nA hat is tall when its size is more than 2.\n"
+                                   "The width of a hat is its size * 2.\n")
+        said, _ = self.run_main(
+            "Use the all chapter.\nUse the none chapter.\nUse the some chapter.\n"
+            "Say the number of big gems.\nSay Ruby's size.\nSay Crown's size.\nSay the number of hats.\n"
+        )
+        self.assertEqual(said, ["1", "3", "5", "2"])
+        uses = "Use the all chapter.\nUse the none chapter.\nUse the some chapter.\n"
+        self.refuses_main(uses + "Say the secret.\n", '"secret" belongs to the none chapter, which does not share it.')
+        self.refuses_main(uses + "Say Cap.\n", '"Cap" belongs to the some chapter, which does not share it.')
+        self.refuses_main(uses + "Say the number of tall hats.\n", '"tall" for a hat belongs to the some chapter')
+        error = self.refuses_main(uses + "Say Crown's width.\n", '"width" belongs to the some chapter')
+        self.assertIn("shares only hat and Crown", error.hint)
+
+    def test_the_shares_sentence_is_checked(self):
+        cases = {
+            "Let x be 1.\nThis chapter shares nothing.\n": "first sentence",
+            "This chapter shares only ghost.\n": 'defines no "ghost"',
+            "This chapter shares only the x.\nLet x be 1.\n": "without an article",
+            "This chapter shares only x and x.\nLet x be 1.\n": "listed twice",
+            "This chapter shares only tally.\nA tally has a count (number).\nTo tally:\n  Say 1.\n": "could mean the kind and verb",
+            "This chapter shares only count.\nA tally has a count (number).\n": "shared with its kind",
+            "This chapter shares only tallies.\nA tally has a count (number).\n": 'singular: "tally"',
+            "This chapter shares x.\nLet x be 1.\n": '"only"',
+            "If 1 is 1:\n  This chapter shares nothing.\n": "top level",
+        }
+        for text, fragment in cases.items():
+            with self.subTest(text.splitlines()[0]):
+                self.write("c.english", text)
+                error = self.refuses_main("Use the c chapter.\n", fragment)
+                self.assertEqual(error.line.unit.name, "c")
+        # The program itself may say it.
+        said, _ = self.run_main("This chapter shares only x.\nLet x be 1.\nSay x.\n")
+        self.assertEqual(said, ["1"])
+        self.refuses_main("This chapter shares only y.\nLet x be 1.\n", 'defines no "y"')
+
+    def test_a_name_from_a_chapter_this_file_does_not_use(self):
+        self.write("a.english", "Let the depth be 3.\nTo dig:\n  Say 1.\n")
+        self.write("b.english", "Use the a chapter.\nLet the width be 2.\n")
+        self.write("shelf/c.english", "Let the height be 1.\n")
+        self.write("shelf/d.english", "Use the c chapter.\n")
+        self.refuses_main("Use the b chapter.\nSay the depth.\n", 'Write "Use the a chapter." first.')
+        self.refuses_main("Use the b chapter.\nDig.\n", 'Write "Use the a chapter." first.')
+        self.refuses_main("Use the d chapter of the shelf book.\nSay the height.\n",
+                          'Write "Use the c chapter of the shelf book." first.')
+        # Once used, it is fine.
+        said, _ = self.run_main("Use the b chapter.\nUse the a chapter.\nSay the depth + the width.\nDig.\n")
+        self.assertEqual(said, ["5", "1"])
+
+    def test_a_name_has_one_meaning_in_the_whole_program(self):
+        self.write("a.english", "This chapter shares nothing.\nLet the count be 1.\nA gem has a size (number).\n"
+                                "There is a gem called Ruby whose size is 1.\nTo shine:\n  Say 1.\n"
+                                "To work out the glow (number):\n  The answer is 1.\n")
+        uses = "Use the a chapter.\n"
+        self.refuses_main(uses + "Let the count be 2.\n", "already means something (in the a chapter)")
+        self.refuses_main(uses + "A gem has a weight (number).\n", "already described in the a chapter, line 3")
+        self.refuses_main(uses + "To shine:\n  Say 2.\n", 'already know how to "shine" (in the a chapter, line 5)')
+        self.refuses_main(uses + "To work out the glow (number):\n  The answer is 2.\n", "in the a chapter, line 7")
+        self.refuses_main(uses + "A dragon has an age (number).\nThere is a dragon called Ruby whose age is 1.\n",
+                          "already means something (in the a chapter)")
+        # A variable of a block, or a role, is its block's own.
+        said, _ = self.run_main(uses + "To go with a count (number):\n  Let the size be the count.\n  Say the size.\nGo with 4.\n")
+        self.assertEqual(said, ["4"])
+
+    def test_a_shared_value_may_give_back_a_thing_of_a_kind_that_is_not_shared(self):
+        self.write("gems.english", "This chapter shares only biggest.\nA gem has a size (number).\n"
+                                   "There is a gem called Ruby whose size is 3.\n"
+                                   "To work out the biggest (gem):\n  The answer is Ruby.\n")
+        said, _ = self.run_main("Use the gems chapter.\nSay the biggest.\nIf the biggest is the biggest:\n  Say 1.\n")
+        self.assertEqual(said, ["Ruby", "1"])
+        self.refuses_main("Use the gems chapter.\nSay the biggest's size.\n", "come with the kind")
+        self.refuses_main("Use the gems chapter.\nLet g (gem, if any) be nothing.\n", '"gem" belongs to the gems chapter')
+
+    def test_a_library_used_by_two_files_is_loaded_once(self):
+        import types
+        finished = []
+        module = types.ModuleType("englishscript.libraries.gadgets")
+        module.SOURCE = "A gadget has a size (number).\nThere is a gadget called Box whose size is 1.\n"
+        module.finish = lambda world: finished.append(1)
+        sys.modules[module.__name__] = module
+        self.addCleanup(sys.modules.pop, module.__name__, None)
+        self.write("a.english", "Use the gadgets library.\nAdd 1 to Box's size.\n")
+        said, _ = self.run_main("Use the a chapter.\nUse the gadgets library.\nSay Box's size.\n")
+        self.assertEqual((said, finished), (["2"], [1]))
+        self.refuses_main("Use the a chapter.\nSay Box's size.\n", 'Write "Use the gadgets library." first.')
+        self.refuses_main("Use the gadgets library.\nUse the gadgets library.\n", "already in use (line 1)")
+
+    def test_a_whenever_in_a_chapter_makes_the_program_reactive(self):
+        self.write("lamps.english", "A lamp has a power (number).\nA lamp can be lit.\n"
+                                    "There is a lamp called Glow whose power is 1.\n"
+                                    "Whenever a lamp becomes lit:\n  Say \"{the lamp} is lit\"\n")
+        self.write("room.english", "Use the lamps chapter.\n")
+        program = compile_source("Use the lamps chapter.\nNow Glow is lit.\n", self.folder)
+        self.assertTrue(program.compiler.reactive)
+        out = []
+        program.run(out.append)
+        self.assertEqual(out, ["Glow is lit"])
+        # Found through a chapter that uses it, too; the reaction applies to the whole world.
+        self.write("switch.english", "Use the lamps chapter.\nTo switch:\n  Now Glow is lit.\n")
+        program = compile_source("Use the switch chapter.\nSwitch.\n", self.folder)
+        self.assertTrue(program.compiler.reactive)
+        out = []
+        program.run(out.append)
+        self.assertEqual(out, ["Glow is lit"])
+
+    def test_a_problem_in_a_chapter_names_its_file_and_line(self):
+        self.write("shelf/tales.english", "Let x be 1.\nSay y.\n")
+        error = self.refuses_main("Say 0.\nUse the tales chapter of the shelf book.\n", 'what "y" refers to')
+        rendered = error.render("main.english")
+        self.assertIn("(shelf/tales.english, line 2)", rendered)
+        self.assertIn("(The tales chapter is used at main.english, line 2: Use the tales chapter of the shelf book.)",
+                      rendered)
+        self.write("shelf/tales.english", 'To break:\n  Fail because "it broke".\n')
+        error = self.refuses_main("Use the tales chapter of the shelf book.\nBreak.\n", "it broke", stage="run")
+        rendered = error.render("main.english")
+        self.assertIn("(shelf/tales.english, line 2)", rendered)
+        self.assertIn("(while doing main.english, line 2: Break.)", rendered)
+
+    def test_explain_notes_what_a_chapter_brought_in(self):
+        self.write("a.english", "This chapter shares only x.\nLet x be 1.\n")
+        self.write("b.english", "Use the a chapter.\n")
+        notes = explain("Use the b chapter.\nUse the a chapter.\nSay x.\n", self.folder)
+        self.assertIn('"b" → b.english, which shares everything', notes)
+        self.assertIn('"a" → a.english, read already', notes)
+
+    def test_compile_file_and_the_command_line(self):
+        import io
+        from contextlib import redirect_stderr, redirect_stdout
+        from englishscript import compile_file
+        from englishscript.__main__ import main
+        self.write("shelf/greeting.english", 'To work out the hello (text):\n  The answer is "Hello".\n')
+        path = self.write("prog/../hi.english", "Use the greeting chapter of the shelf book.\nSay the hello.\n")
+        out = []
+        compile_file(path).run(out.append)
+        self.assertEqual(out, ["Hello"])
+        os.chdir(self.folder.parent)  # the file's own folder counts, not where it is run from
+        name = str(Path(self.folder.name) / "hi.english")
+        for flags, expected in (((), "Hello"), (("--check",), "Nothing was run"),
+                                (("--explain",), "shelf/greeting.english"), (("--lint",), "Nothing to mend")):
+            with self.subTest(flags):
+                stdout, stderr = io.StringIO(), io.StringIO()
+                with redirect_stdout(stdout), redirect_stderr(stderr):
+                    status = main([name, *flags])
+                self.assertEqual(status, 0, stderr.getvalue())
+                self.assertIn(expected, stdout.getvalue())
+
+
+class AlmanacExample(Base):
+    """examples/almanac.english and the chapters of examples/almanac, end to end."""
+
+    PATH = ROOT / "examples" / "almanac.english"
+
+    def test_it_says_the_almanac_and_checks_nine_examples(self):
+        from englishscript import compile_file
+        out = []
+        world = compile_file(self.PATH).run(out.append)
+        self.assertEqual(out[0], "An Almanack for the Year MMXXVII,")
+        self.assertIn("Candlemas falls on a Tuesday, 2 February.", out)
+        self.assertIn("Christmas falls on a Saturday, 25 December.", out)
+        self.assertIn("3 of the 7 fall in the cold months.", out)
+        self.assertEqual(world.examples, 9)
+
+    def test_each_file_lints_clean(self):
+        from englishscript import lint
+        for path in [self.PATH, *sorted((ROOT / "examples" / "almanac").glob("*.english"))]:
+            with self.subTest(path.name):
+                self.assertEqual([p.render() for p in lint(path.read_text(encoding="utf-8"), path.parent)], [])
+
+    def test_only_what_is_shared_can_be_said(self):
+        source = self.PATH.read_text(encoding="utf-8")
+        folder = self.PATH.parent
+        refused = {
+            "For each numeral:\n  Say 1.\n": "numeral", 'Say the weight of "X".\n': "weight",
+            "Say the month row.\n": "month row", "Say Candlemas.\n": "Candlemas",
+            "Say the leftover of 10.\n": "leftover",
+        }
+        for extra, name in refused.items():
+            with self.subTest(name):
+                with self.assertRaises(EnglishError) as caught:
+                    compile_source(source + extra, folder)
+                self.assertIn(f'"{name}" belongs to', caught.exception.message)
+                self.assertIn("which does not share it", caught.exception.message)
+        out = []
+        compile_source(source + "Say Michaelmas.\nSay the number of wintry feasts.\nFor each feast:\n  Skip this feast.\n"
+                       "Say the roman of 4.\n", folder).run(out.append)
+        self.assertEqual(out[-3:], ["Michaelmas", "3", "IV"])
 
 
 class TodoExample(InTemporaryFolder, Base):
@@ -1319,13 +2015,20 @@ class SyntaxDocument(Base):
                 said.append(comment[2:].strip())
         return said
 
+    @staticmethod
+    def run_here(source):
+        """Run with the chapters looked for in examples/, as the document's examples of chapters expect."""
+        out = []
+        compile_source(source, ROOT / "examples").run(out.append)
+        return out
+
     def test_examples_run_and_say_what_the_document_claims(self):
         world, *examples = self.blocks("englishscript")
         self.assertGreater(len(examples), 15)
         for body in examples:
             with self.subTest(body.strip().splitlines()[0]):
                 try:
-                    said = run(world + body)
+                    said = self.run_here(world + body)
                 except EnglishError as error:
                     self.fail(error.render())
                 self.assertEqual(said, self.stated_output(body))
@@ -1337,7 +2040,7 @@ class SyntaxDocument(Base):
         for body in refused:
             with self.subTest(body.strip().splitlines()[-1]):
                 with self.assertRaises(EnglishError):
-                    run(world + body)
+                    self.run_here(world + body)
 
     def test_reserved_words_match_the_compiler(self):
         text = (ROOT / "docs" / "SYNTAX.md").read_text(encoding="utf-8")
@@ -1346,6 +2049,98 @@ class SyntaxDocument(Base):
         for row in table.splitlines()[2:]:
             listed.update(re.findall(r"`(\w+)`", row.split("|")[2]))
         self.assertEqual(listed, set(KEYWORDS))
+
+
+class ProjectPage(unittest.TestCase):
+    """docs/ is served by GitHub Pages. What it serves must match the source."""
+
+    @classmethod
+    def setUpClass(cls):
+        sys.path.insert(0, str(ROOT / "tools"))
+        import build_site
+
+        cls.build = build_site
+        cls.docs = ROOT / "docs"
+        cls.page = (cls.docs / "index.html").read_text(encoding="utf-8")
+
+    def test_the_bundled_compiler_is_the_current_compiler(self):
+        import io
+        import zipfile
+
+        with zipfile.ZipFile(io.BytesIO((self.docs / "play" / "englishscript.zip").read_bytes())) as archive:
+            bundled = {name: archive.read(name) for name in archive.namelist()}
+        self.assertEqual(bundled, dict(self.build.package_files()), "run: python tools/build_site.py")
+        self.assertIn("englishscript/__init__.py", bundled)
+
+    def test_the_bundled_examples_are_the_current_examples(self):
+        text = (self.docs / "play" / "examples.json").read_text(encoding="utf-8")
+        self.assertEqual(text, self.build.examples_text(), "run: python tools/build_site.py")
+
+    def test_every_program_printed_on_the_page_shows_what_the_compiler_says(self):
+        programs = self.build.SNIPPET.findall(self.page)
+        self.assertGreaterEqual(len(programs), 10)
+        self.assertTrue(any(expect == "refused" for _, expect, *_ in programs))
+        # render_page runs each one, and fails if one marked "ok" is refused or the reverse.
+        self.assertEqual(self.build.render_page(self.page), self.page, "run: python tools/build_site.py")
+
+    PAGES = ("index.html", "playground.html", "reference.html", "how.html", "vulkan.html")
+
+    def test_the_pages_printed_from_markdown_are_current(self):
+        for name, make in (("reference.html", self.build.reference_page), ("vulkan.html", self.build.vulkan_page)):
+            with self.subTest(name):
+                self.assertEqual((self.docs / name).read_text(encoding="utf-8"), make(), "run: python tools/build_site.py")
+
+    def test_the_grammar_page_carries_every_example_of_the_reference(self):
+        page = (self.docs / "reference.html").read_text(encoding="utf-8")
+        source = (self.docs / "SYNTAX.md").read_text(encoding="utf-8")
+        blocks = re.findall(r"^```(\w+)\n(.*?)^```", source, re.M | re.S)
+        runnable = [body for kind, body in blocks if kind == "englishscript"]
+        refused = [body for kind, body in blocks if kind == "refused"]
+        self.assertEqual(page.count('data-expect="ok"'), len(runnable))
+        self.assertEqual(page.count('data-expect="refused"'), len(refused))
+        self.assertEqual(page.count("data-world>"), 1)  # the small world every other example builds on
+        import html as html_module
+
+        printed = [html_module.unescape(text) for text in re.findall(r'<pre class="program" data-expect="\w+">(.*?)</pre>', page, re.S)]
+        self.assertEqual(sorted(text.strip("\n") for text in printed), sorted(body.strip("\n") for body in runnable + refused))
+        self.assertNotRegex(re.sub(r"<pre.*?</pre>|<code>.*?</code>", "", page, flags=re.S), r"\*\*|\]\(")  # no stray Markdown
+
+    def test_how_to_say_it_is_current_and_is_a_working_program(self):
+        text = (self.docs / "play" / "phrases.json").read_text(encoding="utf-8")
+        self.assertEqual(text, self.build.phrases_text(), "run: python tools/build_site.py")
+        said = []
+        world = compile_source(self.build.phrases_program()).run(said.append, lambda question: "Ada")
+        self.assertIn("Hello, Ada.", said)
+        self.assertEqual(world.examples, 1)
+        from englishscript import lint
+
+        self.assertEqual([p for p in lint(self.build.phrases_program()) if p.kind == "error"], [])
+
+    def test_every_page_links_only_to_what_exists(self):
+        for name in self.PAGES:
+            with self.subTest(name):
+                page = (self.docs / name).read_text(encoding="utf-8")
+                self.assertIn('class="sitenav"', page)
+                self.assertIn("assets/english.css", page)
+                for target in re.findall(r'(?:href|src)="([^"#]+)(?:#[^"]*)?"', page):
+                    if target.startswith(("http://", "https://")):
+                        continue
+                    local = self.docs / ("index.html" if target == "./" else target)
+                    self.assertTrue(local.is_file(), f"{name} links to {target}, which is not there")
+                for anchor in re.findall(r'href="#([^"]+)"', page):
+                    self.assertIn(f'id="{anchor}"', page, f"{name} links to #{anchor}, which is not on the page")
+
+    def test_the_engine_can_find_what_it_loads(self):
+        engine = (self.docs / "play" / "engine.js").read_text(encoding="utf-8")
+        self.assertIn("englishscript.zip", engine)
+        self.assertRegex(engine, r"cdn\.jsdelivr\.net/pyodide/v\d+\.\d+\.\d+/full/")  # a pinned version
+        for path in ("play/englishscript.zip", "play/examples.json", "play/snippets.js", "assets/triangle-gpu.png"):
+            with self.subTest(path):
+                self.assertTrue((self.docs / path).is_file())
+        self.assertTrue((self.docs / ".nojekyll").is_file())  # so GitHub Pages serves the files as they are
+        for name in ("index.html", "reference.html"):
+            self.assertIn("./play/snippets.js", (self.docs / name).read_text(encoding="utf-8"))
+        self.assertIn("./play/engine.js", (self.docs / "playground.html").read_text(encoding="utf-8"))
 
 
 class FailingInsteadOfAnswering(Base):

@@ -1,0 +1,40 @@
+# What is on the page, from top to bottom.
+#
+# A chapter of the tasks book. Each thing made here is an element of the page.
+# The other chapters change these things by name, so the names they need are
+# shared. The panels that only hold things in place are not.
+
+This chapter shares only Entry, Adder, Notice, Everything, Waiting, Finished, Finder, Roll, Tally, Progress, Finisher, Sweeper and Restorer.
+
+Use the page library.
+
+There is a heading called Banner whose wording is "Things to do".
+
+# Where a new task is written.
+There is a panel called Desk.
+There is a field called Entry whose wording is "" and whose hint is "What needs doing? Add a #tag if you like." and whose panel is Desk.
+There is a button called Adder whose label is "Add" and whose panel is Desk.
+
+# A line for telling the reader something: why a task was not added, or that one can be put back.
+There is a note called Notice whose wording is "".
+
+# Which tasks are in sight.
+There is a panel called Sieve.
+There is a button called Everything whose label is "All" and whose panel is Sieve.
+There is a button called Waiting whose label is "Still to do" and whose panel is Sieve.
+There is a button called Finished whose label is "Done" and whose panel is Sieve.
+There is a field called Finder whose wording is "" and whose hint is "Find" and whose panel is Sieve.
+
+# The cards go here, as they are made.
+There is a panel called Roll.
+
+There is a panel called Foot.
+There is a note called Tally whose wording is "" and whose panel is Foot.
+There is a gauge called Progress whose level is 0 and whose limit is 1 and whose panel is Foot.
+
+# Things to do to the whole list.
+There is a panel called Shelf.
+There is a button called Finisher whose label is "Tick them all" and whose panel is Shelf.
+There is a button called Sweeper whose label is "Clear what is done" and whose panel is Shelf.
+There is a button called Restorer whose label is "Put the last one back" and whose panel is Shelf.
+Now Restorer is hidden.

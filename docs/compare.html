@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EnglishScript beside JavaScript and Java</title>
+<meta name="description" content="The same programs in EnglishScript, JavaScript and Java, and what each language decides for you: mixed types, missing values, precedence, equality, and what a reader has to get through.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;family=IM+Fell+English:ital@0;1&amp;family=IM+Fell+English+SC&amp;family=UnifrakturMaguntia&amp;display=swap">
+<link rel="stylesheet" href="assets/english.css">
+<style>
+  .doc.plain.wide { max-width: 66rem; }
+  .doc article > p, .doc article > h1, .doc article > h2, .doc article > h3, .doc article > ul, .doc article > .narrow { max-width: 45rem; margin-left: auto; margin-right: auto; }
+  .doc article > h1, .doc article > .standfirst { text-align: center; }
+
+  /* A program in EnglishScript, and beside it the same program in the other two. */
+  .beside { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.4rem; align-items: start; margin: 1.6rem 0 0.6rem; }
+  @media (min-width: 940px) { .beside { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); } }
+  .beside figure.snippet { margin: 0; }
+  .beside + .caption { font: italic 1.05rem/1.4 var(--fell); color: var(--muted); text-align: center; margin: 0.9rem auto 2rem; max-width: 45rem; text-wrap: balance; }
+  .other { display: flex; flex-wrap: wrap; position: relative; }
+  .other input { position: absolute; opacity: 0; pointer-events: none; }
+  .other label {
+    flex: 1; text-align: center; font: 1rem var(--caps); letter-spacing: 0.1em; text-transform: lowercase; cursor: pointer;
+    padding: 0.5rem 0.6rem 0.55rem; color: var(--muted); background: var(--panel); border-bottom: 3px double var(--ink);
+    transition: color 0.2s ease, background-color 0.2s ease;
+  }
+  .other label + input + label { border-left: 1px solid var(--rule); }
+  .other input:checked + label { color: var(--accent); background: var(--bg); }
+  .other input:focus-visible + label { outline: 2px solid var(--focus); outline-offset: -2px; }
+  .other pre.code { display: none; flex: 0 0 100%; min-width: 0; }
+  .other input:nth-of-type(1):checked ~ pre.js, .other input:nth-of-type(2):checked ~ pre.java { display: block; }
+  pre.code { margin: 0; padding: 0.9rem 1.1rem; font: 0.78rem/1.6 var(--mono); font-variant-numeric: normal; white-space: pre; overflow-x: auto; tab-size: 4; font-variant-ligatures: none; }
+  @media (prefers-reduced-motion: no-preference) { .other pre.code { animation: line-in 0.3s ease-out both; } }
+
+  /* A ledger of one question put to all three. */
+  table.three td:first-child, table.three th:first-child { width: 7.5rem; font: 1rem var(--caps); letter-spacing: 0.08em; text-transform: lowercase; color: var(--muted); white-space: nowrap; }
+  table.three td:nth-child(2) { width: 46%; }
+  table.three code, table.measure code { white-space: pre-wrap; overflow-wrap: anywhere; }
+  table.three tr.ours td:first-child { color: var(--accent); }
+  table.measure td:nth-child(n+2), table.measure th:nth-child(n+2) { text-align: right; font-variant-numeric: lining-nums tabular-nums; }
+  table.wide td:first-child, table.wide th:first-child { width: 22%; font-weight: 600; }
+  .doc article > figure.snippet { max-width: 45rem; margin-left: auto; margin-right: auto; }
+</style>
+</head>
+<body>
+
+<nav class="sitenav" aria-label="The pages of this site">
+  <div class="inner">
+    <a class="home" href="./">EnglishScript</a>
+    <a class="page" href="./">The treatise</a>
+    <a class="page" href="playground.html">The playground</a>
+    <a class="page" href="todo.html">A page</a>
+    <a class="page" href="compare.html" aria-current="page">Compared</a>
+    <a class="page" href="reference.html">The grammar</a>
+    <a class="page" href="how.html">The machinery</a>
+    <a class="page" href="https://github.com/monstercameron/EnglishScript">The source</a>
+  </div>
+</nav>
+
+<main class="doc plain wide">
+<article>
+
+<h1>Beside JavaScript and Java</h1>
+<p class="standfirst">The same programs in three languages, and what each language decides for you without saying so.</p>
+
+<p>JavaScript and Java share four letters, a year of birth and a family of brackets, and not much else. One checks almost nothing before a program runs. The other checks the types and then takes your word for the rest. EnglishScript is far smaller and far slower than either, and nobody should build a product in it. It is set beside them here because they are the two languages most people meet first, and because the comparison shows plainly what strict English buys and what it costs.</p>
+
+<h2 id="same">One program, three times</h2>
+
+<p>A bank with two accounts and one rule: no account may go below nothing. Money is paid from one to the other, the rich are counted, a check is made, and a payment that would break the rule is tried and refused.</p>
+
+<div class="beside">
+<figure class="snippet">
+<pre class="program" data-expect="ok">An account has a balance (money).
+An account's balance is never less than $0.
+An account is rich when its balance is at least $1,000.
+
+There is an account called Ada whose balance is $1,200.
+There is an account called Bo whose balance is $40.
+
+To pay an amount (money) from a giver (account) to a taker (account):
+  Subtract the amount from the giver's balance.
+  Add the amount to the taker's balance.
+
+Pay $300 from Ada to Bo.
+Say "{the number of rich accounts} rich."
+Say "Ada has {Ada's balance} and Bo has {Bo's balance}."
+For example, the total balance of all accounts is $1,240.
+
+Try:
+  Pay $500 from Bo to Ada.
+If that fails:
+  Say "Refused. {the problem}"</pre>
+<pre class="output">0 rich.
+Ada has $900 and Bo has $340.
+Refused. That would break a rule: "An account's balance is never less than $0."</pre>
+</figure>
+<div class="pane other">
+  <input type="radio" name="bank" id="bank-js" checked><label for="bank-js">JavaScript</label>
+  <input type="radio" name="bank" id="bank-java"><label for="bank-java">Java</label>
+  <pre class="code js">class Account {
+  #cents;
+  constructor(name, cents) {
+    this.name = name;
+    this.balance = cents;
+  }
+  get balance() { return this.#cents; }
+  set balance(cents) {
+    if (cents &lt; 0) throw new RangeError("An account's balance is never less than $0.");
+    this.#cents = cents;
+  }
+  get rich() { return this.balance &gt;= 100_000; }
+}
+
+const ada = new Account("Ada", 120_000);
+const bo = new Account("Bo", 4_000);
+const accounts = [ada, bo];
+
+function pay(cents, giver, taker) {
+  giver.balance -= cents;
+  taker.balance += cents;
+}
+
+const dollars = (cents) =&gt; "$" + (cents / 100).toLocaleString("en-US");
+
+pay(30_000, ada, bo);
+console.log(`${accounts.filter((account) =&gt; account.rich).length} rich.`);
+console.log(`Ada has ${dollars(ada.balance)} and Bo has ${dollars(bo.balance)}.`);
+console.assert(accounts.reduce((sum, account) =&gt; sum + account.balance, 0) === 124_000);
+
+try {
+  pay(50_000, bo, ada);
+} catch (problem) {
+  console.log(`Refused. ${problem.message}`);
+}</pre>
+  <pre class="code java">import java.math.BigDecimal;
+import java.util.List;
+
+final class Account {
+    final String name;
+    private BigDecimal balance;
+
+    Account(String name, String balance) {
+        this.name = name;
+        setBalance(new BigDecimal(balance));
+    }
+
+    BigDecimal balance() {
+        return balance;
+    }
+
+    void setBalance(BigDecimal value) {
+        if (value.signum() &lt; 0) {
+            throw new IllegalStateException("An account's balance is never less than $0.");
+        }
+        balance = value;
+    }
+
+    boolean isRich() {
+        return balance.compareTo(new BigDecimal("1000")) &gt;= 0;
+    }
+}
+
+public class Bank {
+    static void pay(BigDecimal amount, Account giver, Account taker) {
+        giver.setBalance(giver.balance().subtract(amount));
+        taker.setBalance(taker.balance().add(amount));
+    }
+
+    public static void main(String[] args) {
+        var ada = new Account("Ada", "1200");
+        var bo = new Account("Bo", "40");
+        var accounts = List.of(ada, bo);
+
+        pay(new BigDecimal("300"), ada, bo);
+        System.out.println(accounts.stream().filter(Account::isRich).count() + " rich.");
+        System.out.println("Ada has $" + ada.balance() + " and Bo has $" + bo.balance() + ".");
+
+        var total = accounts.stream().map(Account::balance).reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (total.compareTo(new BigDecimal("1240")) != 0) {
+            throw new AssertionError("The total is " + total);
+        }
+
+        try {
+            pay(new BigDecimal("500"), bo, ada);
+        } catch (IllegalStateException problem) {
+            System.out.println("Refused. " + problem.getMessage());
+        }
+    }
+}</pre>
+</div>
+</div>
+<p class="caption">The JavaScript was run with Node and says the same lines. The Java is written for Java 17 and was not compiled for this page: there was no Java on the machine that built it.</p>
+
+<div class="scroll narrow">
+<table class="measure">
+  <thead><tr><th>What a reader has to get through</th><th>EnglishScript</th><th>JavaScript</th><th>Java</th></tr></thead>
+  <tbody>
+    <tr><td>Lines that are not blank</td><td>16</td><td>30</td><td>45</td></tr>
+    <tr><td>Words</td><td>117</td><td>124</td><td>172</td></tr>
+    <tr><td>Marks that are not English punctuation: <code>{ } ( ) [ ] ; = &lt; &gt; + - * / &amp; | ! ? :</code></td><td>11</td><td>106</td><td>158</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The number of words is about the same in the first two. Sentences are not shorter than code. The difference is in the marks. EnglishScript's eleven are the brackets round each kind of value, such as <code>(money)</code>, and the colons that open a block. Marks inside quotation marks were not counted in any of the three.</p>
+
+<p>The English version also says five things that the other two leave to habit.</p>
+
+<ul>
+  <li><strong>Money is a kind of value.</strong> <code>$300</code> is money, and adding a plain number to it is refused. The JavaScript keeps cents in an ordinary number and writes its own function to print them. The Java builds a <code>BigDecimal</code> from text each time.</li>
+  <li><strong>The rule is a sentence of its own.</strong> It is stated once and holds for every change, wherever the change is made. In the other two it lives inside a setter, and it holds for as long as every change remembers to go through the setter.</li>
+  <li><strong>The roles are named.</strong> <code>Pay $300 from Ada to Bo.</code> says who gives and who receives. In <code>pay(30_000, ada, bo)</code> only the order says so, and swapping the last two is still a correct call in both languages. JavaScript goes further: <code>pay(ada, 30_000, bo)</code> runs without complaint and leaves Bo's balance as the text <code>4000[object Object]</code>. Java refuses that one, because the types are wrong.</li>
+  <li><strong>The check is part of the program.</strong> <code>For example</code> stops the program if it does not hold. JavaScript's <code>console.assert</code> only prints a message, and the Java has to throw by hand or bring in a testing library.</li>
+  <li><strong>A failed attempt is undone.</strong> When something inside <code>Try</code> fails, every change made inside it is put back. In the other two, whatever <code>pay</code> did before it failed stays done unless the programmer writes the undoing.</li>
+</ul>
+
+<h2 id="apart">Where they part company</h2>
+
+<p>Six small questions, put to all three. In each, JavaScript and Java have an answer fixed by a rule that the reader has to know. EnglishScript's answer is usually to refuse and ask.</p>
+
+<h3>Mixing kinds of value</h3>
+<div class="scroll narrow">
+<table class="three">
+  <thead><tr><th></th><th>Written</th><th>What happens</th></tr></thead>
+  <tbody>
+    <tr><td>JavaScript</td><td><code>"5" + 1</code><br><code>"5" - 1</code><br><code>"$300" + 5</code></td><td><code>"51"</code><br><code>4</code><br><code>"$3005"</code></td></tr>
+    <tr><td>Java</td><td><code>"5" + 1</code><br><code>int n = "5";</code></td><td><code>"51"</code><br>Refused before it runs: the types do not fit.</td></tr>
+    <tr class="ours"><td>EnglishScript</td><td><code>Add 5 to Gawain's purse.</code></td><td>Refused before it runs, with the correction.</td></tr>
+  </tbody>
+</table>
+</div>
+<figure class="snippet">
+<pre class="program" data-expect="refused">A knight has a purse (money).
+There is a knight called Gawain whose purse is $300.
+
+Add 5 to Gawain's purse.</pre>
+<pre class="output refused">Kinds of value (line 4):
+
+    Add 5 to Gawain's purse.
+        ^^^^^^^^^^^^^^^^^^^
+
+  I can't add a plain number to money.
+  If you meant money, write $5.
+  The rule: arithmetic needs values that go together: money with money, and plain numbers with plain numbers or money. (See section 5.3.)</pre>
+</figure>
+<p>JavaScript converts one value into the other's kind and carries on. Java refuses most mixtures but still lets <code>+</code> join text to anything. EnglishScript has numbers, money, percentages and text, and mixes none of them.</p>
+
+<h3>Tenths</h3>
+<div class="scroll narrow">
+<table class="three">
+  <thead><tr><th></th><th>Written</th><th>What happens</th></tr></thead>
+  <tbody>
+    <tr><td>JavaScript</td><td><code>0.1 + 0.2</code><br><code>0.1 + 0.2 === 0.3</code></td><td><code>0.30000000000000004</code><br><code>false</code></td></tr>
+    <tr><td>Java</td><td><code>0.1 + 0.2</code><br><code>new BigDecimal("0.1").add(new BigDecimal("0.2"))</code></td><td><code>0.30000000000000004</code><br><code>0.3</code></td></tr>
+    <tr class="ours"><td>EnglishScript</td><td><code>0.1 + 0.2</code></td><td><code>0.3</code>, exactly</td></tr>
+  </tbody>
+</table>
+</div>
+<figure class="snippet">
+<pre class="program" data-expect="ok">Let the sum be 0.1 + 0.2.
+Say "0.1 + 0.2 is {the sum}."
+For example, the sum is 0.3.</pre>
+<pre class="output">0.1 + 0.2 is 0.3.</pre>
+</figure>
+<p>Both of the others store a number in binary, where a tenth has no exact form, and Java offers an exact kind of number to those who ask for it. In EnglishScript every number is an exact fraction. That is the right choice for money and a costly one for speed.</p>
+
+<h3>A value that may not be there</h3>
+<div class="scroll narrow">
+<table class="three">
+  <thead><tr><th></th><th>Written</th><th>What happens</th></tr></thead>
+  <tbody>
+    <tr><td>JavaScript</td><td><code>robin.mount.speed + 1</code><br><code>robin.mount?.speed + 1</code></td><td>Stops while running: <code>TypeError: Cannot read properties of undefined (reading 'speed')</code><br><code>NaN</code>, and the program goes on</td></tr>
+    <tr><td>Java</td><td><code>robin.mount.speed + 1</code></td><td>Accepted by the compiler. Stops while running with a <code>NullPointerException</code>.</td></tr>
+    <tr class="ours"><td>EnglishScript</td><td><code>Robin's mount's speed + 1</code></td><td>Refused before it runs, until the program has checked that Robin has a mount.</td></tr>
+  </tbody>
+</table>
+</div>
+<figure class="snippet">
+<pre class="program" data-expect="refused">A horse has a speed (number).
+A knight has a purse (money) and a mount (horse, if any).
+There is a knight called Robin whose purse is $20.
+
+Say Robin's mount's speed + 1.</pre>
+<pre class="output refused">Meaning (line 5):
+
+    Say Robin's mount's speed + 1.
+        ^^^^^^^^^^^^^^^^^^^^^
+
+  Robin's mount's speed may be nothing.
+  Check first with "If Robin has a mount:", or give a stand-in with "or else".
+  The rule: a value that may be nothing is checked before it is used. (See section 2.)</pre>
+</figure>
+<p>Java has <code>Optional</code>, and JavaScript has <code>?.</code>, and careful programmers use them. Neither language makes anyone do so. Here the words <code>if any</code> in the description of a knight are what oblige the check.</p>
+
+<h3>“And” with “or”</h3>
+<div class="scroll narrow">
+<table class="three">
+  <thead><tr><th></th><th>Written</th><th>What happens</th></tr></thead>
+  <tbody>
+    <tr><td>JavaScript</td><td><code>door || key &amp;&amp; bell</code></td><td>Read as <code>door || (key &amp;&amp; bell)</code>, because <code>&amp;&amp;</code> binds tighter. Nothing says so.</td></tr>
+    <tr><td>Java</td><td><code>door || key &amp;&amp; bell</code></td><td>The same reading, by the same rule.</td></tr>
+    <tr class="ours"><td>EnglishScript</td><td><code>the door is yes or the key is yes and the bell is yes</code></td><td>Refused until brackets say which reading is meant.</td></tr>
+  </tbody>
+</table>
+</div>
+<figure class="snippet">
+<pre class="program" data-expect="refused">Let the door (yes or no) be yes.
+Let the key (yes or no) be no.
+Let the bell (yes or no) be no.
+
+If the door is yes or the key is yes and the bell is yes:
+  Say "Come in."</pre>
+<pre class="output refused">Meaning (line 5):
+
+    If the door is yes or the key is yes and the bell is yes:
+                                         ^^^
+
+  This mixes "and" with "or", so it can be read two ways:
+    (1) (the door is yes or the key is yes) and the bell is yes
+    (2) the door is yes or (the key is yes and the bell is yes)
+  Put brackets round the part that belongs together.
+  The rule: "And" and "or" are not mixed without brackets. (See section 6.)</pre>
+</figure>
+<p>A rule of precedence is a decision made in advance about what you meant. It is right most of the time. An English sentence with “and” and “or” in it really can be read two ways, so the compiler asks.</p>
+
+<h3>The same as</h3>
+<div class="scroll narrow">
+<table class="three">
+  <thead><tr><th></th><th>Written</th><th>What happens</th></tr></thead>
+  <tbody>
+    <tr><td>JavaScript</td><td><code>0 == ""</code><br><code>0 === ""</code></td><td><code>true</code><br><code>false</code></td></tr>
+    <tr><td>Java</td><td><code>new String("a") == new String("a")</code><br><code>new String("a").equals(new String("a"))</code></td><td><code>false</code>: it asks whether they are one object<br><code>true</code></td></tr>
+    <tr class="ours"><td>EnglishScript</td><td><code>If the count is the word:</code></td><td>Refused: a number cannot be compared with text.</td></tr>
+  </tbody>
+</table>
+</div>
+<figure class="snippet">
+<pre class="program" data-expect="refused">Let the count be 0.
+Let the word be "".
+
+If the count is the word:
+  Say "The same."</pre>
+<pre class="output refused">Kinds of value (line 4):
+
+    If the count is the word:
+       ^^^^^^^^^^^^^^^^^^^^^
+
+  I can't compare a plain number with text: the count is a plain number, and the word is text.
+  The rule: only values of the same kind can be compared, and only numbers, money and percentages can be more or less than each other. (See section 6.)</pre>
+</figure>
+<p>Each of the other two has two ways to ask whether things are equal, and the short one is the surprising one. EnglishScript has the word <code>is</code>, and it means one thing.</p>
+
+<h3>Which one is “it”?</h3>
+<div class="scroll narrow">
+<table class="three">
+  <thead><tr><th></th><th>Written</th><th>What happens</th></tr></thead>
+  <tbody>
+    <tr><td>JavaScript</td><td><code>this.name</code></td><td>Depends on how the function was called, not on where it was written. A method handed to something else to call loses its <code>this</code>.</td></tr>
+    <tr><td>Java</td><td><code>this.name</code></td><td>Always the object the method belongs to.</td></tr>
+    <tr class="ours"><td>EnglishScript</td><td><code>its name</code></td><td>Allowed when exactly one thing is in view. Refused when there are two.</td></tr>
+  </tbody>
+</table>
+</div>
+<figure class="snippet">
+<pre class="program" data-expect="refused">A knight has a purse (money).
+A dragon has an age (number).
+
+To send a knight against a dragon:
+  Say "{its name} sets out."</pre>
+<pre class="output refused">Meaning (line 5):
+
+    Say "{its name} sets out."
+          ^^^
+
+  "its" can be read two ways here:
+    (1) the knight's name
+    (2) the dragon's name
+  Say which one, such as "the knight's name".
+  The rule: a pronoun (it, its, they, them, their) points at the one thing in view, so there has to be exactly one. (See section 5.1.)</pre>
+</figure>
+
+<h2 id="pair">JavaScript and Java beside each other</h2>
+
+<p>The two are often confused because of the name, which was a piece of marketing in 1995. They were made in the same year by different people for different jobs, and they have grown toward each other since without meeting.</p>
+
+<div class="scroll">
+<table class="wide">
+  <thead><tr><th></th><th>JavaScript</th><th>Java</th><th>EnglishScript</th></tr></thead>
+  <tbody>
+    <tr><td>First appeared</td><td>1995, at Netscape, to script web pages</td><td>1995, at Sun, for programs that run anywhere</td><td>2023 as an experiment with a language model; this compiler since</td></tr>
+    <tr><td>A program is made of</td><td>Statements and expressions, in braces</td><td>Classes that hold methods, in braces</td><td>Sentences, one to a line, with indented blocks</td></tr>
+    <tr><td>Types</td><td>Belong to values, and are looked at while running</td><td>Declared or worked out for every variable, and checked before running</td><td>Written in brackets where a kind is described, worked out elsewhere, and checked before running</td></tr>
+    <tr><td>Checked before it runs</td><td>That it can be parsed</td><td>Types, names, and that declared failures are handled</td><td>That every word has a meaning, that every sentence has one reading, the kinds of value, and that a value which may be missing has been looked for</td></tr>
+    <tr><td>A missing value</td><td><code>null</code> and <code>undefined</code>, found when used</td><td><code>null</code>, found when used</td><td><code>nothing</code>, allowed only where <code>if any</code> says so, and checked before use</td></tr>
+    <tr><td>Objects</td><td>Prototypes, with classes written over them</td><td>Classes, interfaces and inheritance</td><td>Kinds with properties and adjectives; no inheritance</td></tr>
+    <tr><td>Doing two things at once</td><td>One thread and a queue of events; promises</td><td>Threads</td><td>Not built. A program can react to a change with <code>Whenever</code>.</td></tr>
+    <tr><td>Splitting a program up</td><td>Modules, with <code>import</code> and <code>export</code></td><td>Packages, and <code>public</code> or <code>private</code> on each member</td><td>Chapters and books; a chapter says which of its words it shares</td></tr>
+    <tr><td>Tests and rules</td><td>In libraries</td><td>In libraries</td><td>In the language: <code>For example</code>, <code>never</code>, <code>always</code></td></tr>
+    <tr><td>Where it runs</td><td>Every browser, and servers</td><td>The Java virtual machine</td><td>Wherever Python does, and in a browser through WebAssembly</td></tr>
+    <tr><td>Speed</td><td>Fast: compiled as it runs</td><td>Fast: compiled as it runs</td><td>Slow. Its SHA-256 manages about 300 bytes a second.</td></tr>
+    <tr><td>Size of the language</td><td>Large, and it has grown every year</td><td>Large</td><td>Small. <a href="reference.html">The grammar</a> is one page.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The plainest difference between the two is when they find a mistake. Java finds a great many before the program runs, at the price of saying everything twice: once for the compiler and once for the reader. JavaScript finds them when the line is reached, or does not find them and produces <code>NaN</code>.</p>
+
+<h2 id="takes">What EnglishScript takes from each</h2>
+
+<p><strong>From Java, the habit of checking first.</strong> A property has a declared kind, a sentence that does not fit is refused before anything runs, and the refusal names the place. EnglishScript carries the habit into two places Java leaves alone: a value that may be missing, and a phrase that can be read two ways.</p>
+
+<p><strong>From JavaScript, the lack of ceremony.</strong> A program can be one line, there is nothing to declare before saying something, and it runs in a web page. <a href="todo.html">The page written in English</a> is the nearest thing here to what JavaScript was made for.</p>
+
+<div class="scroll narrow">
+<table class="three">
+  <thead><tr><th></th><th>Hello, world</th></tr></thead>
+  <tbody>
+    <tr><td>JavaScript</td><td><code>console.log("Hello, world.");</code></td></tr>
+    <tr><td>Java</td><td><code>public class Hello {
+    public static void main(String[] args) {
+        System.out.println("Hello, world.");
+    }
+}</code></td></tr>
+    <tr class="ours"><td>EnglishScript</td><td><code>Say "Hello, world."</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><strong>From neither, the sentence.</strong> Both of the others are written in a notation and read by people trained in it. EnglishScript is written in the reader's language, and spends its strictness on making sure that what the reader understands is what will happen.</p>
+
+<h2 id="cannot">What they can do that it cannot</h2>
+
+<ul>
+  <li><strong>Run fast.</strong> Either of them is many thousands of times quicker. EnglishScript turns each sentence into a Python function and counts in exact fractions.</li>
+  <li><strong>Hold data in more shapes.</strong> They have arrays, maps and sets. EnglishScript has things with properties, and lists that can be read but not yet changed.</li>
+  <li><strong>Call on other people's work.</strong> Each has hundreds of thousands of published libraries. EnglishScript has two, both in its own repository.</li>
+  <li><strong>Do several things at once.</strong> That part of EnglishScript is designed and not built.</li>
+  <li><strong>Be debugged.</strong> They have steppers, profilers and editors that know the language. EnglishScript has a linter and a playground.</li>
+  <li><strong>Grow large.</strong> Programs of a million lines exist in both. The largest EnglishScript program is a few hundred sentences long.</li>
+</ul>
+
+<p>So this is not a contest, and the table above should not be read as one. JavaScript and Java are tools for building things. EnglishScript is an argument, with a working compiler attached, about one question they both answered early and never reopened: whether a program has to be written in a notation that its eventual readers cannot read. <a href="./">The treatise</a> makes that argument at length.</p>
+
+</article>
+<footer class="colophon">
+  Every EnglishScript program on this page is run by <code>tools/build_site.py</code>, which writes what the compiler says beneath it. The JavaScript results were taken from Node. The Java was not compiled.
+</footer>
+</main>
+
+<script type="module">
+import { mountSnippets } from "./play/snippets.js";
+mountSnippets();
+</script>
+</body>
+</html>

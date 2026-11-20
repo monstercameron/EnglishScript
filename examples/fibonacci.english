@@ -1,0 +1,47 @@
+# Fibonacci numbers: each is the sum of the two before it.
+#
+# Numbers here are exact however large they grow, so the hundredth is no trouble.
+
+To work out the fibonacci (number) at a place (number):
+  Let the earlier be 0.
+  Let the later be 1.
+  Repeat the place times:
+    Let the following be the earlier + the later.
+    Set the earlier to the later.
+    Set the later to the following.
+  The answer is the earlier.
+
+# The same thing, said the way the definition says it. It uses itself twice,
+# so it is slow, and only fit for small places.
+To work out the slow fibonacci (number) at a place (number):
+  If the place is less than 2:
+    The answer is the place.
+  The answer is the slow fibonacci at (the place - 1) + the slow fibonacci at (the place - 2).
+
+For example, the fibonacci at 10 is 55.
+For example, the slow fibonacci at 15 is the fibonacci at 15.
+For example, the fibonacci at 100 is 354,224,848,179,261,915,075.
+
+Let the place be 1.
+Let the line be "".
+Repeat 15 times:
+  Set the line to "{the line}{the fibonacci at the place} ".
+  Add 1 to the place.
+Say "The first fifteen: {the line}"
+Say "The hundredth: {the fibonacci at 100}"
+
+# The ratio of neighbours settles on the golden ratio.
+Say "The 41st over the 40th: {the fibonacci at 41 / the fibonacci at 40}"
+
+# The even ones below four million, added up.
+Let the earlier be 1.
+Let the later be 2.
+Let the total be 0.
+While the earlier is less than 4,000,000:
+  If the earlier is divisible by 2:
+    Add the earlier to the total.
+  Let the following be the earlier + the later.
+  Set the earlier to the later.
+  Set the later to the following.
+Say "The even ones below four million add up to {the total}."
+For example, the total is 4,613,732.

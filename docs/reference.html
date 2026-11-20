@@ -1,0 +1,1779 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The grammar of EnglishScript</title>
+<meta name="description" content="Every sentence the EnglishScript compiler accepts, with examples that run in the page.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;family=IM+Fell+English:ital@0;1&amp;family=IM+Fell+English+SC&amp;family=UnifrakturMaguntia&amp;display=swap">
+<link rel="stylesheet" href="assets/english.css">
+</head>
+<body>
+
+<nav class="sitenav" aria-label="The pages of this site">
+  <div class="inner">
+    <a class="home" href="./">EnglishScript</a>
+    <a class="page" href="./">The treatise</a>
+    <a class="page" href="playground.html">The playground</a>
+    <a class="page" href="todo.html">A page</a>
+    <a class="page" href="compare.html">Compared</a>
+    <a class="page" href="reference.html" aria-current="page">The grammar</a>
+    <a class="page" href="how.html">The machinery</a>
+    <a class="page" href="https://github.com/monstercameron/EnglishScript">The source</a>
+  </div>
+</nav>
+
+<main class="doc sided">
+<nav class="contents" aria-label="Contents">
+<h2>Contents</h2>
+<ol>
+<li><a href="#s1">1. Layout</a></li>
+<li><a href="#s2">2. Values and types</a></li>
+<li><a href="#s3">3. Names</a></li>
+<li><a href="#s4">4. Describing the world</a></li>
+<li><a href="#s5">5. Expressions</a></li>
+<li><a href="#s6">6. Conditions</a></li>
+<li><a href="#s7">7. Actions</a></li>
+<li><a href="#s8">8. Blocks</a></li>
+<li><a href="#s9">9. Verbs</a></li>
+<li><a href="#s10">10. How a sentence can go wrong</a></li>
+<li><a href="#s11">11. Grammar summary</a></li>
+<li><a href="#s12" class="later">12. Proposed: time, and doing things at once</a></li>
+<li><a href="#s13" class="later">13. Proposed: the rest of the language</a></li>
+<li><a href="#s14" class="later">14. Not defined yet</a></li>
+</ol>
+</nav>
+<article>
+<h1>The Grammar</h1>
+<p class="standfirst">Every sentence the compiler accepts. The examples run where they stand, and each one builds on the small world described at the start. Chapters 12 to 14 are designs that have not been built.</p>
+<p>This document describes every sentence the EnglishScript compiler accepts. Sections 1 to 11 describe the language as implemented in <code>englishscript/</code>. Sections 12 and 13 are proposed extensions that have been designed but not built; the parts of them that have since been built are described in sections <a href="#s2">2</a> to <a href="#s9">9</a>, and sections <a href="#s12">12</a> and <a href="#s13">13</a> say which they are. Section 14 lists what has not been defined yet.</p>
+<p>The examples are checked by the test suite:</p>
+<ul>
+<li>A block marked <code>englishscript</code> is compiled and run. A comment starting <code>#&gt;</code> states a line the program says, and the test compares them.</li>
+<li>A block marked <code>refused</code> must be rejected by the compiler (or stopped while running).</li>
+</ul>
+<p>In the sentence forms, <code>&lt;angle brackets&gt;</code> mark something you supply, <code>[square brackets]</code> mark an optional part, <code>a | b</code> is a choice, and <code>...</code> means the part before it may repeat.</p>
+<p>Every example builds on this small world:</p>
+<figure class="snippet" data-world>
+<pre class="program" data-expect="ok">A dragon has an age (number).
+A treasure has a worth (money) and an owner (dragon).
+A knight has a purse (money) and a courage (number).
+
+The hoard of a dragon is the total worth of its treasures.
+A dragon is ancient when its age is at least 500.
+A knight is brave when its courage is more than 5.
+A knight's purse is never less than $0.
+
+There is a dragon called Smaug whose age is 771.
+There is a dragon called Norbert whose age is 1.
+There is a treasure called Goblet whose worth is $3,000 and whose owner is Smaug.
+There is a treasure called Cup whose worth is $500 and whose owner is Smaug.
+There is a knight called Gawain whose purse is $300 and whose courage is 8.
+There is a knight called Robin whose purse is $20 and whose courage is 2.</pre>
+</figure>
+<h2 id="s1">1. Layout</h2>
+<ul>
+<li><strong>One sentence per line.</strong> A sentence ends with a period.</li>
+<li><strong>A colon opens a block.</strong> The sentences that belong to it are indented further, with spaces. Tabs are refused. Any depth of indent works, but sentences in the same block must line up.</li>
+<li><strong>A closing quote may end a sentence</strong>, so <code>Say "Hello."</code> needs no second period.</li>
+<li><strong><code>#</code> starts a comment</strong> that runs to the end of the line. Blank lines are ignored.</li>
+<li><strong>Capitals don't matter.</strong> <code>Say</code>, <code>say</code> and <code>SAY</code> are the same word, and so are <code>Smaug</code> and <code>smaug</code>. A name is shown the way it was first written.</li>
+<li>Curly quotes (“ ” ’) are read as straight ones.</li>
+</ul>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok"># A comment on its own line.
+Say "Hello, world!"              #&gt; Hello, world!
+If Smaug is ancient:
+  say "Capitals don't matter."   #&gt; Capitals don't matter.
+  SAY smaug's AGE.               #&gt; 771
+Say “Curly quotes work.”         #&gt; Curly quotes work.</pre>
+</figure>
+<h2 id="s2">2. Values and types</h2>
+<p>Every value has one of these types. The compiler works out each type before the program runs.</p>
+<div class="scroll"><table>
+<thead><tr><th>Type</th><th>Written</th><th>Said as</th></tr></thead>
+<tbody>
+<tr><td><code>number</code></td><td><code>7</code>, <code>1,000</code>, <code>2.5</code></td><td><code>7</code>, <code>1,000</code>, <code>2.5</code></td></tr>
+<tr><td><code>money</code></td><td><code>$5</code>, <code>$1,000</code>, <code>$0.50</code></td><td><code>$5</code>, <code>$1,000</code>, <code>$0.50</code></td></tr>
+<tr><td><code>percent</code></td><td><code>10%</code>, <code>2.5%</code></td><td><code>10%</code>, <code>2.5%</code></td></tr>
+<tr><td><code>text</code></td><td><code>"Hello"</code></td><td><code>Hello</code></td></tr>
+<tr><td><code>yes or no</code></td><td><code>yes</code>, <code>no</code></td><td><code>yes</code>, <code>no</code></td></tr>
+<tr><td>a kind, such as <code>dragon</code></td><td>the thing's name, <code>Smaug</code></td><td><code>Smaug</code></td></tr>
+<tr><td><code>list of &lt;plural type&gt;</code>, such as <code>list of text</code></td><td>see "Lists" below</td><td>cannot be said yet</td></tr>
+</tbody></table></div>
+<ul>
+<li>A comma in a number must be followed by exactly three digits.</li>
+<li>There are no negative literals; write a minus sign in front: <code>-5</code>, <code>-$5</code>.</li>
+<li>Arithmetic is exact, so <code>0.1 + 0.2</code> is <code>0.3</code>. Rounding happens only when a value is said: numbers show up to four decimal places, and money shows whole cents. However many digits a value has, it is said in full.</li>
+<li>A condition produces a yes-or-no answer. That answer can steer <code>If</code>, <code>While</code> and definitions. To store it or say it, turn it into a <code>yes or no</code> value with <code>whether</code> (below).</li>
+</ul>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">Say 1,000 + 2.5.       #&gt; 1,002.5
+Say $1,000 + $0.50.    #&gt; $1,000.50
+Say 50%.               #&gt; 50%
+Say 0.1 + 0.2.         #&gt; 0.3
+Say 1 / 3.             #&gt; 0.3333
+Say $10 / 3.           #&gt; $3.33
+Say -$5.               #&gt; -$5
+Say Smaug.             #&gt; Smaug</pre>
+</figure>
+<h3 id="text">Text</h3>
+<p>Text sits between double quotes. Anything inside <code>{braces}</code> is an expression, worked out when the text is said. Four things are written specially:</p>
+<div class="scroll"><table>
+<thead><tr><th>Written</th><th>Means</th></tr></thead>
+<tbody>
+<tr><td><code>""</code></td><td>one double quote</td></tr>
+<tr><td><code>{{</code></td><td>one opening brace</td></tr>
+<tr><td><code>}}</code></td><td>one closing brace</td></tr>
+<tr><td><code>{new line}</code></td><td>a line break</td></tr>
+</tbody></table></div>
+<p>A fill-in cannot contain quotes of its own, because the first quote would end the text. Work such a value out with <code>Let</code> first.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">Say "Smaug is {Smaug's age} and guards {the hoard of Smaug}."   #&gt; Smaug is 771 and guards $3,500.
+Say "Half of that is {50% of Smaug's hoard}."                   #&gt; Half of that is $1,750.
+Say "The ""Lonely"" Mountain"                                   #&gt; The "Lonely" Mountain
+Say "{{Smaug}} is written {Smaug}."                             #&gt; {Smaug} is written Smaug.</pre>
+</figure>
+<p>Section 5.6 lists what can be done with text.</p>
+<h3 id="yes-or-no">Yes or no</h3>
+<pre class="form">(yes or no)                  the type
+yes | no                     its two values
+whether &lt;condition&gt;          a condition, as a value
+&lt;value&gt; is [not] yes | no    a value, as a condition</pre>
+<p>A <code>yes or no</code> value may be kept in a variable, a role or a worked-out value. A property cannot be yes or no: a yes-or-no fact about a thing is an adjective, written <code>A knight can be sworn.</code> (section <a href="#s4-3">4.3</a>).</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">Let the gate open be whether Gawain is brave or Robin is brave.
+Say the gate open.                   #&gt; yes
+Let the alarm (yes or no) be no.
+If the gate open is yes and the alarm is no:
+  Say "Enter."                       #&gt; Enter.</pre>
+</figure>
+<p>Refused, with a pointer to <code>A gate can be open.</code>:</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">A gate has a width (number) and an open (yes or no).</pre>
+</figure>
+<h3 id="lists">Lists</h3>
+<pre class="form">(list of &lt;plural type&gt;)              the type
+the number of items in &lt;list&gt;        a number
+For each &lt;name&gt; in &lt;list&gt;:           goes through the items (section 8.2)</pre>
+<ul>
+<li>The plural type is <code>numbers</code>, <code>percentages</code>, <code>money</code>, <code>text</code>, or the plural of a kind, such as <code>dragons</code>.</li>
+<li>A list may be kept in a variable, a role or a worked-out value, but not in a property.</li>
+<li>Lists come from <code>the words of</code> and <code>the lines of</code> (section <a href="#s5-6">5.6</a>) and from reading a file (section <a href="#s7-7">7.7</a>). They cannot yet be written out, changed, said or compared, and a group such as <code>all horses</code> cannot yet be given where a list is expected; section <a href="#s13-7">13.7</a> describes the rest.</li>
+</ul>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">Let the parts (list of text) be the words of "fire and smoke".
+Say the number of items in the parts.     #&gt; 3
+For each part in the parts:
+  Say the length of the part.
+#&gt; 4
+#&gt; 3
+#&gt; 5</pre>
+</figure>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">Say the words of "fire and smoke".</pre>
+</figure>
+<h3 id="nothing">Nothing</h3>
+<p>Adding <code>, if any</code> to a type in brackets makes a value that may be missing. The missing value is written <code>nothing</code>.</p>
+<pre class="form">(&lt;type&gt;, if any)                       a type whose value may be missing
+nothing                                the missing value
+&lt;thing&gt; has a | an &lt;property&gt;          condition: the property is there
+&lt;thing&gt; has no &lt;property&gt;              condition: the property is missing
+&lt;value&gt; is [not] nothing               condition
+&lt;value&gt; or else &lt;value&gt;                the first value, or the second if the first is nothing</pre>
+<ul>
+<li><code>, if any</code> may be added to the type of a property, a role, a variable, or a worked-out value.</li>
+<li>A property marked <code>if any</code> may be left out when a thing is created. It is then nothing.</li>
+<li>A property of something that may be nothing may itself be nothing: <code>Tom's mount's speed</code> is a number, if any.</li>
+<li><strong>A value that may be nothing is refused wherever a value is needed</strong>: in arithmetic, in a comparison other than <code>is nothing</code>, as a role, or as the owner of a group. It may be said, and is said as <code>nothing</code>.</li>
+<li><code>the total</code> leaves out things whose property is nothing.</li>
+<li>Because a property can be left out, a kind may have a property of its own kind.</li>
+</ul>
+<p>The compiler stops refusing once the program has checked. A check counts in four places:</p>
+<ol>
+<li>inside an <code>If</code> whose condition shows the value is there;</li>
+<li>in the rest of that condition, after <code>and</code>;</li>
+<li>in the <code>Otherwise</code> of an <code>If</code> that showed it missing;</li>
+<li>after an <code>If</code> that showed it missing and whose block always leaves (section <a href="#s8-4">8.4</a>).</li>
+</ol>
+<p>A check stops counting when that property or variable is changed, and when a verb is used, because a verb may change anything. In a program that has a <code>Whenever</code> (section <a href="#s9-5">9.5</a>), a check of a property or of a top-level variable also stops counting after any sentence that changes a thing, a top-level variable or a file, because a reaction may follow that sentence and change anything.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">A horse has a speed (number).
+A squire has a wage (money) and a mount (horse, if any).
+
+There is a horse called Shadowfax whose speed is 40.
+There is a squire called Wat whose wage is $3 and whose mount is Shadowfax.
+There is a squire called Tom whose wage is $2.
+
+Say Tom's mount.                          #&gt; nothing
+Say Tom's mount's speed or else 0.        #&gt; 0
+For each squire:
+  If the squire has a mount:
+    Say "{the squire} rides at {the squire's mount's speed * 2}."
+  Otherwise:
+    Say "{the squire} walks."
+#&gt; Wat rides at 80.
+#&gt; Tom walks.
+If Wat has a mount and Wat's mount's speed is more than 30:
+  Say "Wat is quick."                     #&gt; Wat is quick.
+Set Wat's mount to nothing.
+If Wat's mount is nothing:
+  Say "Wat walks now."                    #&gt; Wat walks now.</pre>
+</figure>
+<p>Refused, because Tom may have no mount:</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">A horse has a speed (number).
+A squire has a wage (money) and a mount (horse, if any).
+There is a squire called Tom whose wage is $2.
+Say Tom's mount's speed + 1.</pre>
+</figure>
+<h2 id="s3">3. Names</h2>
+<p>A word is letters, digits and underscores, starting with a letter.</p>
+<div class="scroll"><table>
+<thead><tr><th>What is named</th><th>Length</th></tr></thead>
+<tbody>
+<tr><td>Kind, adjective, verb</td><td>one word</td></tr>
+<tr><td>Property, variable, thing</td><td>one or more words</td></tr>
+</tbody></table></div>
+<p>Three rules apply to every name:</p>
+<ol>
+<li><strong>Defined before use.</strong> A sentence may only use kinds, things, adjectives, properties, verbs and variables introduced by an earlier sentence.</li>
+<li><strong>One meaning in view.</strong> A name cannot be reused while an earlier meaning is still visible. To change a variable, use <code>Set</code>, not a second <code>Let</code>.</li>
+<li><strong>No reserved words.</strong> None of the words below may be part of a new name.</li>
+</ol>
+<div class="scroll"><table>
+<thead><tr><th>Group</th><th>Reserved words</th></tr></thead>
+<tbody>
+<tr><td>Articles and pronouns</td><td><code>a</code> <code>an</code> <code>the</code> <code>it</code> <code>its</code> <code>they</code> <code>them</code> <code>their</code></td></tr>
+<tr><td>Built-in verbs</td><td><code>let</code> <code>set</code> <code>add</code> <code>subtract</code> <code>multiply</code> <code>divide</code> <code>say</code> <code>if</code> <code>for</code> <code>repeat</code> <code>while</code> <code>there</code> <code>stop</code> <code>skip</code> <code>end</code> <code>now</code> <code>remove</code> <code>ask</code> <code>write</code> <code>try</code> <code>fail</code> <code>use</code> <code>whenever</code></td></tr>
+<tr><td>Types</td><td><code>number</code> <code>money</code> <code>text</code> <code>percent</code> <code>yes</code> <code>no</code> <code>list</code></td></tr>
+<tr><td>Linking words</td><td><code>of</code> <code>is</code> <code>are</code> <code>be</code> <code>has</code> <code>called</code> <code>whose</code> <code>when</code> <code>each</code> <code>all</code> <code>otherwise</code> <code>example</code> <code>name</code> <code>nothing</code> <code>any</code> <code>else</code> <code>answer</code> <code>whether</code> <code>can</code> <code>in</code> <code>new</code> <code>reply</code> <code>problem</code> <code>items</code> <code>becomes</code></td></tr>
+<tr><td>Logic and comparison</td><td><code>not</code> <code>and</code> <code>or</code> <code>never</code> <code>always</code> <code>than</code> <code>less</code> <code>more</code> <code>greater</code> <code>least</code> <code>most</code> <code>divisible</code></td></tr>
+<tr><td>Arithmetic</td><td><code>plus</code> <code>minus</code> <code>times</code> <code>divided</code></td></tr>
+<tr><td>Prepositions</td><td><code>with</code> <code>to</code> <code>from</code> <code>against</code> <code>for</code> <code>by</code> <code>on</code> <code>at</code> <code>into</code> <code>onto</code> <code>about</code> <code>over</code> <code>under</code> <code>as</code> <code>through</code> <code>toward</code> <code>towards</code> <code>upon</code></td></tr>
+</tbody></table></div>
+<p><strong>Plurals</strong> are formed by rule: add <code>s</code>; add <code>es</code> after <code>s</code>, <code>x</code>, <code>z</code>, <code>ch</code> or <code>sh</code>; change a consonant plus <code>y</code> to <code>ies</code>. So <code>dragon</code> gives <code>dragons</code>, <code>fox</code> gives <code>foxes</code> and <code>pony</code> gives <code>ponies</code>.</p>
+<h2 id="s4">4. Describing the world</h2>
+<p>These sentence forms are definitions. They are allowed only at the top level, never inside a block.</p>
+<h3 id="s4-1">4.1 Kinds</h3>
+<pre class="form">A | An &lt;kind&gt; has a | an &lt;property&gt; (&lt;type&gt;) [, a | an &lt;property&gt; (&lt;type&gt;)]... .</pre>
+<ul>
+<li>The type in brackets is required. It is <code>number</code>, <code>money</code>, <code>text</code>, <code>percent</code>, or a kind that has already been described. Adding <code>, if any</code> lets the property be missing (section <a href="#s2">2</a>).</li>
+<li>Properties are separated by a comma, by <code>and</code>, or by both.</li>
+<li>Every thing also has a <code>name</code>, which is text and cannot be changed.</li>
+</ul>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">A wizard has a hat size (number) and a motto (text).
+A tower has a height (number), a keeper (knight), and a prisoner (dragon).</pre>
+</figure>
+<h3 id="s4-2">4.2 Things</h3>
+<pre class="form">There is a | an [&lt;adjective&gt;]... &lt;kind&gt; called &lt;name&gt; [whose &lt;property&gt; is &lt;expression&gt;]... .</pre>
+<ul>
+<li>Every property listed for the kind must be given, with a value of the right type. A property marked <code>if any</code> may be left out.</li>
+<li>Further <code>whose</code> parts are joined by a comma, by <code>and</code>, or by both.</li>
+<li>The name must be new.</li>
+<li>An adjective written before the kind must be a stored one (section <a href="#s4-3">4.3</a>); the thing starts with it.</li>
+<li>This is the only way to make a thing that later sentences can mention by name. Things can also be made while the program runs (section <a href="#s7-5">7.5</a>).</li>
+</ul>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">A wizard has a hat size (number) and a motto (text).
+There is a wizard called Merlin Ambrosius whose hat size is 7 and whose motto is "Never late".
+Say Merlin Ambrosius's motto.         #&gt; Never late
+Say the name of merlin ambrosius.     #&gt; Merlin Ambrosius</pre>
+</figure>
+<h3 id="s4-3">4.3 Adjectives</h3>
+<pre class="form">A | An &lt;kind&gt; is &lt;adjective&gt; when &lt;condition&gt;.</pre>
+<p>Inside the condition, <code>it</code>, <code>its</code> and <code>the &lt;kind&gt;</code> all mean the thing being described. An adjective belongs to one kind; another kind may define the same word differently.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">A dragon is young when its age is less than 100.
+A dragon is rich when the dragon's hoard is at least $1,000 and the dragon is not young.
+If Smaug is rich and Norbert is young:
+  Say "As expected."     #&gt; As expected.</pre>
+</figure>
+<p>An adjective can also be <strong>stored</strong> instead of worked out: a yes-or-no fact that the program sets.</p>
+<pre class="form">A | An &lt;kind&gt; can be &lt;adjective&gt;.
+Now &lt;thing&gt; is [not] &lt;adjective&gt;.</pre>
+<ul>
+<li>A stored adjective is used exactly like a defined one: after <code>is</code>, and in front of a kind in a group or a <code>For each</code>.</li>
+<li>It starts as "no", unless it is written in front of the kind when the thing is made: <code>There is a sworn knight called ...</code>.</li>
+<li><code>Now</code> is the only way to change it. <code>Now</code> is refused for an adjective defined with <code>when</code>, for a thing that may be nothing, and inside <code>To work out</code> (section <a href="#s9-3">9.3</a>).</li>
+<li>A program can react when a thing becomes an adjective, stored or defined, with <code>Whenever</code> (section <a href="#s9-5">9.5</a>).</li>
+</ul>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">A knight can be sworn.
+There is a sworn knight called Lancelot whose purse is $5 and whose courage is 9.
+Say the number of sworn knights.     #&gt; 1
+Now Robin is sworn.
+Now Lancelot is not sworn.
+For each sworn knight:
+  Say it.                            #&gt; Robin</pre>
+</figure>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">Now Smaug is ancient.</pre>
+</figure>
+<h3 id="s4-4">4.4 Worked-out properties</h3>
+<pre class="form">The &lt;property&gt; of a | an &lt;kind&gt; is &lt;expression&gt;.</pre>
+<p>A worked-out property is read like any other property, but it is computed each time and cannot be changed directly.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">The tax of a dragon is 10% of its hoard.
+The bravery bonus of a knight is the knight's courage * $10.
+Say the tax of Smaug.            #&gt; $350
+Say Gawain's bravery bonus.      #&gt; $80</pre>
+</figure>
+<h3 id="s4-5">4.5 Rules</h3>
+<pre class="form">A | An &lt;kind&gt;'s &lt;property&gt; is never | always &lt;comparison&gt;.</pre>
+<p>The comparison is anything that may follow <code>is</code> in a condition (section <a href="#s6">6</a>). A rule must be about a stored property. It is checked when a thing of that kind is created and whenever one of its stored properties changes. A change that would break a rule is undone and the program stops.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">A dragon's age is always at least 0.
+A treasure's worth is never more than $1,000,000.</pre>
+</figure>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">A dragon's age is always at least 0.
+Subtract 5 from Norbert's age.</pre>
+</figure>
+<h2 id="s5">5. Expressions</h2>
+<h3 id="s5-1">5.1 Referring to something</h3>
+<div class="scroll"><table>
+<thead><tr><th>Form</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>Smaug</code></td><td>A named thing.</td></tr>
+<tr><td><code>the total</code>, <code>total</code></td><td>A variable made with <code>Let</code>. <code>the</code> is optional.</td></tr>
+<tr><td><code>the dragon</code></td><td>The dragon in view: a role of the current verb, or the noun of an enclosing <code>For each</code>.</td></tr>
+<tr><td><code>the rival</code></td><td>The name given to the thing of an enclosing <code>For each rival in ...</code> (section <a href="#s8-2">8.2</a>).</td></tr>
+<tr><td><code>it</code>, <code>they</code>, <code>them</code></td><td>The one thing in view.</td></tr>
+<tr><td><code>its ...</code>, <code>their ...</code></td><td>A property of the one thing in view.</td></tr>
+</tbody></table></div>
+<p>A thing is <strong>in view</strong> inside a definition about it, inside a verb that has it as a role, and inside a <code>For each</code> over it. Named things and variables are not in view for this purpose.</p>
+<ul>
+<li><code>the &lt;noun&gt;</code> is refused unless something of that name is in view.</li>
+<li>A pronoun is refused unless exactly one thing is in view.</li>
+</ul>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">Let the best knight be Gawain.
+Say the best knight.           #&gt; Gawain
+Say best knight's purse.       #&gt; $300
+For each dragon:
+  Say "{it} is {its age}, and the dragon's hoard is {the dragon's hoard}."
+#&gt; Smaug is 771, and the dragon's hoard is $3,500.
+#&gt; Norbert is 1, and the dragon's hoard is $0.</pre>
+</figure>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">Say the dragon's age.</pre>
+</figure>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">For each dragon:
+  For each treasure of the dragon:
+    Say its worth.</pre>
+</figure>
+<h3 id="s5-2">5.2 Properties</h3>
+<p>A property can be reached in three ways, and they can be chained:</p>
+<pre class="form">&lt;thing&gt;'s &lt;property&gt;
+the &lt;property&gt; of &lt;thing&gt;
+its | their &lt;property&gt;</pre>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">Say Goblet's worth.                    #&gt; $3,000
+Say the worth of Goblet.               #&gt; $3,000
+Say Goblet's owner's age.              #&gt; 771
+Say the age of the owner of Goblet.    #&gt; 771
+Say Goblet's name.                     #&gt; Goblet</pre>
+</figure>
+<h3 id="s5-3">5.3 Arithmetic</h3>
+<div class="scroll"><table>
+<thead><tr><th>Operation</th><th>Symbol</th><th>Words</th></tr></thead>
+<tbody>
+<tr><td>Add</td><td><code>+</code></td><td><code>plus</code></td></tr>
+<tr><td>Subtract</td><td><code>-</code></td><td><code>minus</code></td></tr>
+<tr><td>Multiply</td><td><code>*</code></td><td><code>times</code></td></tr>
+<tr><td>Divide</td><td><code>/</code></td><td><code>divided by</code></td></tr>
+<tr><td>Negate</td><td><code>-</code> in front</td><td></td></tr>
+</tbody></table></div>
+<p>Order of working, tightest first: brackets and property access; a leading minus and <code>% of</code>; multiplying and dividing; adding and subtracting. Operations of the same strength go left to right.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">Say 2 + 3 * 4.            #&gt; 14
+Say 2 plus 3 times 4.     #&gt; 14
+Say (2 + 3) * 4.          #&gt; 20
+Say 10 divided by 4.      #&gt; 2.5
+Say 10 - 4 - 3.           #&gt; 3
+Say -(2 + 3).             #&gt; -5</pre>
+</figure>
+<p>Types decide what is allowed. Any combination not listed here is refused.</p>
+<div class="scroll"><table>
+<thead><tr><th>Operation</th><th>Allowed</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td>Add, subtract</td><td>number and number</td><td>number</td></tr>
+<tr><td></td><td>money and money</td><td>money</td></tr>
+<tr><td>Multiply</td><td>number by number</td><td>number</td></tr>
+<tr><td></td><td>money by number, in either order</td><td>money</td></tr>
+<tr><td>Divide</td><td>number by number</td><td>number</td></tr>
+<tr><td></td><td>money by number</td><td>money</td></tr>
+<tr><td></td><td>money by money</td><td>number</td></tr>
+<tr><td><code>% of</code></td><td>percent of number</td><td>number</td></tr>
+<tr><td></td><td>percent of money</td><td>money</td></tr>
+</tbody></table></div>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">Say $5 + 5.</pre>
+</figure>
+<h3 id="s5-4">5.4 Percentages</h3>
+<p>A percentage followed by <code>of</code> takes that share of a number or of money. The percentage may be a literal or a variable.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">Say 10% of $250.           #&gt; $25
+Say 10% of $250 + $5.      #&gt; $30
+Let the discount be 20%.
+Say the discount of $50.   #&gt; $10</pre>
+</figure>
+<h3 id="s5-5">5.5 Groups, counting and adding up</h3>
+<p>A group is some of the things of one kind. It can be written three ways:</p>
+<pre class="form">[all] [&lt;adjective&gt;]... &lt;kinds&gt; [of &lt;thing&gt;] [whose &lt;property&gt; &lt;comparison&gt;]
+its | their [&lt;adjective&gt;]... &lt;kinds&gt; [whose &lt;property&gt; &lt;comparison&gt;]
+&lt;thing&gt;'s [&lt;adjective&gt;]... &lt;kinds&gt; [whose &lt;property&gt; &lt;comparison&gt;]</pre>
+<ul>
+<li>The kind is plural.</li>
+<li>Each adjective must be defined for that kind.</li>
+<li><code>of &lt;thing&gt;</code>, and the two possessive forms, keep the things that belong to the owner. This works only when the kind has <strong>exactly one</strong> property whose type is the owner's kind. With none, or with two, the sentence is refused.</li>
+<li><code>whose</code> keeps the things that pass a comparison on one of their properties.</li>
+</ul>
+<p>Two expressions take a group:</p>
+<pre class="form">the number of &lt;group&gt;
+the total &lt;property&gt; of &lt;group&gt;</pre>
+<p><code>the total</code> needs a property that is a number or money.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">Say the number of dragons.                                           #&gt; 2
+Say the number of ancient dragons.                                   #&gt; 1
+Say the number of treasures of Smaug.                                #&gt; 2
+Say the number of Smaug's treasures.                                 #&gt; 2
+Say the number of treasures whose worth is more than $1,000.         #&gt; 1
+Say the number of treasures of Smaug whose worth is at most $500.    #&gt; 1
+Say the total worth of all treasures.                                #&gt; $3,500
+Say the total age of dragons.                                        #&gt; 772
+For each dragon:
+  Say "{its name}: {the number of its treasures}"
+#&gt; Smaug: 2
+#&gt; Norbert: 0</pre>
+</figure>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">A duel has a challenger (dragon) and a defender (dragon).
+Say the number of duels of Smaug.</pre>
+</figure>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">A duel has a challenger (dragon) and a defender (dragon).
+Say the number of duels whose challenger is Smaug.    #&gt; 0</pre>
+</figure>
+<h3 id="s5-6">5.6 Text</h3>
+<p>Joining text is done with fill-ins: <code>"{the first name} {the last name}"</code>.</p>
+<div class="scroll"><table>
+<thead><tr><th>Form</th><th>Gives</th></tr></thead>
+<tbody>
+<tr><td><code>the length of &lt;text&gt;</code></td><td>the number of characters</td></tr>
+<tr><td><code>&lt;text&gt; in upper case</code>, <code>&lt;text&gt; in lower case</code></td><td>text</td></tr>
+<tr><td><code>the first &lt;number&gt; letters of &lt;text&gt;</code>, <code>the last &lt;number&gt; letters of &lt;text&gt;</code></td><td>text</td></tr>
+<tr><td><code>the words of &lt;text&gt;</code></td><td>a list of text, split at spaces</td></tr>
+<tr><td><code>the lines of &lt;text&gt;</code></td><td>a list of text, split at line breaks, with no empty last line</td></tr>
+<tr><td><code>&lt;text&gt; as a number</code></td><td>a number, if any: nothing when the text is not a number written the usual way</td></tr>
+</tbody></table></div>
+<ul>
+<li>Each <code>&lt;text&gt;</code> and <code>&lt;number&gt;</code> after <code>of</code> is a single value or a bracketed expression.</li>
+<li><code>in upper case</code>, <code>in lower case</code> and <code>as a number</code> apply to the whole value before them, so <code>the length of the title in upper case</code> is refused: it asks to upper-case a number. Write <code>the length of (the title in upper case)</code>.</li>
+<li>Asking for more letters than there are gives the whole text. A negative count, or a fraction, is a problem (section <a href="#s8-5">8.5</a>).</li>
+<li><code>the length of</code> means this only when what follows is text. A thing may still have a property called <code>length</code>; the words <code>length</code>, <code>words</code>, <code>lines</code>, <code>letters</code>, <code>first</code>, <code>last</code>, <code>upper</code>, <code>lower</code> and <code>case</code> stay free for names.</li>
+</ul>
+<p>Text conditions are in section <a href="#s6">6</a>.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">Let the title be "The ""Lonely"" Mountain".
+Say the length of the title.                         #&gt; 21
+Say the title in upper case.                         #&gt; THE "LONELY" MOUNTAIN
+Say the first 3 letters of the title.                #&gt; The
+Say the last 100 letters of "Smaug".                 #&gt; Smaug
+Say the number of items in the words of the title.   #&gt; 3
+Say ("12" as a number or else 0) + 1.                #&gt; 13
+Say "twelve" as a number.                            #&gt; nothing</pre>
+</figure>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">Say "12" as a number + 1.</pre>
+</figure>
+<h3 id="s5-7">5.7 Finding a thing by name</h3>
+<pre class="form">the &lt;kind&gt; called &lt;text&gt;</pre>
+<p>This finds the first thing of that kind with that name, ignoring capitals. It is <code>if any</code>, because there may be none. Removed things are not found.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">Let the found be the dragon called "SMAUG".
+If the found is not nothing:
+  Say the found's age.                      #&gt; 771
+Say the dragon called "Puff".               #&gt; nothing</pre>
+</figure>
+<h2 id="s6">6. Conditions</h2>
+<p>A comparison starts with an expression and continues in one of these ways. <code>are</code> may be used in place of <code>is</code>, and <code>not</code> may follow either.</p>
+<div class="scroll"><table>
+<thead><tr><th>Form</th><th>True when</th></tr></thead>
+<tbody>
+<tr><td><code>is &lt;expression&gt;</code></td><td>The two are equal. Both sides must have the same type.</td></tr>
+<tr><td><code>is less than &lt;expression&gt;</code></td><td></td></tr>
+<tr><td><code>is more than &lt;expression&gt;</code>, <code>is greater than &lt;expression&gt;</code></td><td></td></tr>
+<tr><td><code>is at least &lt;expression&gt;</code></td><td></td></tr>
+<tr><td><code>is at most &lt;expression&gt;</code></td><td></td></tr>
+<tr><td><code>is divisible by &lt;expression&gt;</code></td><td>Dividing leaves no remainder. Plain numbers only.</td></tr>
+<tr><td><code>is &lt;adjective&gt;</code></td><td>The adjective's definition holds. The left side must be a thing.</td></tr>
+<tr><td><code>is nothing</code></td><td>The value is missing (section <a href="#s2">2</a>).</td></tr>
+<tr><td><code>has a &lt;property&gt;</code>, <code>has no &lt;property&gt;</code></td><td>The property is there, or is missing. Written without <code>is</code>.</td></tr>
+<tr><td><code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code></td><td>The same comparisons as symbols.</td></tr>
+<tr><td><code>contains &lt;text&gt;</code></td><td>The text on the left has the other inside it. Written without <code>is</code>.</td></tr>
+<tr><td><code>starts with &lt;text&gt;</code>, <code>ends with &lt;text&gt;</code></td><td></td></tr>
+<tr><td><code>comes before &lt;text&gt;</code>, <code>comes after &lt;text&gt;</code></td><td>Alphabetical order, ignoring capitals.</td></tr>
+</tbody></table></div>
+<ul>
+<li>Ordering comparisons work on numbers, money and percentages, and both sides must be the same type.</li>
+<li><code>is</code> between two texts is exact, capitals included, and so are <code>contains</code>, <code>starts with</code> and <code>ends with</code>. All five text tests need text on both sides.</li>
+<li>A <code>yes or no</code> value is tested with <code>is yes</code> or <code>is no</code> (section <a href="#s2">2</a>).</li>
+<li>Lists cannot be compared yet.</li>
+<li>Comparisons are joined with <code>and</code> or with <code>or</code>. <code>not</code> in front reverses the comparison, or the bracketed condition, that follows it.</li>
+<li><strong><code>and</code> and <code>or</code> cannot be mixed</strong> in one condition unless brackets show which belong together.</li>
+</ul>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">If Smaug is ancient and Norbert is not ancient:
+  Say "adjectives"       #&gt; adjectives
+If Goblet's owner is Smaug and Gawain's purse is at least $300:
+  Say "comparisons"      #&gt; comparisons
+If 12 is divisible by 4 and 12 is not divisible by 5:
+  Say "divisible"        #&gt; divisible
+If (Smaug is ancient and Robin is brave) or Gawain is brave:
+  Say "brackets"         #&gt; brackets
+If not Robin is brave:
+  Say "not"              #&gt; not
+If 2 + 2 = 4 and 3 &lt; 4 and 4 &gt;= 4:
+  Say "symbols"          #&gt; symbols
+If "apple" comes before "Banana" and "Smaug" starts with "Sm":
+  Say "text"             #&gt; text</pre>
+</figure>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">If Smaug is ancient and Robin is brave or Gawain is brave:
+  Say "Which way?"</pre>
+</figure>
+<h2 id="s7">7. Actions</h2>
+<h3 id="s7-1">7.1 Variables</h3>
+<pre class="form">Let [the] &lt;name&gt; [(&lt;type&gt;)] [always] be &lt;expression&gt;.</pre>
+<ul>
+<li>A variable takes the type of its first value and keeps it.</li>
+<li>A type in brackets says what the variable may hold. It is needed when the first value is <code>nothing</code>, and optional otherwise.</li>
+<li>A variable made with <code>always</code> cannot be changed afterwards.</li>
+<li>A variable made at the top level lasts for the rest of the program; one made inside a block lasts to the end of that block.</li>
+<li>The value may be a new thing: <code>Let the chick be a new dragon ...</code> (section <a href="#s7-5">7.5</a>).</li>
+</ul>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">Let the tax rate always be 10%.
+Let the winner (knight, if any) be nothing.
+Say the tax rate of $50.       #&gt; $5
+Say the winner.                #&gt; nothing
+Set the winner to Gawain.
+Say the winner's purse.        #&gt; $300</pre>
+</figure>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">Let the tax rate always be 10%.
+Set the tax rate to 12%.</pre>
+</figure>
+<h3 id="s7-2">7.2 Changing things</h3>
+<pre class="form">Set &lt;target&gt; to &lt;expression&gt;.
+Add &lt;expression&gt; to &lt;target&gt;.
+Subtract &lt;expression&gt; from &lt;target&gt;.
+Multiply &lt;target&gt; by &lt;expression&gt;.
+Divide &lt;target&gt; by &lt;expression&gt;.</pre>
+<p>A target is a variable made with <code>Let</code>, or a stored property of a thing. The new value must have the target's type. These cannot be changed: a worked-out property, a <code>name</code>, a role of a verb, the noun of a <code>For each</code>, and a variable made with <code>always</code>. A stored adjective is changed with <code>Now</code> (section <a href="#s4-3">4.3</a>).</p>
+<p><code>Add &lt;text&gt; to the file &lt;text&gt;.</code> is a different sentence (section <a href="#s7-7">7.7</a>). Text cannot be added up, so the two are never confused.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">Let the total be 10.
+Add 5 to the total.
+Subtract 1 from the total.
+Multiply the total by 2.
+Divide the total by 4.
+Say the total.                    #&gt; 7
+Set the total to 0.
+Add $100 to Robin's purse.
+Say Robin's purse.                #&gt; $120
+Set Goblet's owner to Norbert.
+Say the hoard of Norbert.         #&gt; $3,000</pre>
+</figure>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">Set Smaug's hoard to $5.</pre>
+</figure>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">Let the total be 1.
+Let the total be 2.</pre>
+</figure>
+<h3 id="s7-3">7.3 Saying</h3>
+<pre class="form">Say &lt;expression&gt;.</pre>
+<p>Says one line. A thing is said as its name.</p>
+<h3 id="s7-4">7.4 Examples</h3>
+<pre class="form">For example[,] &lt;condition&gt;.</pre>
+<p>An example is a test. If the condition is false when the sentence is reached, the program stops. For a single comparison, the message also gives the actual value of the left side.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">For example, the hoard of Smaug is $3,500.
+For example Norbert is not ancient.</pre>
+</figure>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">For example, the hoard of Smaug is $1.</pre>
+</figure>
+<h3 id="s7-5">7.5 Making and removing things</h3>
+<pre class="form">There is a new [&lt;adjective&gt;]... &lt;kind&gt; [called &lt;text&gt;] [whose &lt;property&gt; is &lt;expression&gt;]... .
+Let [the] &lt;name&gt; be a new [&lt;adjective&gt;]... &lt;kind&gt; [called &lt;text&gt;] [whose ...]... .
+Remove &lt;thing&gt;.</pre>
+<ul>
+<li><code>There is a new</code> may be used anywhere except inside <code>To work out</code>, including inside verbs and loops.</li>
+<li><code>a new &lt;kind&gt;</code> may only be the whole value of a <code>Let</code>. To use a new thing afterwards, make it that way.</li>
+<li>The name is a text value, so it can be built with fill-ins. If no name is given, it is the kind and a number counting every thing of that kind made so far, such as <code>dragon 3</code>. Names of new things need not be different; find one with <code>the &lt;kind&gt; called</code> (section <a href="#s5-7">5.7</a>).</li>
+<li>The <code>whose</code> parts follow the rules of section <a href="#s4-2">4.2</a>, and the kind's rules are checked.</li>
+<li><code>Remove</code> takes a thing out of the world. It leaves every group. A property marked <code>if any</code> that pointed at it becomes nothing.</li>
+<li><strong><code>Remove</code> is refused while a required property of another thing points at the thing.</strong> This is a problem (section <a href="#s8-5">8.5</a>) that names what still depends on it.</li>
+<li>A removed thing can still be said and compared, but using its properties or adjectives, changing it, making something point at it, or using it as the owner of a group (<code>the saddles of h</code>) is a problem.</li>
+<li>A <code>For each</code> that has already started does not visit a thing removed before its turn (section <a href="#s8-2">8.2</a>).</li>
+<li>Like using a verb, <code>Remove</code> cancels every check for nothing that relied on a property (section <a href="#s2">2</a>), because it may have made one nothing.</li>
+</ul>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">To hatch for a dragon:
+  Let the chick be a new dragon called "{the dragon}'s chick" whose age is 0.
+  Say "{the chick} hatches."
+
+Hatch for Smaug.                              #&gt; Smaug's chick hatches.
+There is a new dragon whose age is 5.
+Say the number of dragons.                    #&gt; 4
+Let the found be the dragon called "dragon 4".
+If the found is not nothing:
+  Remove the found.
+Remove Norbert.
+Say the number of dragons.                    #&gt; 2</pre>
+</figure>
+<p>Refused while running, because two treasures belong to Smaug:</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">Remove Smaug.</pre>
+</figure>
+<h3 id="s7-6">7.6 Asking</h3>
+<pre class="form">Ask &lt;text&gt; and let [the] &lt;name&gt; (&lt;type&gt;) be the reply.</pre>
+<ul>
+<li>The type may be <code>text</code>, <code>number</code>, <code>money</code>, <code>percent</code> or <code>yes or no</code>. It is required.</li>
+<li>This makes a variable, as <code>Let</code> does, so the name must be new.</li>
+<li>If the reply cannot be read as that type, a short message says what is wanted and the question is asked again. Numbers are read as they are written in a program (<code>1,000</code>, <code>2.5</code>); money with or without <code>$</code>; a percentage with <code>%</code>; <code>yes</code>, <code>no</code>, <code>y</code> or <code>n</code> in any capitals. Text is kept exactly as typed.</li>
+<li>The question is shown followed by a space, and the reply is read from the keyboard. If there is nothing more to read, the program ends quietly, as <code>End the program.</code> does.</li>
+<li><code>Ask</code> is refused inside <code>To work out</code>.</li>
+</ul>
+<pre class="form">Ask "How old is the dragon?" and let the age (number) be the reply.
+Ask "Shall we go on?" and let ready (yes or no) be the reply.</pre>
+<h3 id="s7-7">7.7 Files</h3>
+<pre class="form">the text of the file &lt;text&gt;          the whole file, as text
+the lines of the file &lt;text&gt;         a list of text, split at line breaks, with no empty last line
+Write &lt;text&gt; to the file &lt;text&gt;.     replaces what the file held
+Add &lt;text&gt; to the file &lt;text&gt;.       puts exactly that text at the end; write {new line} to end a line</pre>
+<ul>
+<li>The name of a file is text. A name without a folder means the folder the program is run from.</li>
+<li>Files are read and written as UTF-8.</li>
+<li>A file that cannot be read or written is a problem (section <a href="#s8-5">8.5</a>).</li>
+<li><code>Write</code> and <code>Add</code> are refused inside <code>To work out</code>; reading is allowed there.</li>
+</ul>
+<pre class="form">Write "eggs{new line}" to the file "shopping.txt".
+Add "milk{new line}" to the file "shopping.txt".
+For each item in the lines of the file "shopping.txt":
+  Say "- {the item}"</pre>
+<h2 id="s8">8. Blocks</h2>
+<h3 id="s8-1">8.1 If</h3>
+<pre class="form">If &lt;condition&gt;:
+Otherwise if &lt;condition&gt;:
+Otherwise:</pre>
+<p>Any number of <code>Otherwise if</code> parts may follow an <code>If</code>, and at most one plain <code>Otherwise</code>, which comes last. Only the first part whose condition holds is carried out.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">Let the score be 7.
+If the score is more than 9:
+  Say "high"
+Otherwise if the score is more than 5:
+  Say "middling"     #&gt; middling
+Otherwise:
+  Say "low"</pre>
+</figure>
+<h3 id="s8-2">8.2 For each</h3>
+<pre class="form">For each [&lt;adjective&gt;]... &lt;kind&gt; [of &lt;thing&gt;] [whose &lt;property&gt; &lt;comparison&gt;]:</pre>
+<p>This is a group (section <a href="#s5-5">5.5</a>) written in the singular. Inside the block the current thing is <code>the &lt;kind&gt;</code>, and it is in view for pronouns. Things are visited in the order they were created, and the group is settled when the loop starts. A thing removed (section <a href="#s7-5">7.5</a>) before its turn comes is not visited.</p>
+<p>A <code>For each</code> is refused when its kind is already in view, because <code>the &lt;kind&gt;</code> would then mean two things.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">For each brave knight:
+  Say the knight.
+#&gt; Gawain
+For each treasure of Smaug whose worth is less than $1,000:
+  Say "{its name} is small."
+#&gt; Cup is small.</pre>
+</figure>
+<p>The loop's thing can also be given a name of its own:</p>
+<pre class="form">For each &lt;name&gt; in &lt;group, in the plural&gt;:
+For each &lt;name&gt; in &lt;list&gt;:</pre>
+<ul>
+<li>The group is written as in section <a href="#s5-5">5.5</a>, in the plural. Inside the block the current thing is <code>the &lt;name&gt;</code>, and it is in view for pronouns. This lets a loop run over a kind that is already in view. As above, a thing removed before its turn comes is not visited.</li>
+<li>Over a list (section <a href="#s2">2</a>), the items are visited in order, each one as <code>the &lt;name&gt;</code>. An item that is a thing is in view for pronouns.</li>
+<li>The name must be new.</li>
+</ul>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">To greet a dragon:
+  For each rival in dragons whose age is more than 0:
+    If the rival is not the dragon:
+      Say "{the dragon} glares at {the rival}."
+
+Greet Norbert.                   #&gt; Norbert glares at Smaug.
+For each word in the words of "fire and smoke":
+  Say the word in upper case.
+#&gt; FIRE
+#&gt; AND
+#&gt; SMOKE</pre>
+</figure>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">To greet a dragon:
+  For each dragon in dragons:
+    Say "Hello."</pre>
+</figure>
+<h3 id="s8-3">8.3 Repeat and While</h3>
+<pre class="form">Repeat &lt;expression&gt; times:
+While &lt;condition&gt;:</pre>
+<p><code>Repeat</code> needs a whole number that is not negative. <code>While</code> is stopped after 10,000 rounds.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">Repeat 2 times:
+  Say "Again."
+#&gt; Again.
+#&gt; Again.
+Let the fuse be 3.
+While the fuse is more than 0:
+  Subtract 1 from the fuse.
+Say the fuse.      #&gt; 0</pre>
+</figure>
+<h3 id="s8-4">8.4 Stopping early</h3>
+<pre class="form">Stop.                  ends the verb, or the reaction, being carried out
+Stop repeating.        ends the loop around this sentence
+Skip this &lt;noun&gt;.      goes on to the next thing in a For each
+Skip this round.       goes on to the next round of a Repeat or While
+End the program.</pre>
+<ul>
+<li><code>Stop.</code> is refused outside a verb or a reaction (section <a href="#s9-5">9.5</a>). Inside <code>To work out</code> (section <a href="#s9-3">9.3</a>), use <code>The answer is</code>.</li>
+<li><code>Skip this &lt;noun&gt;.</code> names its loop by the loop's noun, or by the name given in <code>For each &lt;name&gt; in ...</code>, so it is clear in nested loops.</li>
+<li><code>Stop repeating.</code> and <code>Skip this round.</code> are refused when more than one loop is around the sentence, because they could mean either. Move the inner loop into its own verb and use <code>Stop.</code> there.</li>
+<li>A loop written outside a verb is not "around" the sentences inside that verb, nor around the sentences of a reaction.</li>
+</ul>
+<p>A block that ends in one of these sentences, or in <code>Fail because</code> (section <a href="#s8-5">8.5</a>), <strong>always leaves</strong>. An <code>If</code> whose block always leaves works as a guard: the sentences after it can rely on its condition having been false (section <a href="#s2">2</a>, "Nothing").</p>
+<p>A round of a loop can end at a <code>Skip</code>, and the loop itself at a <code>Stop repeating</code>, part way through the block. A check for nothing is only relied on in the next round, or after the loop, if it held at every such point.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">To check a knight:
+  If the knight is not brave:
+    Say "{the knight} stays home."
+    Stop.
+  Say "{the knight} rides out."
+
+Check Robin.                     #&gt; Robin stays home.
+Check Gawain.                    #&gt; Gawain rides out.
+
+For each treasure:
+  If the treasure's worth is less than $1,000:
+    Skip this treasure.
+  Say the treasure.
+#&gt; Goblet
+
+Let the count be 0.
+Repeat 10 times:
+  Add 1 to the count.
+  If the count is 3:
+    Stop repeating.
+Say the count.                   #&gt; 3
+
+Say "Goodbye."                   #&gt; Goodbye.
+End the program.
+Say "This is never said."</pre>
+</figure>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">For each dragon:
+  For each treasure of the dragon:
+    Stop repeating.</pre>
+</figure>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">Stop.</pre>
+</figure>
+<h3 id="s8-5">8.5 Recovering from a problem</h3>
+<pre class="form">Try:
+If that fails:
+Fail because &lt;text&gt;.
+the problem</pre>
+<ul>
+<li><code>Try:</code> carries out its block. If a problem arises, the rest of the block is abandoned and the <code>If that fails:</code> block is carried out. <code>If that fails:</code> must follow directly, and is required.</li>
+<li><strong>A failed <code>Try</code> leaves the world as it was.</strong> Every change its block made is undone: to properties, to stored adjectives, to variables that existed before the <code>Try</code>, and to which things exist, including changes made by verbs it used and by reactions it set off (section <a href="#s9-5">9.5</a>). What was said, asked or written to a file stays. Putting things back does not set off reactions.</li>
+<li>Inside <code>If that fails:</code>, <code>the problem</code> is text saying what went wrong. It means nothing anywhere else.</li>
+<li><code>Fail because &lt;text&gt;.</code> raises a problem of the program's own.</li>
+<li><code>Stop.</code>, <code>Skip</code>, <code>Stop repeating.</code>, <code>The answer is</code> and <code>End the program.</code> leaving a <code>Try</code> are not failures. They leave as usual, and the changes stay.</li>
+<li>For checks for nothing, the two blocks count like the branches of an <code>If</code>: after the <code>Try</code>, nothing that either block may have changed is relied on.</li>
+</ul>
+<p>These problems can be recovered from: a broken <code>never</code> or <code>always</code> rule; a division by zero, or a test for being divisible by zero; a file that cannot be read or written; a <code>Remove</code> that is refused; using a removed thing; <code>Repeat</code> with a fraction or a negative number; asking for a negative or fractional number of letters; and <code>Fail because</code>.</p>
+<p>These always end the program, because they are faults in the program rather than events in the world: a <code>For example</code> that does not hold, a <code>While</code> passing 10,000 rounds, a verb or worked-out value using itself more than 200 levels deep, and reactions setting off reactions more than 200 levels deep.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">To move an amount (money) from a giver (knight) to a taker (knight):
+  If the giver is the taker:
+    Fail because "a knight cannot pay himself".
+  Add the amount to the taker's purse.
+  Subtract the amount from the giver's purse.
+
+Try:
+  Move $500 from Robin to Gawain.
+If that fails:
+  Say "No payment: {the problem}"
+#&gt; No payment: That would break a rule: "A knight's purse is never less than $0."
+Say Gawain's purse.          #&gt; $300
+Try:
+  Move $5 from Robin to Robin.
+If that fails:
+  Say "No payment: {the problem}"
+#&gt; No payment: a knight cannot pay himself</pre>
+</figure>
+<p>Gawain's purse was raised to $800 before the rule on Robin's purse was broken, and the failed <code>Try</code> put it back.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">Try:
+  Say "Nothing can go wrong."
+Say "Done."</pre>
+</figure>
+<h2 id="s9">9. Verbs</h2>
+<h3 id="s9-1">9.1 Teaching a verb</h3>
+<pre class="form">To &lt;verb&gt; [a | an &lt;role&gt;] [&lt;preposition&gt; a | an &lt;role&gt;]... :</pre>
+<p>A role is written in one of two ways:</p>
+<pre class="form">&lt;kind&gt;               the role is called by the kind's name
+&lt;name&gt; (&lt;type&gt;)      the role has its own name and any type</pre>
+<ul>
+<li>The first role, if it has no preposition, is the verb's object.</li>
+<li>Each further role is introduced by a preposition from the list in section <a href="#s3">3</a>, and each preposition may be used once.</li>
+<li>Two roles cannot share a name. Two knights must be told apart as, say, <code>a giver (knight)</code> and <code>a taker (knight)</code>.</li>
+<li>Inside the block, a role is referred to as <code>the &lt;role&gt;</code>. Roles that are things are in view for pronouns.</li>
+<li>The block can also use named things and top-level variables defined before the verb. It cannot see the variables of whoever uses the verb.</li>
+<li>A verb does not produce a value. It may use itself, to a depth of 200.</li>
+</ul>
+<h3 id="s9-2">9.2 Using a verb</h3>
+<pre class="form">&lt;Verb&gt; [&lt;expression&gt;] [&lt;preposition&gt; &lt;expression&gt;]... .</pre>
+<p>The object comes first. The other roles may come in any order, because the prepositions say which is which. Every role must be given, with a value of the right type.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">To send a knight against a dragon:
+  If the knight is brave:
+    Say "{the knight} rides out against {the dragon}."
+  Otherwise:
+    Say "{the knight} stays home."
+
+To move an amount (money) from a giver (knight) to a taker (knight):
+  Subtract the amount from the giver's purse.
+  Add the amount to the taker's purse.
+
+To count from a start (number):
+  If the start is more than 0:
+    Say the start.
+    Count from the start - 1.
+
+To cheer:
+  Say "Hurrah!"
+
+Send Gawain against Smaug.          #&gt; Gawain rides out against Smaug.
+Send Robin against Smaug.           #&gt; Robin stays home.
+Move $100 from Gawain to Robin.
+Move $10 to Gawain from Robin.
+Say Robin's purse.                  #&gt; $110
+Count from 2.
+#&gt; 2
+#&gt; 1
+Cheer.                              #&gt; Hurrah!</pre>
+</figure>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">To send a knight against a dragon:
+  Say "Off they go."
+Send Smaug against Gawain.</pre>
+</figure>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">To send a knight against a dragon:
+  Say "Off they go."
+Send Gawain.</pre>
+</figure>
+<h3 id="s9-3">9.3 Working out a value</h3>
+<p>A verb does something. To get a value, define something that is worked out.</p>
+<pre class="form">To work out the &lt;name&gt; (&lt;type&gt;) [&lt;preposition&gt; a | an &lt;role&gt;]... :
+The answer is &lt;expression&gt;.</pre>
+<p>It is then used as a value:</p>
+<pre class="form">the &lt;name&gt; [&lt;preposition&gt; &lt;value&gt;]...</pre>
+<ul>
+<li>The type of the answer goes in brackets after the name. It may be <code>if any</code>.</li>
+<li>Roles are written as for verbs (section <a href="#s9-1">9.1</a>), except that every role has a preposition, and <code>of</code> may be one of them. When it is used, the roles may come in any order.</li>
+<li><code>The answer is ...</code> ends the work and gives the value. Every path through the block must reach one, or end with <code>Fail because</code> (section <a href="#s8-5">8.5</a>).</li>
+<li><strong>Working out changes nothing.</strong> The block may make and change its own variables, loop, use other worked-out values, read files, and use <code>Try</code> and <code>Fail because</code>. It may not change a thing or an outside variable, use <code>Now</code>, make or remove a thing, say or ask anything, write to a file, or use a verb.</li>
+<li>Because of that, a worked-out value may be used anywhere a value may, including in the definition of an adjective.</li>
+<li>Each role takes a single value. Arithmetic in a role needs brackets: <code>the change from ($10 + $10) for $12.50</code>.</li>
+<li>A worked-out value takes every role written after it. Brackets end it early: <code>(the bounty for Smaug) + $5</code>.</li>
+<li>A worked-out value cannot share its name with a property, a variable or a thing.</li>
+<li>It may use itself, to a depth of 200.</li>
+</ul>
+<p>A worked-out property (section <a href="#s4-4">4.4</a>) remains the short form for one thing and one expression.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">To work out the bounty (money) for a dragon:
+  If the dragon is ancient:
+    The answer is $1,000.
+  The answer is 10% of the dragon's hoard.
+
+To work out the change (money) from an amount (money) for a price (money):
+  The answer is the amount - the price.
+
+To work out the eldest (dragon, if any):
+  Let the best (dragon, if any) be nothing.
+  Let the top be 0.
+  For each dragon:
+    If the dragon's age is more than the top:
+      Set the best to the dragon.
+      Set the top to the dragon's age.
+  The answer is the best.
+
+Say the bounty for Smaug.               #&gt; $1,000
+Say the bounty for Norbert.             #&gt; $0
+Say the change from $20 for $12.50.     #&gt; $7.50
+Say the change for $1 from $5.          #&gt; $4
+Say the eldest.                         #&gt; Smaug
+
+A dragon is costly when the bounty for the dragon is at least $500.
+Say the number of costly dragons.       #&gt; 1</pre>
+</figure>
+<p>Refused, because a score under 50 reaches no answer:</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">To work out the grade (text) for a score (number):
+  If the score is at least 50:
+    The answer is "pass".</pre>
+</figure>
+<p>Refused, because working out cannot say anything:</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">To work out the census (number):
+  Say "Counting."
+  The answer is the number of dragons.</pre>
+</figure>
+<h3 id="s9-4">9.4 Using a library</h3>
+<p>A library gives a program words whose work is done by Python code: drawing on a screen, say, or talking to a device.</p>
+<pre class="form">Use the &lt;name&gt; library.</pre>
+<ul>
+<li>This is allowed only at the top level. Its name is one word. A file may use a library only once; in a program of several files (section <a href="#s9-6">9.6</a>), each file that wants its words says so, and the library is loaded once, at the first.</li>
+<li>The library's own sentences are read at that point, as if they were written there. The kinds, things, adjectives, rules, verbs and worked-out values it describes join the program's vocabulary from then on. A name in the library that the program has already given a meaning is refused, as any reused name is (section <a href="#s3">3</a>).</li>
+<li>Its verbs and worked-out values are used like any others (sections <a href="#s9-2">9.2</a> and <a href="#s9-3">9.3</a>). Some of them are carried out by the library's Python code, but the rules are the same: a verb may not be used inside <code>To work out</code>, and using one means checks for nothing no longer count (section <a href="#s2">2</a>); a worked-out value changes nothing.</li>
+<li>A library may report a problem, such as a device that is not there. A <code>Try</code> can recover from it (section <a href="#s8-5">8.5</a>). A failed <code>Try</code> undoes the changes the library made to things in the world, but it cannot undo what the library did outside the world, such as what it showed on a screen.</li>
+<li>If a library fails in a way it did not expect, the program stops with a message naming the library. That is a fault in the library, and <code>Try</code> does not recover from it.</li>
+<li>When the program ends, for any reason, each library it used is told, so that it can let go of what it holds.</li>
+<li>A library may go on working after the program's last sentence, as a page does that waits for clicks. It starts only when the sentences ran to their end, not after <code>End the program.</code> or a problem. What then happens outside, such as a click, comes in as a change to things, and is treated as one sentence: the rules are checked, and it sets off reactions (section <a href="#s9-5">9.5</a>) as a sentence would. If the change breaks a rule, or a reaction to it meets a problem, all of it is undone, as by a failed <code>Try</code>. A reaction that says <code>End the program.</code> ends the program, and nothing more comes in.</li>
+<li>Only the libraries that come with EnglishScript can be used, from the folder <code>englishscript/libraries</code>. Naming any other is refused, and the message lists the libraries there are.</li>
+<li>One library comes with EnglishScript today: <code>vulkan</code>, which draws shaded triangles on the graphics card. Its words are described in <a href="vulkan.html">VULKAN.md</a>, and <code>examples/gpu_triangle.english</code> uses it.</li>
+</ul>
+<pre class="form">Use the paint library.
+Splash "red" on Easel.
+Say the pixel count of Easel.</pre>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">Use the nonesuch library.</pre>
+</figure>
+<h4 id="writing-a-library">Writing a library</h4>
+<p>A library is a Python module in <code>englishscript/libraries</code>. It holds its sentences as ordinary EnglishScript text, and in that text, and only there, a verb or a worked-out value may be declared without a block:</p>
+<pre class="form">To splash a colour (text) on a canvas is done by the library.
+To work out the pixel count (number) of a canvas is done by the library.</pre>
+<p>The part before <code>is done by the library</code> is exactly the first line of a verb (section <a href="#s9-1">9.1</a>) or of a worked-out value (section <a href="#s9-3">9.3</a>), without its colon. The work is then done by a Python function of the library. A library's sentences may not say <code>Use</code>. The full interface, for people writing a library, is described in <code>englishscript/libraries/__init__.py</code>.</p>
+<p>A program cannot declare work to be done by a library:</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">To splash a colour (text) on a dragon is done by the library.</pre>
+</figure>
+<h3 id="s9-5">9.5 Reactions</h3>
+<pre class="form">Whenever a | an &lt;kind&gt; becomes [not] &lt;adjective&gt;:
+Whenever &lt;thing&gt; becomes [not] &lt;adjective&gt;:</pre>
+<p>A reaction is a block that is carried out when a thing comes to fit an adjective, or, with <code>not</code>, stops fitting it.</p>
+<ul>
+<li>This is a definition, allowed only at the top level. It applies from that sentence on: changes made before it is reached set nothing off.</li>
+<li>The adjective may be stored (<code>A knight can be sworn.</code>) or defined (<code>A knight is broke when ...</code>), and must belong to the kind.</li>
+<li>The second form watches one thing, named when the reaction is written. It must have been made, with <code>There is ... called</code>, by an earlier sentence.</li>
+<li>Inside the block, the thing is <code>the &lt;kind&gt;</code>, and it is in view for pronouns, as in a verb. A thing watched by name may also be called by its name.</li>
+<li>A thing <strong>becomes</strong> an adjective when a sentence leaves it fitting the adjective and it did not fit before that sentence. It <strong>becomes not</strong> the adjective when the sentence leaves it no longer fitting. The block is carried out at once, after that sentence and before the next one, wherever the sentence is: at the top level, in a verb, in a loop, in a <code>Try</code>, or in another reaction.</li>
+<li>A thing made by the sentence does not "become" anything, even if it fits when it is made. A thing removed by the sentence becomes nothing, and nor does a thing removed by an earlier reaction before its turn comes.</li>
+<li><strong>The order is fixed.</strong> When one sentence makes several things become, they are taken in the order they were made. For each one, the reactions that match are carried out in the order they were written. All of them are carried out, even if an earlier reaction has changed the thing back.</li>
+<li>A reaction may set off further reactions, to a depth of 200. Beyond that the program stops (section <a href="#s8-5">8.5</a>).</li>
+<li>The block is like a verb's, without roles: <code>Stop.</code> leaves it; <code>Stop repeating.</code> and <code>Skip</code> are refused unless a loop inside the block is around them, because a loop outside a reaction is not around its sentences. It may use top-level variables and named things defined before it, and verbs.</li>
+<li>Nothing changes inside <code>To work out</code>, so nothing is set off there. Putting things back after a failed <code>Try</code> sets nothing off either.</li>
+<li><strong>A problem in a reaction is a problem in the sentence that set it off.</strong> A <code>Try</code> around that sentence recovers from it, and undoes everything the sentence and its reactions changed. <code>never</code> and <code>always</code> rules hold inside reactions as everywhere.</li>
+<li>If an adjective that is watched can't be worked out for some thing (it divides by zero, say), that is a problem in the sentence being carried out.</li>
+<li>Only sentences that change a thing, a top-level variable or a file can make a thing become something, so only around those does the program look. A program without <code>Whenever</code> does no looking at all. In a program with one, checks for nothing do not survive such a sentence (section <a href="#s2">2</a>).</li>
+</ul>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">A knight is broke when its purse is $0.
+A knight can be sworn.
+
+Whenever a knight becomes broke:
+  Say "{the knight} is out of money."
+
+Whenever a knight becomes not broke:
+  Say "{it} has money again."
+
+Whenever Gawain becomes sworn:
+  Say "Gawain kneels."
+  Add $10 to the knight's purse.
+
+Subtract $20 from Robin's purse.     #&gt; Robin is out of money.
+Now Gawain is sworn.                 #&gt; Gawain kneels.
+Say Gawain's purse.                  #&gt; $310
+Add $5 to Robin's purse.             #&gt; Robin has money again.
+Now Robin is sworn.
+There is a new knight whose purse is $0 and whose courage is 1.
+Remove Robin.</pre>
+</figure>
+<p>Making the new knight, who is broke from the start, and removing Robin set nothing off.</p>
+<p>When one sentence changes several things, they are taken in the order they were made, and the reactions to each in the order written. A reaction's own changes are reacted to at once:</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">Let the poverty line be $10.
+A knight is poor when its purse is less than the poverty line.
+A knight can be pitied.
+
+Whenever a knight becomes poor:
+  Say "{the knight} is poor now."
+  Now the knight is pitied.
+
+Whenever a knight becomes pitied:
+  Say "Alms for {the knight}."
+
+Whenever a knight becomes poor:
+  Say "The herald notes it."
+
+Set the poverty line to $500.
+#&gt; Gawain is poor now.
+#&gt; Alms for Gawain.
+#&gt; The herald notes it.
+#&gt; Robin is poor now.
+#&gt; Alms for Robin.
+#&gt; The herald notes it.</pre>
+</figure>
+<p>A problem in a reaction is a problem in the sentence that set it off:</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">A knight is broke when its purse is $0.
+
+Whenever a knight becomes broke:
+  Say "{the knight} is broke."
+  If the knight is brave:
+    Fail because "{the knight} would rather fight"
+
+Try:
+  Set Robin's purse to $0.
+  Set Gawain's purse to $0.
+  Say "Both have paid."
+If that fails:
+  Say "No: {the problem}."
+Say "{Robin's purse} and {Gawain's purse}"
+#&gt; Robin is broke.
+#&gt; Gawain is broke.
+#&gt; No: Gawain would rather fight.
+#&gt; $20 and $300</pre>
+</figure>
+<p>Refused, because "ancient" is said of dragons, not knights:</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">Whenever a knight becomes ancient:
+  Say "A venerable knight."</pre>
+</figure>
+<p>Refused, because a reaction is a definition:</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">If Smaug is ancient:
+  Whenever a dragon becomes young:
+    Say "Strange."</pre>
+</figure>
+<p>Refused, because nothing is called Puff:</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">Whenever Puff becomes ancient:
+  Say "Puff is old."</pre>
+</figure>
+<h3 id="s9-6">9.6 Chapters and books</h3>
+<p>A program can be split over several files. A <strong>chapter</strong> is a file <code>&lt;name&gt;.english</code>, and a <strong>book</strong> is a folder of chapters.</p>
+<pre class="form">Use the &lt;name&gt; chapter.
+Use the &lt;name&gt; chapter of the &lt;book&gt; book.
+This chapter shares only &lt;name&gt;, &lt;name&gt; and &lt;name&gt;.
+This chapter shares nothing.</pre>
+<p><strong>Finding the file.</strong></p>
+<ul>
+<li><code>Use the calendar chapter.</code> reads <code>calendar.english</code> in the same folder as the file that says it.</li>
+<li><code>Use the calendar chapter of the almanac book.</code> reads <code>almanac/calendar.english</code>, where the folder <code>almanac</code> is in the same folder as the file that says it.</li>
+<li>Nothing else is searched. A chapter in a book uses the other chapters of its book with the first form. It cannot reach another book, nor a chapter outside its own folder.</li>
+<li>A name is one or more words of letters only. In the file's name the words are written in lower case and joined by underscores: <code>Use the roman numerals chapter.</code> reads <code>roman_numerals.english</code>. A path, a dot or a slash can't be written.</li>
+<li>Files are read as UTF-8. A chapter that is not there is refused at the <code>Use</code> sentence, and the message gives the file that was looked for and the chapters that are there.</li>
+</ul>
+<p><strong>What using a chapter does.</strong></p>
+<ul>
+<li><code>Use</code> is allowed only at the top level. A file may use a chapter only once.</li>
+<li>A chapter is read <strong>once</strong> in a program, at the first <code>Use</code> that reaches it. Its sentences are carried out then, in order, before the file that uses it goes on: it is an ordinary program, read aloud once. Its things are made, its variables set, its <code>Say</code> and <code>For example</code> sentences carried out, and its rules and reactions apply from then on, to the whole world. A later <code>Use</code> of the same chapter, by another file, reads nothing again.</li>
+<li>Chapters that use each other in a circle are refused, and the message names the circle: <code>calendar -&gt; feasts -&gt; calendar</code>.</li>
+</ul>
+<p><strong>One world, one meaning for each name.</strong> Every name defined at the top level of any file (a kind, a thing, an adjective of a kind, a property, a verb, a worked-out value, a variable) has one meaning in the whole program. A second file giving it another meaning is refused, as a reused name is (section <a href="#s3">3</a>), and the message says which chapter has it.</p>
+<p><strong>What a file may say.</strong> In a file, a name may be used if it was defined in that file, or in a chapter that this file itself uses, and that chapter shares it. What a chapter uses is not passed on: a file that wants a chapter's words uses that chapter itself.</p>
+<ul>
+<li>A chapter with no <code>shares</code> sentence shares everything it defines.</li>
+<li><code>This chapter shares only A, B and C.</code> shares just those. <code>This chapter shares nothing.</code> shares none. Either must be the first sentence of its file (comments may come before it). A program may say it too, so that one file can be both a program and a chapter.</li>
+<li>The names are written as they were defined, without an article, separated by commas and <code>and</code>. Each must be defined at the top level of the chapter by its end, and must be one thing: a name that is both a kind and a verb, say, is refused, because it would not be clear which is shared.</li>
+<li>A shared kind brings its properties with it. Its adjectives, its worked-out properties and its things are names of their own, and are shared only if they are listed.</li>
+<li>A worked-out value that is shared may take or give back a thing of a kind that is not shared. The thing can then be passed around, compared and said, but its kind can't be named, so its properties can't be read and nothing can be made of it.</li>
+<li>Rules (<code>never</code>, <code>always</code>) and reactions (<code>Whenever</code>) are not names. Those of a chapter hold everywhere.</li>
+<li>Roles and the variables of a block belong to their block, as always. Another file may use the same names for its own.</li>
+</ul>
+<p>A name that exists elsewhere, but may not be said here, is refused with a message that says why: the chapter does not share it, or the file does not use that chapter.</p>
+<p><strong>Libraries.</strong> <code>Use the ... library.</code> is likewise said once in each file that wants the library's words. The library is loaded once for the whole program, at the first <code>Use</code>, and it is told when the program goes on working and when it ends once (section <a href="#s9-4">9.4</a>).</p>
+<p>The examples in this document use the book in <code>examples/almanac</code>, whose chapters are <code>calendar</code>, <code>numerals</code> and <code>feasts</code>. <code>calendar</code> shares <code>leapness</code>, <code>month length</code>, <code>month title</code> and <code>weekday</code>; <code>numerals</code> shares <code>roman</code> and <code>reading</code>; <code>feasts</code> shares the kind <code>feast</code>, the adjective <code>wintry</code>, the worked-out value <code>falling</code> and the thing <code>Michaelmas</code>, and uses <code>calendar</code> itself.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">Use the numerals chapter of the almanac book.
+Use the feasts chapter of the almanac book.
+
+Say the roman of 1666.                         #&gt; MDCLXVI
+Say the reading of "MMXXVI".                   #&gt; 2,026
+Say the number of wintry feasts.               #&gt; 3
+Say the falling of Michaelmas for 2027.        #&gt; Wednesday
+For example, Michaelmas's month is 9.</pre>
+</figure>
+<p>The feasts chapter uses the calendar chapter, but that does not let this file say <code>weekday</code>. It must use the calendar itself:</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">Use the feasts chapter of the almanac book.
+Say the weekday of 1 at 1 for 2000.</pre>
+</figure>
+<p>Refused, because the numerals chapter does not share its kind <code>numeral</code>:</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">Use the numerals chapter of the almanac book.
+Say the number of numerals.</pre>
+</figure>
+<p>Refused, because there is no such chapter:</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">Use the moons chapter of the almanac book.</pre>
+</figure>
+<p><strong>Checking.</strong> The linter (section <a href="#s10">10</a>) checks the file it is given. The problems inside a chapter it uses are given as one error, at the <code>Use</code> sentence, with the number of problems and the first of them. A name listed in <code>This chapter shares only</code> counts as used, so linting a chapter on its own does not warn that what it shares is never used. A problem in a chapter, before or while running, names the chapter's file and line, and the place it was used from.</p>
+<h2 id="s10">10. How a sentence can go wrong</h2>
+<p>Problems are reported at two stages.</p>
+<p><strong>Before anything runs</strong>, the whole program is compiled. A sentence is refused if any word has no meaning yet, if a phrase could be read more than one way, or if the types don't fit.</p>
+<p>Each problem is marked the way a teacher marks a paper:</p>
+<pre class="form">Spelling (line 14):
+
+    Say "{the number of dragns}".
+                        ^^^^^^
+                        dragons
+
+  I don't know the word "dragns". Did you mean "dragons"?
+  The rule: a kind is described with "A ... has ..." before it is used. (See section 4.1.)</pre>
+<ul>
+<li>The first line names the <strong>category</strong> of the mistake and where it is: Spelling, Punctuation, Capital letters, Grammar, Vocabulary (a word with no meaning yet, or with one already), Meaning (a phrase that reads more than one way, or points at nothing), Kinds of value, Layout, From another language, Style, or While running. A warning says <code>, a suggestion</code> after it.</li>
+<li>Then the sentence, with the words in question underlined. When the correction is certain and changes only those words, it is written under them; when it is certain but changes more, it is given as <code>Write: ...</code>.</li>
+<li>Then what is wrong, how to mend it, and the <strong>rule</strong> to remember, the same each time it is broken, with the section of this document that teaches it.</li>
+<li>A misspelt word (one letter off for a word of up to four letters, two for a longer one, two neighbouring letters swapped counting as one) gets "Did you mean ...?" when exactly one word of the right sort is that close: a kind where a kind belongs, a property of that kind after <code>'s</code>, an adjective of that kind, a verb at the start of a sentence, and the fixed words of a sentence form. Words of one or two letters get no such guess. Otherwise the words that would fit are listed, at most eight.</li>
+</ul>
+<p><strong>While running</strong>, the program stops if:</p>
+<ul>
+<li>a change would break a <code>never</code> or <code>always</code> rule;</li>
+<li>a <code>For example</code> does not hold;</li>
+<li>something is divided by zero, or tested for being divisible by zero;</li>
+<li><code>Repeat</code> is given a fraction or a negative number;</li>
+<li>a negative or fractional number of letters is asked for;</li>
+<li>a file cannot be read or written;</li>
+<li><code>Remove</code> is refused, or a removed thing is used;</li>
+<li><code>Fail because</code> is reached;</li>
+<li>a <code>While</code> passes 10,000 rounds, a verb or a worked-out value uses itself more than 200 levels deep, or reactions set off reactions more than 200 levels deep;</li>
+<li>a library reports a problem, or fails in a way it did not expect (section <a href="#s9-4">9.4</a>).</li>
+</ul>
+<p>All of these except a <code>For example</code>, the 10,000 rounds, the 200 levels and a library's unexpected failure are problems that a <code>Try</code> can recover from (section <a href="#s8-5">8.5</a>). When input runs out during <code>Ask</code>, the program ends quietly; that is not a problem.</p>
+<p>A sentence of a chapter that can't be read, or a problem while running one, is reported with the chapter's file and line, such as <code>almanac/calendar.english, line 12</code>, followed by where the chapter is used from (section <a href="#s9-6">9.6</a>).</p>
+<p>A sentence of a library that can't be read is reported at the program's <code>Use</code> sentence, as the library's fault, with the library's own sentence shown underneath. A problem while running inside a verb that a library wrote in English gives the library's line, as <code>line 5 of the paint library</code>.</p>
+<h3 id="sentences-from-other-languages">Sentences from other languages</h3>
+<p>A sentence that starts the way another programming language would, or that uses one of its symbols, is refused with a note on how EnglishScript says it. A suggested sentence repeats the writer's own words only where it is certain to be accepted: a quoted text, a number or money, or a new name where any name will do. Anywhere else it leaves a gap, <code>...</code>, to fill in. A few of them:</p>
+<div class="scroll"><table>
+<thead><tr><th>Written</th><th>Advice</th></tr></thead>
+<tbody>
+<tr><td><code>print("Hello")</code>, <code>show x</code>, <code>display x</code></td><td><code>Say "Hello".</code></td></tr>
+<tr><td><code>x = 5</code>, <code>var x = 5</code></td><td><code>Let x be 5.</code>, or <code>Set x to 5.</code> if <code>x</code> already exists</td></tr>
+<tr><td><code>Smaug is 771 years old.</code></td><td>a sentence starts with a verb: <code>Let the age be 771.</code> makes a variable, <code>Set Smaug's age to 771.</code> changes a property</td></tr>
+<tr><td><code>else:</code>, <code>else if ...:</code>, <code>elif ...:</code></td><td><code>Otherwise:</code>, <code>Otherwise if ...:</code></td></tr>
+<tr><td><code>return x</code></td><td><code>The answer is x.</code> inside <code>To work out</code></td></tr>
+<tr><td><code>If ... then</code></td><td>end the condition with a colon</td></tr>
+<tr><td><code>for x in ...:</code>, <code>for i = 1 to 10:</code></td><td><code>For each x in ...:</code>, <code>Repeat 10 times:</code></td></tr>
+<tr><td><code>end if</code>, <code>endif</code>, <code>}</code></td><td>nothing: a block ends where the indentation ends</td></tr>
+<tr><td><code>break</code>, <code>continue</code>, <code>exit</code></td><td><code>Stop repeating.</code>, <code>Skip this round.</code>, <code>End the program.</code></td></tr>
+<tr><td><code>==</code>, <code>!=</code>, <code>&amp;&amp;</code>, <code>||</code>, <code>!</code></td><td><code>is</code>, <code>is not</code>, <code>and</code>, <code>or</code>, <code>not</code></td></tr>
+<tr><td><code>true</code>, <code>false</code>, <code>null</code></td><td><code>yes</code>, <code>no</code>, <code>nothing</code></td></tr>
+<tr><td><code>'single quotes'</code>, <code>;</code></td><td><code>"double quotes"</code>, one sentence per line</td></tr>
+</tbody></table></div>
+<p>These are only advice: such sentences are still refused. A word the program has given a meaning of its own is never treated this way.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">print("Hello")</pre>
+</figure>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">Let the total be 1.
+the total = 2.</pre>
+</figure>
+<h3 id="the-linter">The linter</h3>
+<p>The compiler stops at the first sentence it can't read. The linter reads on, and reports every problem in the program at once:</p>
+<pre class="form">python -m englishscript my_program.english --lint
+python -m englishscript my_program.english --lint --json</pre>
+<ul>
+<li>It only compiles; it never runs the program or asks anything.</li>
+<li>After a sentence it can't read, it goes on with the next sentence, in the same block where it can. A problem with the layout, such as a missing period or a line that doesn't line up, does not stop it either.</li>
+<li>The block of a sentence it can't read is not compiled, so nothing there is reported except problems with the layout and the advice above for sentences from other languages.</li>
+<li>When a definition is refused, the mistakes that follow only because its name is now unknown are left out, so one mistake in a kind's description gives one error, not ten. At most one error is given for each line.</li>
+<li>It also gives <strong>warnings</strong>, for sentences that are allowed but are probably a mistake:<ul>
+<li>a variable (made with <code>Let</code> or <code>Ask</code>), a verb, a worked-out value, an adjective, or a role of a verb or worked-out value, that is never used;</li>
+<li>a sentence that can never be reached, because the one before it in the same block always leaves (section <a href="#s8-4">8.4</a>);</li>
+<li>a sentence that starts with a small letter;</li>
+<li><code>a</code> before a vowel sound or <code>an</code> before any other (<code>a egg</code>, <code>an weight</code>). Only words whose sound the spelling makes plain are judged, with a list of the usual exceptions (<code>an hour</code>, <code>a unit</code>, <code>a one</code>); for other words, such as most that start with <code>u</code>, nothing is said;</li>
+<li><code>are</code> after one thing in a comparison (<code>If Gawain's purse are $300:</code>). When the last word of the thing ends in <code>s</code>, nothing is said.</li>
+</ul></li>
+<li>A warning is never given for a sentence that is refused, nor for anything that comes from a library. A warning never stops a program compiling or running.</li>
+<li>With <code>--json</code>, the problems are printed as a list of objects with the fields <code>line</code>, <code>col</code>, <code>width</code>, <code>kind</code> (<code>"error"</code> or <code>"warning"</code>), <code>message</code>, <code>hint</code>, <code>sentence</code>, <code>file</code> (the file of a chapter, or <code>null</code> for the file being linted), <code>category</code> (<code>"spelling"</code>, <code>"punctuation"</code>, <code>"capitals"</code>, <code>"grammar"</code>, <code>"vocabulary"</code>, <code>"meaning"</code>, <code>"kinds"</code>, <code>"layout"</code>, <code>"borrowed"</code>, <code>"style"</code> or <code>"running"</code>), <code>rule</code> (the rule to remember), <code>see</code> (the section of this document, such as <code>"4.1"</code>) and <code>fix</code>. <code>fix</code> is <code>null</code>, or, when the correction is certain, <code>{"line": &lt;number&gt;, "text": &lt;the whole line as it should be&gt;}</code>; the line may be another one than the problem's, as when the sentence under an empty block should be indented. A fix is only ever offered, never applied.</li>
+<li>It ends with a tally, such as <code>2 things to mend: 1 of vocabulary, 1 of kinds of value. 1 suggestion.</code>, or <code>Nothing to mend: every sentence reads one way.</code>, and with status 1 if there is an error, and 0 otherwise, warnings included.</li>
+</ul>
+<h2 id="s11">11. Grammar summary</h2>
+<p>Words in capitals are names from the program's own vocabulary. Quoted words are written as shown, in any capitalisation.</p>
+<pre class="form">sentence    = definition | action | block-opener
+
+definition  = kind | thing | adjective | stored-adj | property | rule | verb | work-out
+            | reaction | library | chapter | shares                    (top level only)
+kind        = article KIND "has" field { sep field } "."
+field       = article NAME "(" type ")"
+thing       = "There is" article { ADJECTIVE } KIND "called" NAME [ whose { sep whose } ] "."
+whose       = "whose" PROPERTY "is" expression
+adjective   = article KIND "is" ADJECTIVE "when" condition "."
+stored-adj  = article KIND "can be" ADJECTIVE "."
+property    = "The" NAME "of" article KIND "is" expression "."
+rule        = article KIND "'s" PROPERTY "is" ( "never" | "always" ) tail "."
+verb        = "To" VERB [ role ] { PREPOSITION role } ":"
+work-out    = "To work out the" NAME "(" type ")" { ( PREPOSITION | "of" ) role } ":"
+reaction    = "Whenever" ( article KIND | THING ) "becomes" [ "not" ] ADJECTIVE ":"
+library     = "Use the" NAME "library" "."
+chapter     = "Use the" WORDS "chapter" [ "of the" WORDS "book" ] "."    (WORDS: plain words, letters only)
+shares      = "This chapter shares" ( "nothing" | "only" NAME { sep NAME } ) "."
+                                                          (the first sentence of its file)
+outside     = ( verb | work-out ) without its ":", then "is done by the library" "."
+                                                          (only in a library's SOURCE, section 9.4)
+role        = article ( KIND | NAME "(" type ")" )
+article     = "a" | "an"
+sep         = "," | "and" | "," "and"
+type        = base-type [ "," "if any" ]
+base-type   = "number" | "money" | "text" | "percent" | "yes or no" | KIND
+            | "list of" PLURAL-TYPE                                  (not for a property)
+PLURAL-TYPE = "numbers" | "percentages" | "money" | "text" | KINDS
+
+action      = let | change | say | use | example | answer | leave
+            | now | create | remove | ask | write | fail
+let         = "Let" [ "the" ] NAME [ "(" type ")" ] [ "always" ] "be" ( expression | new-thing ) "."
+change      = "Set" target "to" expression "."
+            | "Add" expression "to" target "."
+            | "Subtract" expression "from" target "."
+            | "Multiply" target "by" expression "."
+            | "Divide" target "by" expression "."
+say         = "Say" expression "."
+use         = VERB [ expression ] { PREPOSITION expression } "."
+example     = "For example" [ "," ] condition "."
+answer      = "The answer is" expression "."                        (inside To work out)
+leave       = "Stop." | "Stop repeating." | "Skip this" NOUN "." | "Skip this round."
+            | "End the program."
+target      = a variable made with Let | a stored property of a thing
+now         = "Now" expression "is" [ "not" ] ADJECTIVE "."
+create      = "There is" new-thing "."
+new-thing   = article "new" { ADJECTIVE } KIND [ "called" expression ] [ whose { sep whose } ]
+remove      = "Remove" expression "."
+ask         = "Ask" expression "and let" [ "the" ] NAME "(" type ")" "be the reply" "."
+write       = ( "Write" | "Add" ) expression "to the file" value "."
+fail        = "Fail because" expression "."
+
+block-opener = "If" condition ":"
+            | "Otherwise if" condition ":"
+            | "Otherwise" ":"
+            | "For each" { ADJECTIVE } KIND [ "of" value ] [ filter ] ":"
+            | "For each" NAME "in" ( group | expression ) ":"
+            | "Repeat" expression "times" ":"
+            | "While" condition ":"
+            | "Try" ":"                                                (followed by "If that fails:")
+            | "If that fails" ":"
+
+condition   = test { "and" test } | test { "or" test }
+test        = "not" test | "(" condition ")" | expression comparison
+comparison  = ( "is" | "are" ) [ "not" ] tail
+            | "has" article PROPERTY | "has no" PROPERTY
+            | ( "=" | "&lt;" | "&gt;" | "&lt;=" | "&gt;=" ) expression
+            | ( "contains" | "starts with" | "ends with" | "comes before" | "comes after" ) expression
+tail        = "less than" expression | "more than" expression
+            | "greater than" expression | "at least" expression
+            | "at most" expression | "divisible by" expression
+            | "nothing" | ADJECTIVE | expression
+
+expression  = sum { "or else" sum }
+sum         = term { ( "+" | "plus" | "-" | "minus" ) term }
+term        = factor { ( "*" | "times" | "/" | "divided by" ) factor }
+factor      = "-" factor | value { postfix } [ "of" factor ]   ("of" needs a percentage on its left)
+postfix     = "in upper case" | "in lower case" | "as a number"
+value       = NUMBER | MONEY | PERCENT | TEXT | "(" expression ")" | "nothing"
+            | "yes" | "no" | "whether" condition
+            | "the" WORKED-OUT { ( PREPOSITION | "of" ) value }
+            | THING
+            | [ "the" ] VARIABLE
+            | [ "the" ] NOUN-IN-VIEW
+            | "it" | "they" | "them"
+            | ( "its" | "their" ) PROPERTY
+            | value "'s" PROPERTY
+            | "the" PROPERTY "of" value
+            | "the number of" group
+            | "the total" PROPERTY "of" group
+            | "the number of items in" value
+            | "the" ( "length" | "words" | "lines" ) "of" value
+            | "the" ( "first" | "last" ) factor "letters of" value
+            | "the" ( "text" | "lines" ) "of the file" value
+            | "the" KIND "called" value
+            | "the problem"                                          (inside If that fails)
+group       = [ "all" ] { ADJECTIVE } KINDS [ "of" value ] [ filter ]
+            | ( "its" | "their" ) { ADJECTIVE } KINDS [ filter ]
+            | value "'s" { ADJECTIVE } KINDS [ filter ]
+filter      = "whose" PROPERTY comparison</pre>
+<h2 id="s12">12. Proposed: time, and doing things at once</h2>
+<blockquote><p><strong>Status: designed, partly built.</strong> <code>Whenever</code> (12.6) has been built, and is described in section <a href="#s9-5">9.5</a>. The compiler does not accept the other sentences in this section yet, and its examples are not run by the tests.</p></blockquote>
+<p>Other languages call these ideas "async" and "threading". EnglishScript does not use either word. It adds the two things English already says:</p>
+<ul>
+<li><strong>Waiting.</strong> Something takes time, and other work can go on during it.</li>
+<li><strong>Doing things at once.</strong> Several pieces of work proceed together.</li>
+</ul>
+<p>Sentences still happen one after another unless the program says otherwise. There is no "await", and verbs are not divided into those that take time and those that don't: any verb may wait.</p>
+<h3 id="s12-1">12.1 Lengths of time</h3>
+<pre class="form">&lt;number&gt; second | seconds | minute | minutes | hour | hours</pre>
+<p>This adds a type, <code>time</code>, which can be used in brackets like any other type.</p>
+<ul>
+<li>The number is written out: <code>3 seconds</code>, <code>0.5 seconds</code>, <code>1 minute</code>. To get a time from a value, multiply: <code>the count * 1 second</code>.</li>
+<li>A time is said in seconds: <code>1 second</code>, <code>90 seconds</code>.</li>
+</ul>
+<div class="scroll"><table>
+<thead><tr><th>Operation</th><th>Allowed</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td>Add, subtract</td><td>time and time</td><td>time</td></tr>
+<tr><td>Multiply</td><td>time by number, in either order</td><td>time</td></tr>
+<tr><td>Divide</td><td>time by number</td><td>time</td></tr>
+<tr><td></td><td>time by time</td><td>number</td></tr>
+<tr><td>Compare</td><td>time with time</td><td>yes or no</td></tr>
+</tbody></table></div>
+<h3 id="s12-2">12.2 Waiting</h3>
+<pre class="form">Wait &lt;time&gt;.
+Wait until &lt;condition&gt;.</pre>
+<p><code>Wait &lt;time&gt;</code> pauses the work it is part of for that long. <code>Wait until</code> pauses until the condition holds; if it already holds, there is no pause. Other work carries on during either.</p>
+<pre class="form">Say "The kettle is on."
+Wait 3 minutes.
+Say "Tea."</pre>
+<h3 id="s12-3">12.3 At the same time</h3>
+<pre class="form">At the same time:</pre>
+<p>Each sentence written directly inside the block is a <strong>strand</strong>: a piece of work that proceeds on its own. A sentence that opens a block of its own, such as an <code>If</code>, is one strand together with that block. The strands begin in the order written. The sentence after the block is not reached until every strand has finished.</p>
+<pre class="form">To send a knight against a dragon:
+  Say "{the knight} sets out."
+  Wait 2 seconds.
+  Add 10% of the dragon's hoard to the knight's purse.
+  Say "{the knight} returns."
+
+At the same time:
+  Send Gawain against Smaug.
+  Send Robin against Norbert.
+Say "Both are home."</pre>
+<p>This says:</p>
+<pre class="form">Gawain sets out.
+Robin sets out.
+                      (two seconds pass)
+Gawain returns.
+Robin returns.
+Both are home.</pre>
+<p>Nothing is handed back from a strand. A strand's results are the changes it made to things, which are simply there afterwards.</p>
+<p><code>Let</code> is refused directly inside <code>At the same time</code>, because the variable would belong to a strand that ends with that sentence.</p>
+<h3 id="s12-4">12.4 For each, at the same time</h3>
+<pre class="form">For each [&lt;adjective&gt;]... &lt;kind&gt; [of &lt;thing&gt;] [whose &lt;property&gt; &lt;comparison&gt;] at the same time:</pre>
+<p>This is <code>For each</code> (section <a href="#s8-2">8.2</a>) with one strand per thing. The sentence after the block is reached when all of them have finished.</p>
+<pre class="form">For each knight at the same time:
+  Wait the knight's courage * 1 second.
+  Say "{the knight} is ready."</pre>
+<h3 id="s12-5">12.5 Every</h3>
+<pre class="form">Every &lt;time&gt; until &lt;condition&gt;:</pre>
+<p>This repeats: wait the time; finish if the condition holds; otherwise carry out the block. The <code>until</code> part is required, so a timer always has an end. To run a timer alongside other work, put it inside <code>At the same time</code>.</p>
+<pre class="form">Let the rounds be 0.
+Every 10 seconds until the rounds is 3:
+  Add 1 to the rounds.
+  Say "All quiet."</pre>
+<h3 id="s12-6">12.6 Whenever</h3>
+<p><strong>Built.</strong> See section <a href="#s9-5">9.5</a>. It also takes a thing by name, and <code>becomes not</code>.</p>
+<p>What remains belongs to the rest of this section: with strands, a reaction is carried out at once, before any other strand continues, and a <code>Wait</code> inside a reaction is not yet designed.</p>
+<h3 id="s12-7">12.7 The rules that keep it strict</h3>
+<p><strong>1. Work changes hands only at a wait.</strong> Between one <code>Wait</code> and the next, a strand's sentences are carried out without interruption. No strand ever sees a change half made, and a <code>never</code> or <code>always</code> rule cannot be caught in between.</p>
+<p><strong>2. "At the same time" is a promise that order doesn't matter, and the compiler checks it.</strong> For each strand, the compiler works out what it reads and what it changes, following the verbs it uses. Two strands conflict when one changes something the other reads or changes. A conflict is refused before the program runs.</p>
+<pre class="form">At the same time:
+  Add $5 to Gawain's purse.
+  Multiply Gawain's purse by 2.</pre>
+<p>From $300 this would give $610 or $605, depending on which went first.</p>
+<p>Two things are told apart only when the compiler can be sure they differ: two named things, or the things of two different strands of one <code>For each ... at the same time</code>. Anything else of the same kind is treated as possibly the same.</p>
+<p>One overlap is allowed. Strands may both <code>Add</code> to or <code>Subtract</code> from the same property or variable, provided none of them reads it and the property has no <code>never</code> or <code>always</code> rule, because the result is then the same in any order.</p>
+<pre class="form">At the same time:
+  Add 1 to Smaug's age.
+  Add 10 to Smaug's age.</pre>
+<p>Saying is not a conflict. Lines are said in the order they happen, which rule 5 fixes.</p>
+<p><strong>3. A wait that can never end is an error.</strong> If every strand is at a <code>Wait until</code>, and no <code>Wait &lt;time&gt;</code> or <code>Every</code> is pending, nothing can change. The program stops and lists what each strand was waiting for.</p>
+<p><strong>4. Each strand has its own view.</strong> <code>the &lt;noun&gt;</code> and pronouns work as they do elsewhere. A variable made inside a strand belongs to it.</p>
+<p><strong>5. The order of events is fixed.</strong> Strands begin in the order written. When several are ready to continue at the same moment, the one that has waited longest goes first, and if they have waited equally, the one written first. A program therefore says the same lines in the same order every time it runs.</p>
+<h3 id="s12-8">12.8 New words and grammar</h3>
+<p>These words would become reserved: <code>wait</code> <code>until</code> <code>every</code> <code>same</code> <code>time</code> <code>second</code> <code>seconds</code> <code>minute</code> <code>minutes</code> <code>hour</code> <code>hours</code>. (<code>whenever</code> and <code>becomes</code> already are.)</p>
+<pre class="form">type         = ... | "time"
+value        = ... | NUMBER unit
+unit         = "second" | "seconds" | "minute" | "minutes" | "hour" | "hours"
+
+action       = ... | wait
+wait         = "Wait" expression "." | "Wait until" condition "."
+
+block-opener = ...
+             | "At the same time" ":"
+             | "For each" { ADJECTIVE } KIND [ "of" value ] [ filter ] "at the same time" ":"
+             | "Every" expression "until" condition ":"</pre>
+<h3 id="s12-9">12.9 How it would run</h3>
+<ul>
+<li>All strands run on one thread, taking turns at each <code>Wait</code> (in Python, <code>asyncio</code>).</li>
+<li>Tests and the tour would use a simulated clock, so <code>Wait 2 seconds</code> takes no real time and the order of events stays the same.</li>
+<li>Operating-system threads are not part of the design. Rules 1 and 2 are what would let strands run truly in parallel later, without changing the meaning of any program.</li>
+</ul>
+<h3 id="s12-10">12.10 Left for later</h3>
+<ul>
+<li><strong>Detached work</strong>: starting something and carrying on ("Meanwhile, ..."). It is natural English, but it raises the question of what happens to work still running at the end.</li>
+<li><strong>Time limits</strong>: "For at most 10 seconds: ...".</li>
+<li><strong>Racing</strong>: "Whichever finishes first: ...".</li>
+<li><strong>Stopping</strong> another strand.</li>
+<li><strong>Calendar time</strong>: times of day and "every Monday". Dates and the present moment are in section <a href="#s13-15">13.15</a>.</li>
+<li><strong>Reactions to a plain condition</strong>, not only to a thing becoming an adjective.</li>
+</ul>
+<h2 id="s13">13. Proposed: the rest of the language</h2>
+<blockquote><p><strong>Status: designed, partly built.</strong> Subsections marked <strong>Built</strong> have moved into sections <a href="#s2">2</a> to <a href="#s9">9</a>, and those marked <strong>Partly built</strong> say what remains. The compiler does not accept the rest yet. The examples left here are not run by the tests; a <code>#&gt;</code> comment shows what a line would say. Each example assumes the world at the top of this document, changed as its own subsection describes.</p></blockquote>
+<p>This section gives a syntax to every gap that used to be listed here. Many of its subsections have since been built and moved into the sections above; their headings remain so that the numbering stays the same. Three habits run through it:</p>
+<ul>
+<li><strong>Brackets carry the detail.</strong> As with <code>(number)</code>, anything extra about a name goes in brackets after it: <code>(dragon, if any)</code>, <code>(list of numbers)</code>, <code>(plural people)</code>, <code>(written £)</code>.</li>
+<li><strong>What may be missing must be checked.</strong> A value that might be nothing cannot be used until the program has shown that it is there.</li>
+<li><strong>Working something out never changes anything.</strong> A sentence that gives a value cannot also change the world, so it is safe inside conditions, definitions and rules.</li>
+</ul>
+<div class="scroll"><table>
+<thead><tr><th>Gap</th><th>Where it is settled</th></tr></thead>
+<tbody>
+<tr><td>"Nothing" and optional properties</td><td>Built: section <a href="#s2">2</a>, "Nothing"</td></tr>
+<tr><td>Yes-or-no values</td><td>Built: sections <a href="#s2">2</a> and <a href="#s4-3">4.3</a></td></tr>
+<tr><td>A fixed set of choices</td><td>13.3</td></tr>
+<tr><td>Constants</td><td>Built: section <a href="#s7-1">7.1</a></td></tr>
+<tr><td>Verbs that give back a value</td><td>Built: section <a href="#s9-3">9.3</a></td></tr>
+<tr><td>Leaving early</td><td>Built: section <a href="#s8-4">8.4</a></td></tr>
+<tr><td>Lists of plain values</td><td>Partly built: section <a href="#s2">2</a>, "Lists"; the rest in 13.7</td></tr>
+<tr><td>Naming a loop's thing</td><td>Built: section <a href="#s8-2">8.2</a></td></tr>
+<tr><td>Picking from a group, and ordering</td><td>13.9</td></tr>
+<tr><td>Asking about a group; averages, largest, smallest</td><td>13.10</td></tr>
+<tr><td>Creating and removing things while running</td><td>Built: sections <a href="#s5-7">5.7</a> and <a href="#s7-5">7.5</a></td></tr>
+<tr><td>Remainders and mathematical functions</td><td>13.12</td></tr>
+<tr><td>Text operations, and quotes and braces inside text</td><td>Built: sections <a href="#s2">2</a> and <a href="#s5-6">5.6</a></td></tr>
+<tr><td>More units</td><td>13.14</td></tr>
+<tr><td>Input: a line, a file, the clock</td><td>Partly built: sections <a href="#s7-6">7.6</a> and <a href="#s7-7">7.7</a>; the clock in 13.15</td></tr>
+<tr><td>Recovering from a problem</td><td>Built: section <a href="#s8-5">8.5</a></td></tr>
+<tr><td>Irregular plurals, multi-word verbs, kinds that extend kinds</td><td>13.17</td></tr>
+<tr><td>Time and concurrency</td><td>12, with 13.18</td></tr>
+</tbody></table></div>
+<h3 id="s13-1">13.1 Nothing, and properties that may be absent</h3>
+<p><strong>Built.</strong> See "Nothing" in section <a href="#s2">2</a>.</p>
+<p>One thing was added while building it: a check also counts after an <code>If</code> that showed the value missing and whose block always leaves, so that a guard such as <code>If the knight has no mount: ... Stop.</code> works.</p>
+<p>Averages, largest and smallest (section <a href="#s13-10">13.10</a>) will leave out things whose property is nothing, as <code>the total</code> already does.</p>
+<h3 id="s13-2">13.2 Yes-or-no facts and values</h3>
+<p><strong>Built.</strong> See "Yes or no" in section <a href="#s2">2</a>, and stored adjectives in section <a href="#s4-3">4.3</a>.</p>
+<p>A stored adjective works in <code>Whenever</code> (section <a href="#s9-5">9.5</a>). One part waits for another subsection: a list of yes-or-no values needs a plural type for it (section <a href="#s13-7">13.7</a>). <code>Now</code> is also refused for a thing that may be nothing, and inside <code>To work out</code>.</p>
+<h3 id="s13-3">13.3 A fixed set of choices</h3>
+<pre class="form">A | An &lt;name&gt; is one of &lt;choice&gt;, &lt;choice&gt; ... or &lt;choice&gt;.</pre>
+<ul>
+<li>This defines a type, used in brackets like any other. Each choice is one or more words.</li>
+<li>A choice may belong to only one set, and may not be the name of a kind, a thing or a variable. It may be the same word as an adjective, because the left side of <code>is</code> says which is meant.</li>
+<li>Choices are compared with <code>is</code> and <code>is not</code> only. A choice is said as its words.</li>
+<li>Writing a word that is not one of the choices is refused before the program runs.</li>
+</ul>
+<pre class="form">A mood is one of sleepy, grumpy or content.
+A dragon has an age (number) and a mood (mood).
+
+There is a dragon called Smaug whose age is 771 and whose mood is sleepy.
+Set Smaug's mood to grumpy.
+If Smaug's mood is grumpy:
+  Say "Tread softly."       #&gt; Tread softly.</pre>
+<h3 id="s13-4">13.4 Variables that cannot change</h3>
+<p><strong>Built.</strong> See section <a href="#s7-1">7.1</a>.</p>
+<h3 id="s13-5">13.5 Working out a value</h3>
+<p><strong>Built.</strong> See section <a href="#s9-3">9.3</a>.</p>
+<h3 id="s13-6">13.6 Stopping early</h3>
+<p><strong>Built.</strong> See section <a href="#s8-4">8.4</a>. <code>Skip this round.</code> will also apply to <code>Every</code> (section <a href="#s12-5">12.5</a>) once that exists.</p>
+<h3 id="s13-7">13.7 Lists</h3>
+<p><strong>Partly built.</strong> See "Lists" in section <a href="#s2">2</a>. The type <code>(list of &lt;plural type&gt;)</code> (for variables, roles and worked-out values), <code>the number of items in &lt;list&gt;</code>, and <code>For each &lt;name&gt; in &lt;list&gt;:</code> are built, and lists come from <code>the words of</code>, <code>the lines of</code> and <code>the lines of the file</code>. Everything else below remains proposed: writing a list out, an empty list, a group used as a list, lists of choices, lists as properties, the forms in the first table except <code>the number of items in</code>, adding to and removing from a list, saying a list, and comparing lists.</p>
+<pre class="form">a list of &lt;value&gt;, &lt;value&gt; ... and &lt;value&gt;          a list written out
+an empty list of &lt;plural type&gt;</pre>
+<ul>
+<li>The plural type may also be the plural of a set of choices.</li>
+<li>A list written out may appear only as the whole value of <code>Let</code>, <code>Set</code>, a <code>whose</code> part, or <code>The answer is</code>, so its commas cannot be confused with anything else.</li>
+<li>A group written where a list is expected becomes a list of the things in it at that moment: <code>Let the suspects be all poor dragons.</code></li>
+<li>A list of things may be used wherever a group may (section <a href="#s5-5">5.5</a>).</li>
+<li>Items are numbered from 1.</li>
+</ul>
+<div class="scroll"><table>
+<thead><tr><th>Form</th><th>Gives</th></tr></thead>
+<tbody>
+<tr><td><code>the first of &lt;list&gt;</code>, <code>the last of &lt;list&gt;</code>, <code>item &lt;number&gt; of &lt;list&gt;</code></td><td>an item, if any</td></tr>
+<tr><td><code>the total of &lt;list&gt;</code></td><td>a number or money</td></tr>
+<tr><td><code>the average of &lt;list&gt;</code>, <code>the largest of &lt;list&gt;</code>, <code>the smallest of &lt;list&gt;</code></td><td>a value, if any</td></tr>
+<tr><td><code>&lt;list&gt; in order</code>, <code>&lt;list&gt; in reverse order</code></td><td>a list, smallest or alphabetically first</td></tr>
+<tr><td><code>&lt;list&gt; joined with &lt;text&gt;</code></td><td>text</td></tr>
+<tr><td><code>&lt;value&gt; is [not] in &lt;list&gt;</code></td><td>a condition</td></tr>
+</tbody></table></div>
+<div class="scroll"><table>
+<thead><tr><th>Sentence</th><th>Does</th></tr></thead>
+<tbody>
+<tr><td><code>Add &lt;value&gt; to &lt;list&gt;.</code></td><td>Puts the value at the end.</td></tr>
+<tr><td><code>Remove &lt;value&gt; from &lt;list&gt;.</code></td><td>Takes out the first item equal to it. If there is none, nothing happens.</td></tr>
+</tbody></table></div>
+<pre class="form">Let the scores be a list of 3, 8 and 5.
+Add 10 to the scores.
+Say the number of items in the scores.         #&gt; 4
+Say the total of the scores.                   #&gt; 26
+Say the largest of the scores or else 0.       #&gt; 10
+Say the scores in order joined with ", ".      #&gt; 3, 5, 8, 10
+For each score in the scores:
+  If the score is more than 7:
+    Say the score.
+#&gt; 8
+#&gt; 10</pre>
+<p>A property or a role may be a list, which is how a thing holds several things and how a verb takes a group:</p>
+<pre class="form">A knight has a purse (money) and a trophy shelf (list of treasures).
+
+To honour a company (list of knights):
+  For each member in the company:
+    Now the member is sworn.
+
+Honour all brave knights.</pre>
+<h3 id="s13-8">13.8 Naming a loop's thing</h3>
+<p><strong>Built.</strong> See section <a href="#s8-2">8.2</a>, which also covers <code>For each &lt;name&gt; in &lt;list&gt;:</code>.</p>
+<h3 id="s13-9">13.9 Picking from a group, and ordering</h3>
+<pre class="form">the first | last &lt;group, in the singular&gt;
+the &lt;group, in the singular&gt; with the largest | smallest &lt;property&gt;
+the first | last &lt;number&gt; &lt;group&gt;
+&lt;group&gt; in order of &lt;property&gt;
+&lt;group&gt; in reverse order of &lt;property&gt;</pre>
+<ul>
+<li>A pick of one thing is <code>if any</code>, because the group may be empty (section <a href="#s13-1">13.1</a>).</li>
+<li><code>first</code> and <code>last</code> go by the order things were created, unless the group is put <code>in order of</code> a property.</li>
+<li><code>in order of</code> puts the smallest first, or the alphabetically first for text. Things that tie stay in the order they were created.</li>
+<li><strong>When two things tie for largest or smallest, the one created first is picked.</strong></li>
+<li><code>the first &lt;number&gt; &lt;group&gt;</code> gives a list, which may be shorter than asked.</li>
+<li>An ordered group may be used in <code>For each</code>.</li>
+</ul>
+<p>A superlative can be given a name in the glossary:</p>
+<pre class="form">The &lt;word&gt; &lt;kind&gt; is the one with the largest | smallest &lt;property&gt;.</pre>
+<p>After that, <code>the &lt;word&gt; &lt;group, in the singular&gt;</code> is a pick.</p>
+<pre class="form">The richest dragon is the one with the largest hoard.
+
+Say the richest dragon or else Norbert.          #&gt; Smaug
+Say the first treasure of Smaug or else Cup.     #&gt; Goblet
+Say the dragon with the smallest age.            #&gt; Norbert
+
+For each treasure in reverse order of worth:
+  Say the treasure.
+#&gt; Goblet
+#&gt; Cup
+
+Let the champion be the richest dragon.
+If the champion is not nothing:
+  Say "{the champion} has {the champion's hoard}."     #&gt; Smaug has $3,500.</pre>
+<h3 id="s13-10">13.10 Asking about a group</h3>
+<p>Three conditions:</p>
+<pre class="form">there is a | an &lt;group, in the singular&gt;
+there is no &lt;group, in the singular&gt;
+every &lt;group, in the singular&gt; is [not] &lt;adjective&gt;</pre>
+<p>Three more values, alongside <code>the total</code> (section <a href="#s5-5">5.5</a>):</p>
+<pre class="form">the average &lt;property&gt; of &lt;group&gt;
+the largest &lt;property&gt; of &lt;group&gt;
+the smallest &lt;property&gt; of &lt;group&gt;</pre>
+<ul>
+<li><code>every</code> holds when the group is empty. This is stated because speakers of English disagree about it.</li>
+<li>To ask about a property of every thing, turn the question round: <code>there is no knight whose courage is less than 5</code>.</li>
+<li>The three values are <code>if any</code>, because the group may be empty. <code>the total</code> of an empty group is zero.</li>
+</ul>
+<pre class="form">If there is an ancient dragon and there is no knight whose purse is $0:
+  Say "All is well."                                 #&gt; All is well.
+If every knight is brave:
+  Say "A fine company."
+Say the average age of dragons or else 0.            #&gt; 386
+Say the largest worth of treasures of Smaug.         #&gt; $3,000</pre>
+<h3 id="s13-11">13.11 Creating, finding and removing things</h3>
+<p><strong>Built.</strong> See sections <a href="#s5-7">5.7</a> and <a href="#s7-5">7.5</a>.</p>
+<p>As built, using a removed thing's properties or adjectives is a problem, and so is changing it, making something point at it, or using it as the owner of a group; a variable or role may still hold it, and it may still be said and compared. A <code>For each</code> that has started skips things removed before their turn. <code>There is a new</code> and <code>Remove</code> are refused inside <code>To work out</code>. Leaving every list will matter once lists can hold things (section <a href="#s13-7">13.7</a>).</p>
+<h3 id="s13-12">13.12 Remainders and other arithmetic</h3>
+<div class="scroll"><table>
+<thead><tr><th>Form</th><th>Example</th><th>Gives</th></tr></thead>
+<tbody>
+<tr><td><code>the remainder of &lt;value&gt; divided by &lt;value&gt;</code></td><td><code>the remainder of 17 divided by 5</code></td><td><code>2</code></td></tr>
+<tr><td><code>&lt;value&gt; rounded to the nearest &lt;value&gt;</code></td><td><code>$3.14159 rounded to the nearest $0.01</code></td><td><code>$3.14</code></td></tr>
+<tr><td><code>&lt;value&gt; rounded up to the nearest &lt;value&gt;</code></td><td><code>17 rounded up to the nearest 5</code></td><td><code>20</code></td></tr>
+<tr><td><code>&lt;value&gt; rounded down to the nearest &lt;value&gt;</code></td><td><code>17 rounded down to the nearest 5</code></td><td><code>15</code></td></tr>
+<tr><td><code>&lt;value&gt; to the power of &lt;value&gt;</code></td><td><code>2 to the power of 10</code></td><td><code>1,024</code></td></tr>
+<tr><td><code>the square root of &lt;value&gt;</code></td><td><code>the square root of 81</code></td><td><code>9</code></td></tr>
+<tr><td><code>the larger of &lt;value&gt; and &lt;value&gt;</code></td><td><code>the larger of $5 and $8</code></td><td><code>$8</code></td></tr>
+<tr><td><code>the smaller of &lt;value&gt; and &lt;value&gt;</code></td><td><code>the smaller of 3 and 7</code></td><td><code>3</code></td></tr>
+<tr><td><code>the absolute value of &lt;value&gt;</code></td><td><code>the absolute value of -4</code></td><td><code>4</code></td></tr>
+</tbody></table></div>
+<ul>
+<li>Each <code>&lt;value&gt;</code> is a single value or a bracketed expression. These forms bind more tightly than multiplying and dividing.</li>
+<li>Rounding works on a number, money or a measure (section <a href="#s13-14">13.14</a>); both sides must be the same type. A value exactly halfway rounds away from zero.</li>
+<li>Remainders, powers, roots and absolute values work on plain numbers. <code>the larger of</code> and <code>the smaller of</code> work on any two values of the same type that can be ordered.</li>
+<li>A power with a whole-number exponent is exact. Other powers, and square roots that do not come out exactly, are worked out to twelve decimal places.</li>
+<li>The square root of a negative number is a problem (section <a href="#s8-5">8.5</a>).</li>
+</ul>
+<h3 id="s13-13">13.13 Text</h3>
+<p><strong>Built.</strong> See "Text" in section <a href="#s2">2</a>, section <a href="#s5-6">5.6</a>, and the text conditions in section <a href="#s6">6</a>.</p>
+<p>Two details were settled while building it: <code>in upper case</code>, <code>in lower case</code> and <code>as a number</code> apply to the whole value before them, and a fractional number of letters is a problem, like a negative one.</p>
+<h3 id="s13-14">13.14 Units</h3>
+<pre class="form">A | An &lt;unit&gt; [(plural &lt;word&gt;)] [(written &lt;symbol&gt;)] is a unit of &lt;measure&gt;.
+A | An &lt;unit&gt; [(plural &lt;word&gt;)] [(written &lt;symbol&gt;)] is &lt;number&gt; &lt;units&gt;.
+&lt;number&gt; &lt;unit&gt;                a value, such as 5 metres
+&lt;symbol&gt;&lt;number&gt;               a value, such as £5
+&lt;value&gt; in &lt;units&gt;             a plain number: how many of that unit</pre>
+<ul>
+<li>The first form names a <strong>measure</strong>, which becomes a type, and its first unit. The second form defines a further unit of the same measure.</li>
+<li>Values of one measure follow the same arithmetic as money (section <a href="#s5-3">5.3</a>): add and subtract with each other, multiply and divide by a plain number, and divide by each other to give a plain number.</li>
+<li><strong>Different measures never mix</strong>, and there is no conversion between them. Sterling cannot be added to money.</li>
+<li>A value is said in the first unit of its measure. <code>in &lt;units&gt;</code> gives a plain number in any other.</li>
+<li><code>money</code>, written <code>$</code>, is built in. So is <code>time</code>: section <a href="#s12-1">12.1</a> is the same as writing <code>A second is a unit of time. A minute is 60 seconds. An hour is 60 minutes.</code></li>
+<li>Measures cannot be combined into new ones, such as a speed from a length and a time.</li>
+</ul>
+<pre class="form">A metre is a unit of length.
+A kilometre is 1,000 metres.
+A foot (plural feet) is 0.3048 metres.
+A pound (written £) is a unit of sterling.
+
+A dragon has an age (number) and a wingspan (length).
+A relic has a price (sterling).
+
+Say 2 kilometres + 500 metres.                     #&gt; 2,500 metres
+Say (2 kilometres + 500 metres) in kilometres.     #&gt; 2.5
+Say 10 feet rounded to the nearest 1 metre.        #&gt; 3 metres
+Say £5 * 3.                                        #&gt; £15</pre>
+<p>Refused, because the measures differ:</p>
+<pre class="form">Say £5 + $5.</pre>
+<h3 id="s13-15">13.15 Input, files and the clock</h3>
+<p><strong>Partly built.</strong> Asking (section <a href="#s7-6">7.6</a>) and files (section <a href="#s7-7">7.7</a>) are built. Still proposed: asking for a set of choices (section <a href="#s13-3">13.3</a>) or a measure (section <a href="#s13-14">13.14</a>), and the clock below.</p>
+<pre class="form">Ask "What mood is it in?" and let the feeling (mood) be the reply.</pre>
+<p><strong>The clock</strong></p>
+<pre class="form">now                              the present moment
+&lt;day&gt; &lt;month name&gt; &lt;year&gt;        a date, such as 19 November 2026</pre>
+<p>These give a new type, <code>moment</code>.</p>
+<div class="scroll"><table>
+<thead><tr><th>Form</th><th>Gives</th></tr></thead>
+<tbody>
+<tr><td>moment <code>-</code> moment</td><td>a time (section <a href="#s12-1">12.1</a>)</td></tr>
+<tr><td>moment <code>+</code> time, moment <code>-</code> time</td><td>a moment</td></tr>
+<tr><td>moment <code>comes before</code> moment, moment <code>comes after</code> moment</td><td>a condition</td></tr>
+<tr><td><code>the year of</code>, <code>the month of</code>, <code>the day of</code>, <code>the hour of</code>, <code>the minute of</code> a moment</td><td>a number</td></tr>
+<tr><td><code>the weekday of</code> a moment</td><td>text, such as <code>Thursday</code></td></tr>
+</tbody></table></div>
+<p>A moment is said as <code>19 November 2026, 14:05</code>.</p>
+<pre class="form">Let the deadline be 25 December 2026.
+If now comes before the deadline:
+  Say "{(the deadline - now) in hours} hours to go."</pre>
+<h3 id="s13-16">13.16 Recovering from a problem</h3>
+<p><strong>Built.</strong> See section <a href="#s8-5">8.5</a>. The square root of a negative number will join the problems that can be recovered from when section <a href="#s13-12">13.12</a> is built.</p>
+<h3 id="s13-17">13.17 More about kinds and verbs</h3>
+<p><strong>Irregular plurals</strong> go in brackets after the kind:</p>
+<pre class="form">A | An &lt;kind&gt; (plural &lt;word&gt;) has ...</pre>
+<p><strong>A kind can be a kind of another:</strong></p>
+<pre class="form">A | An &lt;kind&gt; [(plural &lt;word&gt;)] is a kind of &lt;kind&gt;.
+&lt;thing&gt; is [not] a | an &lt;kind&gt;          condition</pre>
+<ul>
+<li>The new kind has every property, adjective, worked-out property and rule of the kind it extends. It may add its own with further sentences, but may not redefine any.</li>
+<li>It can be used wherever the wider kind is expected: as a role, in a property, and in the wider kind's groups.</li>
+<li>There is a built-in kind, <code>thing</code>, that every kind extends. <code>A ghost is a kind of thing.</code> describes a kind with no properties.</li>
+<li>Inside an <code>If</code> whose condition is <code>&lt;thing&gt; is a &lt;kind&gt;</code>, the thing counts as that kind.</li>
+</ul>
+<pre class="form">A person (plural people) has an age (number).
+A knight is a kind of person.
+A knight has a purse (money) and a courage (number).
+A squire is a kind of person.
+
+A person is grown when its age is at least 18.
+
+There is a knight called Gawain whose age is 30, whose purse is $300, and whose courage is 8.
+There is a squire called Wat whose age is 14.
+
+Say the number of people.            #&gt; 2
+Say the number of grown people.      #&gt; 1
+For each person:
+  If the person is a knight:
+    Say "{the person} carries {the person's purse}."     #&gt; Gawain carries $300.</pre>
+<p><strong>A verb may be more than one word.</strong> Its name is every word after <code>To</code> up to the first <code>a</code>, <code>an</code>, preposition or colon. A verb is used by writing all of its words.</p>
+<pre class="form">To pick up a treasure for a dragon:
+  Set the treasure's owner to the dragon.
+
+Pick up Cup for Norbert.</pre>
+<p>Because a preposition ends the name, <code>To carry on:</code> is read as the verb <code>carry</code> with a role missing after <code>on</code>, and is refused.</p>
+<h3 id="s13-18">13.18 How this fits with time and doing things at once</h3>
+<p>Section 12 stands as written. These points join the two:</p>
+<ul>
+<li>A <code>To work out</code> block cannot <code>Wait</code>, because it changes nothing and takes no time.</li>
+<li><code>Stop repeating.</code> and <code>Skip this round.</code> apply to <code>Every</code> as they do to <code>Repeat</code> and <code>While</code>.</li>
+<li>For the conflict rule (12.7), creating or removing a thing counts as changing every group of its kind, and <code>Add</code> to or <code>Remove</code> from a list counts as changing the list.</li>
+<li>A <code>Try</code> inside a strand undoes only that strand's changes. The conflict rule already guarantees that no other strand touched them.</li>
+<li><code>time</code> is a measure (section <a href="#s13-14">13.14</a>), and <code>Now &lt;thing&gt; is &lt;adjective&gt;.</code> can set off a <code>Whenever</code>.</li>
+</ul>
+<h3 id="s13-19">13.19 New words and grammar</h3>
+<p>The words reserved by the parts already built are in section <a href="#s3">3</a>. These would become reserved as well, in addition to those in section <a href="#s12-8">12.8</a>:</p>
+<p><code>item</code> <code>first</code> <code>last</code> <code>largest</code> <code>smallest</code> <code>average</code> <code>larger</code> <code>smaller</code> <code>thing</code> <code>kind</code> <code>unit</code></p>
+<p>Until then, <code>first</code> and <code>last</code> are recognised only in <code>the first &lt;number&gt; letters of</code> and <code>the last &lt;number&gt; letters of</code>. The other words in the new forms, such as <code>rounded</code>, <code>nearest</code>, <code>remainder</code>, <code>order</code>, and those of section <a href="#s5-6">5.6</a>, are recognised only inside their phrases. They stay free for use in names.</p>
+<p>The grammar still to be built, beyond section <a href="#s11">11</a>:</p>
+<pre class="form">base-type    = ... | CHOICE-SET | MEASURE | "moment"
+PLURAL-TYPE  = ... | the plural of a CHOICE-SET
+
+definition   = ... | choices | superlative | unit | kind-of
+choices      = article NAME "is one of" CHOICE { "," CHOICE } "or" CHOICE "."
+superlative  = "The" WORD KIND "is the one with the" ( "largest" | "smallest" ) PROPERTY "."
+unit         = article UNIT { "(" unit-note ")" } "is a unit of" MEASURE "."
+             | article UNIT { "(" unit-note ")" } "is" NUMBER UNITS "."
+unit-note    = "plural" WORD | "written" SYMBOL
+kind-of      = article KIND [ "(" "plural" WORD ")" ] "is a kind of" KIND "."
+kind         = article KIND [ "(" "plural" WORD ")" ] "has" field { sep field } "."
+verb         = "To" VERB-WORD { VERB-WORD } [ role ] { PREPOSITION role } ":"
+
+action       = ... | add-item | remove-item
+add-item     = "Add" value "to" LIST "."
+remove-item  = "Remove" value "from" LIST "."
+
+test         = ... | "there is" ( article | "no" ) singular-group
+             | "every" singular-group "is" [ "not" ] ADJECTIVE
+tail         = ... | article KIND | "in" value
+
+value        = ... | "now" | CHOICE
+             | NUMBER UNIT | SYMBOL NUMBER | NUMBER MONTH NUMBER
+             | "a list of" value { "," value } "and" value
+             | "an empty list of" PLURAL-TYPE
+             | pick | list-form | number-form | clock-form
+pick         = "the" ( "first" | "last" | SUPERLATIVE ) singular-group
+             | "the" singular-group "with the" ( "largest" | "smallest" ) PROPERTY
+             | "the" ( "first" | "last" ) value group
+group        = ... | group "in order of" PROPERTY | group "in reverse order of" PROPERTY</pre>
+<p><code>list-form</code>, <code>number-form</code> and <code>clock-form</code> are the forms in the tables of sections <a href="#s13-7">13.7</a>, <a href="#s13-10">13.10</a>, <a href="#s13-12">13.12</a> and <a href="#s13-15">13.15</a> that are not built yet.</p>
+<h2 id="s14">14. Not defined yet</h2>
+<p>Sections 12 and 13 settle most of what used to be listed here. These remain open.</p>
+<p><strong>Programs</strong></p>
+<ul>
+<li>Chapters and books (section <a href="#s9-6">9.6</a>) leave two limits. A file can reach only the chapters beside it and the books in its own folder, so a chapter in one book cannot use another book. And a name a chapter keeps to itself still has one meaning in the whole program, so no other file can define that name for its own use.</li>
+<li>Chance: a number or a thing picked at random.</li>
+<li>Rules that span several things, and rules about worked-out properties.</li>
+<li>Lookup tables from one value to another. Today the nearest thing is finding a thing by its name.</li>
+</ul>
+<p><strong>Values</strong></p>
+<ul>
+<li>Times of day, time zones, and calendar arithmetic such as "a month from now" or "every Monday".</li>
+<li>Measures built from other measures, such as speed, and conversion between measures, such as exchange rates.</li>
+<li>Searching and replacing inside text.</li>
+<li>Bit operations on whole numbers: and, or, exclusive-or and shifts. They can be built today from halving and <code>is divisible by</code>, as <code>examples/sha256.english</code> does, but there are no words for them.</li>
+<li>The code of a character, and the character for a code. <code>examples/sha256.english</code> looks each character up in a text holding the whole keyboard.</li>
+<li>Choosing how many decimal places a value is said with, beyond rounding it first.</li>
+<li>Properties that can never change after a thing is created.</li>
+</ul>
+<p><strong>Doing things at once</strong> (from section <a href="#s12-10">12.10</a>)</p>
+<ul>
+<li>Detached work, time limits, racing, and stopping another strand.</li>
+<li>Reactions to a plain condition, not only to a thing becoming an adjective.</li>
+</ul>
+<p><strong>Layout</strong></p>
+<ul>
+<li>Whether indentation should give way to numbered steps or paragraphs. This was considered and set aside.</li>
+</ul>
+</article>
+<footer class="colophon">
+  Printed from <a href="https://github.com/monstercameron/EnglishScript/blob/main/docs/SYNTAX.md">docs/SYNTAX.md</a> by <code>tools/build_site.py</code>. Every example on this page is run by the test suite.
+</footer>
+</main>
+
+<script type="module">
+import { mountSnippets } from "./play/snippets.js";
+mountSnippets();
+</script>
+</body>
+</html>

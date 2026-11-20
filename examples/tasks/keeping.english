@@ -1,0 +1,91 @@
+# What is remembered: the whole list between visits, and the last card removed.
+#
+# A chapter of the tasks book. A card is kept as one line of text:
+#
+#     x * home Buy milk
+#
+# The first word is x if it is done, the second is * if it is starred, the
+# third is its tag, and the rest is its wording. A dash stands for "no". How a
+# card is kept is this chapter's own business: the other files only ask it to
+# keep the list, fetch it, shelve a card or restore one.
+
+This chapter shares only keep, fetch, shelve and restore.
+
+Use the page library.
+Use the layout chapter.
+
+# The last card removed, as a line, until it is put back.
+Let the spare (text, if any) be nothing.
+
+# A card as a line of text.
+To work out the listing (text) of a card:
+  Let the tick be "-".
+  If the card is ticked:
+    Set the tick to "x".
+  Let the star be "-".
+  If the card is starred:
+    Set the star to "*".
+  Let the mark be the card's tag or else "-".
+  The answer is "{the tick} {the star} {the mark} {the card's wording}".
+
+# A line of text as a card again.
+To revive a line (text):
+  Let the place be 0.
+  Let the tick be "-".
+  Let the star be "-".
+  Let the mark be "-".
+  Let the phrase be "".
+  For each word in the words of the line:
+    Add 1 to the place.
+    If the place is 1:
+      Set the tick to the word.
+    Otherwise if the place is 2:
+      Set the star to the word.
+    Otherwise if the place is 3:
+      Set the mark to the word.
+    Otherwise if the phrase is "":
+      Set the phrase to the word.
+    Otherwise:
+      Set the phrase to "{the phrase} {the word}".
+  If the phrase is "":
+    Stop.
+  Let the card be a new card whose wording is the phrase and whose panel is Roll.
+  If the mark is not "-":
+    Set the card's tag to the mark.
+  If the star is "*":
+    Now the card is starred.
+  If the tick is "x":
+    Now the card is ticked.
+
+# Keep the whole list in the browser, for next time.
+To keep:
+  Let the record be "".
+  For each card:
+    Set the record to "{the record}{the listing of the card}{new line}".
+  Remember the record under "tasks".
+
+# Bring back the list as it was left. On a first visit there is none, so
+# three cards are written to begin with.
+To fetch:
+  Let the saved be the memory of "tasks".
+  If the saved is nothing:
+    Revive "- - - Read the treatise".
+    Revive "- * - Write a sentence the compiler refuses".
+    Revive "- - page Tick this one off".
+  Otherwise:
+    For each line in the lines of the saved:
+      Revive the line.
+
+# Remove a card, keeping it as the one that can be put back.
+To shelve a card:
+  Set the spare to the listing of the card.
+  Remove the card.
+  Now Restorer is not hidden.
+
+# Put the last card removed back on the list.
+To restore:
+  If the spare is nothing:
+    Stop.
+  Revive the spare.
+  Set the spare to nothing.
+  Now Restorer is hidden.

@@ -2,6 +2,7 @@
 
 A horse has a speed (number).
 A knight has a courage (number), a purse (money), and a mount (horse, if any).
+A knight can be entered.
 
 There is a horse called Shadowfax whose speed is 40.
 There is a horse called Bill whose speed is 12.
@@ -25,12 +26,14 @@ To enter a knight:
     Say "{the knight} cannot pay the fee."
     Stop.
   Subtract the entry fee from the knight's purse.
+  Now the knight is entered.
   Say "{the knight} enters with a score of {the score of the knight}."
 
+# Only a knight who paid the fee can win. If none did, there is no champion.
 To work out the champion (knight, if any):
   Let the best (knight, if any) be nothing.
   Let the top be 0.
-  For each knight:
+  For each entered knight:
     If the score of the knight is more than the top:
       Set the best to the knight.
       Set the top to the score of the knight.

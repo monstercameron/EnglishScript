@@ -1,0 +1,82 @@
+[
+ {
+  "want": "Describe a kind of thing",
+  "sentences": "A pet has an age (number) and a home (text).",
+  "note": "The type goes in brackets: number, money, text, percent, or another kind."
+ },
+ {
+  "want": "Make a thing",
+  "sentences": "There is a pet called Rex whose age is 3 and whose home is \"the kitchen\".",
+  "note": "Every property the kind has must be given."
+ },
+ {
+  "want": "Say something",
+  "sentences": "Say \"{Rex} is {Rex's age} and lives in {Rex's home}.\"",
+  "note": "Anything in {braces} is worked out and filled in."
+ },
+ {
+  "want": "Remember a value",
+  "sentences": "Let the total be 0.",
+  "note": "A name means one thing: to change it later, use Set or Add."
+ },
+ {
+  "want": "Change a value",
+  "sentences": "Add 5 to the total.\nSet Rex's age to 4.",
+  "note": "Also: Subtract ... from ..., Multiply ... by ..., Divide ... by ..."
+ },
+ {
+  "want": "Decide",
+  "sentences": "If Rex's age is more than 3:\n  Say \"Rex is grown.\"\nOtherwise:\n  Say \"Rex is a pup.\"",
+  "note": "Compare with: is, is not, is less than, is more than, is at least, is at most, is divisible by."
+ },
+ {
+  "want": "Describe with an adjective",
+  "sentences": "A pet is old when its age is at least 10.",
+  "note": "Then you can write: If Rex is old:  or  For each old pet:"
+ },
+ {
+  "want": "Go through every thing",
+  "sentences": "For each pet:\n  Say \"{its name} is {its age}.\"",
+  "note": "Inside the block, “it” and “the pet” mean the current one."
+ },
+ {
+  "want": "Repeat",
+  "sentences": "Repeat 3 times:\n  Say \"Again.\"",
+  "note": "Or: While the total is less than 10:"
+ },
+ {
+  "want": "Count and add up",
+  "sentences": "Say the number of pets.\nSay the total age of all pets.",
+  "note": "A group can be narrowed: the number of old pets."
+ },
+ {
+  "want": "Teach a verb",
+  "sentences": "To feed a pet with a treat (text):\n  Say \"{the pet} eats the {the treat}.\"\n\nFeed Rex with \"biscuit\".",
+  "note": "Prepositions name the roles: with, to, from, for, on, at, by, against..."
+ },
+ {
+  "want": "Work out a value",
+  "sentences": "To work out the double (number) of a count (number):\n  The answer is the count * 2.\n\nSay the double of 21.",
+  "note": "Working out may not change anything or say anything."
+ },
+ {
+  "want": "Ask a question",
+  "sentences": "Ask \"What is your name?\" and let the visitor (text) be the reply.\nSay \"Hello, {the visitor}.\"",
+  "note": "The reply can be text, a number, money, a percent, or yes or no."
+ },
+ {
+  "want": "Something that may be missing",
+  "sentences": "A child has an age (number) and a friend (pet, if any).\nThere is a child called Sam whose age is 7.\n\nIf Sam has a friend:\n  Say \"Sam's friend is {Sam's friend}.\"\nOtherwise:\n  Say \"Sam has no pet yet.\"",
+  "note": "“if any” means the compiler makes you check before using it."
+ },
+ {
+  "want": "State a rule",
+  "sentences": "A pet's age is never less than 0.",
+  "note": "Checked every time a pet's age changes. Also: always."
+ },
+ {
+  "want": "Test your program",
+  "sentences": "For example, Rex's age is 4.",
+  "note": "If it is not true when the program gets here, the program stops and says so."
+ }
+]
