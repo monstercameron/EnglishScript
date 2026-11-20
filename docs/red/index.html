@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#c7c7b7">
+  <title>Pokémon Red · EnglishScript</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="source.css">
+  <link rel="stylesheet" href="keys.css">
+  <script src="audio.js" defer></script>
+  <script src="save-cache.js" defer></script>
+  <script src="main.js" defer></script>
+  <script src="source.js" defer></script>
+  <script src="keys.js" defer></script>
+</head>
+<body>
+  <main class="page">
+    <header class="top"><a href="../">EnglishScript</a><span><a id="watch-link" href="?watch=badge">Watch the badge run</a> · <a href="../boulder/">Field Lab</a></span></header>
+    <div class="heading"><p>AN ENGLISHSCRIPT ADVENTURE</p><h1>Pokémon Red</h1><span>From Pallet Town to the Boulder Badge</span></div>
+    <section class="game" aria-label="Pokémon Red game">
+      <div class="console">
+        <div class="bezel">
+          <div class="screen-label"><span>DOT MATRIX WITH STEREO SOUND</span><span id="display-status">STARTING</span></div>
+          <div class="screen-wrap">
+            <canvas id="screen" width="160" height="144" tabindex="-1" role="img" aria-label="Game screen loading"></canvas>
+            <p id="loading">Preparing your adventure…</p>
+            <form id="companion" class="talk-overlay" autocomplete="off" hidden>
+              <label for="question">Talk to <span id="talk-person">the person ahead</span></label>
+              <input id="question" name="question" type="text" maxlength="200" placeholder="What do you say?" required>
+              <div><button type="submit">Ask</button><button id="talk-cancel" type="button">Cancel</button></div>
+            </form>
+            <p id="talk-reply" class="visually-hidden" role="status"></p>
+          </div>
+        </div>
+        <div class="brand"><strong>EnglishScript</strong><em> POCKET</em></div>
+        <div class="controls">
+          <div class="dpad" aria-label="Direction controls"><button class="up" data-action="up" aria-label="Up">▲</button><button class="left" data-action="left" aria-label="Left">◀</button><span></span><button class="right" data-action="right" aria-label="Right">▶</button><button class="down" data-action="down" aria-label="Down">▼</button></div>
+          <div class="round-controls"><label><button data-action="b" aria-label="B">B</button><span>B</span></label><label><button data-action="a" aria-label="A">A</button><span>A</span></label></div>
+        </div>
+        <div class="middle-controls"><label><button data-action="select" aria-label="Select"></button><span>SELECT</span></label><label><button data-action="start" aria-label="Start"></button><span>START</span></label></div>
+      </div>
+      <aside class="notes"><p class="eyebrow">YOUR JOURNEY</p><h2>Adventure log</h2>
+        <div class="sound-controls" role="group" aria-label="Game audio">
+          <div class="track"><span class="track-label">Soundtrack</span><span id="music-title"></span></div>
+          <button type="button" id="sound-toggle">Enable sound</button>
+        </div>
+        <div id="watch-controls" hidden><button id="watch-toggle" type="button">Pause run</button> <a href="./">Play yourself</a></div><p id="connection" class="connection" role="status">Connecting to the game…</p><dl><div><dt>Location</dt><dd id="location">—</dd></div><div><dt>Objective</dt><dd id="objective">—</dd></div><div><dt>Partner</dt><dd id="starter">—</dd></div><div><dt>Badge</dt><dd id="badge">—</dd></div></dl><p id="message" class="message" aria-live="polite"></p><div class="companion"><h3>Companion replies</h3>
+          <div class="talk-controls" role="group" aria-label="Conversation controls">
+            <div class="talk-actions">
+              <button id="talk-open" type="button">Talk</button>
+              <button id="talk-next" type="button" hidden>Next</button>
+              <button id="talk-close" type="button" hidden>Close</button>
+            </div>
+            <p id="talk-status" role="status">Stand next to a person, face them, and press Talk or Select.</p>
+          </div>
+          <label class="live-option"><input id="live-companion" type="checkbox" disabled> Use live companion (sends your question and game context to the local service)</label><p id="live-status" role="status">Checking live companion availability…</p><div id="provider-keys"></div></div><div class="help"><h3>Controls</h3><p>Arrow keys to move · Z for A · X for B · Enter for Start · Shift for Select · Stand next to a person, face them, and press Talk or Select to chat</p><p>Your progress is saved in this browser when storage is available.</p></div><button id="continue-save" class="restart" type="button" disabled>Continue last SAVE</button> <button id="restart" class="restart" type="button">New adventure</button></aside>
+    </section>
+    <section id="source-reader" aria-labelledby="source-heading">
+      <h2 id="source-heading">Source code</h2>
+    </section>
+  </main>
+</body>
+</html>

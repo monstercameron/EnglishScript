@@ -1,0 +1,54 @@
+This chapter shares only wild encounters and wild slot.
+
+The wild encounters are species and level, in that order:
+  "Route 1 1" has "Pidgey" and 3.
+  "Route 1 2" has "Rattata" and 3.
+  "Route 1 3" has "Rattata" and 3.
+  "Route 1 4" has "Rattata" and 2.
+  "Route 1 5" has "Pidgey" and 2.
+  "Route 1 6" has "Pidgey" and 3.
+  "Route 1 7" has "Pidgey" and 3.
+  "Route 1 8" has "Rattata" and 4.
+  "Route 1 9" has "Pidgey" and 4.
+  "Route 1 10" has "Pidgey" and 5.
+  "Route 2 1" has "Rattata" and 3.
+  "Route 2 2" has "Pidgey" and 3.
+  "Route 2 3" has "Pidgey" and 4.
+  "Route 2 4" has "Rattata" and 4.
+  "Route 2 5" has "Pidgey" and 5.
+  "Route 2 6" has "Weedle" and 3.
+  "Route 2 7" has "Rattata" and 2.
+  "Route 2 8" has "Rattata" and 5.
+  "Route 2 9" has "Weedle" and 4.
+  "Route 2 10" has "Weedle" and 5.
+  "Route 22 1" has "Rattata" and 3.
+  "Route 22 2" has "Nidoran M" and 3.
+  "Route 22 3" has "Rattata" and 4.
+  "Route 22 4" has "Nidoran M" and 4.
+  "Route 22 5" has "Rattata" and 2.
+  "Route 22 6" has "Nidoran M" and 2.
+  "Route 22 7" has "Spearow" and 3.
+  "Route 22 8" has "Spearow" and 5.
+  "Route 22 9" has "Nidoran F" and 3.
+  "Route 22 10" has "Nidoran F" and 4.
+  "Viridian Forest 1" has "Weedle" and 4.
+  "Viridian Forest 2" has "Kakuna" and 5.
+  "Viridian Forest 3" has "Weedle" and 3.
+  "Viridian Forest 4" has "Weedle" and 5.
+  "Viridian Forest 5" has "Kakuna" and 4.
+  "Viridian Forest 6" has "Kakuna" and 6.
+  "Viridian Forest 7" has "Metapod" and 4.
+  "Viridian Forest 8" has "Caterpie" and 3.
+  "Viridian Forest 9" has "Pikachu" and 3.
+  "Viridian Forest 10" has "Pikachu" and 5.
+
+To work out the wild slot (number) for a roll (number):
+  If the roll is less than 0 or the roll is at least 256:
+    The answer is 0.
+  Let the cutoffs be a list of 51, 102, 141, 166, 191, 216, 229, 242, 253 and 256.
+  Let the slot be 0.
+  For each cutoff in the cutoffs:
+    Add 1 to the slot.
+    If the roll is less than the cutoff:
+      The answer is the slot.
+  The answer is 0.

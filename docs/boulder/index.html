@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#d5d5c7">
+  <title>Boulder Badge Field Lab</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="main.js" defer></script>
+</head>
+<body>
+  <main class="page">
+    <header class="masthead">
+      <a href="../">EnglishScript</a> · <a href="../red/">Play Pokémon Red</a>
+    </header>
+    <section class="intro">
+      <p class="series">Boulder Badge</p>
+      <h1>Field Lab</h1>
+    </section>
+    <section class="lab" aria-label="Boulder Badge field lab">
+      <div class="device">
+        <div class="device-top"><strong>Boulder Badge</strong></div>
+        <div class="screen-bezel">
+          <div class="screen-heading"><span>Field display</span><span id="display-status">Starting</span></div>
+          <div id="screen" class="screen" tabindex="-1" role="img" aria-label="Field display loading"><span class="loading">Preparing field…</span></div>
+        </div>
+        <div class="device-bottom">
+          <div class="direction-pad" aria-label="Direction controls">
+            <button class="up" data-action="up" aria-label="Move up">▲</button>
+            <button class="left" data-action="left" aria-label="Move left">◀</button>
+            <span class="pad-center" aria-hidden="true"></span>
+            <button class="right" data-action="right" aria-label="Move right">▶</button>
+            <button class="down" data-action="down" aria-label="Move down">▼</button>
+          </div>
+          <div class="control-copy"><strong>Explore the field</strong><p>Use the arrow keys or the directional pad.</p><button id="restart" class="restart" type="button">Restart field</button></div>
+        </div>
+      </div>
+      <aside class="field-notes" aria-label="Field notes">
+        <div class="notes-heading"><h2>Field notes</h2><span id="connection">Connecting</span></div>
+        <p class="notes-intro">This practice uses a recorded offline response. It arrives after five seconds; you can keep moving while you wait.</p>
+        <div class="activity" aria-live="polite" aria-atomic="true"><span class="activity-label">Latest activity</span><p id="activity">Preparing the field…</p></div>
+      </aside>
+    </section>
+  </main>
+</body>
+</html>
+

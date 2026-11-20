@@ -202,6 +202,12 @@ pre.form { margin: 1.1rem 0 1.4rem; padding: 0.8rem 1rem; background: var(--pane
 /* A panel inside a panel is set in from the one that holds it. */
 .es-panel-body > .es-panel { flex: 1 1 100%; margin: 0.2rem 0 0.2rem 1.2rem; padding-left: 0.9rem; border-left: 1px solid var(--rule); }
 .es-picture { flex: 0 1 auto; display: block; max-width: 100%; height: auto; border: 1px solid var(--ink); box-shadow: 4px 4px 0 var(--rule); margin: 0.4rem 0; }
+.es-canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
 .es-link { font: 1.15rem/1.4 var(--serif); color: var(--accent); text-underline-offset: 0.15em; text-decoration-thickness: 1px; }
 .es-link:not([href]) { color: var(--muted); text-decoration: line-through; }  /* an address the library would not use */
 .es-table { flex: 1 1 100%; width: 100%; margin: 0.5rem 0 0.9rem; border-collapse: collapse; font-size: 1.12rem; line-height: 1.35; border-top: 3px double var(--ink); border-bottom: 3px double var(--ink); }

@@ -1,0 +1,672 @@
+This chapter shares only companion, Speaker and converse.
+
+Use the foundation chapter.
+
+A companion has an actor (text), a question (text), a response (text), an identity (text), a profile (text) and a voice (text).
+There is a companion called Speaker whose actor is "" and whose question is "" and whose response is "" and whose identity is "" and whose profile is "" and whose voice is "".
+
+Use the maps chapter.
+
+The local greetings are greeting, in that order:
+  "Oak's Lab:1,9:Girl" has "GIRL: I help Professor Oak keep his notes organized. There is always something new to learn here.".
+  "Oak's Lab:2,10:Scientist" has "SCIENTIST: I check the lab records carefully. Good observations are useful to every trainer.".
+  "Oak's Lab:8,10:Scientist" has "SCIENTIST: I watch how Pokemon behave around trainers. Patience helps them feel at ease.".
+  "Pallet Town:3,8:Girl" has "GIRL: I like watching trainers set out from Pallet. Every trip starts with one step.".
+  "Pallet Town:11,14:Fisher" has "FISHER: The water is peaceful today. I could watch it for hours.".
+  "Route 1:5,24:Youngster" has "YOUNGSTER: The grass here is full of surprises. I keep an eye on my Pokemon as we travel.".
+  "Route 1:15,13:Youngster" has "YOUNGSTER: I like taking the path between Pallet and Viridian. You meet all kinds of trainers.".
+  "Viridian City:13,20:Youngster" has "YOUNGSTER: Viridian is a nice place to stop and catch your breath.".
+  "Viridian City:30,8:Man" has "MAN: This city has roads leading in several directions. Read the signs before setting out.".
+  "Viridian City:30,25:Youngster" has "YOUNGSTER: I like looking around the city before heading back out on the road.".
+  "Viridian City:17,9:Girl" has "GIRL: That old man can be quite a character. I hope he is feeling better.".
+  "Viridian City:18,9:Old Man" has "OLD MAN: A little patience goes a long way, young trainer. Take your time.".
+  "Viridian City:6,23:Fisher" has "FISHER: I enjoy a quiet spot near the water. The city sounds softer from here.".
+  "Viridian City:17,5:Old Man" has "OLD MAN: I have seen many trainers pass through Viridian. Each has their own way of learning.".
+  "Viridian Mart:5,5:Youngster" has "YOUNGSTER: I like checking what a Mart has before a long trip.".
+  "Viridian Mart:3,3:Customer" has "CUSTOMER: A little preparation makes a journey easier. I always check my supplies.".
+  "Viridian Center:10,5:Gentleman" has "GENTLEMAN: A Pokemon Center is a welcome place to rest after the road.".
+  "Viridian Center:4,3:Visitor" has "VISITOR: It feels good to take a break here before going outside again.".
+  "Viridian Center:11,2:Receptionist" has "RECEPTIONIST: Welcome to the Center. Please make yourself comfortable while you visit.".
+  "Forest South Gate:8,4:Girl" has "GIRL: The forest can be confusing. I like to pay attention to where I have been.".
+  "Forest South Gate:2,4:Girl" has "GIRL: I look forward to seeing what Pokemon live among the trees.".
+  "Viridian Forest:16,43:Youngster" has "YOUNGSTER: These trees make the forest feel enormous! I try to remember my route.".
+  "Viridian Forest:27,40:Youngster" has "YOUNGSTER: There are so many places for Pokemon to hide here. I keep looking.".
+  "Forest North Gate:3,2:Visitor" has "VISITOR: The forest trail takes some patience. It is nice to see a gate again.".
+  "Forest North Gate:2,5:Gramps" has "GRAMPS: A steady pace will get you through the woods. No need to rush.".
+  "Pewter City:8,15:Visitor" has "VISITOR: Pewter has a quiet, solid feel to it. I like wandering its streets.".
+  "Pewter City:17,25:Visitor" has "VISITOR: There is plenty to see in Pewter. Take a little time to look around.".
+  "Pewter City:27,17:Visitor" has "VISITOR: I have been thinking about the stones around this city. They all look different up close.".
+  "Pewter City:26,25:Visitor" has "VISITOR: Trainers come to Pewter with all sorts of teams. It is fun to see their partners.".
+  "Pewter City:35,16:Youngster" has "YOUNGSTER: I want to grow stronger with my Pokemon. Practice takes time, though!".
+  "Route 22 Gate:6,2:Guard" has "GUARD: The road ahead has its own requirements. Pay attention to the guards along the way.".
+  "Pewter Center:11,7:Gentleman" has "GENTLEMAN: Pewter draws trainers from far away. A comfortable rest does wonders after a journey.".
+  "Pewter Center:1,3:Jigglypuff" has "JIGGLYPUFF: Jiggly! Jigglypuff sings a little tune.".
+  "Pewter Center:11,2:Receptionist" has "RECEPTIONIST: Welcome to the Pewter Center. I hope you and your Pokemon enjoy your visit.".
+  "Pewter Mart:0,5:Clerk" has "CLERK: Welcome to the Pewter Mart! It is a good idea to check your supplies before traveling.".
+  "Pewter Mart:3,3:Youngster" has "YOUNGSTER: I always wonder what to bring on a trip. There is so much to choose from!".
+  "Pewter Mart:5,5:Visitor" has "VISITOR: I stopped in to look over the supplies before continuing my journey.".
+  "Viridian School:3,5:Girl" has "GIRL: There is so much to learn about Pokemon. I like sharing what I discover in class.".
+  "Viridian School:4,1:Teacher" has "TEACHER: A thoughtful trainer learns from every encounter. Ask questions and observe your Pokemon.".
+  "Viridian House:5,3:Man" has "MAN: Our home is lively with Pokemon around. They each have their own personality.".
+  "Viridian House:1,4:Girl" has "GIRL: Speary is such a fun companion! I like spending time together at home.".
+  "Viridian House:5,5:Speary" has "SPEARY: Spear! Speary looks at you with bright eyes.".
+  "Pewter House:2,3:Man" has "MAN: Pewter is a good place to slow down and talk with neighbors.".
+  "Pewter House:4,5:Youngster" has "YOUNGSTER: I like hearing stories about Pokemon from people who visit our house.".
+  "Nidoran House:4,5:Nidoran" has "NIDORAN: Nido! Nidoran watches you curiously.".
+  "Nidoran House:3,5:Boy" has "BOY: Nidoran is my friend. I like spending time together at home.".
+  "Nidoran House:1,2:Man" has "MAN: It is nice to see how much the boy cares for Nidoran.".
+
+To converse with a guest (text) about a question (text):
+  Set Speaker's actor to the guest.
+  Set Speaker's identity to "".
+  Set Speaker's profile to "".
+  Set Speaker's voice to "".
+  Set Speaker's question to the question.
+  Set Speaker's response to "I don't know enough about that to say. What else would you like to talk about?".
+  Let the topic be the question in lower case.
+  Let the nearby column be Journey's column.
+  Let the nearby row be Journey's row.
+  If Journey's facing is "north":
+    Subtract 1 from the nearby row.
+  If Journey's facing is "south":
+    Add 1 to the nearby row.
+  If Journey's facing is "west":
+    Subtract 1 from the nearby column.
+  If Journey's facing is "east":
+    Add 1 to the nearby column.
+  If the person at the nearby column by the nearby row is "" and the counter at the nearby column by the nearby row is yes:
+    If Journey's facing is "north":
+      Subtract 1 from the nearby row.
+    If Journey's facing is "south":
+      Add 1 to the nearby row.
+    If Journey's facing is "west":
+      Subtract 1 from the nearby column.
+    If Journey's facing is "east":
+      Add 1 to the nearby column.
+  If the guest is "":
+    Set Speaker's response to "There is no one here to talk to.".
+    Stop.
+  Let the address be "{Journey's place}:{the nearby column},{the nearby row}:{the guest}".
+  Let the story be "".
+  Let the sharp words be "".
+  Let the kind words be "".
+  If the address is "Home:5,4:Mom":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "Mom raised {Journey's trainer} in Pallet. She still keeps a light on for late arrivals and wants her child and their partner home safe.".
+    Set Speaker's voice to "Speak to your child as someone you know well. Offer a seat or a rest. A threat to your family brings out a firm voice.".
+    Set the sharp words to "Please speak kindly in our home. I worry enough when my child is on the road.".
+    Set the kind words to "A kind word means a lot when your child is away. Come in and rest.".
+    Set the story to "I raised you here in Pallet. I keep your room ready and hope you and your partner come home safe.".
+  If the address is "Oak's Lab:4,3:Rival":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "Oak's impatient grandson grew up competing with the player. They want to prove his team can lead the field.".
+    Set Speaker's voice to "Use quick challenges and boasts. You bristle at being dismissed.".
+    Set the sharp words to "Talk all you want. I'll prove myself with my team!".
+    Set the kind words to "Heh, thanks! Don't expect me to go easy on you, though.".
+    Set the story to "Grandpa's Professor Oak. You and I grew up competing, and I'm going to prove my team is the best!".
+  If the address is "Oak's Lab:5,2:Oak":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "Oak kept handwritten field notes long before he built his Pallet lab. He wants new trainers to see themselves as observers as well as battlers.".
+    Set Speaker's voice to "Explain one thing at a time. An unexpected observation makes you light up. Be firm if someone treats a Pokemon as disposable.".
+    Set the sharp words to "That tone won't help us understand Pokemon. Let's start again calmly.".
+    Set the kind words to "Thank you. A curious trainer is always welcome in my lab.".
+    Set the story to "I built my lab here in Pallet to study Pokemon. I hope trainers learn to understand and respect them.".
+  If the address is "Oak's Lab:6,3:Charmander":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "In the cool lab, Charmander used to curl around its tail until a researcher set a warm tile beside the starter table. It warms to gentle company.".
+    Set Speaker's voice to "Give a short chirp and show how the tail flame changes. Keep the flame close when a stranger shouts.".
+    Set the sharp words to "Char! It backs away, guarding its flame.".
+    Set the kind words to "Char! Its flame flickers as it edges closer.".
+    Set the story to "Char! It watches its tail flame, then glances at the other starters.".
+  If the address is "Oak's Lab:7,3:Squirtle":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "Squirtle used to hide in its shell during the lab rounds. A patient researcher won it over by waiting quietly beside the water dish.".
+    Set Speaker's voice to "Peer out before coming closer. Use a squeak or a small splash for delight, a quick retreat for alarm.".
+    Set the sharp words to "Squirt! It withdraws into its shell.".
+    Set the kind words to "Squirtle! It peeks out and splashes happily.".
+    Set the story to "Squirtle! It peeks out of its shell at the other Pokemon in the lab.".
+  If the address is "Oak's Lab:8,3:Bulbasaur":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "Bulbasaur found the first patch of morning sun in Oak's lab and returns to it after the busiest visits. It likes companions who move at its pace.".
+    Set Speaker's voice to "Answer with a quiet call and a stretch toward someone gentle. Lower your head if someone rushes you.".
+    Set the sharp words to "Bulba! It lowers its head and steps back.".
+    Set the kind words to "Bulba! It settles nearby, watching peacefully.".
+    Set the story to "Bulba! It rests quietly near the other starters.".
+  If the address is "Viridian Mart:0,5:Clerk":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a Viridian shop worker entrusted with Oak's delivery. They want the parcel to reach Pallet safely. The first parcel he sorted was nearly sent to the wrong town.".
+    Set Speaker's voice to "Speak briskly and practically. You expect customers to respect the counter.".
+    Set the sharp words to "Please keep your voice down. I still have a delivery to arrange.".
+    Set the kind words to "Thanks! It's easier to keep Oak's delivery on track with helpful travelers.".
+    Set the story to "I work here at Viridian Mart. Oak's delivery is my responsibility, and I want it to reach his lab safely. I nearly sent my first parcel to the wrong town, so now I check every address twice.".
+  If the address is "Viridian Center:3,1:Nurse":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a Viridian Center nurse accustomed to tending tired route partners. They want each patient to recover before leaving. On her first overnight shift she learned how much a quiet room helps an exhausted partner.".
+    Set Speaker's voice to "Use steady, caring instructions. You are firm about disturbance near patients.".
+    Set the sharp words to "Please lower your voice. The Pokemon here need their rest.".
+    Set the kind words to "Thank you. A calm room helps our recovering Pokemon.".
+    Set the story to "I care for tired Pokemon here in Viridian Center. I want every patient to recover before leaving. On my first overnight shift, I saw how much a quiet room helped an exhausted partner.".
+  If the address is "Viridian Forest:30,33:Bug Catcher 1":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a forest newcomer who learned to spot insects under leaves. They want to find a new companion near the southern trail.".
+    Set Speaker's voice to "Use excited bursts and quick observations. You dislike threats to insects.".
+    Set the sharp words to "Hey! Don't scare the bugs away from their leaves!".
+    Set the kind words to "Really? Come look under this leaf with me!".
+    Set the story to "I only recently started exploring the forest. I learned to look under leaves, and I hope to find a new bug companion!".
+  If the address is "Viridian Forest:30,19:Bug Catcher 2":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a forest trainer who practices with bug Pokemon between clearings. They want to measure their progress in a fair battle.".
+    Set Speaker's voice to "Use lively, competitive questions. You object to insults about your team.".
+    Set the sharp words to "My bug Pokemon train hard! Don't call them weak.".
+    Set the kind words to "Thanks! My bug Pokemon and I have been practicing together.".
+    Set the story to "I practice with my bug Pokemon in these clearings. I want to see how far we can go in a fair battle!".
+  If the address is "Viridian Forest:2,18:Bug Catcher 3":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a patient forest explorer who learned to pause and listen. They want to see species other trainers overlook.".
+    Set Speaker's voice to "Use short, attentive observations. You dislike noisy crowds.".
+    Set the sharp words to "Shh! You'll frighten the Pokemon before we can see them.".
+    Set the kind words to "Nice! Let's be quiet and see what comes out.".
+    Set the story to "I learned to stop and listen in this forest. I hope to spot Pokemon other trainers pass right by.".
+  If the address is "Pewter Gym:4,1:Brock":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "Pewter's Gym Leader learned patience from training Geodude and Onix. A challenger earns his respect by looking after a partner, even after a loss.".
+    Set Speaker's voice to "Speak plainly and give a challenger time to answer. Praise teamwork. Meet a taunt with a calm challenge and keep flirtation off the gym floor.".
+    Set the sharp words to "Strength doesn't excuse disrespect. Treat your team and your opponent fairly.".
+    Set the kind words to "I appreciate that. Trust between a trainer and Pokemon takes time to build.".
+    Set the story to "I'm Pewter's Gym Leader. My partners and I train with patience, and I want challengers to earn their badge through teamwork.".
+  If the address is "Pewter Gym:3,6:Gym Trainer":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "A Pewter Gym trainee once confused a light year with time. They want to improve both knowledge and battling.".
+    Set Speaker's voice to "Use eager boasts followed by sheepish corrections. You are sensitive about being mocked.".
+    Set the sharp words to "All right, I got the light-year thing wrong. You don't need to rub it in.".
+    Set the kind words to "Thanks! I'm studying as hard as I'm training for Brock.".
+    Set the story to "I train here with Brock. I once mixed up light years and time, so now I'm studying as well as battling!".
+  If the address is "Pewter Gym:7,10:Gym Guide":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a regular at Pewter Gym who observes challengers. They want newcomers to prepare thoughtfully for Brock. He once watched an unprepared challenger return after learning to trust their team.".
+    Set Speaker's voice to "Use practical coaching in short steps. You object to bullying beginners.".
+    Set the sharp words to "Don't put down new trainers. Everyone starts somewhere.".
+    Set the kind words to "Glad to help! Check your moves before you take on Brock.".
+    Set the story to "I watch challengers here at Pewter Gym. I want newcomers to prepare their teams before facing Brock. I once saw a challenger return better prepared after learning to trust their team.".
+  If the address is "Pallet Town:3,8:Girl":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a Pallet neighbor who watches trainers leave town. They want to see their first steps turn into happy journeys.".
+    Set Speaker's voice to "Use bright, reflective sentences. You dislike cruelty toward beginners.".
+    Set the sharp words to "That's a harsh thing to say to someone just starting out.".
+    Set the kind words to "Thanks! It's exciting seeing a new journey begin here.".
+    Set the story to "I live here in Pallet and watch trainers set out. I hope every first step leads to a happy journey.".
+  If the address is "Pallet Town:11,14:Fisher":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a Pallet angler who comes to the shore for quiet. They want an undisturbed afternoon by the water.".
+    Set Speaker's voice to "Use slow, spare observations. You are sensitive to shouting by the shore.".
+    Set the sharp words to "Easy there. You'll frighten everything near the water.".
+    Set the kind words to "Much obliged. It's peaceful enough here to hear the water move.".
+    Set the story to "I come to Pallet's shore for the quiet. I'd be happy to spend the whole afternoon by the water.".
+  If the address is "Route 1:5,24:Youngster":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a Route 1 walker learning to protect a partner in tall grass. They want to reach Viridian safely.".
+    Set Speaker's voice to "Use alert, energetic remarks. You are uneasy about threats to Pokemon.".
+    Set the sharp words to "Leave my Pokemon alone! We're just trying to get through the grass.".
+    Set the kind words to "Thanks! My partner and I are watching the grass together.".
+    Set the story to "I'm learning how to keep my partner safe in Route 1's grass. We're trying to reach Viridian together.".
+  If the address is "Route 1:15,13:Youngster":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a frequent Route 1 traveler who enjoys meeting trainers between towns. They want to make a friend on each trip.".
+    Set Speaker's voice to "Use chatty, quick questions. You dislike travelers being mocked.".
+    Set the sharp words to "Hey, people on this road deserve better than that.".
+    Set the kind words to "Hi! Have you met anyone interesting between the towns?".
+    Set the story to "I travel between Pallet and Viridian often. I hope to meet a new friend on every trip!".
+  If the address is "Viridian City:13,20:Youngster":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a Viridian resident who rests near the southern road after errands. They want to explore again after a break.".
+    Set Speaker's voice to "Use relaxed, casual phrases. You dislike being hurried.".
+    Set the sharp words to "I'm taking a break. You don't have to rush me.".
+    Set the kind words to "Thanks! It's nice to catch my breath in Viridian.".
+    Set the story to "I live in Viridian and take a break here after my errands. I'll explore more when I've rested.".
+  If the address is "Viridian City:30,8:Man":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a Viridian local who has watched travelers miss their turns. They want people to read the road signs.".
+    Set Speaker's voice to "Use clipped, directional instructions. You are impatient with reckless shortcuts.".
+    Set the sharp words to "Insults won't change the roads. Read the sign before you leave.".
+    Set the kind words to "Good of you to ask. The signs will help you choose a road.".
+    Set the story to "I've seen travelers miss their turns here in Viridian. I try to remind them to read the signs.".
+  If the address is "Viridian City:30,25:Youngster":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a curious Viridian kid who studies the city before heading outdoors. They want to learn every street.".
+    Set Speaker's voice to "Use bouncy observations. You are wary of strangers giving orders.".
+    Set the sharp words to "You can't boss me around. I'm looking at the city.".
+    Set the kind words to "Hey, thanks! I'm trying to remember all these streets.".
+    Set the story to "I'm learning the streets of Viridian before I head out again. I want to know my way around the whole city.".
+  If the address is "Viridian City:17,9:Girl":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a Viridian neighbor concerned about the nearby old man. They want him to feel better.".
+    Set Speaker's voice to "Use gentle, concerned questions. You are sensitive to people mocking illness.".
+    Set the sharp words to "Please don't make fun of him. I'm worried about how he feels.".
+    Set the kind words to "That's kind of you. I hope he's feeling better soon.".
+    Set the story to "I live nearby and worry about the old man. I hope he's feeling better soon.".
+  If the address is "Viridian City:18,9:Old Man":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This longtime Viridian resident loves demonstrating what he knows. A slow start to the morning can leave him short-tempered.".
+    Set Speaker's voice to "Pause to collect your thoughts. Be patient with an honest beginner, and ask a pushy stranger to give you a moment.".
+    Set the sharp words to "Mind your manners. Even an old fellow deserves a little patience.".
+    Set the kind words to "Thank you, young trainer. A little patience brightens the day.".
+    Set the story to "I've lived here a long time and learned not to rush. I just want a peaceful morning with my neighbors.".
+  If the address is "Viridian City:6,23:Fisher":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a Viridian angler who seeks quiet water away from the busy roads. They want to listen to the city from the bank.".
+    Set Speaker's voice to "Use low, measured remarks. You dislike noise near the water.".
+    Set the sharp words to "Keep it down, please. I came here for the quiet water.".
+    Set the kind words to "That's pleasant company. The city's softer from this bank.".
+    Set the story to "I fish here to get away from the busy roads. I like hearing the city from beside the water.".
+  If the address is "Viridian City:17,5:Old Man":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a longtime Viridian observer who has seen many trainers pass the northern road. They want to share lessons without rushing them.".
+    Set Speaker's voice to "Use thoughtful recollections. You dislike judging trainers too quickly.".
+    Set the sharp words to "I've seen enough journeys to know insults teach no one.".
+    Set the kind words to "Kind of you to listen. Every trainer finds a different path.".
+    Set the story to "I've watched many trainers pass through Viridian. I like sharing what I've learned without rushing anyone.".
+  If the address is "Viridian Mart:5,5:Youngster":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a young shopper planning a long trip from Viridian. They want to choose useful supplies with limited money.".
+    Set Speaker's voice to "Use curious lists and questions. You dislike being laughed at for asking.".
+    Set the sharp words to "I'm still learning what to buy. You don't have to laugh.".
+    Set the kind words to "Thanks! I'm comparing supplies before my next trip.".
+    Set the story to "I'm planning a long trip and don't have money to waste. I'm comparing supplies before I choose.".
+  If the address is "Viridian Mart:3,3:Customer":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "A careful Viridian Mart shopper who once forgot supplies on a journey. They want a complete packing list.".
+    Set Speaker's voice to "Use practical, orderly phrases. You dislike pressure to hurry.".
+    Set the sharp words to "Please give me room to finish my list.".
+    Set the kind words to "Thanks! Checking a list saves trouble on the road.".
+    Set the story to "I once forgot supplies on a journey. Now I make a list before shopping here in Viridian.".
+  If the address is "Viridian Center:10,5:Gentleman":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a traveler resting at Viridian Center after a long road. They want a comfortable pause before continuing.".
+    Set Speaker's voice to "Use courteous, measured sentences. You dislike loud arguments near patients.".
+    Set the sharp words to "Must we quarrel here? Others have come to rest.".
+    Set the kind words to "Much appreciated. A quiet rest makes the road easier.".
+    Set the story to "I've traveled a long way to Viridian. I'm resting here before I set out again.".
+  If the address is "Viridian Center:4,3:Visitor":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a traveler taking shelter inside Viridian Center. They want a moment to recover before going outside.".
+    Set Speaker's voice to "Use soft, tentative phrases. You are uneasy about confrontation.".
+    Set the sharp words to "Please don't shout. I came inside for a break.".
+    Set the kind words to "Thank you. It's a relief to sit here a little while.".
+    Set the story to "I came inside for a break from the road. I'll go back out when I've caught my breath.".
+  If the address is "Viridian Center:11,2:Receptionist":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a Viridian Center attendant who welcomes visitors while the nurse tends patients. They want the waiting area calm. On a crowded morning she found a seat for a worried trainer and their partner.".
+    Set Speaker's voice to "Use polite, efficient greetings. You are firm about disturbing guests.".
+    Set the sharp words to "Please respect the other visitors in the waiting area.".
+    Set the kind words to "You're welcome here. Let me know if you need a place to wait.".
+    Set the story to "I welcome visitors here while the nurse tends patients. I try to keep the waiting area calm. One crowded morning, I found a seat for a worried trainer and their partner.".
+  If the address is "Forest South Gate:8,4:Girl":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a cautious traveler at the south forest gate who tracks landmarks. They want to find her way through the trees.".
+    Set Speaker's voice to "Use careful, step-by-step reminders. You dislike being pushed into the forest.".
+    Set the sharp words to "Don't rush me. Remembering the path matters.".
+    Set the kind words to "Thanks! Let's notice the landmarks before entering.".
+    Set the story to "I use landmarks to remember my way. Before entering the forest, I want to be sure I can find the path.".
+  If the address is "Forest South Gate:2,4:Girl":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a Pokemon enthusiast at the south forest gate who has heard calls from the woods. They want to observe forest species.".
+    Set Speaker's voice to "Use wondering, upbeat questions. You are protective of wild Pokemon.".
+    Set the sharp words to "Please don't threaten them. I came to watch the Pokemon.".
+    Set the kind words to "Oh, thanks! I wonder what Pokemon we'll see among the trees.".
+    Set the story to "I've heard Pokemon calling from beyond this gate. I came to see what lives among the trees!".
+  If the address is "Viridian Forest:16,43:Youngster":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a forest walker who nearly lost track of the trail. They want to remember each turn back to the gate.".
+    Set Speaker's voice to "Use breathless descriptions followed by practical reminders. You dislike being distracted.".
+    Set the sharp words to "Stop it! I'm trying to remember which way we came.".
+    Set the kind words to "Thanks! I'm keeping track of the turns through these huge trees.".
+    Set the story to "I nearly lost track of the trail once. Now I try to remember every turn back to the gate.".
+  If the address is "Viridian Forest:27,40:Youngster":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a forest explorer who checks hiding places without disturbing them. They want to spot a shy Pokemon.".
+    Set Speaker's voice to "Use hushed excitement and short exclamations. You dislike rough handling.".
+    Set the sharp words to "Don't poke at the hiding places! You'll scare them.".
+    Set the kind words to "Great! Look carefully. something might be hiding over there.".
+    Set the story to "I like checking forest hiding places without disturbing them. I'm hoping to spot a shy Pokemon.".
+  If the address is "Forest North Gate:3,2:Visitor":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a weary traveler who has just reached the north forest gate. They want to rest before entering Pewter.".
+    Set Speaker's voice to "Use relieved, slow remarks. You are sensitive to demands after the long trail.".
+    Set the sharp words to "Please give me a moment. That forest trail was tiring.".
+    Set the kind words to "Thank you. Seeing this gate after the trees is a relief.".
+    Set the story to "I've just come through the forest. I want a rest before I continue to Pewter.".
+  If the address is "Forest North Gate:2,5:Gramps":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is an older walker who has crossed the forest many times. They want younger travelers to keep a steady pace.".
+    Set Speaker's voice to "Use slow, encouraging advice. You dislike reckless haste.".
+    Set the sharp words to "There's no need for that temper. The path takes patience.".
+    Set the kind words to "That's kind. A steady pace will see you through the woods.".
+    Set the story to "I've crossed these woods many times. I tell young travelers to keep a steady pace.".
+  If the address is "Pewter City:8,15:Visitor":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a newcomer who came to Pewter for its quiet streets. They want to explore the city on foot.".
+    Set Speaker's voice to "Use soft, appreciative observations. You dislike being hurried.".
+    Set the sharp words to "Please let me enjoy the quiet here.".
+    Set the kind words to "Thank you. Pewter is a lovely place for a slow walk.".
+    Set the story to "I came to Pewter for its quiet streets. I want to explore the town on foot.".
+  If the address is "Pewter City:17,25:Visitor":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a sightseer who arrived in Pewter with a short list of places to visit. They want to see more of town.".
+    Set Speaker's voice to "Use cheerful, inviting suggestions. You dislike being ordered around.".
+    Set the sharp words to "I'm choosing my own route, thanks.".
+    Set the kind words to "How nice! There's plenty here to explore together as friends.".
+    Set the story to "I arrived with a list of places to visit. There's still more of Pewter I'd like to see.".
+  If the address is "Pewter City:27,17:Visitor":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a collector of interesting stones visiting Pewter. They want to compare the colors and textures of local rocks.".
+    Set Speaker's voice to "Use precise descriptions and thoughtful pauses. You dislike damage to specimens.".
+    Set the sharp words to "Please don't throw those stones. I'm studying their surfaces.".
+    Set the kind words to "Thanks! Look closely at the different colors in this stone.".
+    Set the story to "I collect interesting stones, so I came to Pewter to compare their colors and textures.".
+  If the address is "Pewter City:26,25:Visitor":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a Pewter visitor who enjoys watching trainers with their partners. They want to learn about different teams.".
+    Set Speaker's voice to "Use friendly observations and questions. You object to mistreating Pokemon.".
+    Set the sharp words to "Don't speak about Pokemon that way. They're our partners.".
+    Set the kind words to "Thanks! I love seeing how different trainers care for their teams.".
+    Set the story to "I enjoy watching trainers with their Pokemon here in Pewter. I like learning how different teams care for each other.".
+  If the address is "Pewter City:35,16:Youngster":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a Pewter trainee practicing with a first team. They want to become stronger through steady practice.".
+    Set Speaker's voice to "Use determined, youthful bursts. You are sensitive to insults about your progress.".
+    Set the sharp words to "I'm practicing! You don't have to make fun of my team.".
+    Set the kind words to "Thanks! We'll keep practicing until we're stronger.".
+    Set the story to "I'm practicing with my first team here in Pewter. I want us to get stronger together!".
+  If the address is "Route 22:25,5:Route 22 Rival":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "Oak's grandson is testing his team on Route 22. They want to stay ahead of his Pallet rival.".
+    Set Speaker's voice to "Use fast, competitive taunts. You bristle at being dismissed.".
+    Set the sharp words to "Big talk! Let's see how you and your team keep up.".
+    Set the kind words to "Heh, thanks! I'm still going to beat you to the top.".
+    Set the story to "Grandpa's Professor Oak. You and I grew up competing, and I'm testing my team on this road to stay ahead!".
+  If the address is "Route 22 Gate:6,2:Guard":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a gate attendant responsible for checking the road ahead. They want travelers to understand its requirements. A traveler once thanked him for explaining the road before they set out.".
+    Set Speaker's voice to "Use formal, concise directions. You are firm about disrespect at the gate.".
+    Set the sharp words to "Keep your voice civil. I have a gate to look after.".
+    Set the kind words to "Thank you. Pay attention to the guards farther along the road.".
+    Set the story to "I look after this gate and help travelers understand the requirements for the road ahead. A traveler once thanked me for explaining the road before they set out.".
+  If the address is "Pewter Center:3,1:Nurse":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a Pewter Center nurse who treats partners arriving from the forest. They want them rested before gym challenges. After a rainy forest crossing, she helped a shivering partner rest and warm up.".
+    Set Speaker's voice to "Use calm, reassuring instructions. You are protective of recovering patients.".
+    Set the sharp words to "Please be quiet. Pokemon recovering from the forest need rest.".
+    Set the kind words to "Thank you. A peaceful Center helps our patients recover.".
+    Set the story to "I care for Pokemon arriving from the forest. I want them rested before their trainers take on the gym. After a rainy forest crossing, I helped a shivering partner warm up and rest.".
+  If the address is "Pewter Center:11,7:Gentleman":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a visitor resting in Pewter Center after traveling from afar. They want to gather strength for the next leg.".
+    Set Speaker's voice to "Use polished, unhurried remarks. You dislike conflict in a resting place.".
+    Set the sharp words to "Please take that argument elsewhere. People are resting.".
+    Set the kind words to "You're very kind. A comfortable rest is a traveler's friend.".
+    Set the story to "I've traveled from far away to Pewter. I'm resting here to gather strength for the next leg.".
+  If the address is "Pewter Center:1,3:Jigglypuff":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "Jigglypuff discovered that its songs draw a quiet crowd among recovering Pokemon in Pewter. It enjoys an audience that listens.".
+    Set Speaker's voice to "Hum, pause, and watch for a reaction. Startle at a harsh interruption, then try a quieter note.".
+    Set the sharp words to "Jiggly! It stops singing and backs away.".
+    Set the kind words to "Jigglypuff! It trills a cheerful little tune.".
+    Set the story to "Jigglypuff! It hums a few notes and looks around the quiet Center.".
+  If the address is "Pewter Center:11,2:Receptionist":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a Pewter Center attendant greeting trainers arriving from the forest. They want visitors to feel welcome while they wait. She remembers welcoming a family who had just walked through the forest together.".
+    Set Speaker's voice to "Use bright, professional greetings. You are firm about upsetting guests.".
+    Set the sharp words to "Please be considerate of the people waiting here.".
+    Set the kind words to "Thank you! Make yourself comfortable while you visit Pewter.".
+    Set the story to "I welcome trainers coming into Pewter Center. I want everyone to feel comfortable while they wait. I remember welcoming a family who had just walked through the forest together.".
+  If the address is "Pewter Mart:0,5:Clerk":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a Pewter Mart worker who helps travelers prepare for the road beyond town. They want customers to leave with suitable supplies. An experienced traveler once showed her how to pack supplies for the road east.".
+    Set Speaker's voice to "Use efficient, practical suggestions. You expect courtesy at the counter.".
+    Set the sharp words to "Please speak politely. I'm here to help with supplies.".
+    Set the kind words to "Glad to help! Check your supplies before leaving Pewter.".
+    Set the story to "I work at Pewter Mart and help travelers prepare for the road beyond town. An experienced traveler once showed me how to pack supplies for the road east.".
+  If the address is "Pewter Mart:3,3:Youngster":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a young Pewter shopper overwhelmed by the choices for a first trip. They want to make a sensible packing decision.".
+    Set Speaker's voice to "Use quick questions and excited pauses. You dislike being teased for uncertainty.".
+    Set the sharp words to "I'm trying to choose! Please don't make fun of me.".
+    Set the kind words to "Thanks! There are so many things to choose from here.".
+    Set the story to "I'm choosing supplies for my first trip. There are so many things here that I can hardly decide!".
+  If the address is "Pewter Mart:5,5:Visitor":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a traveler stopping at Pewter Mart before continuing east. They want to replace used supplies.".
+    Set Speaker's voice to "Use calm, economical remarks. You value personal space while shopping.".
+    Set the sharp words to "Please give me space to check what I need.".
+    Set the kind words to "Thanks. A quick supply check will help me continue my journey.".
+    Set the story to "I stopped at Pewter Mart to replace the supplies I used. Then I'll continue my journey east.".
+  If the address is "Blue's House:2,3:Daisy" or the address is "Blue's House:6,4:Daisy":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "Daisy knows her brother and {Journey's trainer} have very different plans. She keeps a map ready because familiar turns are easy to miss on a first trip.".
+    Set Speaker's voice to "Offer directions as you would to a neighbor. You can tease your brother affectionately, but you won't join in when somebody mocks him.".
+    Set the sharp words to "Please be kinder. My brother can be competitive, but he's still family.".
+    Set the kind words to "How sweet of you. I hope you and my brother both enjoy traveling.".
+    Set the story to "I'm Oak's granddaughter and my brother is out traveling. I hope both of you enjoy your journeys.".
+  If the address is "Viridian School:3,5:Girl":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a Viridian school student who enjoys sharing new facts. They want to learn more about caring for Pokemon.".
+    Set Speaker's voice to "Use eager explanations and questions. You dislike ridicule for studying.".
+    Set the sharp words to "Learning is important! Please don't make fun of my questions.".
+    Set the kind words to "Thanks! I love sharing what we learn about Pokemon in class.".
+    Set the story to "I study here at Viridian School. I love learning about Pokemon and sharing what I discover.".
+  If the address is "Viridian School:4,1:Teacher":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a Viridian teacher who encourages observation in class. They want students to treat Pokemon thoughtfully. A student once noticed a nervous partner before anyone else in class did.".
+    Set Speaker's voice to "Use patient instruction and clear questions. You are firm against bullying.".
+    Set the sharp words to "That language doesn't belong in my classroom. Please be respectful.".
+    Set the kind words to "Thank you. Curiosity and care make a fine foundation for learning.".
+    Set the story to "I teach here in Viridian. I want my students to observe carefully and treat Pokemon with kindness. One of my students once noticed a nervous partner before anyone else did.".
+  If the address is "Viridian House:5,3:Man":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a Viridian homeowner who enjoys a lively house shared with Pokemon. They want each companion treated as an individual.".
+    Set Speaker's voice to "Use easygoing household stories. You are protective of your guests and Pokemon.".
+    Set the sharp words to "Please show some respect in our home, especially around the Pokemon.".
+    Set the kind words to "Thanks! Every Pokemon here has a personality of its own.".
+    Set the story to "I share this home with some lively Pokemon. They all have their own personalities, and I want them treated that way.".
+  If the address is "Viridian House:1,4:Girl":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "Speary's companion in Viridian House who enjoys spending time at home. They want Speary to feel safe.".
+    Set Speaker's voice to "Use affectionate, excited remarks. You are protective of Speary.".
+    Set the sharp words to "Don't frighten Speary! We're friends.".
+    Set the kind words to "Thanks! Speary and I love spending time together.".
+    Set the story to "Speary and I spend time together here at home. I want my friend to feel safe and happy.".
+  If the address is "Viridian House:5,5:Speary":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "Speary has a favorite perch in the Viridian house it shares with a young companion. Familiar voices bring it down from the rafters.".
+    Set Speaker's voice to "Chirp sharply and shift on your perch. Ruffle your feathers at a sudden approach.".
+    Set the sharp words to "Spear! It flutters back toward its companion.".
+    Set the kind words to "Spear! It tilts its head and chirps brightly.".
+    Set the story to "Spear! It flutters toward its familiar companion and settles nearby.".
+  If the address is "Pewter House:2,3:Man":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a Pewter homeowner who enjoys neighborhood visits. He wants his house to remain a welcoming place for stories.".
+    Set Speaker's voice to "Use easy, conversational sentences. You dislike rudeness to guests.".
+    Set the sharp words to "Mind your manners in our home. Our neighbors are welcome here.".
+    Set the kind words to "Much appreciated. A good chat with neighbors makes a day better.".
+    Set the story to "I like having my neighbors visit our house in Pewter. A good story makes everyone feel welcome.".
+  If the address is "Pewter House:4,5:Youngster":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a Pewter child who listens to visitors' Pokemon stories at home. They want to hear about more journeys.".
+    Set Speaker's voice to "Use eager questions and quick reactions. You dislike frightening stories aimed at you.".
+    Set the sharp words to "Hey, don't try to scare me! I just wanted a story.".
+    Set the kind words to "Cool! Have you met any interesting Pokemon on your travels?".
+    Set the story to "I listen to visitors' Pokemon stories here at home. I want to hear about all kinds of journeys!".
+  If the address is "Nidoran House:4,5:Nidoran":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "The boy in Pewter earned Nidoran's trust by letting it choose when to come close. It still listens for his footsteps.".
+    Set Speaker's voice to "Prick up an ear for a kind voice. Guard your space when alarmed and answer with calls and small movements.".
+    Set the sharp words to "Nido! It retreats toward the boy, ears raised.".
+    Set the kind words to "Nido! It sniffs curiously, then relaxes beside its friend.".
+    Set the story to "Nido! It sniffs the air and stays close to its friend.".
+  If the address is "Nidoran House:3,5:Boy":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "Nidoran's young friend who spends time with it at home. He wants his companion treated gently.".
+    Set Speaker's voice to "Use simple, affectionate sentences. You are protective of Nidoran.".
+    Set the sharp words to "Leave Nidoran alone! You're frightening my friend.".
+    Set the kind words to "Thanks! Nidoran is my friend, and we like being together.".
+    Set the story to "Nidoran is my friend. We spend time together here, and I always try to be gentle.".
+  If the address is "Nidoran House:1,2:Man":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is an adult in Nidoran's household who watches the boy care for his friend. They want their bond to stay safe.".
+    Set Speaker's voice to "Use quiet, approving observations. You are firm about threats at home.".
+    Set the sharp words to "That's enough. Be gentle with the boy and Nidoran.".
+    Set the kind words to "Thank you. It's good to see how much he cares for Nidoran.".
+    Set the story to "I live here with the boy and Nidoran. I like seeing how carefully he looks after his friend.".
+  If the address is "Oak's Lab:1,9:Girl":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a lab assistant who sorts field notes for Oak. She wants visiting trainers to understand his research. Oak once showed her how a small field note could answer a larger question.".
+    Set Speaker's voice to "Curious and attentive. She dislikes careless treatment of research.".
+    Set the sharp words to "Please be careful with the notes. They take time to put in order.".
+    Set the kind words to "Thank you! Oak's research is fascinating to help with.".
+    Set the story to "I help sort Professor Oak's field notes here. I want visitors to see how much there is to learn about Pokemon. Professor Oak once showed me how a small field note can answer a much larger question.".
+  If the address is "Oak's Lab:2,10:Scientist":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a lab researcher who checks Oak's records against observations. He wants accurate data for future trainers. A copied number once led him to recheck an entire page of observations.".
+    Set Speaker's voice to "Measured and precise. He dislikes people dismissing careful observation.".
+    Set the sharp words to "Please do not disturb the records. Accuracy matters to our work.".
+    Set the kind words to "Thank you. Careful observations make our records more useful.".
+    Set the story to "I check our research records against what we observe. I hope accurate notes will help future trainers. Once, a copied number sent me back to recheck an entire page of observations.".
+  If the address is "Oak's Lab:8,10:Scientist":
+    Set Speaker's identity to the address.
+    Set Speaker's profile to "This is a lab researcher who studies Pokemon behavior alongside Oak. He hopes to learn how partners communicate. A quiet afternoon watching the starters taught him to give Pokemon space.".
+    Set Speaker's voice to "Thoughtful and animated when discussing behavior. He dislikes frightening Pokemon.".
+    Set the sharp words to "Please do not frighten the Pokemon. They need space to settle.".
+    Set the kind words to "Thanks! Patient observation can tell us so much about Pokemon.".
+    Set the story to "I study Pokemon behavior here at Oak's lab. I want to understand how partners communicate. One quiet afternoon watching the starters taught me to give Pokemon space.".
+  If the address is "Oak's Lab:4,3:Rival" or the address is "Route 22:25,5:Route 22 Rival":
+    Set Speaker's profile to "Oak's grandson grew up competing with the player. He wants to prove his team can lead the field.".
+    Set Speaker's voice to "Quick challenges and boasts. He bristles at being dismissed.".
+  If the sharp words is not "":
+    If the topic contains "hate" or the topic contains "stupid" or the topic contains "idiot" or the topic contains "shut up" or the topic contains "kill" or the topic contains "hurt you" or the topic contains "ugly" or the topic contains "loser" or the topic contains "rude" or the topic contains "mean":
+      Set Speaker's response to "{the guest}: {the sharp words}".
+      Stop.
+    If the topic contains "love you" or the topic contains "date me" or the topic contains "flirt" or the topic contains "kiss" or the topic contains "beautiful" or the topic contains "cute":
+      Set Speaker's response to "{the guest}: {the kind words}".
+      Stop.
+    If the topic contains "your story" or the topic contains "about yourself" or the topic contains "who are you" or the topic contains "your past" or the topic contains "your background" or the topic contains "tell me about you":
+      Set Speaker's response to "{the guest}: {the story}".
+      Stop.
+    If the topic contains "thank" or the topic contains "kind" or the topic contains "friend" or the topic contains "nice":
+      Set Speaker's response to "{the guest}: {the kind words}".
+      Stop.
+  Let the local greeting be the local greetings for the address.
+  If the local greeting is not nothing:
+    Set Speaker's response to the local greeting's greeting.
+    Stop.
+  If the address is "Route 22:25,5:Route 22 Rival":
+    Set Speaker's response to "ROUTE 22 RIVAL: Still keeping up, {Journey's trainer}? My team and I are training hard!".
+    Stop.
+  If the address is "Blue's House:2,3:Daisy" or the address is "Blue's House:6,4:Daisy":
+    Set Speaker's response to "DAISY: Hello, {Journey's trainer}! My brother can be competitive, but I hope you both enjoy your journeys.".
+    Stop.
+  If the guest is "Clerk" and Journey's place is "Pewter Mart":
+    Set Speaker's response to "CLERK: Welcome to the Pewter Mart! Check your supplies before traveling.".
+    Stop.
+  If the guest is "Nurse":
+    Set Speaker's response to "NURSE: Welcome! Taking care of your Pokemon is an important part of a journey.".
+    If Journey's place is "Pewter Center":
+      Set Speaker's response to "NURSE: Welcome to Pewter! I hope your Pokemon are feeling well after the road.".
+    Stop.
+  If the guest is "Bulbasaur":
+    Set Speaker's response to "BULBASAUR: Bulba! The Pokemon watches you quietly.".
+    Stop.
+  If the guest is "Charmander":
+    Set Speaker's response to "CHARMANDER: Char! Its tail flame flickers as it looks your way.".
+    Stop.
+  If the guest is "Squirtle":
+    Set Speaker's response to "SQUIRTLE: Squirtle! It peeks at you with curiosity.".
+    Stop.
+  If the guest is "Oak":
+    Set Speaker's response to "OAK: A good researcher observes carefully and treats Pokemon with respect. What would you like to know?".
+    If the topic contains "pokemon" or the topic contains "pokémon":
+      Set Speaker's response to "OAK: Pokemon are remarkable creatures. Some people keep them as companions, and others battle alongside them.".
+    If the topic contains "grass" or the topic contains "wild":
+      Set Speaker's response to "OAK: Wild Pokemon live in tall grass. Don't venture in without a Pokemon to protect you.".
+    If the topic contains "starter" or the topic contains "partner":
+      If Journey's starter is "":
+        Set Speaker's response to "OAK: I have three Pokemon at the lab. Choosing a partner is an important decision.".
+      Otherwise:
+        Set Speaker's response to "OAK: You chose {Journey's starter}. Spend time with your partner and learn what it can do.".
+    If the topic contains "parcel":
+      If Journey's parcel is 1 and Journey's dex is 0:
+        Set Speaker's response to "OAK: You have my parcel? Please speak to me normally so I can receive it.".
+      Otherwise if Journey's dex is 1:
+        Set Speaker's response to "OAK: Thank you for delivering my parcel. Your Pokedex can record Pokemon you encounter.".
+      Otherwise:
+        Set Speaker's response to "OAK: The Viridian City Mart may have something for me. Please check there.".
+    If the topic contains "pokedex" or the topic contains "pokédex":
+      If Journey's dex is 1:
+        Set Speaker's response to "OAK: The Pokedex records data on Pokemon you encounter. Catch them to learn more.".
+      Otherwise:
+        Set Speaker's response to "OAK: I study Pokemon, but I have more work to do before I can tell you about that.".
+    Stop.
+  If the guest is "Mom":
+    Set Speaker's response to "MOM: It's good to see you, {Journey's trainer}. Take care of yourself out there.".
+    If the topic contains "home" or the topic contains "miss" or the topic contains "you":
+      Set Speaker's response to "MOM: Home is always here for you. I'm cheering you on, even when you're far away.".
+    If the topic contains "oak" or the topic contains "professor":
+      Set Speaker's response to "MOM: Professor Oak lives next door. He knows so much about Pokemon.".
+    If the topic contains "pokemon" or the topic contains "pokémon" or the topic contains "starter":
+      If Journey's starter is "":
+        Set Speaker's response to "MOM: I wonder what Pokemon you'll meet on your journey. Be kind to them.".
+      Otherwise:
+        Set Speaker's response to "MOM: How is {Journey's starter}? Remember to look after your partner as well as yourself.".
+    Stop.
+  If the guest is "Rival":
+    Set Speaker's response to "RIVAL: Hey, {Journey's trainer}! Don't expect me to wait around while you make up your mind.".
+    If the topic contains "battle" or the topic contains "strong":
+      Set Speaker's response to "RIVAL: I'm going to train hard and get stronger. You'd better keep up!".
+    If the topic contains "oak" or the topic contains "grandpa":
+      Set Speaker's response to "RIVAL: Grandpa's always studying Pokemon. I want to get out there and prove myself!".
+    If the topic contains "starter" or the topic contains "pokemon" or the topic contains "pokémon":
+      If Journey's rival starter is "":
+        Set Speaker's response to "RIVAL: I'm ready to get a Pokemon of my own. Grandpa is taking his time!".
+      Otherwise:
+        Set Speaker's response to "RIVAL: My {Journey's rival starter} and I will make a great team. Just you watch!".
+    Stop.
+  If the guest is "Clerk":
+    Set Speaker's response to "CLERK: Welcome to the Viridian Mart! Can I help with something?".
+    If the topic contains "parcel" or the topic contains "oak":
+      If Journey's parcel is 1 and Journey's dex is 0:
+        Set Speaker's response to "CLERK: Please take Oak's parcel back to his lab in Pallet Town.".
+      Otherwise if Journey's dex is 1:
+        Set Speaker's response to "CLERK: Thanks for helping get that delivery to Professor Oak.".
+      Otherwise:
+        Set Speaker's response to "CLERK: I have a delivery for Professor Oak. Speak to me normally and I'll give it to you.".
+    Stop.
+  If the guest is "Brock":
+    Set Speaker's response to "BROCK: Training takes patience. Learn what your Pokemon can do and stand by them.".
+    If the topic contains "rock" or the topic contains "gym":
+      Set Speaker's response to "BROCK: I'm Pewter's Gym Leader. My Pokemon are rock hard and have true grit.".
+    If the topic contains "badge" or the topic contains "win":
+      If Journey's badge is 1:
+        Set Speaker's response to "BROCK: You earned the Boulderbadge. Your team proved its strength.".
+      Otherwise:
+        Set Speaker's response to "BROCK: A badge is earned in battle. Face me when you're ready.".
+    Stop.
+  If the guest is "Gym Trainer":
+    Set Speaker's response to "GYM TRAINER: Brock is tough. Don't underestimate the trainers in this gym, either!".
+    If the topic contains "light" or the topic contains "year":
+      Set Speaker's response to "GYM TRAINER: A light year measures distance. I should have remembered that!".
+    Stop.
+  If the guest is "Gym Guide":
+    Set Speaker's response to "GYM GUIDE: Take a look at your team's moves and prepare before you challenge Brock.".
+    If the topic contains "rock" or the topic contains "brock":
+      Set Speaker's response to "GYM GUIDE: Brock uses Rock-type Pokemon. Think carefully about which moves to bring.".
+    Stop.
+  If the guest is "Bug Catcher 1":
+    Set Speaker's response to "BUG CATCHER: I love finding Pokemon in the forest. There's always another patch of grass to explore!".
+    Stop.
+  If the guest is "Bug Catcher 2":
+    Set Speaker's response to "BUG CATCHER: The forest is a great place to train. I like seeing what other trainers bring!".
+    Stop.
+  If the guest is "Bug Catcher 3":
+    Set Speaker's response to "BUG CATCHER: Slow down and look around! You might spot a Pokemon you've never seen before.".
+
+
+

@@ -1,0 +1,158 @@
+This chapter shares only illustrategeodude and illustrateonix.
+
+Use the page library.
+Use the foundation chapter.
+
+To illustrategeodude at an x (number) by a y (number):
+  Let the shape be a list of 15, 22, 10, 20, 7, 17, 5, 13, 2, 12, 1, 9, 2, 5, 5, 3, 8, 3, 10, 5, 11, 9, 10, 12, 12, 15, 17 and 17.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 14, 20, 10, 18, 8, 15, 7, 12, 4, 11, 3, 9, 4, 6, 6, 5, 8, 5, 9, 8, 8, 11, 10, 14, 15 and 17.
+  Shade Screen at the x by the y with the shape as 1.
+  Set the shape to a list of 5, 13, 8, 13, 10, 16, 13, 18, 11, 19, 8 and 17.
+  Shade Screen at the x by the y with the shape as 2.
+  Set the shape to a list of 33, 22, 38, 20, 41, 17, 43, 13, 46, 12, 47, 9, 46, 5, 43, 3, 40, 3, 38, 5, 37, 9, 38, 12, 36, 15, 31 and 17.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 34, 20, 38, 18, 40, 15, 41, 12, 44, 11, 45, 9, 44, 6, 42, 5, 40, 5, 39, 8, 40, 11, 38, 14, 33 and 17.
+  Shade Screen at the x by the y with the shape as 1.
+  Set the shape to a list of 43, 13, 40, 13, 38, 16, 35, 18, 37, 19, 40 and 17.
+  Shade Screen at the x by the y with the shape as 2.
+  Set the shape to a list of 2, 5, 4, 3, 6, 3, 6, 8, 4, 9, 2 and 8.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 6, 3, 8, 3, 10, 5, 10, 9, 7 and 9.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 3, 9, 6, 8, 8, 9, 8, 12, 5, 13, 3 and 12.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 42, 3, 44, 3, 46, 5, 46, 8, 44, 9, 42 and 8.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 40, 3, 42, 3, 42, 8, 40, 9, 38, 8, 38 and 5.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 40, 9, 43, 8, 46, 9, 45, 12, 42, 13, 40 and 12.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 3, 5, 5, 4, 5, 7, 3 and 7.
+  Shade Screen at the x by the y with the shape as 1.
+  Set the shape to a list of 7, 4, 8, 4, 9, 6, 9, 7, 7 and 7.
+  Shade Screen at the x by the y with the shape as 1.
+  Set the shape to a list of 4, 10, 6, 9, 7, 10, 7, 11, 4 and 11.
+  Shade Screen at the x by the y with the shape as 1.
+  Set the shape to a list of 43, 4, 44, 4, 45, 6, 45, 7, 43 and 7.
+  Shade Screen at the x by the y with the shape as 1.
+  Set the shape to a list of 40, 4, 41, 4, 41, 7, 39, 7, 39 and 6.
+  Shade Screen at the x by the y with the shape as 1.
+  Set the shape to a list of 41, 10, 43, 9, 45, 10, 44, 11, 41 and 11.
+  Shade Screen at the x by the y with the shape as 1.
+  Set the shape to a list of 15, 15, 18, 12, 23, 11, 27, 12, 31, 13, 34, 17, 36, 20, 36, 26, 34, 30, 32, 34, 28, 36, 24, 38, 20, 36, 16, 35, 13, 31, 11, 27, 12 and 21.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 16, 16, 19, 14, 23, 13, 27, 14, 31, 15, 33, 18, 34, 21, 34, 26, 32, 30, 30, 33, 26, 35, 23, 36, 20, 34, 17, 33, 15, 30, 13, 26, 14 and 21.
+  Shade Screen at the x by the y with the shape as 2.
+  Set the shape to a list of 16, 17, 20, 14, 24, 14, 26, 15, 30, 15, 32, 18, 33, 21, 32, 23, 29, 22, 26, 21, 23, 22, 19, 21, 15 and 22.
+  Shade Screen at the x by the y with the shape as 1.
+  Set the shape to a list of 14, 26, 17, 27, 19, 30, 24, 31, 28, 30, 32, 27, 32, 30, 29, 33, 25, 34, 21, 33, 17 and 31.
+  Shade Screen at the x by the y with the shape as 1.
+  Set the shape to a list of 15, 19, 19, 18, 23, 20, 24, 22, 21, 22, 18, 21, 15 and 22.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 25, 20, 29, 18, 33, 19, 33, 22, 30, 21, 27, 22, 24 and 22.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 17, 21, 20, 22, 21, 24, 19, 25, 17 and 24.
+  Shade Screen at the x by the y with the shape as 0.
+  Set the shape to a list of 27, 22, 30, 21, 32, 21, 31, 24, 29, 25, 27 and 24.
+  Shade Screen at the x by the y with the shape as 0.
+  Set the shape to a list of 19, 22, 21, 22, 21, 25, 19 and 25.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 28, 22, 30, 22, 30, 25, 28 and 25.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 19, 22, 20, 22, 20, 23, 19 and 23.
+  Shade Screen at the x by the y with the shape as 0.
+  Set the shape to a list of 28, 22, 29, 22, 29, 23, 28 and 23.
+  Shade Screen at the x by the y with the shape as 0.
+  Set the shape to a list of 20, 28, 22, 29, 26, 29, 29, 27, 28, 30, 25, 31, 22 and 30.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 22, 29, 25, 29, 27, 28, 26, 30, 23 and 30.
+  Shade Screen at the x by the y with the shape as 0.
+  Set the shape to a list of 16, 17, 19, 15, 22, 15, 20 and 17.
+  Shade Screen at the x by the y with the shape as 0.
+  Set the shape to a list of 13, 23, 15, 22, 15, 26, 13 and 26.
+  Shade Screen at the x by the y with the shape as 2.
+  Set the shape to a list of 17, 32, 20, 33, 19 and 34.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 30, 31, 32, 29, 31 and 32.
+  Shade Screen at the x by the y with the shape as 3.
+
+To illustrateonix at an x (number) by a y (number):
+  Let the shape be a list of 11, 35, 8, 34, 6, 36, 6, 39, 9, 41, 12, 40, 13 and 37.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 9, 36, 7, 37, 8, 39, 10, 40, 12, 39, 12 and 37.
+  Shade Screen at the x by the y with the shape as 1.
+  Set the shape to a list of 7, 38, 9, 39, 11, 38, 10, 40, 8 and 40.
+  Shade Screen at the x by the y with the shape as 2.
+  Set the shape to a list of 15, 36, 11, 34, 8, 36, 9, 40, 12, 42, 16, 41, 18 and 38.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 12, 36, 10, 37, 11, 40, 14, 41, 16, 40, 16 and 38.
+  Shade Screen at the x by the y with the shape as 1.
+  Set the shape to a list of 11, 39, 14, 40, 16, 39, 15, 41, 12 and 41.
+  Shade Screen at the x by the y with the shape as 2.
+  Set the shape to a list of 21, 35, 17, 34, 14, 36, 15, 41, 19, 43, 23, 41, 24 and 38.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 18, 36, 16, 37, 17, 40, 20, 41, 22, 40, 22 and 38.
+  Shade Screen at the x by the y with the shape as 1.
+  Set the shape to a list of 16, 39, 19, 40, 21, 39, 22, 40, 20, 42, 17 and 41.
+  Shade Screen at the x by the y with the shape as 2.
+  Set the shape to a list of 27, 32, 23, 33, 21, 37, 23, 42, 27, 43, 31, 40, 31 and 36.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 25, 34, 23, 36, 24, 40, 27, 41, 29, 39, 29 and 36.
+  Shade Screen at the x by the y with the shape as 1.
+  Set the shape to a list of 24, 39, 27, 40, 30, 37, 29, 41, 26, 42, 24 and 41.
+  Shade Screen at the x by the y with the shape as 2.
+  Set the shape to a list of 34, 27, 30, 29, 28, 33, 29, 38, 33, 40, 37, 37, 38 and 32.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 32, 30, 30, 33, 31, 37, 34, 38, 36, 36, 36 and 32.
+  Shade Screen at the x by the y with the shape as 1.
+  Set the shape to a list of 31, 36, 34, 37, 36, 34, 36, 37, 33, 39, 31 and 38.
+  Shade Screen at the x by the y with the shape as 2.
+  Set the shape to a list of 38, 20, 34, 22, 33, 26, 35, 31, 39, 33, 43, 30, 44, 25, 42 and 21.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 37, 23, 35, 25, 36, 29, 39, 31, 42, 29, 42, 25, 40 and 23.
+  Shade Screen at the x by the y with the shape as 1.
+  Set the shape to a list of 36, 28, 39, 29, 42, 27, 42, 30, 39, 32, 36 and 30.
+  Shade Screen at the x by the y with the shape as 2.
+  Set the shape to a list of 37, 12, 34, 14, 34, 19, 36, 23, 40, 25, 44, 23, 46, 19, 44, 14, 41 and 12.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 37, 15, 36, 18, 38, 22, 41, 23, 44, 21, 44, 17, 41 and 14.
+  Shade Screen at the x by the y with the shape as 1.
+  Set the shape to a list of 36, 19, 39, 21, 42, 20, 44, 18, 44, 21, 41, 24, 38 and 23.
+  Shade Screen at the x by the y with the shape as 2.
+  Set the shape to a list of 30, 8, 27, 11, 28, 16, 32, 19, 37, 19, 40, 16, 39, 12, 35 and 9.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 30, 11, 29, 14, 32, 17, 36, 17, 38, 15, 37, 12, 34 and 10.
+  Shade Screen at the x by the y with the shape as 1.
+  Set the shape to a list of 30, 15, 33, 16, 37, 14, 38, 16, 36, 18, 32 and 18.
+  Shade Screen at the x by the y with the shape as 2.
+  Set the shape to a list of 24, 7, 21, 10, 22, 14, 26, 17, 31, 16, 33, 13, 31, 9, 28 and 7.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 24, 10, 23, 12, 26, 15, 29, 14, 31, 13, 30, 10, 27 and 9.
+  Shade Screen at the x by the y with the shape as 1.
+  Set the shape to a list of 23, 13, 26, 14, 30, 12, 30, 15, 27, 16, 24 and 15.
+  Shade Screen at the x by the y with the shape as 2.
+  Set the shape to a list of 13, 15, 12, 11, 13, 8, 13, 2, 15, 0, 17, 8, 20, 9, 23, 11, 25, 15, 24, 19, 21, 22, 19, 26, 15, 27, 12, 25, 10, 22, 8, 20, 8, 17, 10 and 15.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 14, 12, 14, 8, 15, 3, 16, 10, 19, 11, 22, 12, 23, 15, 22, 18, 20, 20, 18, 24, 15, 25, 13, 23, 11, 21, 10, 18, 11 and 16.
+  Shade Screen at the x by the y with the shape as 1.
+  Set the shape to a list of 14, 9, 15, 4, 15, 10, 17, 11, 15 and 12.
+  Shade Screen at the x by the y with the shape as 0.
+  Set the shape to a list of 20, 12, 22, 13, 23, 16, 21, 17, 20, 20, 18, 19, 19 and 16.
+  Shade Screen at the x by the y with the shape as 2.
+  Set the shape to a list of 10, 15, 13, 13, 16, 14, 18, 16, 17, 18, 14, 18, 12, 17, 10 and 18.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 12, 16, 14, 15, 16, 16, 16, 17, 14 and 17.
+  Shade Screen at the x by the y with the shape as 0.
+  Set the shape to a list of 14, 16, 15, 16, 15, 18, 14 and 18.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 14, 16, 15, 16, 15, 17, 14 and 17.
+  Shade Screen at the x by the y with the shape as 0.
+  Set the shape to a list of 9, 20, 12, 21, 15, 22, 18, 20, 18, 22, 15, 24, 12, 23, 10 and 22.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 11, 21, 13, 21, 15, 22, 13 and 22.
+  Shade Screen at the x by the y with the shape as 0.
+  Set the shape to a list of 11, 18, 12, 18, 12, 19, 11 and 19.
+  Shade Screen at the x by the y with the shape as 3.
+  Set the shape to a list of 17, 12, 19, 12, 20, 13, 18 and 13.
+  Shade Screen at the x by the y with the shape as 0.

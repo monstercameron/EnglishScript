@@ -1,0 +1,175 @@
+This chapter shares only portrait and back.
+
+Use the page library.
+Use the foundation chapter.
+Use the wild portraits chapter.
+Use the rock portraits chapter.
+Use the starter fronts chapter.
+Use the starter backs chapter.
+
+To patch at a left (number) by a top (number) with a width (number) over a height (number) as a shade (number) from an x (number) toward a y (number):
+  Let the column be the x + the left.
+  Let the vertical be the y + the top.
+  Fill Screen from the column by the vertical with the width over the height as the shade.
+
+To facecaterpie at an x (number) by a y (number):
+  Patch at 12 by 13 with 20 over 19 as 3 from the x toward the y.
+  Patch at 10 by 16 with 24 over 12 as 3 from the x toward the y.
+  Patch at 14 by 15 with 16 over 15 as 1 from the x toward the y.
+  Patch at 15 by 18 with 5 over 6 as 0 from the x toward the y.
+  Patch at 17 by 19 with 2 over 4 as 3 from the x toward the y.
+  Patch at 25 by 18 with 5 over 6 as 0 from the x toward the y.
+  Patch at 26 by 19 with 2 over 4 as 3 from the x toward the y.
+  Patch at 21 by 10 with 3 over 5 as 3 from the x toward the y.
+  Patch at 17 by 7 with 3 over 5 as 3 from the x toward the y.
+  Patch at 25 by 7 with 3 over 5 as 3 from the x toward the y.
+  Patch at 20 by 30 with 18 over 12 as 3 from the x toward the y.
+  Patch at 22 by 31 with 14 over 9 as 2 from the x toward the y.
+  Patch at 33 by 32 with 11 over 9 as 3 from the x toward the y.
+  Patch at 35 by 33 with 7 over 7 as 1 from the x toward the y.
+  Patch at 17 by 39 with 6 over 4 as 3 from the x toward the y.
+  Patch at 31 by 40 with 6 over 4 as 3 from the x toward the y.
+
+To faceweedle at an x (number) by a y (number):
+  Patch at 10 by 15 with 21 over 19 as 3 from the x toward the y.
+  Patch at 8 by 19 with 25 over 11 as 3 from the x toward the y.
+  Patch at 12 by 17 with 17 over 15 as 1 from the x toward the y.
+  Patch at 20 by 9 with 4 over 8 as 3 from the x toward the y.
+  Patch at 21 by 6 with 2 over 4 as 3 from the x toward the y.
+  Patch at 14 by 21 with 3 over 4 as 3 from the x toward the y.
+  Patch at 25 by 21 with 3 over 4 as 3 from the x toward the y.
+  Patch at 17 by 28 with 8 over 3 as 0 from the x toward the y.
+  Patch at 22 by 33 with 15 over 9 as 3 from the x toward the y.
+  Patch at 24 by 34 with 11 over 7 as 2 from the x toward the y.
+  Patch at 34 by 31 with 10 over 10 as 3 from the x toward the y.
+  Patch at 36 by 33 with 6 over 6 as 1 from the x toward the y.
+  Patch at 40 by 27 with 3 over 6 as 3 from the x toward the y.
+
+To facepidgey at an x (number) by a y (number):
+  Patch at 4 by 30 with 10 over 4 as 3 from the x toward the y.
+  Patch at 2 by 33 with 11 over 3 as 3 from the x toward the y.
+  Patch at 5 by 36 with 9 over 3 as 3 from the x toward the y.
+  Patch at 11 by 27 with 23 over 14 as 3 from the x toward the y.
+  Patch at 14 by 29 with 18 over 10 as 2 from the x toward the y.
+  Patch at 17 by 30 with 15 over 8 as 1 from the x toward the y.
+  Patch at 10 by 29 with 12 over 8 as 3 from the x toward the y.
+  Patch at 12 by 30 with 9 over 5 as 2 from the x toward the y.
+  Patch at 15 by 13 with 21 over 18 as 3 from the x toward the y.
+  Patch at 12 by 17 with 27 over 11 as 3 from the x toward the y.
+  Patch at 17 by 15 with 18 over 14 as 1 from the x toward the y.
+  Patch at 14 by 10 with 5 over 8 as 3 from the x toward the y.
+  Patch at 19 by 7 with 5 over 10 as 3 from the x toward the y.
+  Patch at 23 by 9 with 5 over 7 as 3 from the x toward the y.
+  Patch at 27 by 12 with 5 over 5 as 3 from the x toward the y.
+  Patch at 27 by 17 with 9 over 7 as 3 from the x toward the y.
+  Patch at 29 by 18 with 5 over 4 as 0 from the x toward the y.
+  Patch at 31 by 19 with 3 over 3 as 3 from the x toward the y.
+  Patch at 36 by 22 with 9 over 4 as 3 from the x toward the y.
+  Patch at 39 by 23 with 5 over 2 as 1 from the x toward the y.
+  Patch at 17 by 40 with 3 over 4 as 3 from the x toward the y.
+  Patch at 27 by 40 with 3 over 4 as 3 from the x toward the y.
+  Patch at 14 by 43 with 7 over 1 as 3 from the x toward the y.
+  Patch at 25 by 43 with 7 over 1 as 3 from the x toward the y.
+
+To facekakuna at an x (number) by a y (number):
+  Patch at 16 by 8 with 15 over 34 as 3 from the x toward the y.
+  Patch at 12 by 14 with 23 over 22 as 3 from the x toward the y.
+  Patch at 18 by 6 with 11 over 38 as 3 from the x toward the y.
+  Patch at 16 by 12 with 15 over 26 as 1 from the x toward the y.
+  Patch at 14 by 17 with 19 over 16 as 1 from the x toward the y.
+  Patch at 17 by 16 with 6 over 4 as 3 from the x toward the y.
+  Patch at 25 by 16 with 6 over 4 as 3 from the x toward the y.
+  Patch at 19 by 21 with 10 over 2 as 3 from the x toward the y.
+  Patch at 17 by 24 with 3 over 8 as 2 from the x toward the y.
+  Patch at 28 by 24 with 3 over 8 as 2 from the x toward the y.
+  Patch at 20 by 31 with 8 over 3 as 2 from the x toward the y.
+  Patch at 20 by 39 with 8 over 3 as 1 from the x toward the y.
+
+To facediglett at an x (number) by a y (number):
+  Patch at 12 by 17 with 25 over 25 as 3 from the x toward the y.
+  Patch at 9 by 24 with 31 over 17 as 3 from the x toward the y.
+  Patch at 15 by 13 with 19 over 9 as 3 from the x toward the y.
+  Patch at 14 by 19 with 21 over 20 as 1 from the x toward the y.
+  Patch at 17 by 22 with 3 over 5 as 3 from the x toward the y.
+  Patch at 29 by 22 with 3 over 5 as 3 from the x toward the y.
+  Patch at 21 by 30 with 7 over 4 as 2 from the x toward the y.
+  Patch at 4 by 38 with 40 over 5 as 3 from the x toward the y.
+  Patch at 8 by 36 with 8 over 5 as 2 from the x toward the y.
+  Patch at 20 by 39 with 9 over 3 as 2 from the x toward the y.
+  Patch at 34 by 37 with 7 over 4 as 2 from the x toward the y.
+
+To facesandshrew at an x (number) by a y (number):
+  Patch at 13 by 13 with 24 over 19 as 3 from the x toward the y.
+  Patch at 10 by 18 with 30 over 11 as 3 from the x toward the y.
+  Patch at 16 by 15 with 19 over 15 as 1 from the x toward the y.
+  Patch at 12 by 10 with 6 over 9 as 3 from the x toward the y.
+  Patch at 32 by 10 with 6 over 9 as 3 from the x toward the y.
+  Patch at 18 by 21 with 3 over 4 as 3 from the x toward the y.
+  Patch at 29 by 21 with 3 over 4 as 3 from the x toward the y.
+  Patch at 22 by 27 with 6 over 2 as 3 from the x toward the y.
+  Patch at 12 by 30 with 29 over 12 as 3 from the x toward the y.
+  Patch at 15 by 31 with 23 over 9 as 2 from the x toward the y.
+  Patch at 18 by 32 with 17 over 7 as 1 from the x toward the y.
+  Patch at 22 by 32 with 2 over 7 as 3 from the x toward the y.
+  Patch at 30 by 32 with 2 over 7 as 3 from the x toward the y.
+  Patch at 17 by 35 with 20 over 1 as 3 from the x toward the y.
+  Patch at 9 by 37 with 8 over 7 as 3 from the x toward the y.
+  Patch at 35 by 37 with 8 over 7 as 3 from the x toward the y.
+
+To facerattata at an x (number) by a y (number):
+  Patch at 2 by 23 with 7 over 3 as 3 from the x toward the y.
+  Patch at 1 by 20 with 3 over 6 as 3 from the x toward the y.
+  Patch at 3 by 18 with 7 over 3 as 3 from the x toward the y.
+  Patch at 8 by 19 with 3 over 5 as 3 from the x toward the y.
+  Patch at 10 by 26 with 23 over 14 as 3 from the x toward the y.
+  Patch at 12 by 24 with 20 over 17 as 3 from the x toward the y.
+  Patch at 13 by 27 with 17 over 11 as 2 from the x toward the y.
+  Patch at 10 by 36 with 9 over 7 as 3 from the x toward the y.
+  Patch at 25 by 37 with 8 over 6 as 3 from the x toward the y.
+  Patch at 12 by 38 with 5 over 3 as 1 from the x toward the y.
+  Patch at 27 by 39 with 4 over 2 as 1 from the x toward the y.
+  Patch at 23 by 18 with 8 over 9 as 3 from the x toward the y.
+  Patch at 24 by 16 with 7 over 7 as 3 from the x toward the y.
+  Patch at 26 by 18 with 3 over 4 as 1 from the x toward the y.
+  Patch at 31 by 17 with 8 over 10 as 3 from the x toward the y.
+  Patch at 33 by 19 with 4 over 6 as 2 from the x toward the y.
+  Patch at 22 by 23 with 19 over 11 as 3 from the x toward the y.
+  Patch at 25 by 21 with 13 over 15 as 3 from the x toward the y.
+  Patch at 24 by 25 with 17 over 8 as 1 from the x toward the y.
+  Patch at 34 by 25 with 4 over 4 as 3 from the x toward the y.
+  Patch at 35 by 25 with 1 over 1 as 0 from the x toward the y.
+  Patch at 39 by 30 with 5 over 3 as 3 from the x toward the y.
+  Patch at 38 by 33 with 5 over 3 as 0 from the x toward the y.
+  Patch at 39 by 33 with 2 over 3 as 3 from the x toward the y.
+  Patch at 28 by 31 with 8 over 2 as 3 from the x toward the y.
+  Patch at 22 by 29 with 6 over 1 as 3 from the x toward the y.
+  Patch at 20 by 32 with 7 over 1 as 3 from the x toward the y.
+
+To portrait a species (text) at an x (number) by a y (number):
+  Wildportrait the species at the x by the y.
+  Depict the species at the x by the y.
+  If the species is "Geodude":
+    Illustrategeodude at the x by the y.
+  If the species is "Onix":
+    Illustrateonix at the x by the y.
+  If the species is "Caterpie":
+    facecaterpie at the x by the y.
+  If the species is "Weedle":
+    faceweedle at the x by the y.
+  If the species is "Pidgey":
+    facepidgey at the x by the y.
+  If the species is "Rattata":
+    facerattata at the x by the y.
+
+  If the species is "Kakuna":
+    Facekakuna at the x by the y.
+  If the species is "Diglett":
+    Facediglett at the x by the y.
+  If the species is "Sandshrew":
+    Facesandshrew at the x by the y.
+
+To back a species (text) at an x (number) by a y (number):
+  Wildback the species at the x by the y.
+  Turn the species at the x by the y.
+  If the species is "Caterpie" or the species is "Weedle" or the species is "Pidgey" or the species is "Rattata" or the species is "Kakuna" or the species is "Sandshrew" or the species is "Diglett":
+    Portrait the species at the x by the y.

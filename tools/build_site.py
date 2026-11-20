@@ -350,9 +350,19 @@ PRINTED = [("reference.html", reference_page), ("vulkan.html", vulkan_page), ("p
            ("opposition.html", opposition_page), ("systems.html", systems_page), ("fizzbuzz.html", fizzbuzz_page)]
 
 
+def red_chapters():
+    sys.path.insert(0, str(ROOT))
+    from englishscript import compile_file
+
+    program = compile_file(ROOT / "docs" / "red" / "main.english")
+    return [unit.file for unit in program.compiler.chapters.values()]
+
+
 def main():
     sys.path.insert(0, str(ROOT / "tools"))
     PLAY.mkdir(parents=True, exist_ok=True)
+    (ROOT / "docs" / "red" / "chapters.json").write_text(
+        json.dumps(red_chapters(), indent=2) + "\n", encoding="utf-8")
     (PLAY / "englishscript.zip").write_bytes(build_zip())
     (PLAY / "examples.json").write_text(examples_text(), encoding="utf-8", newline="\n")
     (PLAY / "phrases.json").write_text(phrases_text(), encoding="utf-8", newline="\n")

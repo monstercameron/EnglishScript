@@ -1,6 +1,6 @@
 """The page library: things that are elements of a web page.
 
-A program that says "Use the page library." gets thirteen kinds of thing. Each
+A program that says "Use the page library." gets fifteen kinds of thing. Each
 thing of one of those kinds *is* an element of the page:
 
     panel     a box that holds other elements, side by side where they fit
@@ -84,6 +84,15 @@ A card can be hidden.
 A gauge has a level (number), a limit (number), and a panel (panel, if any).
 A gauge can be hidden.
 
+A canvas has a width (number), a height (number), and a panel (panel, if any).
+A canvas can be hidden.
+A canvas's width is always divisible by 1.
+A canvas's height is always divisible by 1.
+A canvas's width is never less than 1.
+A canvas's width is never more than 1024.
+A canvas's height is never less than 1.
+A canvas's height is never more than 1024.
+
 A picture has a source (text), a caption (text, if any), and a panel (panel, if any).
 A picture can be hidden.
 
@@ -102,13 +111,19 @@ A menu can be hidden.
 An option has a wording (text) and a menu (menu).
 An option can be picked.
 
+To fill a canvas (canvas) from a left (number) by a top (number) with a width (number) over a height (number) as a shade (number) is done by the library.
+To paint a canvas (canvas) at a column (number) by a down (number) with a shade (number) is done by the library.
+To trace a canvas (canvas) from a start column (number) by a start row (number) to a finish column (number) at a finish row (number) with a shade (number) is done by the library.
+To shade a canvas (canvas) at a column (number) by a down (number) with a vertices (list of numbers) as a shade (number) is done by the library.
+To work out the pixel (number) of a canvas (canvas) at a column (number) by a down (number) is done by the library.
+
 To remember a line (text) under a key (text) is done by the library.
 To work out the memory (text, if any) of a key (text) is done by the library.
 '''
 
 NAME = "page"
 KINDS = ("panel", "heading", "note", "field", "button", "card", "gauge",
-         "picture", "link", "table", "row", "cell", "menu", "option")
+         "picture", "link", "table", "row", "cell", "menu", "option", "canvas")
 #: What each kind of element sits inside, by the property that says so. A kind
 #: not listed here sits in its panel, if it has one, and otherwise on the page.
 INSIDE = {"row": "table", "cell": "row", "option": "menu"}
@@ -217,6 +232,13 @@ class Paper:
 #: What the stand-in pages remember, by key, for as long as Python runs. A
 #: test (or a host) may put a dict of its own in ``STORE`` to see or seed it.
 STORE = {}
+def use_remote_canvas(world, callback):
+    if not callable(callback):
+        raise TypeError("The canvas callback must be callable.")
+    state = world.libraries[NAME]
+    if "backend" in state:
+        raise RuntimeError("The page backend has already been selected for this world.")
+    state["remote_canvas"] = callback
 
 
 # -------------------------------------------------------------- the two backends
@@ -225,9 +247,14 @@ STORE = {}
 class Backend:
     """Where the page is: a browser's document, or the stand-in."""
 
-    def __init__(self):
+    def __init__(self, remote_canvas=None):
         self.browser = False
+        self.remote_canvas = remote_canvas
         self.proxies = []
+        if self.remote_canvas is not None:
+            self.document = Paper()
+            self.root = self.document.root
+            return
         try:
             import js  # noqa: PLC0415 - only there under Pyodide
             from pyodide.ffi import create_proxy  # noqa: PLC0415
@@ -358,13 +385,14 @@ def _safe(address, pictures=False):
 def _state(world):
     state = world.libraries[NAME]
     if "backend" not in state:
-        state["backend"] = Backend()
+        state["backend"] = Backend(state.get("remote_canvas"))
         state["bound"] = {}  # a thing's serial -> its Binding
         state["order"] = {}  # ROOT or a panel's serial -> the bindings inside it, in order
         state["choices"] = set()  # ROOT or a panel's serial: where some button has been chosen
         state["lists"] = {}  # ROOT or a panel's serial -> is it marked as a list?
         state["live"] = False
         state["problems"] = []
+        state["canvases"] = {}
     return state
 
 
@@ -411,6 +439,8 @@ def _make(world, state, thing):
     backend = state["backend"]
     new = backend.document.createElement
     kind = thing.kind
+    if backend.remote_canvas is not None and kind != "canvas":
+        raise EnglishError("The remote canvas backend only supports canvases.", stage="run", recoverable=True)
 
     def element(tag, css, parent=None):
         node = new(tag)
@@ -523,6 +553,8 @@ def _make(world, state, thing):
         node.setAttribute("aria-valuemin", "0")
         node.setAttribute("aria-valuemax", "100")
         binding = Binding(thing, node, {"bar": element("div", "es-gauge-bar", node)})
+    elif kind == "canvas":
+        binding = Binding(thing, element("canvas", "es-canvas"), {})
     elif kind == "picture":
         binding = Binding(thing, element("img", "es-picture"), {})
     elif kind == "link":
@@ -628,6 +660,8 @@ def _show(binding):
             _flag(parts["star"], "aria-pressed")(value),
             parts["star"].setAttribute("aria-label", f"Star: {wording}"),
             setattr(parts["star"], "textContent", "\u2605" if value else "\u2606")))
+    elif kind == "canvas":
+        pass
     elif kind == "picture":
         binding.tell("source", _safe(fields["source"], pictures=True), lambda value: node.setAttribute("src", value))
         binding.tell("caption", fields.get("caption") or "", lambda value: node.setAttribute("alt", value))
@@ -755,6 +789,11 @@ def sync(world):
             none = not any("picked" in each.thing.marks for each in order.get(thing.serial, ()))
             if bool(blank.selected) != none:
                 blank.selected = none
+    for thing in things:
+        if thing.kind == "canvas":
+            _show_canvas(state, bound[thing.serial])
+    for serial in set(state["canvases"]) - present:
+        del state["canvases"][serial]
     backend.attend(active)
 
 
@@ -783,6 +822,180 @@ def _settle(world):
 # ------------------------------------------------------- what the compiler calls
 
 
+def _whole(value, name, least, most):
+    value = Fraction(value)
+    if value.denominator != 1 or not least <= value <= most:
+        raise EnglishError(f"{name} has to be a whole number from {least} to {most}.",
+                           stage="run", recoverable=True)
+    return int(value)
+
+
+def _canvas(state, canvas):
+    from ..runtime import alive
+    canvas = alive(canvas)
+    width = _whole(canvas.fields["width"], "The canvas width", 1, 1024)
+    height = _whole(canvas.fields["height"], "The canvas height", 1, 1024)
+    entry = state["canvases"].get(canvas.serial)
+    if entry is None or entry["size"] != (width, height):
+        entry = {"size": (width, height), "pixels": bytearray(width * height), "dirty": True}
+        state["canvases"][canvas.serial] = entry
+    return entry
+
+
+def verb_fill(world, canvas, left, top, width, height, shade):
+    entry = _canvas(_state(world), canvas)
+    canvas_width, canvas_height = entry["size"]
+    x = _whole(left, "The left column", 0, canvas_width - 1)
+    y = _whole(top, "The top row", 0, canvas_height - 1)
+    width = _whole(width, "The fill width", 1, canvas_width - x)
+    height = _whole(height, "The fill height", 1, canvas_height - y)
+    shade = _whole(shade, "The shade", 0, 3)
+    line = bytes([shade]) * width
+    pixels = entry["pixels"]
+    for row in range(y, y + height):
+        start = row * canvas_width + x
+        if pixels[start:start + width] != line:
+            pixels[start:start + width] = line
+            entry["dirty"] = True
+
+
+def verb_paint(world, canvas, column, down, shade):
+    entry = _canvas(_state(world), canvas)
+    width, height = entry["size"]
+    x = _whole(column, "The column", 0, width - 1)
+    y = _whole(down, "The row", 0, height - 1)
+    shade = _whole(shade, "The shade", 0, 3)
+    index = y * width + x
+    if entry["pixels"][index] != shade:
+        entry["pixels"][index] = shade
+        entry["dirty"] = True
+
+
+def verb_trace(world, canvas, start_column, start_row, finish_column, finish_row, shade):
+    entry = _canvas(_state(world), canvas)
+    width, height = entry["size"]
+    x = _whole(start_column, "The start column", 0, width - 1)
+    y = _whole(start_row, "The start row", 0, height - 1)
+    end_x = _whole(finish_column, "The finish column", 0, width - 1)
+    end_y = _whole(finish_row, "The finish row", 0, height - 1)
+    shade = _whole(shade, "The shade", 0, 3)
+    dx, dy = abs(end_x - x), -abs(end_y - y)
+    step_x = 1 if x < end_x else -1
+    step_y = 1 if y < end_y else -1
+    error = dx + dy
+    pixels = entry["pixels"]
+    while True:
+        index = y * width + x
+        if pixels[index] != shade:
+            pixels[index] = shade
+            entry["dirty"] = True
+        if x == end_x and y == end_y:
+            break
+        twice = 2 * error
+        if twice >= dy:
+            error += dy
+            x += step_x
+        if twice <= dx:
+            error += dx
+            y += step_y
+
+
+def verb_shade(world, canvas, column, down, vertices, shade):
+    entry = _canvas(_state(world), canvas)
+    width, height = entry["size"]
+    def integer(value, name):
+        value = Fraction(value)
+        if value.denominator != 1:
+            raise EnglishError(f"{name} has to be a whole number.", stage="run", recoverable=True)
+        return int(value)
+    x = integer(column, "The origin column")
+    y = integer(down, "The origin row")
+    if len(vertices) < 6 or len(vertices) % 2:
+        raise EnglishError("The vertices have to contain at least three pairs of coordinates.",
+                           stage="run", recoverable=True)
+    points = []
+    for i in range(0, len(vertices), 2):
+        px = x + integer(vertices[i], "A vertex column")
+        py = y + integer(vertices[i + 1], "A vertex row")
+        points.append((_whole(px, "A vertex column", 0, width - 1),
+                       _whole(py, "A vertex row", 0, height - 1)))
+    shade = _whole(shade, "The shade", 0, 3)
+    edges = list(zip(points, points[1:] + points[:1]))
+    pixels = entry["pixels"]
+    def paint(px, py):
+        index = py * width + px
+        if pixels[index] != shade:
+            pixels[index] = shade
+            entry["dirty"] = True
+    for py in range(min(p[1] for p in points), max(p[1] for p in points) + 1):
+        crossings = []
+        for (x1, y1), (x2, y2) in edges:
+            if min(y1, y2) <= py < max(y1, y2):
+                crossings.append(Fraction(x1) + Fraction((py - y1) * (x2 - x1), y2 - y1))
+        crossings.sort()
+        for i in range(0, len(crossings) - 1, 2):
+            left, right = crossings[i:i + 2]
+            for px in range(-(-left.numerator // left.denominator), right.numerator // right.denominator + 1):
+                paint(px, py)
+    for start, end in edges:
+        (px, py), (end_x, end_y) = sorted((start, end))
+        dx, dy = abs(end_x - px), -abs(end_y - py)
+        step_x = 1 if px < end_x else -1
+        step_y = 1 if py < end_y else -1
+        error = dx + dy
+        while True:
+            paint(px, py)
+            if px == end_x and py == end_y:
+                break
+            twice = 2 * error
+            if twice >= dy:
+                error += dy
+                px += step_x
+            if twice <= dx:
+                error += dx
+                py += step_y
+
+
+def value_pixel(world, canvas, column, down):
+    entry = _canvas(_state(world), canvas)
+    width, height = entry["size"]
+    x = _whole(column, "The column", 0, width - 1)
+    y = _whole(down, "The row", 0, height - 1)
+    return Fraction(entry["pixels"][y * width + x])
+
+
+def _show_canvas(state, binding):
+    entry = _canvas(state, binding.thing)
+    if not entry["dirty"]:
+        return
+    width, height = entry["size"]
+    pixels = entry["pixels"]
+    backend = state["backend"]
+    if backend.remote_canvas is not None:
+        backend.remote_canvas(binding.thing.serial, binding.thing.name, width, height, bytes(pixels))
+    elif backend.browser:
+        node = binding.node
+        if binding.shown.get("canvas size") != (width, height):
+            node.width, node.height = width, height
+            binding.shown["canvas size"] = (width, height)
+        context = node.getContext("2d")
+        shades = ("#ffffff", "#aaaaaa", "#555555", "#000000")
+        for y in range(height):
+            x = 0
+            while x < width:
+                shade = pixels[y * width + x]
+                end = x + 1
+                while end < width and pixels[y * width + end] == shade:
+                    end += 1
+                context.fillStyle = shades[shade]
+                context.fillRect(x, y, end - x, 1)
+                x = end
+    else:
+        binding.node.setAttribute("width", width)
+        binding.node.setAttribute("height", height)
+    entry["dirty"] = False
+
+
 def verb_remember(world, line, key):
     _state(world)["backend"].keep(key, line)
 
@@ -800,7 +1013,7 @@ def live(world):
 
 def finish(world):
     state = world.libraries.get(NAME) or {}
-    if state.get("live") and not state["backend"].browser:
+    if state.get("live") and not state["backend"].browser and state["backend"].remote_canvas is None:
         world.out("")
         world.out("The page, as it stands (there is no browser here to show it):")
         for line in sketch(world).splitlines():
@@ -875,6 +1088,8 @@ def _menu(state, thing):
 
 def _inline(thing):
     fields, kind = thing.fields, thing.kind
+    if kind == "canvas":
+        return f"(canvas: {_plain(fields['width'])} by {_plain(fields['height'])})"
     if kind == "picture":
         return f"(picture: {fields.get('caption') or fields['source']})"
     if kind == "link":

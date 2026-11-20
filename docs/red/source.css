@@ -1,0 +1,102 @@
+#source-reader {
+  margin-top: 64px;
+  border-top: 1px solid #b8c2b3;
+  padding-top: 28px;
+  min-width: 0;
+}
+#source-reader h2 {
+  font: 2rem Georgia, serif;
+  margin: 0 0 18px;
+}
+.source-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.source-tabs button, .source-retry, .source-pages button {
+  border: 1px solid #9aa99a;
+  border-radius: 4px;
+  background: #f2f3e9;
+  color: #354437;
+  padding: 8px 12px;
+}
+.source-tabs button[aria-selected=true] {
+  background: #374f42;
+  color: #fff;
+  border-color: #374f42;
+}
+.source-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: .82rem;
+  font-weight: 700;
+  color: #4b5a4e;
+}
+.source-picker select {
+  min-width: 0;
+  max-width: 100%;
+  font: inherit;
+  color: #2d3a30;
+  background: #f5f6ed;
+  border: 1px solid #9aa99a;
+  border-radius: 4px;
+  padding: 8px;
+}
+.source-picker select:focus-visible, .source-view:focus-visible {
+  outline: 3px solid #bd6a3f;
+  outline-offset: 3px;
+}
+#source-current {
+  font-size: .85rem;
+  margin: 20px 0 8px;
+  overflow-wrap: anywhere;
+}
+.source-status { font-size: .82rem; color: #586459; margin: 5px 0; }
+.source-status:empty { display: none; }
+.source-retry { margin: 4px 0 10px; }
+.source-pages {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 10px;
+  color: #4b5a4e;
+  font-size: .8rem;
+}
+.source-pages[hidden] { display: none; }
+.source-pages button:disabled { opacity: .5; cursor: default; }
+.source-view {
+  max-height: 34rem;
+  overflow: auto;
+  overscroll-behavior: contain;
+  margin: 0;
+  padding: 16px 0;
+  background: #26342e;
+  color: #e3ebda;
+  border-radius: 7px;
+  font: .82rem/1.55 ui-monospace, SFMono-Regular, Consolas, monospace;
+  tab-size: 2;
+}
+.source-view code { display: block; min-width: max-content; padding-right: 20px; white-space: pre; }
+.source-line::before {
+  content: attr(data-line);
+  display: inline-block;
+  width: 4em;
+  padding-right: 1em;
+  text-align: right;
+  color: #99aa9b;
+  user-select: none;
+}
+.source-string { color: #d9c28b; }
+.source-number { color: #b6c9f3; }
+.source-keyword { color: #a9d9b6; font-weight: 700; }
+@media (max-width: 600px) {
+  #source-reader { margin-top: 42px; }
+  .source-tabs { gap: 5px; }
+  .source-tabs button { padding: 7px 9px; font-size: .8rem; }
+  .source-picker { align-items: flex-start; flex-direction: column; }
+  .source-picker select { width: 100%; }
+  .source-view { max-height: 26rem; font-size: .75rem; }
+}

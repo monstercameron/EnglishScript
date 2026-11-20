@@ -1,0 +1,393 @@
+This chapter shares only inscribe, caption, caption line and caption remainder.
+
+Use the page library.
+Use the foundation chapter.
+
+To stroke at a left (number) by a top (number) with a width (number) over a height (number):
+  Let the x be the left.
+  Let the y be the top.
+  Let the right be the left + the width.
+  Let the bottom be the top + the height.
+  If the x is less than 0:
+    Set the x to 0.
+  If the y is less than 0:
+    Set the y to 0.
+  If the right is more than 160:
+    Set the right to 160.
+  If the bottom is more than 144:
+    Set the bottom to 144.
+  If the x is less than the right and the y is less than the bottom:
+    Let the breadth be the right - the x.
+    Let the depth be the bottom - the y.
+    Fill Screen from the x by the y with the breadth over the depth as 3.
+
+To draw a mark (text) at a left (number) by a top (number):
+  Let the letter be the mark in upper case.
+  If the letter is "Á":
+    Stroke at (the left + 3) by (the top - 1) with 1 over 1.
+    Set the letter to "A".
+  If the letter is "À":
+    Set the letter to "A".
+  If the letter is "Â":
+    Set the letter to "A".
+  If the letter is "Ä":
+    Set the letter to "A".
+  If the letter is "Ã":
+    Set the letter to "A".
+  If the letter is "Å":
+    Set the letter to "A".
+  If the letter is "É":
+    Stroke at (the left + 3) by (the top - 1) with 1 over 1.
+    Set the letter to "E".
+  If the letter is "È":
+    Set the letter to "E".
+  If the letter is "Ê":
+    Set the letter to "E".
+  If the letter is "Ë":
+    Set the letter to "E".
+  If the letter is "Í":
+    Stroke at (the left + 3) by (the top - 1) with 1 over 1.
+    Set the letter to "I".
+  If the letter is "Ì":
+    Set the letter to "I".
+  If the letter is "Î":
+    Set the letter to "I".
+  If the letter is "Ï":
+    Set the letter to "I".
+  If the letter is "Ó":
+    Stroke at (the left + 3) by (the top - 1) with 1 over 1.
+    Set the letter to "O".
+  If the letter is "Ò":
+    Set the letter to "O".
+  If the letter is "Ô":
+    Set the letter to "O".
+  If the letter is "Ö":
+    Set the letter to "O".
+  If the letter is "Õ":
+    Set the letter to "O".
+  If the letter is "Ú":
+    Stroke at (the left + 3) by (the top - 1) with 1 over 1.
+    Set the letter to "U".
+  If the letter is "Ù":
+    Set the letter to "U".
+  If the letter is "Û":
+    Set the letter to "U".
+  If the letter is "Ü":
+    Set the letter to "U".
+  If the letter is "Ñ":
+    Stroke at (the left + 1) by (the top - 1) with 3 over 1.
+    Set the letter to "N".
+  If the letter is "Ç":
+    Set the letter to "C".
+  If the letter is "A":
+    Stroke at (the left + 1) by (the top + 0) with 3 over 1.
+    Stroke at (the left + 0) by (the top + 1) with 1 over 6.
+    Stroke at (the left + 4) by (the top + 1) with 1 over 6.
+    Stroke at (the left + 1) by (the top + 3) with 3 over 1.
+  If the letter is "B":
+    Stroke at (the left + 0) by (the top + 0) with 1 over 7.
+    Stroke at (the left + 1) by (the top + 0) with 3 over 1.
+    Stroke at (the left + 4) by (the top + 1) with 1 over 2.
+    Stroke at (the left + 1) by (the top + 3) with 3 over 1.
+    Stroke at (the left + 4) by (the top + 4) with 1 over 2.
+    Stroke at (the left + 1) by (the top + 6) with 3 over 1.
+  If the letter is "C":
+    Stroke at (the left + 1) by (the top + 0) with 4 over 1.
+    Stroke at (the left + 0) by (the top + 1) with 1 over 5.
+    Stroke at (the left + 1) by (the top + 6) with 4 over 1.
+  If the letter is "D":
+    Stroke at (the left + 0) by (the top + 0) with 1 over 7.
+    Stroke at (the left + 1) by (the top + 0) with 3 over 1.
+    Stroke at (the left + 4) by (the top + 1) with 1 over 5.
+    Stroke at (the left + 1) by (the top + 6) with 3 over 1.
+  If the letter is "E":
+    Stroke at (the left + 0) by (the top + 0) with 1 over 7.
+    Stroke at (the left + 1) by (the top + 0) with 4 over 1.
+    Stroke at (the left + 1) by (the top + 3) with 3 over 1.
+    Stroke at (the left + 1) by (the top + 6) with 4 over 1.
+  If the letter is "F":
+    Stroke at (the left + 0) by (the top + 0) with 1 over 7.
+    Stroke at (the left + 1) by (the top + 0) with 4 over 1.
+    Stroke at (the left + 1) by (the top + 3) with 3 over 1.
+  If the letter is "G":
+    Stroke at (the left + 1) by (the top + 0) with 4 over 1.
+    Stroke at (the left + 0) by (the top + 1) with 1 over 5.
+    Stroke at (the left + 1) by (the top + 6) with 4 over 1.
+    Stroke at (the left + 4) by (the top + 3) with 1 over 3.
+    Stroke at (the left + 2) by (the top + 3) with 2 over 1.
+  If the letter is "H":
+    Stroke at (the left + 0) by (the top + 0) with 1 over 7.
+    Stroke at (the left + 4) by (the top + 0) with 1 over 7.
+    Stroke at (the left + 1) by (the top + 3) with 3 over 1.
+  If the letter is "I":
+    Stroke at (the left + 0) by (the top + 0) with 5 over 1.
+    Stroke at (the left + 2) by (the top + 1) with 1 over 5.
+    Stroke at (the left + 0) by (the top + 6) with 5 over 1.
+  If the letter is "J":
+    Stroke at (the left + 0) by (the top + 0) with 5 over 1.
+    Stroke at (the left + 3) by (the top + 1) with 1 over 5.
+    Stroke at (the left + 0) by (the top + 5) with 1 over 1.
+    Stroke at (the left + 1) by (the top + 6) with 2 over 1.
+  If the letter is "K":
+    Stroke at (the left + 0) by (the top + 0) with 1 over 7.
+    Stroke at (the left + 3) by (the top + 0) with 2 over 1.
+    Stroke at (the left + 2) by (the top + 1) with 1 over 2.
+    Stroke at (the left + 1) by (the top + 3) with 1 over 1.
+    Stroke at (the left + 2) by (the top + 4) with 1 over 2.
+    Stroke at (the left + 3) by (the top + 6) with 2 over 1.
+  If the letter is "L":
+    Stroke at (the left + 0) by (the top + 0) with 1 over 7.
+    Stroke at (the left + 1) by (the top + 6) with 4 over 1.
+  If the letter is "M":
+    Stroke at (the left + 0) by (the top + 0) with 1 over 7.
+    Stroke at (the left + 4) by (the top + 0) with 1 over 7.
+    Stroke at (the left + 1) by (the top + 1) with 1 over 1.
+    Stroke at (the left + 2) by (the top + 2) with 1 over 1.
+    Stroke at (the left + 3) by (the top + 1) with 1 over 1.
+  If the letter is "N":
+    Stroke at (the left + 0) by (the top + 0) with 1 over 7.
+    Stroke at (the left + 4) by (the top + 0) with 1 over 7.
+    Stroke at (the left + 1) by (the top + 1) with 1 over 2.
+    Stroke at (the left + 2) by (the top + 3) with 1 over 1.
+    Stroke at (the left + 3) by (the top + 4) with 1 over 2.
+  If the letter is "O":
+    Stroke at (the left + 1) by (the top + 0) with 3 over 1.
+    Stroke at (the left + 0) by (the top + 1) with 1 over 5.
+    Stroke at (the left + 4) by (the top + 1) with 1 over 5.
+    Stroke at (the left + 1) by (the top + 6) with 3 over 1.
+  If the letter is "P":
+    Stroke at (the left + 0) by (the top + 0) with 1 over 7.
+    Stroke at (the left + 1) by (the top + 0) with 3 over 1.
+    Stroke at (the left + 4) by (the top + 1) with 1 over 2.
+    Stroke at (the left + 1) by (the top + 3) with 3 over 1.
+  If the letter is "Q":
+    Stroke at (the left + 1) by (the top + 0) with 3 over 1.
+    Stroke at (the left + 0) by (the top + 1) with 1 over 5.
+    Stroke at (the left + 4) by (the top + 1) with 1 over 5.
+    Stroke at (the left + 1) by (the top + 6) with 3 over 1.
+    Stroke at (the left + 3) by (the top + 5) with 2 over 2.
+  If the letter is "R":
+    Stroke at (the left + 0) by (the top + 0) with 1 over 7.
+    Stroke at (the left + 1) by (the top + 0) with 3 over 1.
+    Stroke at (the left + 4) by (the top + 1) with 1 over 2.
+    Stroke at (the left + 1) by (the top + 3) with 3 over 1.
+    Stroke at (the left + 2) by (the top + 4) with 1 over 1.
+    Stroke at (the left + 3) by (the top + 5) with 1 over 1.
+    Stroke at (the left + 4) by (the top + 6) with 1 over 1.
+  If the letter is "S":
+    Stroke at (the left + 1) by (the top + 0) with 4 over 1.
+    Stroke at (the left + 0) by (the top + 1) with 1 over 2.
+    Stroke at (the left + 1) by (the top + 3) with 3 over 1.
+    Stroke at (the left + 4) by (the top + 4) with 1 over 2.
+    Stroke at (the left + 0) by (the top + 6) with 4 over 1.
+  If the letter is "T":
+    Stroke at (the left + 0) by (the top + 0) with 5 over 1.
+    Stroke at (the left + 2) by (the top + 1) with 1 over 6.
+  If the letter is "U":
+    Stroke at (the left + 0) by (the top + 0) with 1 over 6.
+    Stroke at (the left + 4) by (the top + 0) with 1 over 6.
+    Stroke at (the left + 1) by (the top + 6) with 3 over 1.
+  If the letter is "V":
+    Stroke at (the left + 0) by (the top + 0) with 1 over 4.
+    Stroke at (the left + 4) by (the top + 0) with 1 over 4.
+    Stroke at (the left + 1) by (the top + 4) with 1 over 2.
+    Stroke at (the left + 3) by (the top + 4) with 1 over 2.
+    Stroke at (the left + 2) by (the top + 6) with 1 over 1.
+  If the letter is "W":
+    Stroke at (the left + 0) by (the top + 0) with 1 over 7.
+    Stroke at (the left + 4) by (the top + 0) with 1 over 7.
+    Stroke at (the left + 1) by (the top + 5) with 1 over 1.
+    Stroke at (the left + 2) by (the top + 4) with 1 over 1.
+    Stroke at (the left + 3) by (the top + 5) with 1 over 1.
+  If the letter is "X":
+    Stroke at (the left + 0) by (the top + 0) with 1 over 2.
+    Stroke at (the left + 4) by (the top + 0) with 1 over 2.
+    Stroke at (the left + 1) by (the top + 2) with 1 over 1.
+    Stroke at (the left + 3) by (the top + 2) with 1 over 1.
+    Stroke at (the left + 2) by (the top + 3) with 1 over 1.
+    Stroke at (the left + 1) by (the top + 4) with 1 over 1.
+    Stroke at (the left + 3) by (the top + 4) with 1 over 1.
+    Stroke at (the left + 0) by (the top + 5) with 1 over 2.
+    Stroke at (the left + 4) by (the top + 5) with 1 over 2.
+  If the letter is "Y":
+    Stroke at (the left + 0) by (the top + 0) with 1 over 2.
+    Stroke at (the left + 4) by (the top + 0) with 1 over 2.
+    Stroke at (the left + 1) by (the top + 2) with 1 over 1.
+    Stroke at (the left + 3) by (the top + 2) with 1 over 1.
+    Stroke at (the left + 2) by (the top + 3) with 1 over 4.
+  If the letter is "Z":
+    Stroke at (the left + 0) by (the top + 0) with 5 over 1.
+    Stroke at (the left + 4) by (the top + 1) with 1 over 1.
+    Stroke at (the left + 3) by (the top + 2) with 1 over 1.
+    Stroke at (the left + 2) by (the top + 3) with 1 over 1.
+    Stroke at (the left + 1) by (the top + 4) with 1 over 1.
+    Stroke at (the left + 0) by (the top + 5) with 1 over 1.
+    Stroke at (the left + 0) by (the top + 6) with 5 over 1.
+  If the letter is "0":
+    Stroke at (the left + 1) by (the top + 0) with 3 over 1.
+    Stroke at (the left + 0) by (the top + 1) with 1 over 5.
+    Stroke at (the left + 4) by (the top + 1) with 1 over 5.
+    Stroke at (the left + 1) by (the top + 6) with 3 over 1.
+    Stroke at (the left + 2) by (the top + 3) with 1 over 1.
+  If the letter is "1":
+    Stroke at (the left + 1) by (the top + 1) with 1 over 1.
+    Stroke at (the left + 2) by (the top + 0) with 1 over 6.
+    Stroke at (the left + 0) by (the top + 6) with 5 over 1.
+  If the letter is "2":
+    Stroke at (the left + 0) by (the top + 0) with 4 over 1.
+    Stroke at (the left + 4) by (the top + 1) with 1 over 2.
+    Stroke at (the left + 1) by (the top + 3) with 3 over 1.
+    Stroke at (the left + 0) by (the top + 4) with 1 over 2.
+    Stroke at (the left + 0) by (the top + 6) with 5 over 1.
+  If the letter is "3":
+    Stroke at (the left + 0) by (the top + 0) with 4 over 1.
+    Stroke at (the left + 4) by (the top + 1) with 1 over 2.
+    Stroke at (the left + 1) by (the top + 3) with 3 over 1.
+    Stroke at (the left + 4) by (the top + 4) with 1 over 2.
+    Stroke at (the left + 0) by (the top + 6) with 4 over 1.
+  If the letter is "4":
+    Stroke at (the left + 0) by (the top + 0) with 1 over 4.
+    Stroke at (the left + 4) by (the top + 0) with 1 over 7.
+    Stroke at (the left + 1) by (the top + 3) with 3 over 1.
+  If the letter is "5":
+    Stroke at (the left + 0) by (the top + 0) with 5 over 1.
+    Stroke at (the left + 0) by (the top + 1) with 1 over 2.
+    Stroke at (the left + 0) by (the top + 3) with 4 over 1.
+    Stroke at (the left + 4) by (the top + 4) with 1 over 2.
+    Stroke at (the left + 0) by (the top + 6) with 4 over 1.
+  If the letter is "6":
+    Stroke at (the left + 1) by (the top + 0) with 4 over 1.
+    Stroke at (the left + 0) by (the top + 1) with 1 over 5.
+    Stroke at (the left + 1) by (the top + 3) with 3 over 1.
+    Stroke at (the left + 4) by (the top + 4) with 1 over 2.
+    Stroke at (the left + 1) by (the top + 6) with 3 over 1.
+  If the letter is "7":
+    Stroke at (the left + 0) by (the top + 0) with 5 over 1.
+    Stroke at (the left + 4) by (the top + 1) with 1 over 2.
+    Stroke at (the left + 3) by (the top + 3) with 1 over 2.
+    Stroke at (the left + 2) by (the top + 5) with 1 over 2.
+  If the letter is "8":
+    Stroke at (the left + 1) by (the top + 0) with 3 over 1.
+    Stroke at (the left + 0) by (the top + 1) with 1 over 2.
+    Stroke at (the left + 4) by (the top + 1) with 1 over 2.
+    Stroke at (the left + 1) by (the top + 3) with 3 over 1.
+    Stroke at (the left + 0) by (the top + 4) with 1 over 2.
+    Stroke at (the left + 4) by (the top + 4) with 1 over 2.
+    Stroke at (the left + 1) by (the top + 6) with 3 over 1.
+  If the letter is "9":
+    Stroke at (the left + 1) by (the top + 0) with 3 over 1.
+    Stroke at (the left + 0) by (the top + 1) with 1 over 2.
+    Stroke at (the left + 4) by (the top + 1) with 1 over 5.
+    Stroke at (the left + 1) by (the top + 3) with 3 over 1.
+    Stroke at (the left + 0) by (the top + 6) with 4 over 1.
+  If the letter is ".":
+    Stroke at (the left + 2) by (the top + 6) with 1 over 1.
+  If the letter is ",":
+    Stroke at (the left + 2) by (the top + 5) with 1 over 2.
+    Stroke at (the left + 1) by (the top + 6) with 1 over 1.
+  If the letter is ":":
+    Stroke at (the left + 2) by (the top + 2) with 1 over 1.
+    Stroke at (the left + 2) by (the top + 5) with 1 over 1.
+  If the letter is ";":
+    Stroke at (the left + 2) by (the top + 2) with 1 over 1.
+    Stroke at (the left + 2) by (the top + 5) with 1 over 2.
+    Stroke at (the left + 1) by (the top + 6) with 1 over 1.
+  If the letter is "!":
+    Stroke at (the left + 2) by (the top + 0) with 1 over 5.
+    Stroke at (the left + 2) by (the top + 6) with 1 over 1.
+  If the letter is "?":
+    Stroke at (the left + 1) by (the top + 0) with 3 over 1.
+    Stroke at (the left + 0) by (the top + 1) with 1 over 1.
+    Stroke at (the left + 4) by (the top + 1) with 1 over 2.
+    Stroke at (the left + 2) by (the top + 3) with 2 over 1.
+    Stroke at (the left + 2) by (the top + 5) with 1 over 1.
+  If the letter is "-":
+    Stroke at (the left + 1) by (the top + 3) with 3 over 1.
+  If the letter is "'":
+    Stroke at (the left + 2) by (the top + 0) with 1 over 2.
+  If the letter is "/":
+    Stroke at (the left + 4) by (the top + 0) with 1 over 2.
+    Stroke at (the left + 3) by (the top + 2) with 1 over 1.
+    Stroke at (the left + 2) by (the top + 3) with 1 over 1.
+    Stroke at (the left + 1) by (the top + 4) with 1 over 1.
+    Stroke at (the left + 0) by (the top + 5) with 1 over 2.
+  If the letter is "(":
+    Stroke at (the left + 2) by (the top + 0) with 2 over 1.
+    Stroke at (the left + 1) by (the top + 1) with 1 over 5.
+    Stroke at (the left + 2) by (the top + 6) with 2 over 1.
+  If the letter is ")":
+    Stroke at (the left + 1) by (the top + 0) with 2 over 1.
+    Stroke at (the left + 3) by (the top + 1) with 1 over 5.
+    Stroke at (the left + 1) by (the top + 6) with 2 over 1.
+  If the letter is "♂":
+    Stroke at (the left + 0) by (the top + 3) with 3 over 1.
+    Stroke at (the left + 0) by (the top + 4) with 1 over 2.
+    Stroke at (the left + 2) by (the top + 4) with 1 over 2.
+    Stroke at (the left + 0) by (the top + 6) with 3 over 1.
+    Stroke at (the left + 3) by (the top + 2) with 1 over 1.
+    Stroke at (the left + 4) by (the top + 0) with 1 over 2.
+    Stroke at (the left + 3) by (the top + 0) with 1 over 1.
+  If the letter is "♀":
+    Stroke at (the left + 1) by (the top + 0) with 3 over 1.
+    Stroke at (the left + 0) by (the top + 1) with 1 over 2.
+    Stroke at (the left + 4) by (the top + 1) with 1 over 2.
+    Stroke at (the left + 1) by (the top + 3) with 3 over 1.
+    Stroke at (the left + 2) by (the top + 4) with 1 over 3.
+    Stroke at (the left + 1) by (the top + 5) with 3 over 1.
+
+To inscribe a wording (text) at a left (number) by a top (number):
+  Let the size be the length of the wording.
+  Let the position be 0.
+  Let the column be the left.
+  Repeat the size times:
+    Add 1 to the position.
+    Let the mark be the first 1 letters of the last (the size - the position + 1) letters of the wording.
+    Draw the mark at the column by the top.
+    Add 6 to the column.
+
+To work out the caption line (text) of a wording (text):
+  Let the size be the length of the wording.
+  If the size is at most 19:
+    The answer is the wording.
+  Let the next be the first 1 letters of the last (the size - 19) letters of the wording.
+  If the next is " ":
+    The answer is the first 19 letters of the wording.
+  Let the position be 0.
+  Let the break be 0.
+  Repeat 19 times:
+    Add 1 to the position.
+    Let the mark be the first 1 letters of the last (the size - the position + 1) letters of the wording.
+    If the mark is " ":
+      Set the break to the position.
+  If the break is 0:
+    The answer is the first 19 letters of the wording.
+  The answer is the first (the break - 1) letters of the wording.
+
+To work out the remaining words (text) for a line (text) of a wording (text):
+  Let the size be the length of the wording.
+  Let the rest be the last (the size - the length of the line) letters of the wording.
+  Let the trimming be yes.
+  While the trimming is yes:
+    If the rest is "":
+      Set the trimming to no.
+    Otherwise:
+      If the first 1 letters of the rest is " ":
+        Set the rest to the last (the length of the rest - 1) letters of the rest.
+      Otherwise:
+        Set the trimming to no.
+  The answer is the rest.
+
+To work out the caption remainder (text) for a wording (text):
+  Let the first line be the caption line of the wording.
+  Let the rest be the remaining words for the first line of the wording.
+  Let the second line be the caption line of the rest.
+  The answer is the remaining words for the second line of the rest.
+
+To caption a wording (text):
+  Fill Screen from 0 by 96 with 160 over 48 as 3.
+  Fill Screen from 2 by 98 with 156 over 44 as 0.
+  Let the first line be the caption line of the wording.
+  Let the rest be the remaining words for the first line of the wording.
+  Let the second line be the caption line of the rest.
+  Inscribe the first line at 8 by 104.
+  Inscribe the second line at 8 by 120.

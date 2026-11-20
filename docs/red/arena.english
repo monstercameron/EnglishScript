@@ -1,0 +1,86 @@
+This chapter shares only arena.
+
+Use the page library.
+Use the foundation chapter.
+Use the battle chapter.
+Use the commands chapter.
+Use the portraits chapter.
+Use the lettering chapter.
+
+To pointer at a left (number) by a top (number):
+  Fill Screen from the left by the top with 2 over 7 as 3.
+  Fill Screen from (the left + 2) by (the top + 1) with 2 over 5 as 3.
+  Fill Screen from (the left + 4) by (the top + 2) with 1 over 3 as 3.
+
+To arena:
+  Fill Screen from 0 by 0 with 160 over 144 as 0.
+  Portrait Combat's opponent at 104 by 4.
+  Back Combat's species at 7 by 49.
+  Inscribe (the first 12 letters of Combat's opponent) at 8 by 0.
+  Inscribe "L{Combat's enemy level}" at 49 by 9.
+  Inscribe "HP" at 15 by 18.
+  Fill Screen from 31 by 20 with 49 over 4 as 3.
+  Fill Screen from 32 by 21 with 47 over 2 as 0.
+  Let the enemy bar be (Combat's enemy health * 47 / Combat's enemy maximum health) rounded down to the nearest 1.
+  If the enemy bar is more than 0:
+    Fill Screen from 32 by 21 with the enemy bar over 2 as 3.
+  Fill Screen from 11 by 17 with 1 over 11 as 3.
+  Fill Screen from 11 by 28 with 77 over 1 as 3.
+  Inscribe (the first 12 letters of Combat's species) at 80 by 56.
+  Inscribe "L{Combat's level}" at 112 by 65.
+  Inscribe "HP" at 79 by 74.
+  Fill Screen from 95 by 76 with 49 over 4 as 3.
+  Fill Screen from 96 by 77 with 47 over 2 as 0.
+  Let the player bar be (Combat's health * 47 / Combat's maximum health) rounded down to the nearest 1.
+  If the player bar is more than 0:
+    Fill Screen from 96 by 77 with the player bar over 2 as 3.
+  Inscribe "{Combat's health}/{Combat's maximum health}" at 104 by 83.
+  Fill Screen from 72 by 92 with 77 over 1 as 3.
+  Fill Screen from 148 by 72 with 1 over 21 as 3.
+  Fill Screen from 0 by 96 with 160 over 48 as 3.
+  Fill Screen from 2 by 98 with 156 over 44 as 0.
+  If Orders's phase is "moves":
+    Let the remaining be Combat's pp one.
+    Let the move be Combat's move one.
+    If Combat's choice is 2:
+      Set the remaining to Combat's pp two.
+      Set the move to Combat's move two.
+    If Combat's choice is 3:
+      Set the remaining to Combat's pp three.
+      Set the move to Combat's move three.
+    If Combat's choice is 4:
+      Set the remaining to Combat's pp four.
+      Set the move to Combat's move four.
+    Inscribe "{the move} PP {the remaining}" at 8 by 100.
+    Inscribe (the first 11 letters of Combat's move one) at 12 by 112.
+    Inscribe (the first 11 letters of Combat's move two) at 89 by 112.
+    Inscribe (the first 11 letters of Combat's move three) at 12 by 130.
+    Inscribe (the first 11 letters of Combat's move four) at 89 by 130.
+    If Combat's choice is 1:
+      Pointer at 5 by 112.
+    If Combat's choice is 2:
+      Pointer at 82 by 112.
+    If Combat's choice is 3:
+      Pointer at 5 by 130.
+    If Combat's choice is 4:
+      Pointer at 82 by 130.
+  Otherwise:
+    Inscribe (the first 24 letters of Combat's message) at 8 by 99.
+    Let the message length be the length of Combat's message.
+    If the message length is more than 24:
+      Inscribe (the first 24 letters of the last (the message length - 24) letters of Combat's message) at 8 by 108.
+    Fill Screen from 65 by 116 with 93 over 1 as 3.
+    Fill Screen from 65 by 116 with 1 over 26 as 3.
+    Inscribe "FIGHT" at 78 by 119.
+    Inscribe "PKMN" at 124 by 119.
+    Inscribe "ITEM" at 78 by 132.
+    Inscribe "RUN" at 124 by 132.
+    If Orders's cursor is 1:
+      Pointer at 71 by 119.
+    If Orders's cursor is 2:
+      Pointer at 117 by 119.
+    If Orders's cursor is 3:
+      Pointer at 71 by 132.
+    If Orders's cursor is 4:
+      Pointer at 117 by 132.
+

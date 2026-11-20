@@ -1,0 +1,41 @@
+This chapter shares only cry.
+
+Use the sound chapter.
+
+The species cries are notes, in that order:
+  "Bulbasaur" has "77:1 77:2 60:1 59:1 59:1 58:1.5".
+  "Ivysaur" has "99:1 99:3 66:1.5 65:1 65:1 63:2".
+  "Venusaur" has "96:1 96:3 65:2 64:1 63:1 62:2".
+  "Charmander" has "72:1 72:2 72:1 65:2.5 65:2 65:1 64:2".
+  "Charmeleon" has "68:1 68:2 68:1 62:2.5 62:2 62:1 61:2".
+  "Charizard" has "66:1 66:2 66:1 61:3 61:2 61:1 60:2".
+  "Squirtle" has "80:3 80:2 82:1.5 80:1 65:1.5 65:2".
+  "Wartortle" has "74:3 74:2 75:1.5 74:1 62:1.5 62:2".
+  "Blastoise" has "58:3.5 57:2 58:1.5 59:1.5 59:1.5 60:2".
+  "Pidgey" has "70:1 80:1 74:0.5 59:1.5".
+  "Pidgeotto" has "94:2 99:4 99:2".
+  "Pidgeot" has "89:2.5 99:4.5 99:2.5".
+  "Rattata" has "60:2 50:0.5 46:2".
+  "Raticate" has "61:2 51:0.5 46:2.5".
+  "Caterpie" has "72:3 74:1 68:3".
+  "Metapod" has "91:1.5 91:1 91:1.5 91:1.5 91:1 91:1.5 91:1 91:1.5".
+  "Butterfree" has "99:3 99:1 93:3".
+  "Weedle" has "81:1 70:2.5 71:1.5 70:1 69:1 69:1.5".
+  "Kakuna" has "58:2.5 57:1.5 58:1 59:1 59:1 60:1.5".
+  "Beedrill" has "61:3.5 61:2 61:1.5 62:1.5 63:1.5 63:2".
+  "Pikachu" has "91:1 92:2 64:1 63:1 62:1 61:1.5".
+  "Spearow" has "65:2 63:0.5 62:0.5 61:0.5 60:3.5 77:1 75:1 74:3.5".
+  "Fearow" has "68:2.5 70:1 72:1 74:1 77:1 74:1 72:1 70:2".
+  "Diglett" has "67:1 75:1 70:1 70:1 75:1 67:1 67:1 75:1 70:1 70:1.5".
+  "Geodude" has "64:3 64:2 65:3 65:1.5 64:1 63:1 63:1 61:1.5".
+  "Onix" has "53:4 53:4 50:2 49:4".
+  "Sandshrew" has "76:1 94:3 83:2".
+  "Nidoran F" has "60:1 80:2 74:1 73:2".
+  "Nidoran M" has "73:1 87:3.5 79:2".
+  "Nidorina" has "61:1.5 85:2.5 78:1 76:2.5".
+  "Nidorino" has "77:1 97:4 84:2".
+
+To cry a species (text):
+  Let the cry sheet be the species cries for the species.
+  Set Score's cry to the cry sheet's notes or else "65~56:2 52~44:3".
+  Add 1 to Score's cry count.

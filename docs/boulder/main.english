@@ -1,0 +1,22 @@
+Use the field chapter.
+Use the scene chapter.
+
+Prepare.
+
+Whenever Input becomes ready:
+  If Input's action is "left":
+    Move by -8 toward 0.
+  If Input's action is "right":
+    Move by 8 toward 0.
+  If Input's action is "up":
+    Move by 0 toward -8.
+  If Input's action is "down":
+    Move by 0 toward 8.
+  Set Input's action to "".
+
+Ask the model "Give a short Field Lab calibration message." and let the message (text) be the reply.
+If the message is "":
+  Set Practice's field note to "No calibration message received.".
+Otherwise:
+  Set Practice's field note to the message.
+

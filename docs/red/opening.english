@@ -1,0 +1,326 @@
+This chapter shares only Opening.
+
+Use the page library.
+Use the foundation chapter.
+Use the lettering chapter.
+Use the portraits chapter.
+
+To stroke from a left (number) by a top (number) to a right (number) at a bottom (number) with a shade (number) over a breadth (number):
+  Let the offset be 0 - 1.
+  If the breadth is 4:
+    Set the offset to 0 - 2.
+  If the breadth is 7:
+    Set the offset to 0 - 3.
+  Repeat the breadth times:
+    Trace Screen from (the left + the offset) by the top to (the right + the offset) at the bottom with the shade.
+    Trace Screen from the left by (the top + the offset) to the right at (the bottom + the offset) with the shade.
+    Add 1 to the offset.
+
+To logo:
+  Stroke from 24 by 24 to 32 at 50 with 3 over 7.
+  Stroke from 24 by 24 to 36 at 21 with 3 over 7.
+  Stroke from 36 by 21 to 41 at 24 with 3 over 7.
+  Stroke from 41 by 24 to 42 at 30 with 3 over 7.
+  Stroke from 42 by 30 to 38 at 34 with 3 over 7.
+  Stroke from 38 by 34 to 28 at 36 with 3 over 7.
+  Stroke from 47 by 32 to 44 at 35 with 3 over 7.
+  Stroke from 44 by 35 to 45 at 43 with 3 over 7.
+  Stroke from 45 by 43 to 49 at 46 with 3 over 7.
+  Stroke from 49 by 46 to 55 at 44 with 3 over 7.
+  Stroke from 55 by 44 to 58 at 39 with 3 over 7.
+  Stroke from 58 by 39 to 55 at 33 with 3 over 7.
+  Stroke from 55 by 33 to 47 at 32 with 3 over 7.
+  Stroke from 61 by 22 to 63 at 44 with 3 over 7.
+  Stroke from 72 by 24 to 63 at 34 with 3 over 7.
+  Stroke from 63 by 34 to 76 at 45 with 3 over 7.
+  Stroke from 79 by 20 to 80 at 43 with 3 over 7.
+  Stroke from 79 by 20 to 91 at 19 with 3 over 7.
+  Stroke from 80 by 31 to 89 at 30 with 3 over 7.
+  Stroke from 80 by 43 to 92 at 42 with 3 over 7.
+  Stroke from 98 by 43 to 100 at 22 with 3 over 7.
+  Stroke from 100 by 22 to 106 at 32 with 3 over 7.
+  Stroke from 106 by 32 to 114 at 23 with 3 over 7.
+  Stroke from 114 by 23 to 116 at 44 with 3 over 7.
+  Stroke from 121 by 32 to 118 at 35 with 3 over 7.
+  Stroke from 118 by 35 to 119 at 43 with 3 over 7.
+  Stroke from 119 by 43 to 123 at 46 with 3 over 7.
+  Stroke from 123 by 46 to 129 at 44 with 3 over 7.
+  Stroke from 129 by 44 to 131 at 38 with 3 over 7.
+  Stroke from 131 by 38 to 128 at 33 with 3 over 7.
+  Stroke from 128 by 33 to 121 at 32 with 3 over 7.
+  Stroke from 134 by 25 to 131 at 48 with 3 over 7.
+  Stroke from 134 by 25 to 140 at 41 with 3 over 7.
+  Stroke from 140 by 41 to 143 at 27 with 3 over 7.
+  Stroke from 24 by 24 to 32 at 50 with 2 over 4.
+  Stroke from 24 by 24 to 36 at 21 with 2 over 4.
+  Stroke from 36 by 21 to 41 at 24 with 2 over 4.
+  Stroke from 41 by 24 to 42 at 30 with 2 over 4.
+  Stroke from 42 by 30 to 38 at 34 with 2 over 4.
+  Stroke from 38 by 34 to 28 at 36 with 2 over 4.
+  Stroke from 47 by 32 to 44 at 35 with 2 over 4.
+  Stroke from 44 by 35 to 45 at 43 with 2 over 4.
+  Stroke from 45 by 43 to 49 at 46 with 2 over 4.
+  Stroke from 49 by 46 to 55 at 44 with 2 over 4.
+  Stroke from 55 by 44 to 58 at 39 with 2 over 4.
+  Stroke from 58 by 39 to 55 at 33 with 2 over 4.
+  Stroke from 55 by 33 to 47 at 32 with 2 over 4.
+  Stroke from 61 by 22 to 63 at 44 with 2 over 4.
+  Stroke from 72 by 24 to 63 at 34 with 2 over 4.
+  Stroke from 63 by 34 to 76 at 45 with 2 over 4.
+  Stroke from 79 by 20 to 80 at 43 with 2 over 4.
+  Stroke from 79 by 20 to 91 at 19 with 2 over 4.
+  Stroke from 80 by 31 to 89 at 30 with 2 over 4.
+  Stroke from 80 by 43 to 92 at 42 with 2 over 4.
+  Stroke from 98 by 43 to 100 at 22 with 2 over 4.
+  Stroke from 100 by 22 to 106 at 32 with 2 over 4.
+  Stroke from 106 by 32 to 114 at 23 with 2 over 4.
+  Stroke from 114 by 23 to 116 at 44 with 2 over 4.
+  Stroke from 121 by 32 to 118 at 35 with 2 over 4.
+  Stroke from 118 by 35 to 119 at 43 with 2 over 4.
+  Stroke from 119 by 43 to 123 at 46 with 2 over 4.
+  Stroke from 123 by 46 to 129 at 44 with 2 over 4.
+  Stroke from 129 by 44 to 131 at 38 with 2 over 4.
+  Stroke from 131 by 38 to 128 at 33 with 2 over 4.
+  Stroke from 128 by 33 to 121 at 32 with 2 over 4.
+  Stroke from 134 by 25 to 131 at 48 with 2 over 4.
+  Stroke from 134 by 25 to 140 at 41 with 2 over 4.
+  Stroke from 140 by 41 to 143 at 27 with 2 over 4.
+  Stroke from 24 by 24 to 32 at 50 with 1 over 2.
+  Stroke from 24 by 24 to 36 at 21 with 1 over 2.
+  Stroke from 36 by 21 to 41 at 24 with 1 over 2.
+  Stroke from 41 by 24 to 42 at 30 with 1 over 2.
+  Stroke from 42 by 30 to 38 at 34 with 1 over 2.
+  Stroke from 38 by 34 to 28 at 36 with 1 over 2.
+  Stroke from 47 by 32 to 44 at 35 with 1 over 2.
+  Stroke from 44 by 35 to 45 at 43 with 1 over 2.
+  Stroke from 45 by 43 to 49 at 46 with 1 over 2.
+  Stroke from 49 by 46 to 55 at 44 with 1 over 2.
+  Stroke from 55 by 44 to 58 at 39 with 1 over 2.
+  Stroke from 58 by 39 to 55 at 33 with 1 over 2.
+  Stroke from 55 by 33 to 47 at 32 with 1 over 2.
+  Stroke from 61 by 22 to 63 at 44 with 1 over 2.
+  Stroke from 72 by 24 to 63 at 34 with 1 over 2.
+  Stroke from 63 by 34 to 76 at 45 with 1 over 2.
+  Stroke from 79 by 20 to 80 at 43 with 1 over 2.
+  Stroke from 79 by 20 to 91 at 19 with 1 over 2.
+  Stroke from 80 by 31 to 89 at 30 with 1 over 2.
+  Stroke from 80 by 43 to 92 at 42 with 1 over 2.
+  Stroke from 98 by 43 to 100 at 22 with 1 over 2.
+  Stroke from 100 by 22 to 106 at 32 with 1 over 2.
+  Stroke from 106 by 32 to 114 at 23 with 1 over 2.
+  Stroke from 114 by 23 to 116 at 44 with 1 over 2.
+  Stroke from 121 by 32 to 118 at 35 with 1 over 2.
+  Stroke from 118 by 35 to 119 at 43 with 1 over 2.
+  Stroke from 119 by 43 to 123 at 46 with 1 over 2.
+  Stroke from 123 by 46 to 129 at 44 with 1 over 2.
+  Stroke from 129 by 44 to 131 at 38 with 1 over 2.
+  Stroke from 131 by 38 to 128 at 33 with 1 over 2.
+  Stroke from 128 by 33 to 121 at 32 with 1 over 2.
+  Stroke from 134 by 25 to 131 at 48 with 1 over 2.
+  Stroke from 134 by 25 to 140 at 41 with 1 over 2.
+  Stroke from 140 by 41 to 143 at 27 with 1 over 2.
+  Trace Screen from 83 by 16 to 88 at 11 with 3.
+  Trace Screen from 84 by 16 to 89 at 11 with 3.
+  Trace Screen from 85 by 16 to 89 at 12 with 2.
+  Inscribe "Red Version" at 48 by 61.
+
+To clash:
+  Let the beat be the remainder of Journey's animation divided by 16.
+  Let the step be 0.
+  If the beat is at least 8:
+    Set the step to 4.
+  Fill Screen from 0 by 0 with 160 over 32 as 3.
+  Fill Screen from 0 by 112 with 160 over 32 as 3.
+  Fill Screen from 29 by 73 with 36 over 39 as 3.
+  Fill Screen from 24 by 90 with 48 over 22 as 3.
+  Fill Screen from 30 by 70 with 11 over 13 as 3.
+  Fill Screen from 26 by 68 with 5 over 12 as 3.
+  Fill Screen from 53 by 71 with 10 over 12 as 3.
+  Fill Screen from 62 by 68 with 5 over 13 as 3.
+  Fill Screen from 33 by 80 with 30 over 27 as 2.
+  Fill Screen from 30 by 95 with 36 over 17 as 2.
+  Fill Screen from 37 by 83 with 22 over 18 as 1.
+  Fill Screen from 26 by 101 with 8 over 11 as 3.
+  Fill Screen from 62 by 101 with 8 over 11 as 3.
+  Fill Screen from (102 + the step) by 88 with 28 over 22 as 3.
+  Fill Screen from (98 + the step) by 94 with 36 over 16 as 3.
+  Fill Screen from (105 + the step) by 85 with 10 over 15 as 3.
+  Fill Screen from (101 + the step) by 79 with 5 over 12 as 3.
+  Fill Screen from (120 + the step) by 84 with 9 over 13 as 3.
+  Fill Screen from (126 + the step) by 78 with 5 over 12 as 3.
+  Fill Screen from (104 + the step) by 95 with 24 over 12 as 0.
+  Fill Screen from (107 + the step) by 96 with 5 over 3 as 3.
+  Fill Screen from (121 + the step) by 96 with 5 over 3 as 3.
+  Fill Screen from (110 + the step) by 104 with 12 over 2 as 3.
+  Fill Screen from (100 + the step) by 106 with 7 over 6 as 3.
+  Fill Screen from (126 + the step) by 106 with 7 over 6 as 3.
+
+To studio:
+  Fill Screen from 0 by 0 with 160 over 32 as 3.
+  Fill Screen from 0 by 112 with 160 over 32 as 3.
+  Fill Screen from 76 by 58 with 8 over 20 as 3.
+  Fill Screen from 78 by 56 with 4 over 24 as 3.
+  Fill Screen from 79 by 60 with 2 over 15 as 0.
+  Inscribe "GAME FREAK" at 50 by 82.
+
+To professor:
+  Fill Screen from 64 by 15 with 32 over 9 as 3.
+  Fill Screen from 58 by 22 with 44 over 7 as 3.
+  Fill Screen from 61 by 28 with 38 over 28 as 3.
+  Fill Screen from 65 by 28 with 30 over 24 as 0.
+  Fill Screen from 68 by 34 with 5 over 3 as 3.
+  Fill Screen from 87 by 34 with 5 over 3 as 3.
+  Fill Screen from 75 by 44 with 11 over 3 as 3.
+  Fill Screen from 72 by 52 with 16 over 8 as 3.
+  Fill Screen from 52 by 59 with 56 over 34 as 3.
+  Fill Screen from 56 by 62 with 48 over 31 as 0.
+  Fill Screen from 74 by 61 with 12 over 32 as 2.
+  Fill Screen from 77 by 61 with 6 over 32 as 3.
+  Fill Screen from 55 by 66 with 5 over 25 as 2.
+  Fill Screen from 100 by 66 with 5 over 25 as 2.
+
+To trainer:
+  Stroke from 101 by 89 to 98 at 99 with 3 over 5.
+  Stroke from 98 by 99 to 90 at 104 with 3 over 5.
+  Stroke from 90 by 104 to 86 at 100 with 3 over 5.
+  Stroke from 110 by 99 to 117 at 106 with 3 over 5.
+  Stroke from 117 by 106 to 119 at 114 with 3 over 5.
+  Stroke from 104 by 111 to 101 at 123 with 3 over 6.
+  Stroke from 101 by 123 to 98 at 131 with 3 over 5.
+  Stroke from 109 by 111 to 113 at 122 with 3 over 6.
+  Stroke from 113 by 122 to 116 at 130 with 3 over 5.
+  Stroke from 101 by 90 to 98 at 99 with 1 over 2.
+  Stroke from 98 by 99 to 90 at 104 with 1 over 2.
+  Stroke from 110 by 99 to 117 at 106 with 1 over 2.
+  Stroke from 104 by 111 to 101 at 123 with 1 over 2.
+  Stroke from 109 by 111 to 113 at 122 with 1 over 2.
+  Fill Screen from 100 by 83 with 12 over 10 as 3.
+  Fill Screen from 98 by 86 with 16 over 5 as 3.
+  Fill Screen from 101 by 84 with 9 over 5 as 1.
+  Fill Screen from 99 by 89 with 15 over 2 as 0.
+  Fill Screen from 96 by 91 with 18 over 2 as 3.
+  Fill Screen from 102 by 93 with 10 over 8 as 3.
+  Fill Screen from 103 by 93 with 8 over 6 as 0.
+  Fill Screen from 108 by 94 with 2 over 2 as 3.
+  Fill Screen from 99 by 100 with 14 over 13 as 3.
+  Fill Screen from 101 by 101 with 5 over 9 as 1.
+  Fill Screen from 108 by 101 with 3 over 9 as 0.
+  Fill Screen from 105 by 101 with 2 over 12 as 3.
+  Fill Screen from 99 by 112 with 13 over 3 as 3.
+  Fill Screen from 95 by 130 with 7 over 3 as 3.
+  Fill Screen from 114 by 130 with 7 over 3 as 3.
+  Fill Screen from 82 by 97 with 7 over 7 as 3.
+  Fill Screen from 83 by 98 with 5 over 5 as 0.
+  Fill Screen from 82 by 100 with 7 over 1 as 3.
+  Fill Screen from 85 by 99 with 2 over 3 as 3.
+  Fill Screen from 85 by 100 with 1 over 1 as 0.
+
+To keyboard:
+  Inscribe "A  B  C  D  E  F" at 16 by 43.
+  Inscribe "G  H  I  J  K  L" at 16 by 59.
+  Inscribe "M  N  O  P  Q  R" at 16 by 75.
+  Inscribe "S  T  U  V  W  X" at 16 by 91.
+  Inscribe "Y  Z" at 16 by 107.
+  Inscribe "DEL" at 88 by 107.
+  Inscribe "END" at 106 by 107.
+  Let the place be the remainder of Journey's selection divided by 6.
+  Let the left be 9 + (18 * the place).
+  Let the top be 43.
+  If Journey's selection is at least 6:
+    Set the top to 59.
+  If Journey's selection is at least 12:
+    Set the top to 75.
+  If Journey's selection is at least 18:
+    Set the top to 91.
+  If Journey's selection is at least 24:
+    Set the top to 107.
+  Fill Screen from the left by the top with 2 over 7 as 3.
+  Fill Screen from (the left + 2) by (the top + 2) with 3 over 3 as 3.
+  Inscribe "A: SELECT  B: DELETE" at 8 by 130.
+
+To Opening:
+  If Journey's mode is "opening":
+    If Journey's animation is less than 64:
+      Studio.
+    Otherwise:
+      Clash.
+  If Journey's mode is "title":
+    Logo.
+    Trainer.
+    Let the choice be the remainder of Journey's animation divided by 96.
+    If the choice is less than 32:
+      Portrait "Charmander" at 40 by 78.
+    If the choice is at least 32 and the choice is less than 64:
+      Portrait "Bulbasaur" at 40 by 78.
+    If the choice is at least 64:
+      Portrait "Squirtle" at 40 by 78.
+    Inscribe "95 96 98 GAME FREAK" at 20 by 136.
+  If Journey's mode is "menu":
+    Fill Screen from 12 by 16 with 136 over 64 as 3.
+    Fill Screen from 15 by 19 with 130 over 58 as 0.
+    Fill Screen from 30 by 32 with 3 over 7 as 3.
+    Fill Screen from 33 by 34 with 3 over 3 as 3.
+    Inscribe "NEW GAME" at 42 by 31.
+  If Journey's mode is "intro":
+    Professor.
+    Caption Journey's message.
+  If Journey's mode is "naming":
+    Inscribe "YOUR NAME?" at 8 by 8.
+    Inscribe "NEW NAME" at 57 by 23.
+    Inscribe "RED" at 57 by 40.
+    Inscribe "ASH" at 57 by 57.
+    Inscribe "JACK" at 57 by 74.
+    If Journey's selection is 0:
+      Fill Screen from 42 by 23 with 3 over 7 as 3.
+      Fill Screen from 45 by 25 with 3 over 3 as 3.
+    If Journey's selection is 1:
+      Fill Screen from 42 by 40 with 3 over 7 as 3.
+      Fill Screen from 45 by 42 with 3 over 3 as 3.
+    If Journey's selection is 2:
+      Fill Screen from 42 by 57 with 3 over 7 as 3.
+      Fill Screen from 45 by 59 with 3 over 3 as 3.
+    If Journey's selection is 3:
+      Fill Screen from 42 by 74 with 3 over 7 as 3.
+      Fill Screen from 45 by 76 with 3 over 3 as 3.
+    Caption Journey's message.
+  If Journey's mode is "rival naming":
+    Inscribe "RIVAL NAME?" at 8 by 8.
+    Inscribe "NEW NAME" at 57 by 23.
+    Inscribe "BLUE" at 57 by 40.
+    Inscribe "GARY" at 57 by 57.
+    Inscribe "JOHN" at 57 by 74.
+    If Journey's selection is 0:
+      Fill Screen from 42 by 23 with 3 over 7 as 3.
+      Fill Screen from 45 by 25 with 3 over 3 as 3.
+    If Journey's selection is 1:
+      Fill Screen from 42 by 40 with 3 over 7 as 3.
+      Fill Screen from 45 by 42 with 3 over 3 as 3.
+    If Journey's selection is 2:
+      Fill Screen from 42 by 57 with 3 over 7 as 3.
+      Fill Screen from 45 by 59 with 3 over 3 as 3.
+    If Journey's selection is 3:
+      Fill Screen from 42 by 74 with 3 over 7 as 3.
+      Fill Screen from 45 by 76 with 3 over 3 as 3.
+    Caption Journey's message.
+  If Journey's mode is "custom naming":
+    Inscribe "YOUR NAME?" at 8 by 8.
+    Inscribe Journey's trainer at 16 by 25.
+    Keyboard.
+  If Journey's mode is "custom rival naming":
+    Inscribe "RIVAL NAME?" at 8 by 8.
+    Inscribe Journey's rival at 16 by 25.
+    Keyboard.
+  If Journey's mode is "starter":
+    Inscribe "CHOOSE A POKEMON" at 32 by 6.
+    If Journey's selection is 0:
+      Portrait "Bulbasaur" at 56 by 26.
+      Inscribe "BULBASAUR" at 53 by 79.
+    If Journey's selection is 1:
+      Portrait "Charmander" at 56 by 26.
+      Inscribe "CHARMANDER" at 50 by 79.
+    If Journey's selection is 2:
+      Portrait "Squirtle" at 56 by 26.
+      Inscribe "SQUIRTLE" at 56 by 79.
+    Caption Journey's message.
+
+

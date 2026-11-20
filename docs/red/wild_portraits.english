@@ -1,0 +1,346 @@
+This chapter shares only wildportrait and wildback.
+
+Use the page library.
+Use the foundation chapter.
+
+To pikachubody at an x (number) by a y (number):
+  Let the outline be a list of 5, 4, 13, 12, 16, 20, 18, 12, 30, 12, 34, 19, 42, 7, 43, 5, 45, 5, 41, 21, 37, 24, 39, 33, 35, 40, 29, 42, 17, 42, 11, 39, 10, 33, 12, 24, 9 and 20.
+  Shade Screen at the x by the y with the outline as 3.
+  Let the body be a list of 7, 8, 13, 14, 15, 21, 19, 15, 28, 15, 33, 22, 38, 16, 39, 20, 35, 25, 37, 33, 33, 38, 29, 40, 18, 40, 13, 37, 12, 32, 15, 24, 11 and 18.
+  Shade Screen at the x by the y with the body as 1.
+  Let the near ear tip be a list of 5, 4, 9, 7, 11, 11, 8 and 12.
+  Shade Screen at the x by the y with the near ear tip as 3.
+  Let the far ear tip be a list of 41, 7, 43, 5, 45, 5, 43, 11, 40 and 13.
+  Shade Screen at the x by the y with the far ear tip as 3.
+  Let the tail outline be a list of 35, 31, 42, 25, 39, 25, 44, 18, 45, 21, 42, 29, 46, 29, 39 and 37.
+  Shade Screen at the x by the y with the tail outline as 3.
+  Let the tail light be a list of 35, 32, 40, 28, 38, 31, 42, 31, 38 and 35.
+  Shade Screen at the x by the y with the tail light as 2.
+
+To metapodbody at an x (number) by a y (number):
+  Let the cocoon outline be a list of 27, 3, 34, 10, 35, 18, 40, 23, 34, 39, 26, 43, 17, 41, 13, 35, 9, 24, 13, 14, 20 and 8.
+  Shade Screen at the x by the y with the cocoon outline as 3.
+  Let the cocoon light be a list of 26, 7, 32, 12, 32, 20, 36, 24, 31, 36, 25, 40, 19, 39, 16, 34, 12, 24, 16, 15, 21 and 11.
+  Shade Screen at the x by the y with the cocoon light as 1.
+  Let the lower shell be a list of 14, 25, 21, 28, 30, 25, 35, 24, 30, 36, 25, 40, 19 and 38.
+  Shade Screen at the x by the y with the lower shell as 2.
+  Let the upper seam be a list of 13, 24, 22, 27, 34, 23, 31, 27, 23 and 30.
+  Shade Screen at the x by the y with the upper seam as 3.
+  Let the lower seam be a list of 16, 31, 22, 34, 30, 31, 28, 34, 22 and 36.
+  Shade Screen at the x by the y with the lower seam as 3.
+
+To nidoranbody at an x (number) by a y (number):
+  Let the outline be a list of 8, 28, 6, 19, 9, 10, 14, 21, 18, 16, 22, 7, 25, 18, 31, 19, 36, 23, 41, 29, 39, 35, 34, 37, 31, 42, 24, 42, 23, 38, 15, 39, 12, 43, 6, 42, 7 and 36.
+  Shade Screen at the x by the y with the outline as 3.
+  Let the body be a list of 9, 28, 9, 20, 10, 15, 14, 24, 19, 19, 22, 12, 23, 21, 30, 21, 35, 25, 38, 29, 37, 33, 32, 35, 29, 39, 26, 40, 25, 36, 14, 37, 11, 40, 9, 39, 10 and 34.
+  Shade Screen at the x by the y with the body as 1.
+  Let the inner ear be a list of 10, 18, 11, 16, 13, 22, 11 and 23.
+  Shade Screen at the x by the y with the inner ear as 2.
+  Let the shoulder spot be a list of 20, 29, 24, 27, 26, 30, 22 and 32.
+  Shade Screen at the x by the y with the shoulder spot as 2.
+  Let the hind spot be a list of 13, 33, 16, 31, 18, 33, 15 and 35.
+  Shade Screen at the x by the y with the hind spot as 2.
+
+To spearowbody at an x (number) by a y (number):
+  Let the outline be a list of 5, 26, 1, 22, 9, 23, 5, 18, 15, 21, 18, 14, 22, 9, 25, 12, 29, 7, 32, 14, 37, 17, 40, 22, 47, 24, 39, 27, 37, 33, 32, 38, 30, 42, 22, 42, 21, 39, 15, 36, 10, 34, 3, 35, 8 and 31.
+  Shade Screen at the x by the y with the outline as 3.
+  Let the body be a list of 12, 26, 17, 21, 22, 17, 25, 14, 28, 17, 31, 12, 33, 17, 37, 20, 38, 24, 35, 30, 31, 35, 24, 38, 17, 35, 12 and 31.
+  Shade Screen at the x by the y with the body as 1.
+  Let the wing be a list of 12, 26, 22, 25, 28, 30, 23, 35, 16, 34, 11 and 31.
+  Shade Screen at the x by the y with the wing as 2.
+  Let the beak be a list of 38, 23, 44, 24, 38 and 25.
+  Shade Screen at the x by the y with the beak as 0.
+  Let the near foot be a list of 20, 38, 22, 38, 21, 43, 15, 43, 18 and 41.
+  Shade Screen at the x by the y with the near foot as 3.
+  Let the far foot be a list of 29, 37, 31, 37, 32, 41, 36, 43, 28 and 43.
+  Shade Screen at the x by the y with the far foot as 3.
+
+To butterfreebody at an x (number) by a y (number):
+  Let the outline be a list of 22, 15, 18, 5, 10, 3, 4, 8, 3, 17, 9, 24, 5, 30, 8, 39, 15, 40, 22, 32, 26, 32, 33, 40, 40, 39, 43, 30, 39, 24, 45, 17, 44, 8, 38, 3, 30, 5, 26, 15, 24 and 12.
+  Shade Screen at the x by the y with the outline as 3.
+  Let the near upper wing be a list of 19, 17, 17, 8, 11, 6, 6, 10, 6, 16, 13 and 22.
+  Shade Screen at the x by the y with the near upper wing as 0.
+  Let the far upper wing be a list of 29, 17, 31, 8, 37, 6, 42, 10, 42, 16, 35 and 22.
+  Shade Screen at the x by the y with the far upper wing as 0.
+  Let the near lower wing be a list of 13, 25, 8, 30, 10, 36, 15, 37, 21 and 30.
+  Shade Screen at the x by the y with the near lower wing as 1.
+  Let the far lower wing be a list of 35, 25, 40, 30, 38, 36, 33, 37, 27 and 30.
+  Shade Screen at the x by the y with the far lower wing as 1.
+  Let the body outline be a list of 20, 18, 24, 14, 28, 18, 29, 30, 25, 39, 21, 37, 19 and 29.
+  Shade Screen at the x by the y with the body outline as 3.
+  Let the body light be a list of 22, 20, 25, 18, 27, 21, 27, 29, 24, 34, 22 and 29.
+  Shade Screen at the x by the y with the body light as 1.
+  Let the near antenna be a list of 19, 17, 15, 12, 16, 11, 22 and 16.
+  Shade Screen at the x by the y with the near antenna as 3.
+  Let the far antenna be a list of 26, 16, 32, 11, 33, 12, 29 and 18.
+  Shade Screen at the x by the y with the far antenna as 3.
+
+To beedrillbody at an x (number) by a y (number):
+  Let the outline be a list of 22, 13, 16, 7, 9, 8, 5, 15, 8, 21, 16, 24, 8, 27, 4, 38, 13, 33, 20, 29, 20, 35, 24, 43, 28, 35, 28, 29, 35, 33, 44, 38, 40, 27, 32, 24, 40, 21, 43, 15, 39, 8, 32, 7, 26, 13, 24 and 9.
+  Shade Screen at the x by the y with the outline as 3.
+  Let the near wing be a list of 19, 17, 15, 10, 10, 10, 7, 15, 10, 20, 17 and 22.
+  Shade Screen at the x by the y with the near wing as 0.
+  Let the far wing be a list of 29, 17, 33, 10, 38, 10, 41, 15, 38, 20, 31 and 22.
+  Shade Screen at the x by the y with the far wing as 0.
+  Let the body be a list of 21, 17, 24, 14, 27, 17, 29, 27, 26, 37, 24, 40, 21, 36, 19 and 27.
+  Shade Screen at the x by the y with the body as 1.
+  Let the upper stripe be a list of 19, 24, 28, 24, 29, 27, 19 and 28.
+  Shade Screen at the x by the y with the upper stripe as 3.
+  Let the lower stripe be a list of 20, 31, 28, 31, 27, 34, 21 and 35.
+  Shade Screen at the x by the y with the lower stripe as 3.
+  Let the near stinger be a list of 8, 31, 14, 27, 10 and 33.
+  Shade Screen at the x by the y with the near stinger as 0.
+  Let the far stinger be a list of 40, 31, 34, 27, 38 and 33.
+  Shade Screen at the x by the y with the far stinger as 0.
+
+To rodentbody at an x (number) by a y (number):
+  Let the outline be a list of 3, 25, 2, 20, 5, 16, 11, 17, 13, 20, 11, 22, 7, 20, 5, 22, 7, 25, 12, 27, 14, 23, 21, 21, 24, 16, 23, 10, 27, 8, 31, 13, 35, 12, 39, 15, 40, 21, 44, 25, 43, 32, 39, 35, 33, 35, 31, 41, 24, 42, 21, 38, 16, 38, 13, 42, 7, 41, 8, 35, 7 and 30.
+  Shade Screen at the x by the y with the outline as 3.
+  Let the body be a list of 10, 28, 15, 25, 21, 24, 25, 20, 26, 15, 29, 15, 31, 18, 36, 15, 38, 18, 37, 23, 42, 26, 41, 31, 37, 33, 30, 32, 29, 38, 25, 39, 23, 35, 15, 35, 12, 39, 10, 38, 11 and 33.
+  Shade Screen at the x by the y with the body as 1.
+  Let the teeth be a list of 37, 29, 43, 28, 41, 33, 38 and 33.
+  Shade Screen at the x by the y with the teeth as 0.
+  Let the shoulder shadow be a list of 13, 27, 19, 26, 21, 30, 17 and 32.
+  Shade Screen at the x by the y with the shoulder shadow as 2.
+
+To evolvedplant at an x (number) by a y (number):
+  Let the outline be a list of 8, 30, 5, 23, 9, 18, 14, 20, 16, 14, 11, 9, 7, 10, 12, 5, 19, 9, 23, 3, 27, 9, 35, 5, 33, 11, 37, 15, 32, 16, 35, 23, 40, 26, 42, 33, 38, 39, 32, 42, 28, 38, 19, 38, 14, 42, 8 and 41.
+  Shade Screen at the x by the y with the outline as 3.
+  Let the flower be a list of 12, 14, 16, 11, 21, 13, 23, 7, 26, 13, 32, 10, 30, 15, 26, 19, 17 and 19.
+  Shade Screen at the x by the y with the flower as 2.
+  Let the body be a list of 12, 25, 17, 21, 30, 21, 35, 25, 39, 29, 37, 35, 31, 38, 18, 36, 12, 39, 9 and 35.
+  Shade Screen at the x by the y with the body as 1.
+  Let the shoulder spot be a list of 16, 31, 19, 29, 21, 31, 19 and 33.
+  Shade Screen at the x by the y with the shoulder spot as 2.
+  Let the hind spot be a list of 30, 34, 33, 32, 35, 34, 33 and 36.
+  Shade Screen at the x by the y with the hind spot as 2.
+
+To evolvedfire at an x (number) by a y (number):
+  Let the outline be a list of 5, 28, 4, 22, 7, 16, 10, 22, 9, 27, 17, 30, 19, 27, 15, 22, 17, 13, 22, 9, 30, 11, 34, 16, 33, 24, 29, 27, 35, 31, 38, 38, 35, 42, 28, 42, 25, 39, 19, 39, 16, 42, 10, 42, 11, 37, 15 and 32.
+  Shade Screen at the x by the y with the outline as 3.
+  Let the body be a list of 17, 17, 21, 12, 29, 13, 32, 17, 31, 23, 27, 26, 32, 30, 35, 34, 35, 39, 29, 39, 27, 36, 19, 36, 17, 39, 13, 39, 16, 33, 20, 30, 19, 26, 17 and 23.
+  Shade Screen at the x by the y with the body as 1.
+  Let the flame be a list of 6, 21, 8, 19, 9, 23, 7 and 26.
+  Shade Screen at the x by the y with the flame as 0.
+  Let the belly be a list of 22, 30, 29, 29, 32, 34, 32, 39, 21 and 39.
+  Shade Screen at the x by the y with the belly as 0.
+
+To evolvedturtle at an x (number) by a y (number):
+  Let the outline be a list of 4, 27, 3, 22, 8, 19, 12, 22, 10, 25, 15, 29, 14, 24, 15, 18, 11, 8, 15, 10, 19, 14, 23, 11, 28, 12, 32, 14, 36, 8, 38, 11, 35, 20, 34, 25, 38, 29, 41, 35, 39, 40, 32, 42, 27, 39, 19, 39, 15, 42, 9, 40, 10 and 34.
+  Shade Screen at the x by the y with the outline as 3.
+  Let the tail be a list of 7, 22, 10, 22, 9, 25, 6 and 25.
+  Shade Screen at the x by the y with the tail as 1.
+  Let the body be a list of 16, 21, 18, 16, 22, 14, 28, 15, 32, 19, 32, 24, 28, 27, 34, 31, 37, 35, 36, 39, 31, 39, 27, 36, 19, 36, 15, 39, 12, 38, 14, 33, 19, 29, 17 and 26.
+  Shade Screen at the x by the y with the body as 1.
+  Let the shell rim be a list of 21, 29, 29, 29, 33, 34, 31, 38, 21, 38, 18 and 34.
+  Shade Screen at the x by the y with the shell rim as 2.
+  Let the shell center be a list of 22, 31, 28, 31, 30, 34, 29, 37, 22, 37, 20 and 34.
+  Shade Screen at the x by the y with the shell center as 0.
+
+To georeverse at an x (number) by a y (number):
+  Let the outline be a list of 12, 22, 8, 19, 5, 13, 3, 12, 2, 7, 5, 4, 10, 5, 12, 10, 11, 15, 17, 17, 21, 13, 29, 13, 34, 17, 38, 15, 37, 10, 39, 5, 44, 4, 46, 7, 45, 13, 42, 15, 40, 20, 36, 22, 37, 29, 34, 36, 29, 40, 20, 40, 13, 36, 10 and 29.
+  Shade Screen at the x by the y with the outline as 3.
+  Let the body be a list of 12, 23, 10, 20, 8, 17, 6, 15, 5, 11, 4, 8, 6, 6, 9, 7, 10, 11, 9, 16, 16, 20, 20, 17, 28, 16, 33, 20, 38, 17, 39, 11, 40, 7, 43, 6, 44, 8, 43, 12, 40, 13, 38, 18, 34, 21, 35, 28, 32, 34, 28, 37, 20, 37, 15, 34, 12 and 29.
+  Shade Screen at the x by the y with the body as 1.
+  Let the upper facet be a list of 16, 24, 20, 22, 23, 24, 20 and 27.
+  Shade Screen at the x by the y with the upper facet as 2.
+  Let the lower facet be a list of 27, 29, 31, 27, 33, 30, 30 and 33.
+  Shade Screen at the x by the y with the lower facet as 2.
+
+To onixreverse at an x (number) by a y (number):
+  Let the outline be a list of 25, 1, 30, 3, 31, 8, 37, 10, 40, 16, 38, 22, 34, 24, 35, 28, 32, 33, 27, 35, 23, 34, 20, 39, 14, 41, 8, 38, 6, 33, 3, 31, 3, 24, 6, 20, 8, 14, 11, 12, 14, 15, 13, 20, 16, 24, 15, 30, 18, 31, 19, 27, 24, 24, 28, 24, 28, 20, 25, 17, 25, 12, 22, 9, 23 and 5.
+  Shade Screen at the x by the y with the outline as 3.
+  Let the body be a list of 26, 4, 29, 5, 29, 10, 35, 12, 38, 16, 36, 20, 32, 22, 33, 27, 31, 30, 27, 32, 23, 30, 21, 35, 17, 38, 13, 39, 10, 36, 8, 33, 5, 29, 5, 25, 8, 22, 10, 18, 11, 16, 12, 18, 11, 21, 14, 25, 13, 31, 16, 34, 20, 34, 22, 29, 25, 27, 30, 27, 31, 24, 28, 21, 28, 18, 26, 15, 27, 11, 25 and 8.
+  Shade Screen at the x by the y with the body as 1.
+  Let the tail facet be a list of 7, 25, 10, 23, 12, 26, 11, 30, 8 and 30.
+  Shade Screen at the x by the y with the tail facet as 2.
+  Let the lower facet be a list of 15, 34, 18, 32, 21, 34, 19, 37, 16 and 38.
+  Shade Screen at the x by the y with the lower facet as 2.
+  Let the middle facet be a list of 26, 28, 29, 26, 31, 28, 29 and 31.
+  Shade Screen at the x by the y with the middle facet as 2.
+  Let the head facet be a list of 30, 13, 33, 12, 36, 15, 35, 18, 32 and 18.
+  Shade Screen at the x by the y with the head facet as 2.
+
+To pikachubodyface at an x (number) by a y (number):
+  Let the near eye be a list of 18, 22, 20, 22, 20, 25, 18 and 25.
+  Shade Screen at the x by the y with the near eye as 3.
+  Let the far eye be a list of 29, 22, 31, 22, 31, 25, 29 and 25.
+  Shade Screen at the x by the y with the far eye as 3.
+  Let the near cheek be a list of 14, 27, 18, 27, 18, 30, 14 and 30.
+  Shade Screen at the x by the y with the near cheek as 2.
+  Let the far cheek be a list of 31, 27, 35, 27, 35, 30, 31 and 30.
+  Shade Screen at the x by the y with the far cheek as 2.
+  Let the mouth be a list of 22, 29, 25, 31, 28, 29, 25 and 33.
+  Shade Screen at the x by the y with the mouth as 3.
+
+To metapodbodyface at an x (number) by a y (number):
+  Let the eye outline be a list of 20, 17, 28, 16, 25, 21, 21 and 22.
+  Shade Screen at the x by the y with the eye outline as 3.
+  Let the eye light be a list of 21, 18, 25, 18, 23 and 20.
+  Shade Screen at the x by the y with the eye light as 0.
+
+To nidoranbodyface at an x (number) by a y (number):
+  Let the eye be a list of 31, 25, 34, 25, 34, 28, 31 and 28.
+  Shade Screen at the x by the y with the eye as 3.
+  Let the eye light be a list of 32, 25, 33, 25, 33 and 26.
+  Shade Screen at the x by the y with the eye light as 0.
+  Let the nose be a list of 36, 30, 40, 30, 39, 32, 36 and 32.
+  Shade Screen at the x by the y with the nose as 3.
+
+To spearowbodyface at an x (number) by a y (number):
+  Let the eye be a list of 31, 19, 35, 19, 35, 22, 31 and 22.
+  Shade Screen at the x by the y with the eye as 3.
+  Let the eye light be a list of 32, 19, 33, 19, 33 and 20.
+  Shade Screen at the x by the y with the eye light as 0.
+
+To butterfreebodyface at an x (number) by a y (number):
+  Let the near eye be a list of 21, 21, 23, 20, 23, 23, 21 and 23.
+  Shade Screen at the x by the y with the near eye as 3.
+  Let the far eye be a list of 25, 20, 27, 21, 27, 23, 25 and 23.
+  Shade Screen at the x by the y with the far eye as 3.
+
+To beedrillbodyface at an x (number) by a y (number):
+  Let the near eye be a list of 21, 19, 23, 19, 23, 21, 21 and 21.
+  Shade Screen at the x by the y with the near eye as 3.
+  Let the far eye be a list of 25, 19, 27, 19, 27, 21, 25 and 21.
+  Shade Screen at the x by the y with the far eye as 3.
+
+To rodentbodyface at an x (number) by a y (number):
+  Let the eye be a list of 33, 22, 36, 22, 36, 25, 33 and 25.
+  Shade Screen at the x by the y with the eye as 3.
+  Let the eye light be a list of 34, 22, 35, 22, 35 and 23.
+  Shade Screen at the x by the y with the eye light as 0.
+
+To evolvedplantface at an x (number) by a y (number):
+  Let the eye be a list of 28, 26, 31, 26, 31, 29, 28 and 29.
+  Shade Screen at the x by the y with the eye as 3.
+  Let the eye light be a list of 29, 26, 30, 26, 30 and 27.
+  Shade Screen at the x by the y with the eye light as 0.
+
+To evolvedfireface at an x (number) by a y (number):
+  Let the eye be a list of 27, 17, 30, 17, 30, 20, 27 and 20.
+  Shade Screen at the x by the y with the eye as 3.
+  Let the eye light be a list of 28, 17, 29, 17, 29 and 18.
+  Shade Screen at the x by the y with the eye light as 0.
+
+To evolvedturtleface at an x (number) by a y (number):
+  Let the eye be a list of 27, 20, 30, 20, 30, 23, 27 and 23.
+  Shade Screen at the x by the y with the eye as 3.
+  Let the eye light be a list of 28, 20, 29, 20, 29 and 21.
+  Shade Screen at the x by the y with the eye light as 0.
+
+To pikachubodyback at an x (number) by a y (number):
+  Let the near stripe be a list of 16, 28, 20, 27, 20, 29, 16 and 30.
+  Shade Screen at the x by the y with the near stripe as 2.
+  Let the far stripe be a list of 28, 27, 32, 28, 32, 30, 28 and 29.
+  Shade Screen at the x by the y with the far stripe as 2.
+
+To nidoranbodyback at an x (number) by a y (number):
+  Let the upper spot be a list of 19, 24, 22, 23, 24, 25, 21 and 26.
+  Shade Screen at the x by the y with the upper spot as 2.
+  Let the lower spot be a list of 25, 30, 28, 29, 30, 31, 27 and 32.
+  Shade Screen at the x by the y with the lower spot as 2.
+
+To wildportrait a species (text) at an x (number) by a y (number):
+  If the species is "Pikachu":
+    pikachubody at the x by the y.
+    pikachubodyface at the x by the y.
+  If the species is "Metapod":
+    metapodbody at the x by the y.
+    metapodbodyface at the x by the y.
+  If the species is "Nidoran F":
+    nidoranbody at the x by the y.
+    nidoranbodyface at the x by the y.
+  If the species is "Nidoran M":
+    nidoranbody at the x by the y.
+    nidoranbodyface at the x by the y.
+    Let the horn be a list of 36, 24, 40, 17, 40 and 26.
+    Shade Screen at the x by the y with the horn as 3.
+  If the species is "Nidorina":
+    nidoranbody at the x by the y.
+    nidoranbodyface at the x by the y.
+    Let the spines be a list of 17, 18, 20, 14, 23, 18, 26, 14, 29 and 20.
+    Shade Screen at the x by the y with the spines as 3.
+  If the species is "Nidorino":
+    nidoranbody at the x by the y.
+    nidoranbodyface at the x by the y.
+    Let the horn be a list of 36, 24, 40, 17, 40 and 26.
+    Shade Screen at the x by the y with the horn as 3.
+    Let the spines be a list of 17, 18, 20, 14, 23, 18, 26, 14, 29 and 20.
+    Shade Screen at the x by the y with the spines as 3.
+  If the species is "Spearow":
+    spearowbody at the x by the y.
+    spearowbodyface at the x by the y.
+  If the species is "Fearow":
+    spearowbody at the x by the y.
+    spearowbodyface at the x by the y.
+  If the species is "Pidgeotto":
+    spearowbody at the x by the y.
+    spearowbodyface at the x by the y.
+  If the species is "Pidgeot":
+    spearowbody at the x by the y.
+    spearowbodyface at the x by the y.
+  If the species is "Butterfree":
+    butterfreebody at the x by the y.
+    butterfreebodyface at the x by the y.
+  If the species is "Beedrill":
+    beedrillbody at the x by the y.
+    beedrillbodyface at the x by the y.
+  If the species is "Raticate":
+    rodentbody at the x by the y.
+    rodentbodyface at the x by the y.
+  If the species is "Ivysaur":
+    evolvedplant at the x by the y.
+    evolvedplantface at the x by the y.
+  If the species is "Charmeleon":
+    evolvedfire at the x by the y.
+    evolvedfireface at the x by the y.
+  If the species is "Wartortle":
+    evolvedturtle at the x by the y.
+    evolvedturtleface at the x by the y.
+
+To wildback a species (text) at an x (number) by a y (number):
+  If the species is "Pikachu":
+    pikachubody at the x by the y.
+    pikachubodyback at the x by the y.
+  If the species is "Metapod":
+    metapodbody at the x by the y.
+  If the species is "Nidoran F":
+    nidoranbody at the x by the y.
+    nidoranbodyback at the x by the y.
+  If the species is "Nidoran M":
+    nidoranbody at the x by the y.
+    nidoranbodyback at the x by the y.
+    Let the horn be a list of 36, 24, 40, 17, 40 and 26.
+    Shade Screen at the x by the y with the horn as 3.
+  If the species is "Nidorina":
+    nidoranbody at the x by the y.
+    nidoranbodyback at the x by the y.
+    Let the spines be a list of 17, 18, 20, 14, 23, 18, 26, 14, 29 and 20.
+    Shade Screen at the x by the y with the spines as 3.
+  If the species is "Nidorino":
+    nidoranbody at the x by the y.
+    nidoranbodyback at the x by the y.
+    Let the horn be a list of 36, 24, 40, 17, 40 and 26.
+    Shade Screen at the x by the y with the horn as 3.
+    Let the spines be a list of 17, 18, 20, 14, 23, 18, 26, 14, 29 and 20.
+    Shade Screen at the x by the y with the spines as 3.
+  If the species is "Spearow":
+    spearowbody at the x by the y.
+  If the species is "Fearow":
+    spearowbody at the x by the y.
+  If the species is "Pidgeotto":
+    spearowbody at the x by the y.
+  If the species is "Pidgeot":
+    spearowbody at the x by the y.
+  If the species is "Butterfree":
+    butterfreebody at the x by the y.
+  If the species is "Beedrill":
+    beedrillbody at the x by the y.
+  If the species is "Raticate":
+    rodentbody at the x by the y.
+  If the species is "Geodude":
+    georeverse at the x by the y.
+  If the species is "Onix":
+    onixreverse at the x by the y.
+

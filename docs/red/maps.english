@@ -1,0 +1,911 @@
+This chapter shares only terrain, map width, map height, person, person ahead, feature, feature ahead, counter and travel.
+
+Use the foundation chapter.
+
+The map dimensions are width and height, in that order:
+  "Bedroom" has 8 and 8.
+  "Home" has 8 and 8.
+  "Pallet Town" has 20 and 18.
+  "Oak's Lab" has 10 and 12.
+  "Route 1" has 20 and 36.
+  "Viridian City" has 40 and 36.
+  "Viridian Mart" has 8 and 8.
+  "Viridian Center" has 14 and 8.
+  "Route 2" has 20 and 72.
+  "Forest South Gate" has 10 and 8.
+  "Viridian Forest" has 34 and 48.
+  "Forest North Gate" has 10 and 8.
+  "Pewter City" has 40 and 36.
+  "Pewter Gym" has 10 and 14.
+  "Route 22" has 40 and 18.
+  "Route 22 Gate" has 10 and 8.
+  "Pewter Center" has 14 and 8.
+  "Pewter Mart" has 8 and 8.
+  "Blue's House" has 8 and 8.
+  "Viridian School" has 8 and 8.
+  "Viridian House" has 8 and 8.
+  "Pewter House" has 8 and 8.
+  "Nidoran House" has 8 and 8.
+
+To work out the map width (number):
+  Let the dimension be the map dimensions for Journey's place.
+  The answer is the dimension's width or else 0.
+
+To work out the map height (number):
+  Let the dimension be the map dimensions for Journey's place.
+  The answer is the dimension's height or else 0.
+
+To work out the raw tiles (text):
+  If Journey's place is "Bedroom":
+    The answer is "2026270000340034323c3a010101011a0101010101010101010101010101010101010116010101010101011e010101013d010101010108013f01010101011801".
+  If Journey's place is "Home":
+    The answer is "3030003400340034323201160101011c0101010101010101010101010101010101011236381201010101123c3a12010101010101010101010101141401010101".
+  If Journey's place is "Pallet Town":
+    The answer is "2c2c2c3a2c2c2c2c2c3a52523a2c2c2c2c2c3a2c3a3a3a3a3a3a3a3a3a3a52523a3a3a3a3a3a3a3a3a2c392339233923392339233923392339232c3a3a2c233915171718233923391517171823392c3a3a2c39395c171717392339395c17171739232c3a3a2c39564e1b1a1a233939564e1b1a1a23392c3a3a2c392339233923392339233923392339232c3a3a2c233923392339233923392339233923392c3a3a2c392339393939392315121212123839232c3a3a2c233955555556233915171717171823392c3a3a2c39232c2c2c2c39230f224b4b4b4b39232c3a3a2c23392c2c2c2c23394e1a1b1a1a1a23392c3a3a2c392339233923392339393939393939392c3a3a2c233923392339233955555556555539392c3a3a2c2c2c3214141439392c2c2c2c2c2c39392c3a3a2c2c2c3214141439392c2c2c2c2c2c39392c3a3a2c2c2c32141414393939393939393939392c3a3a3a2c2c321414143a3a3a3a3a3a3a3a3a3a3a3a".
+  If Journey's place is "Oak's Lab":
+    The answer is "1010101052520d0d0d0d36554e3911111d1d1d1d111111111111111111111111111111114e39391111111111111111111111111111111111111111110d0d0d0d11110d0d0d0d1d1d1d1d11111d1d1d1d11111111111111111111111111111111111111111111111111111111111111111111161611111111".
+  If Journey's place is "Route 1":
+    The answer is "2c2c2c3a2c2c2c2c2c3a39393a2c2c2c2c2c3a2c2c2c2c3a3a3a3a3a3a3a39393a3a3a3a3a3a3a2c2c2c2c3a2c2c2c2c2c2c39392c2c2c2c2c2c3a2c2c2c2c3a2c2c2c2c2c2c39392c2c2c2c2c2c3a2c2c2c2c3a2c2c2c2c2c5039393939393939393a2c2c2c2c3a37373737375036373637393939393a2c2c2c2c502c2c2c2c2c505252525252525252502c2c2c2c502c2c2c2c2c505252525252525252502c2c2c2c502c2c2c2c2c505252525252525252502c2c2c2c503737373737505252525252525252502c2c2c2c502c2c2c2c2c2c2c2c393939393939502c2c2c2c502c2c2c2c2c2c2c2c393939393939502c2c2c2c502c2c2c2c2c2c2c2c392352525252502c2c2c2c505050373737375050505052525252502c2c2c2c3a2c2c2c2c2c2c2c2c3939525252523a2c2c2c2c3a2c2c2c2c2c2c2c2c3939525252523a2c2c2c2c3a2c2c39393939393939392c2c2c2c3a2c2c2c2c3a2c2c39393939393939392c2c2c2c3a2c2c2c2c3a2c2c39392c2c2c2c2c2c2c2c2c2c3a2c2c2c2c3a373c3637373c37373737373737373a2c2c2c2c3a2c2c3939393939393939393939393a2c2c2c2c3a2c2c3939393939393939393939393a2c2c2c2c3a2c2c2c2c2c2c2c2c5252525239393a2c2c2c2c3a50505050505050505252525236373a2c2c2c2c3a2c2c2c2c2c2c2c2c5252525239393a2c2c2c2c3a2c2c2c2c2c2c2c2c5252525239393a2c2c2c2c3a39393939393939393939393939393a2c2c2c2c3a36373939395636373637363736373a2c2c2c2c502c2c5252525239392c2c52525252502c2c2c2c502c2c5252525239392c2c52525252502c2c2c2c50525252522c2c3939525252522c2c502c2c2c2c50525252522c2c3939525252522c2c502c2c2c2c503a3a3a3a3a3a52523a3a3a3a3a3a502c2c2c2c502c2c2c2c2c3a52523a2c2c2c2c2c502c2c2c2c502c2c2c2c2c3a52523a2c2c2c2c2c502c2c2c2c502c2c2c2c2c3a52523a2c2c2c2c2c502c".
+  If Journey's place is "Viridian City":
+    The answer is "111111111124505050505050505050505523393950505050505050505050505050505050505050501111111111245050505050505050505055233956505050505050505050505050505050505050505011111111112450505050505050505050552339235050505039393939393939393939393950505050111111111124505050505050505050505523233950505050393939393939393939393939505050501111111111242c2c2c2c2c2c2c2c3d2c3923392339233939393939391512121212383939505050501111111111242c2c3a3a3a3a3a3a50502339233923393939393939391517171717183939505050501111111111242c3a50505050505050505523392355233939393939390f22222222223939505050501111111111242c3a50505050505050505523233955233939393939564e1a1a1a1b1a3939505050501111111111242c3a50505050505050505523392315171718393939392c2c2c2c2c2c3939505050501111111111242c3a5050505050505050552323394e1b1a1a363736373737373737373637505050501111111111242c3a50505050505050505523392339233923392339233923392339233939505050501111111111242c3a50505050505050505523233923392339233923392339233923393939505050501111111111242c3a50505050505050505523392339393939393939393939393939393939505050503737373737372c3a50505050505050505523233955555555555555555555555555555555505050502c2c2c2c2c2c2c3a50505050505050505523392315171718392339233923392339233923505050502c2c2c2c2c2c2c3a5050505050505050552323394e1b1a1a233923392339233923392339505050503939392339232c2c5050505050505050393939233939393939232c2c5a1212122c2c3923505050503939233923392c2c2c2c2c2c2c2c2c2c395623395555555523392c2c5c1717172c2c23395050505011111124392339233923392339233923392339232c2c2c2c39232c2c0f4b4b4b2c2c39235050505011111124233923392339233923392339233923392c2c2c2c23392c2c4e1b4a1a2c2c2339505050501111112439232c2c2c2c2c2c2c2c2c2c39233923392339233923392339233923392339235050505011111124505050502c2c2c2c2c2c2c2c2339233923392339233923392339233923392339505050501111112439232c2c3d2c2c2c2c2c2c2c39232c2c39235a12121239232c2c2c2c2c2c3923505050501111112423392c2c50502c2c2c2c2c2c23392c2c23395c17171723392c2c2c2c2c2c2339505050501111112439232c2c3214141414142c2c39232c2c39230f4b4b4b39232c2c2c2c2c2c3923505050501111112423392c2c3214141414142c2c23392c2c23394e1b4a1a23392c2c2c2c2c2c2339505050501111112439392c2c3214141414142c2c39392c2c39393939393939393939393939393939505050503737373736373737321414141414373c3637373c36373637363736373637363736373637505050502c2c2c3a39232c2c2c2c2c2c2c2c2c2c39232c2c39392c2c2c2c2c2c39232c2c2c2c3923505050502c2c2c3a23392c2c2c2c2c2c2c2c2c2c23392c2c39562c2c2c2c2c2c23392c2c2c2c2339505050502c2c2c3a3939393939393939393939393939393939233939393939393939393939393939505050502c2c2c3a5555555555555555555555555555555523395555555555555555555555555555505050502c2c2c2c2c2c2c2c2c2c2c2c2c3a2c2c2c2c2c3a39233a2c2c2c2c2c3a2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c3a2c2c2c2c2c3a23393a2c2c2c2c2c3a2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c3a2c2c2c2c2c3a39233a2c2c2c2c2c3a2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c3a2c2c2c2c2c3a23393a2c2c2c2c2c3a2c2c2c2c2c2c2c2c2c2c2c".
+  If Journey's place is "Viridian Mart":
+    The answer is "4e4e2c2c2c2c4e4e17173e3e3e3e17171a11111111111111505111115051505128101a11545554551a1e1a111111111119191a11111111111a11111c1c111111".
+  If Journey's place is "Viridian Center":
+    The answer is "10284b281310284b28285e285e281048161a1110481611111111111114181818181418181818191119181111111111111111111111111152343c1111111111111111111111112a1a11111111111111111111111130301111111130301111111130303232111c1c113232111111113232".
+  If Journey's place is "Route 2":
+    The answer is "505050505050505039235050505050505050505050505050505050502339505050505050505050505252525252525252392355233939393939393939525252525252525223395523393939393939393952525252525252523923552339393939393939395252525252525252233955233939393939393939525252525252525239231e1111111111112439395252525252525252233927111111111111243939393939393939393939392711111111111124393939393939393939393939363758373737373739395050502c503d50505050393939392c2c2c2c2c2c2c2c502c502c2c2c2c2c395639392c2c2c2c2c2c2c2c5a1212122c2c2c2c393939393939393939392c2c5c1717172c2c2c2c393939393939393939392c2c0f4b4b4b2c2c2c2c2c2c2c2c2c2c2c2c39393a3a4e1b1a1a3a3a3a3a3a3a3a3a2c2c2c2c39395b5b5b5b5b5b5b5b5050505050502c2c2c2c39395b5b5b5b5b5b5b5b5050505050502c2c2c2c3939393939393939393950505050505015171718393936373637363736375050505050504e1b1a1a3939525239235252525250505050505039393939393952522339525252525050505050503939393939395050505050505050505050505050503d505050505050505050505050505050505050502c2c2c2c2c50505050505050505050505050502c2c2c2c2c2c50505050505050505050505050502c2c2c2c2c2c50505050505050505050505050502c2c2c2c2c2c50505050505050505050505050503737373c373750505050505050505050505050502c2c2c2c2c2c50505050505050505050505050502c2c2c2c2c2c50505050505050505050505050502c2c2c2c2c2c50505050505050505050505050503737373c373750505050505050505050505050502c2c2c2c2c2c50505050505050505050505050502c2c2c2c2c2c50505050505050505050505050502c2c2c2c2c2c50505050505050505050505050503a3a2c2c3a3a50505050505050505050505050505a121212121250505050505050505050505050505c17171717175050502c503d50505050505050500f4b4b4b4b4b2c2c502c502c2c2c2c2c505050504e1b1a1a1a1a2c2c5a1212122c2c2c2c505050502c2c2c2c2c2c2c2c5c1717172c2c2c2c505050502c2c2c2c2c2c2c2c0f4b4b4b2c2c2c2c505050502c2c2c2c2c2c3a3a4e1b1a1a3a3a3a3a50505050373c373737375b5b5b5b5b5b5b5b5b5b2c502c2c2c2c2c2c2c2c5b5b5b5b5b5b5b5b5b5b2c502c2c2c2c2c2c2c2c393939393939393939232c502c2c2c2c2c2c2c2c363736373637363723392c502c2c2c2c2c2c2c2c2c2c39235252525252522c502c2c2c2c2c2c2c2c2c2c23395252525252522c503737373c373737372c2c39235252525252522c502c2c2c2c2c2c2c2c2c2c23395252525252522c502c2c2c2c2c2c2c2c2c2c39232c2c2c2c2c2c2c2c3d2c2c2c2c2c2c2c2c2c23392c2c50505050505050502c2c2c2c2c2c2c2c39232c50505050505050502c2c2c2c2c2c2c2c2c23392c50505050505050502c2c2c2c2c2c2c2c2c39232c2c505050505050502c2c2c2c2c2c2c2c2c23392c2c2c2c2c2c2c2c502c2c2c2c2c2c2c2c2c39233939393939392c2c502c2c2c2c2c2c2c2c2c23393939393939392c2c502c2c2c2c2c2c2c50502c2c2c2c2c2c39392c2c3d2c2c2c2c2c2c2c505037373737373c363737375050373c3737373750502c2c2c2c2c2c39392c2c502c2c2c2c2c2c2c50502c2c2c2c2c2c39392c2c502c2c2c2c2c2c2c505039393939393939392c2c502c2c2c2c2c2c2c505039393956393939392c2c502c2c2c2c2c2c2c505039232c2c2c2c39392c2c502c2c2c2c2c2c2c505023392c2c2c2c39392c2c502c2c2c2c2c2c2c505039233923392339232c2c3d2c2c2c2c2c2c2c505023392339233923395050505050505050505050505050505055233923505050505050505050505050505050505523233950505050505050505050".
+  If Journey's place is "Forest South Gate":
+    The answer is "4a4a4a4a4a3b4a4a4a4a01010101010101010101150101010101170117153501010101013201323515010101010101010115350101010101170117351501010101013201321535010101141401010135".
+  If Journey's place is "Viridian Forest":
+    The answer is "123030122316121212121212121223161212121212121212121212121212121212121230311200363030303030303030003630303030303030303030303030303030301212303012231630303030303030302316303030303030303030303030303030303012123030120036303030303030303700363030303712121212121212121212303730121230301223163030301212303030231630303012231623162316231623161230301212303012003630373012123030300036303030120036003600360036003612303012122020122316202020121220202023162020201223162316231623162316123030121220201200362020201212202020003620202012003600360036003600361230301212202012231620202012122020202316202020202020202030303030303030303012122020120036202020121220202000362020202020202020303030373030303030121220201223162020201212202020231620202012231623161230301223162020201212202012003620202012122020200036202020120036003612303012003620202012122020122316202020121220202023162020201223162316123030122316202020121220201200362020201212202020003620202012003600361230301200362020201212202012231620202012122020202316202020122316231612303012231620202012122020120036202020121220202000362020201200360036123030120036202020121220201223162020201212202020303020202012231623161230301223162020201212202012003620202012122020203030202020120036003612303112003620202012122020122316202020121230303030303030301223162316123030303030303030121220201200362020201212303037303030303012003600361230303730303030301212202012231620202012231623162316231623162316231612202020231612303012122020120036202020120036003600360036003600360036122020200036123030121220202030302020201223162316231623162316231623161220202023161230301212202020303020202012003600360036003600360036003612202020003612303012123030303130303030303030301223162316231623162316122020202316123030121230303030303037303030303012003600360036003600361220202000361230301223162316231623162316123030122316231623162316231612202020231612303012003600360036003600361230301200360036003600360036122020200036123030122316231623162316231612303012231623162316231623161220202023161230301200360036003600360036123030120036003600360036003612202020003612303012122020202020202020122316231623162316231623162316122020202316123030121220202020202020201200360036003600360036003600361220202000361230301223162316231630302020202020202020313020122316231612203030303030303012003600360036303720202020202020203030201200360036122030303030303730122316231623163030201223162316122030302012231623161220303023162316231600360036003630302012003600361220303020120036003612203030003600360036231623162316303020122316231612203030201223162316122030302316231623160036003600363030201200360036122030302012003600361220303000360036003623162316231630302012231623161220303020122316231612203030231623162316003600360036303020120036003612203030201200360036122030300036003600361220202020203030202020202020202030302020202020203120303020202020201212202020202030302020202020202020231620202020202020203030202020202012122020202020303030303030303030300036303030303030303030302020202020121220202020203030303030303030303030303030303030303030303020202020201223162316231623162316231623161230303030122316231623162316231623162316003600360036003600360036003612303030311200360036003600360036003600362316231623162316231623162316123030303012231623162316231623162316231600360036003600360036003600361230303030120036003600360036003600360036".
+  If Journey's place is "Forest North Gate":
+    The answer is "4a4a4a4a4a3b4a4a4a4a01010101010101010101150101010101170117153501010101013201323515010101010101010115350101010101170117351501010101013201321535010101141401010135".
+  If Journey's place is "Pewter City":
+    The answer is "2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a5050505050501111112439232c2c2c2c15121212121212385a12121212122c2c2c2c2c2c2c2c2c2c2c50505050501111112423392c2c2c2c15171717171717185c1717171717505050502c2c2c2c2c2c2c50505050501111112439232c2c2c2c15121212121212380f4b4b4b4b4b2c2c3d2c2c2c2c2c2c2c2c50505050501111112423392c2c2c2c25222222222222284e1b1a1a1a1a2c2c50502c2c2c2c2c2c2c50505050501111112439392c2c2c2c0f4b4b4b4b4b4b4b39392c2c2c2c2c2c2c502c2c2c2c2c2c2c5050505050111111243637373c37374e1a1a1a1b1a1a1a363737373737373737503737373c373737505050505011111124392339233923392339233939392339232c2c2c2c2c2c2c2c2c2c2c2c2c2c2c505050505011111124233923392339233923393956233923392c2c2c2c2c2c2c2c2c2c2c2c2c2c2c50505050501111112439232c2c2c2c2c2c2c2c2c2c2c2c392339233923392339233923392339231e11111111111111112423392c2c2c2c2c2c2c2c2c2c2c2c2339233923392339233923392339233927111111111111111124392339233923392339233923392339232c2c2c2c2c2c2c2c15171718392327111111111111111124233923392339233923392339233923392c2c2c2c2c2c2c2c4e1b1a1a23392711111111111111112439232c2c2c2c3923151212121238392339235a12121239233923392339232711111111111111112423392c2c2c2c2339151717171718233923395c17171723392339233923393637373737371111112439232c2c2c2c39390f222222222239232c2c0f4b4b4b2c2c2c2c2c2c39233923392339231111112423392c2c2c2c39564e1a1a1a1b1a23392c2c4e1b4a1a2c2c2c2c2c2c233923392339233911111124392339233923392339233923392355233923392339233923392339233939392339233923111111242339233923392339233923392339552323392339233923392339233939562339233923391111112439232c2c2c2c39232c2c2c2c2c2c55232c2c2c2c2c2c2c2c2c2c2c2c39231e111111111111111124505050505050505050505050505055232c2c2c2c2c2c2c2c2c2c2c2c23392711111111111111112439233923392339235a1212123923392339393939393939393939393939232711111111111111112423392339233923395c1717172339233939395555555655555555393923392711111111111111112439232c2c2c2c2c2c0f4b4b4b2c2c39232c502c2c2c2c2c2c2c2c502c39232711111111111111112423392c2c2c2c2c2c4e1b4a1a2c2c23392c502c2c2c2c2c2c2c2c502c233936373737373711111124392339233923392339233923392339232c502c2c2c2c2c2c2c2c502c39232c3a2c2c2c2c11111124233923392339233923392339233923392c502c2c2c2c2c2c2c2c502c23392c3a2c2c2c2c111111243923151717182c2c2c2c2c2c2c2c39392c502c2c2c2c2c2c2c2c502c39232c3a2c2c2c2c1124373723394e1b1a1a2c2c2c2c2c2c2c2c39562c503737373c37373737502c23392c3a2c2c2c2c11243a3a3923392339233923392339233923392339233923392339233923392339232c3a2c2c2c2c11243a3a2339233923392339233923392339233923392339233923392339233923392c3a2c2c2c2c11243a3a3a3a3a3a3a3a3a3a50505050505039235050505050503a3a3a3a3a3a3a3a3a3a2c2c2c2c37372c2c2c2c2c2c2c2c2c2c50505050505023395050505050502c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c50505050505039235050505050502c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c50505050505023395050505050502c2c2c2c2c2c2c2c2c2c2c2c2c2c".
+  If Journey's place is "Pewter Gym":
+    The answer is "1717171717171717171717111111111111111117171111111111111111171717171711111717171717111111111111111117171117111117171711171711111111111111111717111711111717171117171111111111111111171717171211111217171711111132111132111111111111111111111111111111111111111111111111111111161611111111".
+  If Journey's place is "Route 22":
+    The answer is "3a3a5a121212121212121212121227111111111111111111111111111111111111111111111111113a3a5c1717171717171717171717271111111111111111111111111111243737373737371311111111240f4b4b4b4b4b4b4b4b4b4b4b271111111111111111111111111111242c2c2c2c2c2c2711111111240f4b4b4b4b4b4b4b4b4b4b4b363737373737373737373737373737373737373c37372711111111240f4b4b4b4b4b4b4b4b4b4b4b3a3a5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b2711111111244e1a1a1a1a1a1b1a1a1a1a1a3a3a5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b3637373711245b5b5b5b5b5b5b5b5b5b5b5b3a3a2c2c2c2c2c2c321414141e1111242c2c2c2c3a3a2c2c2c2c11245b5b5b5b5b5b5b5b5b5b5b5b3a3a3737373737373214141427111124373c37373a2c2c2c2c2c11242c2c2c2c2c2c2c2c2c2c2c2c3a3a5252525252523214141427111124525252523a2c3923392311243737373737373737373c37373a3a5252525252523214141427111124525252523a2c2339233911243939393939393939393939393a3a5252525252525b5b5b5b27111124525252523a2c39231e1111243939393955565555555555553a3a5252525252525b5b5b5b27111124525252523a2c2339271111242c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c271111242c2c2c2c2c2c2c2c27111124373737373737373737373737373737373737373737373737363737373737373c37373737271111245b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b271111245b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b27111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111".
+  If Journey's place is "Route 22 Gate":
+    The answer is "0000000e3b3b0e00000001010132373832010101010101013738010101010101010137380101010101010101373801010101010101013738010101010101010e37380e01010101010132373832010101".
+  If Journey's place is "Pewter Center":
+    The answer is "10284b281310284b28285e285e281048161a1110481611111111111114181818181418181818191119181111111111111111111111111152343c1111111111111111111111112a1a11111111111111111111111130301111111130301111111130303232111c1c113232111111113232".
+  If Journey's place is "Pewter Mart":
+    The answer is "4e4e2c2c2c2c4e4e17173e3e3e3e17171a11111111111111505111115051505128101a11545554551a1e1a111111111119191a11111111111a11111c1c111111".
+  If Journey's place is "Blue's House":
+    The answer is "0e0e003d003400301e1e01010101011e0101010101010101010112362f1201010101123c3a120101010101010101010108010101010101081801141401010118".
+  If Journey's place is "Viridian School":
+    The answer is "003400585a000030010101010101011e0101010101010101010101462f0101010101013c3a010101010101120101010108010101010101081801141401010118".
+  If Journey's place is "Viridian House":
+    The answer is "0e0e003d003400301e1e01010101011e0101010101010101010112362f1201010101123c3a120101010101010101010108010101010101081801141401010118".
+  If Journey's place is "Pewter House":
+    The answer is "0e0e003d003400301e1e01010101011e0101010101010101010112362f1201010101123c3a120101010101010101010108010101010101081801141401010118".
+  If Journey's place is "Nidoran House":
+    The answer is "0e0e003d003400301e1e01010101011e0101010101010101010112362f1201010101123c3a120101010101010101010108010101010101081801141401010118".
+  The answer is "".
+
+To work out the tile mark (text) at a column (number) by a row (number):
+  If the column is less than 0 or the row is less than 0:
+    The answer is "".
+  If the column is at least the map width or the row is at least the map height:
+    The answer is "".
+  Let the marks be the raw tiles.
+  Let the position be (the row * the map width + the column) * 2.
+  The answer is the first 2 letters of the last (the length of the marks - the position) letters of the marks.
+
+To work out the counter (yes or no) at a column (number) by a row (number):
+  Let the mark be the tile mark at the column by the row.
+  If Journey's place is "Oak's Lab" and (the mark is "3a"):
+    The answer is yes.
+  If Journey's place is "Viridian Mart" and (the mark is "18" or the mark is "19" or the mark is "1e"):
+    The answer is yes.
+  If Journey's place is "Viridian Center" and (the mark is "18" or the mark is "19" or the mark is "1e"):
+    The answer is yes.
+  If Journey's place is "Forest South Gate" and (the mark is "17" or the mark is "32"):
+    The answer is yes.
+  If Journey's place is "Forest North Gate" and (the mark is "17" or the mark is "32"):
+    The answer is yes.
+  If Journey's place is "Pewter Gym" and (the mark is "3a"):
+    The answer is yes.
+  If Journey's place is "Route 22 Gate" and (the mark is "17" or the mark is "32"):
+    The answer is yes.
+  If Journey's place is "Pewter Center" and (the mark is "18" or the mark is "19" or the mark is "1e"):
+    The answer is yes.
+  If Journey's place is "Pewter Mart" and (the mark is "18" or the mark is "19" or the mark is "1e"):
+    The answer is yes.
+  The answer is no.
+
+To work out the ledge (yes or no) at a column (number) by a row (number):
+  Let the origin be the tile mark at Journey's column by Journey's row.
+  Let the destination be the tile mark at the column by the row.
+  If Journey's facing is "south" and ((the origin is "2c" and the destination is "37") or (the origin is "39" and (the destination is "36" or the destination is "37"))):
+    The answer is yes.
+  If Journey's facing is "west" and (the origin is "2c" or the origin is "39") and the destination is "27":
+    The answer is yes.
+  If Journey's facing is "east" and ((the origin is "2c" and (the destination is "0d" or the destination is "1d")) or (the origin is "39" and the destination is "0d")):
+    The answer is yes.
+  The answer is no.
+
+To work out the map tiles (text):
+  If Journey's place is "Bedroom":
+    The answer is "###########....d...................#.......#....#.....#.#.....#.".
+  If Journey's place is "Home":
+    The answer is "##########.#...d...................##......##.............dd....".
+  If Journey's place is "Pallet Town":
+    The answer is "...#.....#gg#.....#.##########gg#########..................##...####....####...##...####....####...##..##d##...##d##...##..................##..................##.........######...##...####..######...##.........######...##.........##d###...##..................##.........######...##...####...........##...####...........##...####...........###..################".
+  If Journey's place is "Oak's Lab":
+    The answer is "##############..####................###.....................####..########..####..................................dd....".
+  If Journey's place is "Route 1":
+    The answer is "...#.....#..#.....#....#######..#######....#..............#....#..............#....#.....#........#....###########....#....#.....#gggggggg#....#.....#gggggggg#....#.....#gggggggg#....#######gggggggg#....#..............#....#..............#....#..........gggg#....###########gggg#....#..........gggg#....#..........gggg#....#..............#....#..............#....#..............#....##.###.#########....#..............#....#..............#....#........gggg..#....#########gggg###....#........gggg..#....#........gggg..#....#..............#....###...##########....#..gggg....gggg#....#..gggg....gggg#....#gggg....gggg..#....#gggg....gggg..#....#######gg#######....#.....#gg#.....#....#.....#gg#.....#....#.....#gg#.....#.".
+  If Journey's place is "Viridian City":
+    The answer is "#################...#####################################..######################################...####............#####################...####............##########........#.............######..##########..########............######..##########.##########...#.......######..##########.##########...#......#####.#..##########.##########...####............##########.##########...#d########################.##########...................##########.##########...................##########.##########...................##########.##########...####################.......##########...####............####.......##########...#d##............####........########............####....####.................#..####....####....########........................####....########........................#d##....########................................############............................########....#.............####..........########....##............####..........########....######........####..........########....######........#d##..........########....######......................###################.###.####################...#................................####...#.................#..............####...#................................####...#################..##################.............#.....#..#.....#........................#.....#..#.....#........................#.....#..#.....#........................#.....#..#.....#...........".
+  If Journey's place is "Viridian Mart":
+    The answer is "################........##..######..####.#......##.........dd...".
+  If Journey's place is "Viridian Center":
+    The answer is "##########.#.####..###......###########.##.............##.............#.............##....##....####.dd.##....##".
+  If Journey's place is "Route 2":
+    The answer is "########..##################..##########gggggggg..#.........gggggggg..#.........gggggggg..#.........gggggggg..#.........gggggggg..########..gggggggg..########............########............##.#####..###.######............#d#......#..........####................####................####..............###.##########..............######..............######..............##########..###############.##..gg..gggg######......gg..gggg######......###################################.....##############......##############......##############......#################.################......##############......##############......#################.################......##############......##############......################..#############################################.################..#.#.....#####.####..####....####........####....####........####....####......###d###########.####...........#...................#...................#........########...#............gggggg.#............gggggg.####.####....gggggg.#............gggggg.#....................#.............########...........########............########.............#######...................#...................#...................#.......##..........#.......#######.#######.######..........#.......##..........#.......##..........#.......##...#......#.......##..........#.......##..........#.......##..........#.......##........#################...#################...##########".
+  If Journey's place is "Forest South Gate":
+    The answer is "####dd####..........#.....#.###.....#.###........##.....#.###.....#.###...dd...#".
+  If Journey's place is "Viridian Forest":
+    The answer is "#dd################################.####........##.................##..###........##.................##..###........##....##########...##..###...##...##...############..##..###...##...##...############..##gg###ggg##ggg##ggg############..##gg###ggg##ggg##ggg############..##gg###ggg##ggg##gggggggg.........##gg###ggg##ggg##gggggggg.........##gg###ggg##ggg##ggg######..###ggg##gg###ggg##ggg##ggg######..###ggg##gg###ggg##ggg##ggg######..###ggg##gg###ggg##ggg##ggg######..###ggg##gg###ggg##ggg##ggg######..###ggg##gg###ggg##ggg##ggg######..###ggg##gg###ggg##ggg..ggg######..###ggg##gg###ggg##ggg..ggg######.####ggg##gg###ggg##........######........##gg###ggg##........######........##gg###ggg################ggg###..##gg###ggg################ggg###..##ggg..ggg################ggg###..##ggg..ggg################ggg###..##...#........############ggg###..##............############ggg###..############..############ggg###..############..############ggg###..############..############ggg###..############..############ggg###..##gggggggg################ggg###..##gggggggg################ggg###..#######..gggggggg#.g######g.......#######..gggggggg..g######g.......#######..g######g..g######g..############..g######g..g######g..############..g######g..g######g..############..g######g..g######g..############..g######g..g######g..############..g######g..g######g..#######ggggg..gggggggg..gggggg#g..ggggg##ggggg..gggggggg##gggggggg..ggggg##ggggg..........##..........ggggg##ggggg......................ggggg################....##############################...###############################....##############################dddd###############".
+  If Journey's place is "Forest North Gate":
+    The answer is "####dd####..........#.....#.###.....#.###........##.....#.###.....#.###...dd...#".
+  If Journey's place is "Pewter City":
+    The answer is "............................................########################################......##############...........#########......##################.......#########......##############..#........#########......#########.####..##.......#########......########.........#.......############.######.################.############...............................#########...........#...................#########..............................##########..............................##########........................####..##########........................#d##..##########........######....####........##########........######....####........##########........######....####..............####.......#####d#....#d##..............####..............#.....................####..............#..............#......####..............#...............#########################...............##########........####..................##########........####......########....##########........####.....#........#...##########........#d##.....#........#...##########.................#........#....#....####.................#........#....#....####..####...........#........#....#....####..#d##.........#.####.#####....#....####...............................#....####...............................#....##################..################....##..........######..######..........................######..######..........................######..######..............".
+  If Journey's place is "Pewter Gym":
+    The answer is "###########........##........#####..#####........##.#..###.##........##.#..###.##........#####..####...#..#...........................dd....".
+  If Journey's place is "Route 22":
+    The answer is "##############################################################################################################......#####################################.######################....................############d#######....................######............##......########....##....##............#################.###.....##............##gggggg########gggg#.....###########.####gggggg########gggg#.....##............##gggggg....####gggg#...####....##########gggggg....####gggg#...####........................####........###################################.########....................................####....................................##################################################################################".
+  If Journey's place is "Route 22 Gate":
+    The answer is "####..####...#..#..............................................#..#......#dd#...".
+  If Journey's place is "Pewter Center":
+    The answer is "##########.#.####..###......###########.##.............##.............#.............##....##....####.dd.##....##".
+  If Journey's place is "Pewter Mart":
+    The answer is "################........##..######..####.#......##.........dd...".
+  If Journey's place is "Blue's House":
+    The answer is "##########.....#...........##......##...........#......##.dd...#".
+  If Journey's place is "Viridian School":
+    The answer is "########.......#...........##......##...........#......##.dd...#".
+  If Journey's place is "Viridian House":
+    The answer is "##########.....#...........##......##...........#......##.dd...#".
+  If Journey's place is "Pewter House":
+    The answer is "##########.....#...........##......##...........#......##.dd...#".
+  If Journey's place is "Nidoran House":
+    The answer is "##########.....#...........##......##...........#......##.dd...#".
+  The answer is "".
+
+To work out the terrain (text) at a column (number) by a row (number):
+  If the column is less than 0 or the row is less than 0:
+    The answer is "wall".
+  If the column is at least the map width or the row is at least the map height:
+    The answer is "wall".
+  Let the tiles be the map tiles.
+  Let the position be the row * the map width + the column.
+  Let the mark be the first 1 letters of the last (the length of the tiles - the position) letters of the tiles.
+  If the mark is "#":
+    The answer is "wall".
+  If the mark is "g":
+    The answer is "grass".
+  If the mark is "d":
+    The answer is "door".
+  The answer is "floor".
+
+To work out the person (text) at a column (number) by a row (number):
+  If Journey's place is "Home" and the column is 5 and the row is 4:
+    The answer is "Mom".
+  If Journey's place is "Oak's Lab" and the column is 4 and the row is 3:
+    The answer is "Rival".
+  If Journey's place is "Oak's Lab" and the column is 5 and the row is 2:
+    The answer is "Oak".
+  If Journey's place is "Oak's Lab" and the column is 1 and the row is 9:
+    The answer is "Girl".
+  If Journey's place is "Oak's Lab" and the column is 2 and the row is 10:
+    The answer is "Scientist".
+  If Journey's place is "Oak's Lab" and the column is 8 and the row is 10:
+    The answer is "Scientist".
+  If Journey's place is "Oak's Lab" and the column is 6 and the row is 3:
+    The answer is "Charmander".
+  If Journey's place is "Oak's Lab" and the column is 7 and the row is 3:
+    The answer is "Squirtle".
+  If Journey's place is "Oak's Lab" and the column is 8 and the row is 3:
+    The answer is "Bulbasaur".
+  If Journey's place is "Viridian Mart" and the column is 0 and the row is 5:
+    The answer is "Clerk".
+  If Journey's place is "Viridian Center" and the column is 3 and the row is 1:
+    The answer is "Nurse".
+  If Journey's place is "Viridian Forest" and the column is 30 and the row is 33:
+    The answer is "Bug Catcher 1".
+  If Journey's place is "Viridian Forest" and the column is 30 and the row is 19:
+    The answer is "Bug Catcher 2".
+  If Journey's place is "Viridian Forest" and the column is 2 and the row is 18:
+    The answer is "Bug Catcher 3".
+  If Journey's place is "Pewter Gym" and the column is 4 and the row is 1:
+    The answer is "Brock".
+  If Journey's place is "Pewter Gym" and the column is 3 and the row is 6:
+    The answer is "Gym Trainer".
+  If Journey's place is "Pewter Gym" and the column is 7 and the row is 10:
+    The answer is "Gym Guide".
+  If Journey's place is "Pallet Town" and the column is 3 and the row is 8:
+    The answer is "Girl".
+  If Journey's place is "Pallet Town" and the column is 11 and the row is 14:
+    The answer is "Fisher".
+  If Journey's place is "Route 1" and the column is 5 and the row is 24:
+    The answer is "Youngster".
+  If Journey's place is "Route 1" and the column is 15 and the row is 13:
+    The answer is "Youngster".
+  If Journey's place is "Viridian City" and the column is 13 and the row is 20:
+    The answer is "Youngster".
+  If Journey's place is "Viridian City" and the column is 30 and the row is 8:
+    The answer is "Man".
+  If Journey's place is "Viridian City" and the column is 30 and the row is 25:
+    The answer is "Youngster".
+  If Journey's place is "Viridian City" and the column is 17 and the row is 9:
+    The answer is "Girl".
+  If Journey's place is "Viridian City" and the column is 18 and the row is 9:
+    The answer is "Old Man".
+  If Journey's place is "Viridian City" and the column is 6 and the row is 23:
+    The answer is "Fisher".
+  If Journey's place is "Viridian City" and the column is 17 and the row is 5:
+    The answer is "Old Man".
+  If Journey's place is "Viridian Mart" and the column is 5 and the row is 5:
+    The answer is "Youngster".
+  If Journey's place is "Viridian Mart" and the column is 3 and the row is 3:
+    The answer is "Customer".
+  If Journey's place is "Viridian Center" and the column is 10 and the row is 5:
+    The answer is "Gentleman".
+  If Journey's place is "Viridian Center" and the column is 4 and the row is 3:
+    The answer is "Visitor".
+  If Journey's place is "Viridian Center" and the column is 11 and the row is 2:
+    The answer is "Receptionist".
+  If Journey's place is "Forest South Gate" and the column is 8 and the row is 4:
+    The answer is "Girl".
+  If Journey's place is "Forest South Gate" and the column is 2 and the row is 4:
+    The answer is "Girl".
+  If Journey's place is "Viridian Forest" and the column is 16 and the row is 43:
+    The answer is "Youngster".
+  If Journey's place is "Viridian Forest" and the column is 27 and the row is 40:
+    The answer is "Youngster".
+  If Journey's place is "Forest North Gate" and the column is 3 and the row is 2:
+    The answer is "Visitor".
+  If Journey's place is "Forest North Gate" and the column is 2 and the row is 5:
+    The answer is "Gramps".
+  If Journey's place is "Pewter City" and the column is 8 and the row is 15:
+    The answer is "Visitor".
+  If Journey's place is "Pewter City" and the column is 17 and the row is 25:
+    The answer is "Visitor".
+  If Journey's place is "Pewter City" and the column is 27 and the row is 17:
+    The answer is "Visitor".
+  If Journey's place is "Pewter City" and the column is 26 and the row is 25:
+    The answer is "Visitor".
+  If Journey's place is "Pewter City" and the column is 35 and the row is 16:
+    The answer is "Youngster".
+  If Journey's place is "Route 22" and the column is 25 and the row is 5 and Journey's badge is 0 and Journey's route rival beaten is 0:
+    The answer is "Route 22 Rival".
+  If Journey's place is "Route 22 Gate" and the column is 6 and the row is 2:
+    The answer is "Guard".
+  If Journey's place is "Pewter Center" and the column is 3 and the row is 1:
+    The answer is "Nurse".
+  If Journey's place is "Pewter Center" and the column is 11 and the row is 7:
+    The answer is "Gentleman".
+  If Journey's place is "Pewter Center" and the column is 1 and the row is 3:
+    The answer is "Jigglypuff".
+  If Journey's place is "Pewter Center" and the column is 11 and the row is 2:
+    The answer is "Receptionist".
+  If Journey's place is "Pewter Mart" and the column is 0 and the row is 5:
+    The answer is "Clerk".
+  If Journey's place is "Pewter Mart" and the column is 3 and the row is 3:
+    The answer is "Youngster".
+  If Journey's place is "Pewter Mart" and the column is 5 and the row is 5:
+    The answer is "Visitor".
+  If Journey's place is "Blue's House" and the column is 2 and the row is 3 and Journey's daisy walking is 0:
+    The answer is "Daisy".
+  If Journey's place is "Blue's House" and the column is 6 and the row is 4 and Journey's daisy walking is 1:
+    The answer is "Daisy".
+  If Journey's place is "Viridian School" and the column is 3 and the row is 5:
+    The answer is "Girl".
+  If Journey's place is "Viridian School" and the column is 4 and the row is 1:
+    The answer is "Teacher".
+  If Journey's place is "Viridian House" and the column is 5 and the row is 3:
+    The answer is "Man".
+  If Journey's place is "Viridian House" and the column is 1 and the row is 4:
+    The answer is "Girl".
+  If Journey's place is "Viridian House" and the column is 5 and the row is 5:
+    The answer is "Speary".
+  If Journey's place is "Pewter House" and the column is 2 and the row is 3:
+    The answer is "Man".
+  If Journey's place is "Pewter House" and the column is 4 and the row is 5:
+    The answer is "Youngster".
+  If Journey's place is "Nidoran House" and the column is 4 and the row is 5:
+    The answer is "Nidoran".
+  If Journey's place is "Nidoran House" and the column is 3 and the row is 5:
+    The answer is "Boy".
+  If Journey's place is "Nidoran House" and the column is 1 and the row is 2:
+    The answer is "Man".
+  The answer is "".
+
+To work out the feature (text) at a column (number) by a row (number):
+  If Journey's place is "Home" and the column is 3 and the row is 1:
+    The answer is "TEXT_REDSHOUSE1F_TV".
+  If Journey's place is "Pallet Town" and the column is 13 and the row is 13:
+    The answer is "TEXT_PALLETTOWN_OAKSLAB_SIGN".
+  If Journey's place is "Pallet Town" and the column is 7 and the row is 9:
+    The answer is "TEXT_PALLETTOWN_SIGN".
+  If Journey's place is "Pallet Town" and the column is 3 and the row is 5:
+    The answer is "TEXT_PALLETTOWN_PLAYERSHOUSE_SIGN".
+  If Journey's place is "Pallet Town" and the column is 11 and the row is 5:
+    The answer is "TEXT_PALLETTOWN_RIVALSHOUSE_SIGN".
+  If Journey's place is "Route 1" and the column is 9 and the row is 27:
+    The answer is "TEXT_ROUTE1_SIGN".
+  If Journey's place is "Viridian City" and the column is 17 and the row is 17:
+    The answer is "TEXT_VIRIDIANCITY_SIGN".
+  If Journey's place is "Viridian City" and the column is 19 and the row is 1:
+    The answer is "TEXT_VIRIDIANCITY_TRAINER_TIPS1".
+  If Journey's place is "Viridian City" and the column is 21 and the row is 29:
+    The answer is "TEXT_VIRIDIANCITY_TRAINER_TIPS2".
+  If Journey's place is "Viridian City" and the column is 30 and the row is 19:
+    The answer is "TEXT_VIRIDIANCITY_MART_SIGN".
+  If Journey's place is "Viridian City" and the column is 24 and the row is 25:
+    The answer is "TEXT_VIRIDIANCITY_POKECENTER_SIGN".
+  If Journey's place is "Viridian City" and the column is 27 and the row is 7:
+    The answer is "TEXT_VIRIDIANCITY_GYM_SIGN".
+  If Journey's place is "Route 2" and the column is 5 and the row is 65:
+    The answer is "TEXT_ROUTE2_SIGN".
+  If Journey's place is "Route 2" and the column is 11 and the row is 11:
+    The answer is "TEXT_ROUTE2_DIGLETTS_CAVE_SIGN".
+  If Journey's place is "Route 2" and the column is 13 and the row is 54:
+    The answer is "Moon Stone".
+  If Journey's place is "Route 2" and the column is 13 and the row is 45:
+    The answer is "HP Up".
+  If Journey's place is "Viridian Forest" and the column is 24 and the row is 40:
+    The answer is "TEXT_VIRIDIANFOREST_TRAINER_TIPS1".
+  If Journey's place is "Viridian Forest" and the column is 16 and the row is 32:
+    The answer is "TEXT_VIRIDIANFOREST_USE_ANTIDOTE_SIGN".
+  If Journey's place is "Viridian Forest" and the column is 26 and the row is 17:
+    The answer is "TEXT_VIRIDIANFOREST_TRAINER_TIPS2".
+  If Journey's place is "Viridian Forest" and the column is 4 and the row is 24:
+    The answer is "TEXT_VIRIDIANFOREST_TRAINER_TIPS3".
+  If Journey's place is "Viridian Forest" and the column is 18 and the row is 45:
+    The answer is "TEXT_VIRIDIANFOREST_TRAINER_TIPS4".
+  If Journey's place is "Viridian Forest" and the column is 2 and the row is 1:
+    The answer is "TEXT_VIRIDIANFOREST_LEAVING_SIGN".
+  If Journey's place is "Viridian Forest" and the column is 25 and the row is 11:
+    The answer is "Antidote".
+  If Journey's place is "Viridian Forest" and the column is 12 and the row is 29:
+    The answer is "Potion".
+  If Journey's place is "Viridian Forest" and the column is 1 and the row is 31:
+    The answer is "Poke Ball".
+  If Journey's place is "Pewter City" and the column is 19 and the row is 29:
+    The answer is "TEXT_PEWTERCITY_TRAINER_TIPS".
+  If Journey's place is "Pewter City" and the column is 33 and the row is 19:
+    The answer is "TEXT_PEWTERCITY_POLICE_NOTICE_SIGN".
+  If Journey's place is "Pewter City" and the column is 24 and the row is 17:
+    The answer is "TEXT_PEWTERCITY_MART_SIGN".
+  If Journey's place is "Pewter City" and the column is 14 and the row is 25:
+    The answer is "TEXT_PEWTERCITY_POKECENTER_SIGN".
+  If Journey's place is "Pewter City" and the column is 15 and the row is 9:
+    The answer is "TEXT_PEWTERCITY_MUSEUM_SIGN".
+  If Journey's place is "Pewter City" and the column is 11 and the row is 17:
+    The answer is "TEXT_PEWTERCITY_GYM_SIGN".
+  If Journey's place is "Pewter City" and the column is 25 and the row is 23:
+    The answer is "TEXT_PEWTERCITY_SIGN".
+  If Journey's place is "Route 22" and the column is 7 and the row is 11:
+    The answer is "TEXT_ROUTE22_POKEMON_LEAGUE_SIGN".
+  The answer is "".
+
+To work out the feature ahead (text):
+  Let the column be Journey's column.
+  Let the row be Journey's row.
+  If Journey's facing is "north":
+    Subtract 1 from the row.
+  If Journey's facing is "south":
+    Add 1 to the row.
+  If Journey's facing is "west":
+    Subtract 1 from the column.
+  If Journey's facing is "east":
+    Add 1 to the column.
+  The answer is the feature at the column by the row.
+
+To work out the person ahead (text):
+  Let the column be Journey's column.
+  Let the row be Journey's row.
+  If Journey's facing is "north":
+    Subtract 1 from the row.
+  If Journey's facing is "south":
+    Add 1 to the row.
+  If Journey's facing is "west":
+    Subtract 1 from the column.
+  If Journey's facing is "east":
+    Add 1 to the column.
+  Let the nearby be the person at the column by the row.
+  If the nearby is not "":
+    The answer is the nearby.
+  If the counter at the column by the row is yes:
+    If Journey's facing is "north":
+      Subtract 1 from the row.
+    If Journey's facing is "south":
+      Add 1 to the row.
+    If Journey's facing is "west":
+      Subtract 1 from the column.
+    If Journey's facing is "east":
+      Add 1 to the column.
+    The answer is the person at the column by the row.
+  The answer is "".
+
+To cross:
+  If Journey's place is "Pallet Town" and Journey's column is 5 and Journey's row is 5:
+    Set Journey's place to "Home".
+    Set Journey's column to 2.
+    Set Journey's row to 6.
+    Stop.
+  If Journey's place is "Home" and Journey's column is 2 and Journey's row is 7:
+    Set Journey's place to "Pallet Town".
+    Set Journey's column to 5.
+    Set Journey's row to 6.
+    Stop.
+  If Journey's place is "Home" and Journey's column is 3 and Journey's row is 7:
+    Set Journey's place to "Pallet Town".
+    Set Journey's column to 5.
+    Set Journey's row to 6.
+    Stop.
+  If Journey's place is "Home" and Journey's column is 7 and Journey's row is 1:
+    Set Journey's place to "Bedroom".
+    Set Journey's column to 7.
+    Set Journey's row to 2.
+    Stop.
+  If Journey's place is "Bedroom" and Journey's column is 7 and Journey's row is 1:
+    Set Journey's place to "Home".
+    Set Journey's column to 7.
+    Set Journey's row to 2.
+    Stop.
+  If Journey's place is "Pallet Town" and Journey's column is 12 and Journey's row is 11:
+    Set Journey's place to "Oak's Lab".
+    Set Journey's column to 4.
+    Set Journey's row to 10.
+    Stop.
+  If Journey's place is "Oak's Lab" and Journey's column is 4 and Journey's row is 11:
+    Set Journey's place to "Pallet Town".
+    Set Journey's column to 12.
+    Set Journey's row to 12.
+    Stop.
+  If Journey's place is "Oak's Lab" and Journey's column is 5 and Journey's row is 11:
+    Set Journey's place to "Pallet Town".
+    Set Journey's column to 12.
+    Set Journey's row to 12.
+    Stop.
+  If Journey's place is "Viridian City" and Journey's column is 29 and Journey's row is 19:
+    Set Journey's place to "Viridian Mart".
+    Set Journey's column to 3.
+    Set Journey's row to 6.
+    Stop.
+  If Journey's place is "Viridian Mart" and Journey's column is 3 and Journey's row is 7:
+    Set Journey's place to "Viridian City".
+    Set Journey's column to 29.
+    Set Journey's row to 20.
+    Stop.
+  If Journey's place is "Viridian Mart" and Journey's column is 4 and Journey's row is 7:
+    Set Journey's place to "Viridian City".
+    Set Journey's column to 29.
+    Set Journey's row to 20.
+    Stop.
+  If Journey's place is "Route 2" and Journey's column is 3 and Journey's row is 43:
+    Set Journey's place to "Forest South Gate".
+    Set Journey's column to 4.
+    Set Journey's row to 6.
+    Stop.
+  If Journey's place is "Forest South Gate" and Journey's column is 4 and Journey's row is 7:
+    Set Journey's place to "Route 2".
+    Set Journey's column to 3.
+    Set Journey's row to 44.
+    Stop.
+  If Journey's place is "Forest South Gate" and Journey's column is 5 and Journey's row is 7:
+    Set Journey's place to "Route 2".
+    Set Journey's column to 3.
+    Set Journey's row to 44.
+    Stop.
+  If Journey's place is "Forest South Gate" and Journey's column is 4 and Journey's row is 0:
+    Set Journey's place to "Viridian Forest".
+    Set Journey's column to 16.
+    Set Journey's row to 46.
+    Stop.
+  If Journey's place is "Forest South Gate" and Journey's column is 5 and Journey's row is 0:
+    Set Journey's place to "Viridian Forest".
+    Set Journey's column to 17.
+    Set Journey's row to 46.
+    Stop.
+  If Journey's place is "Viridian Forest" and Journey's column is 15 and Journey's row is 47:
+    Set Journey's place to "Forest South Gate".
+    Set Journey's column to 4.
+    Set Journey's row to 1.
+    Stop.
+  If Journey's place is "Viridian Forest" and Journey's column is 16 and Journey's row is 47:
+    Set Journey's place to "Forest South Gate".
+    Set Journey's column to 4.
+    Set Journey's row to 1.
+    Stop.
+  If Journey's place is "Viridian Forest" and Journey's column is 17 and Journey's row is 47:
+    Set Journey's place to "Forest South Gate".
+    Set Journey's column to 5.
+    Set Journey's row to 1.
+    Stop.
+  If Journey's place is "Viridian Forest" and Journey's column is 18 and Journey's row is 47:
+    Set Journey's place to "Forest South Gate".
+    Set Journey's column to 5.
+    Set Journey's row to 1.
+    Stop.
+  If Journey's place is "Viridian Forest" and Journey's column is 1 and Journey's row is 0:
+    Set Journey's place to "Forest North Gate".
+    Set Journey's column to 4.
+    Set Journey's row to 6.
+    Stop.
+  If Journey's place is "Viridian Forest" and Journey's column is 2 and Journey's row is 0:
+    Set Journey's place to "Forest North Gate".
+    Set Journey's column to 5.
+    Set Journey's row to 6.
+    Stop.
+  If Journey's place is "Forest North Gate" and Journey's column is 4 and Journey's row is 7:
+    Set Journey's place to "Viridian Forest".
+    Set Journey's column to 1.
+    Set Journey's row to 1.
+    Stop.
+  If Journey's place is "Forest North Gate" and Journey's column is 5 and Journey's row is 7:
+    Set Journey's place to "Viridian Forest".
+    Set Journey's column to 1.
+    Set Journey's row to 1.
+    Stop.
+  If Journey's place is "Forest North Gate" and Journey's column is 4 and Journey's row is 0:
+    Set Journey's place to "Route 2".
+    Set Journey's column to 3.
+    Set Journey's row to 10.
+    Stop.
+  If Journey's place is "Forest North Gate" and Journey's column is 5 and Journey's row is 0:
+    Set Journey's place to "Route 2".
+    Set Journey's column to 3.
+    Set Journey's row to 10.
+    Stop.
+  If Journey's place is "Route 2" and Journey's column is 3 and Journey's row is 11:
+    Set Journey's place to "Forest North Gate".
+    Set Journey's column to 4.
+    Set Journey's row to 1.
+    Stop.
+  If Journey's place is "Pewter City" and Journey's column is 16 and Journey's row is 17:
+    Set Journey's place to "Pewter Gym".
+    Set Journey's column to 4.
+    Set Journey's row to 12.
+    Stop.
+  If Journey's place is "Pewter Gym" and Journey's column is 4 and Journey's row is 13:
+    Set Journey's place to "Pewter City".
+    Set Journey's column to 16.
+    Set Journey's row to 18.
+    Stop.
+  If Journey's place is "Pewter Gym" and Journey's column is 5 and Journey's row is 13:
+    Set Journey's place to "Pewter City".
+    Set Journey's column to 16.
+    Set Journey's row to 18.
+    Stop.
+  If Journey's place is "Viridian City" and Journey's column is 23 and Journey's row is 25:
+    Set Journey's place to "Viridian Center".
+    Set Journey's column to 3.
+    Set Journey's row to 6.
+    Stop.
+  If Journey's place is "Viridian Center" and Journey's column is 3 and Journey's row is 7:
+    Set Journey's place to "Viridian City".
+    Set Journey's column to 23.
+    Set Journey's row to 26.
+    Stop.
+  If Journey's place is "Viridian Center" and Journey's column is 4 and Journey's row is 7:
+    Set Journey's place to "Viridian City".
+    Set Journey's column to 23.
+    Set Journey's row to 26.
+    Stop.
+  If Journey's place is "Pallet Town" and Journey's column is 13 and Journey's row is 5:
+    Set Journey's place to "Blue's House".
+    Set Journey's column to 2.
+    Set Journey's row to 6.
+    Stop.
+  If Journey's place is "Blue's House" and Journey's column is 2 and Journey's row is 7:
+    Set Journey's place to "Pallet Town".
+    Set Journey's column to 13.
+    Set Journey's row to 6.
+    Stop.
+  If Journey's place is "Blue's House" and Journey's column is 3 and Journey's row is 7:
+    Set Journey's place to "Pallet Town".
+    Set Journey's column to 13.
+    Set Journey's row to 6.
+    Stop.
+  If Journey's place is "Viridian City" and Journey's column is 21 and Journey's row is 15:
+    Set Journey's place to "Viridian School".
+    Set Journey's column to 2.
+    Set Journey's row to 6.
+    Stop.
+  If Journey's place is "Viridian School" and Journey's column is 2 and Journey's row is 7:
+    Set Journey's place to "Viridian City".
+    Set Journey's column to 21.
+    Set Journey's row to 16.
+    Stop.
+  If Journey's place is "Viridian School" and Journey's column is 3 and Journey's row is 7:
+    Set Journey's place to "Viridian City".
+    Set Journey's column to 21.
+    Set Journey's row to 16.
+    Stop.
+  If Journey's place is "Viridian City" and Journey's column is 21 and Journey's row is 9:
+    Set Journey's place to "Viridian House".
+    Set Journey's column to 2.
+    Set Journey's row to 6.
+    Stop.
+  If Journey's place is "Viridian House" and Journey's column is 2 and Journey's row is 7:
+    Set Journey's place to "Viridian City".
+    Set Journey's column to 21.
+    Set Journey's row to 10.
+    Stop.
+  If Journey's place is "Viridian House" and Journey's column is 3 and Journey's row is 7:
+    Set Journey's place to "Viridian City".
+    Set Journey's column to 21.
+    Set Journey's row to 10.
+    Stop.
+  If Journey's place is "Pewter City" and Journey's column is 7 and Journey's row is 29:
+    Set Journey's place to "Pewter House".
+    Set Journey's column to 2.
+    Set Journey's row to 6.
+    Stop.
+  If Journey's place is "Pewter House" and Journey's column is 2 and Journey's row is 7:
+    Set Journey's place to "Pewter City".
+    Set Journey's column to 7.
+    Set Journey's row to 30.
+    Stop.
+  If Journey's place is "Pewter House" and Journey's column is 3 and Journey's row is 7:
+    Set Journey's place to "Pewter City".
+    Set Journey's column to 7.
+    Set Journey's row to 30.
+    Stop.
+  If Journey's place is "Pewter City" and Journey's column is 29 and Journey's row is 13:
+    Set Journey's place to "Nidoran House".
+    Set Journey's column to 2.
+    Set Journey's row to 6.
+    Stop.
+  If Journey's place is "Nidoran House" and Journey's column is 2 and Journey's row is 7:
+    Set Journey's place to "Pewter City".
+    Set Journey's column to 29.
+    Set Journey's row to 14.
+    Stop.
+  If Journey's place is "Nidoran House" and Journey's column is 3 and Journey's row is 7:
+    Set Journey's place to "Pewter City".
+    Set Journey's column to 29.
+    Set Journey's row to 14.
+    Stop.
+  If Journey's place is "Pewter City" and Journey's column is 13 and Journey's row is 25:
+    Set Journey's place to "Pewter Center".
+    Set Journey's column to 3.
+    Set Journey's row to 6.
+    Stop.
+  If Journey's place is "Pewter Center" and Journey's column is 3 and Journey's row is 7:
+    Set Journey's place to "Pewter City".
+    Set Journey's column to 13.
+    Set Journey's row to 26.
+    Stop.
+  If Journey's place is "Pewter Center" and Journey's column is 4 and Journey's row is 7:
+    Set Journey's place to "Pewter City".
+    Set Journey's column to 13.
+    Set Journey's row to 26.
+    Stop.
+  If Journey's place is "Pewter City" and Journey's column is 23 and Journey's row is 17:
+    Set Journey's place to "Pewter Mart".
+    Set Journey's column to 3.
+    Set Journey's row to 6.
+    Stop.
+  If Journey's place is "Pewter Mart" and Journey's column is 3 and Journey's row is 7:
+    Set Journey's place to "Pewter City".
+    Set Journey's column to 23.
+    Set Journey's row to 18.
+    Stop.
+  If Journey's place is "Pewter Mart" and Journey's column is 4 and Journey's row is 7:
+    Set Journey's place to "Pewter City".
+    Set Journey's column to 23.
+    Set Journey's row to 18.
+    Stop.
+  If Journey's place is "Route 22" and Journey's column is 8 and Journey's row is 5:
+    Set Journey's place to "Route 22 Gate".
+    Set Journey's column to 4.
+    Set Journey's row to 6.
+    Stop.
+  If Journey's place is "Route 22 Gate" and Journey's column is 4 and Journey's row is 7:
+    Set Journey's place to "Route 22".
+    Set Journey's column to 8.
+    Set Journey's row to 6.
+    Stop.
+  If Journey's place is "Route 22 Gate" and Journey's column is 5 and Journey's row is 7:
+    Set Journey's place to "Route 22".
+    Set Journey's column to 8.
+    Set Journey's row to 6.
+    Stop.
+
+To travel a direction (text):
+  Let the column be Journey's column.
+  Let the row be Journey's row.
+  If the direction is "north" or the direction is "up":
+    Set Journey's facing to "north".
+    Subtract 1 from the row.
+  Otherwise if the direction is "south" or the direction is "down":
+    Set Journey's facing to "south".
+    Add 1 to the row.
+  Otherwise if the direction is "west" or the direction is "left":
+    Set Journey's facing to "west".
+    Subtract 1 from the column.
+  Otherwise if the direction is "east" or the direction is "right":
+    Set Journey's facing to "east".
+    Add 1 to the column.
+  Otherwise:
+    Stop.
+  If Journey's place is "Pallet Town" and the row is less than 0 and the column is at least 0 and the column is at most 2:
+    Set Journey's place to "Route 1".
+    Set Journey's column to the column.
+    Set Journey's row to the map height - 1.
+    Stop.
+  If Journey's place is "Pallet Town" and the row is less than 0 and the column is at least 4 and the column is at most 8:
+    Set Journey's place to "Route 1".
+    Set Journey's column to the column.
+    Set Journey's row to the map height - 1.
+    Stop.
+  If Journey's place is "Pallet Town" and the row is less than 0 and the column is at least 10 and the column is at most 11:
+    Set Journey's place to "Route 1".
+    Set Journey's column to the column.
+    Set Journey's row to the map height - 1.
+    Stop.
+  If Journey's place is "Pallet Town" and the row is less than 0 and the column is at least 13 and the column is at most 17:
+    Set Journey's place to "Route 1".
+    Set Journey's column to the column.
+    Set Journey's row to the map height - 1.
+    Stop.
+  If Journey's place is "Pallet Town" and the row is less than 0 and the column is at least 19 and the column is at most 19:
+    Set Journey's place to "Route 1".
+    Set Journey's column to the column.
+    Set Journey's row to the map height - 1.
+    Stop.
+  If Journey's place is "Route 1" and the row is at least the map height and the column is at least 0 and the column is at most 2:
+    Set Journey's place to "Pallet Town".
+    Set Journey's column to the column.
+    Set Journey's row to 0.
+    Stop.
+  If Journey's place is "Route 1" and the row is at least the map height and the column is at least 4 and the column is at most 8:
+    Set Journey's place to "Pallet Town".
+    Set Journey's column to the column.
+    Set Journey's row to 0.
+    Stop.
+  If Journey's place is "Route 1" and the row is at least the map height and the column is at least 10 and the column is at most 11:
+    Set Journey's place to "Pallet Town".
+    Set Journey's column to the column.
+    Set Journey's row to 0.
+    Stop.
+  If Journey's place is "Route 1" and the row is at least the map height and the column is at least 13 and the column is at most 17:
+    Set Journey's place to "Pallet Town".
+    Set Journey's column to the column.
+    Set Journey's row to 0.
+    Stop.
+  If Journey's place is "Route 1" and the row is at least the map height and the column is at least 19 and the column is at most 19:
+    Set Journey's place to "Pallet Town".
+    Set Journey's column to the column.
+    Set Journey's row to 0.
+    Stop.
+  If Journey's place is "Route 1" and the row is less than 0 and the column is at least 0 and the column is at most 2:
+    Set Journey's place to "Viridian City".
+    Add 10 to the column.
+    Set Journey's column to the column.
+    Set Journey's row to the map height - 1.
+    Stop.
+  If Journey's place is "Route 1" and the row is less than 0 and the column is at least 4 and the column is at most 8:
+    Set Journey's place to "Viridian City".
+    Add 10 to the column.
+    Set Journey's column to the column.
+    Set Journey's row to the map height - 1.
+    Stop.
+  If Journey's place is "Route 1" and the row is less than 0 and the column is at least 10 and the column is at most 11:
+    Set Journey's place to "Viridian City".
+    Add 10 to the column.
+    Set Journey's column to the column.
+    Set Journey's row to the map height - 1.
+    Stop.
+  If Journey's place is "Route 1" and the row is less than 0 and the column is at least 13 and the column is at most 17:
+    Set Journey's place to "Viridian City".
+    Add 10 to the column.
+    Set Journey's column to the column.
+    Set Journey's row to the map height - 1.
+    Stop.
+  If Journey's place is "Route 1" and the row is less than 0 and the column is at least 19 and the column is at most 19:
+    Set Journey's place to "Viridian City".
+    Add 10 to the column.
+    Set Journey's column to the column.
+    Set Journey's row to the map height - 1.
+    Stop.
+  If Journey's place is "Viridian City" and the row is at least the map height and the column is at least 10 and the column is at most 12:
+    Set Journey's place to "Route 1".
+    Subtract 10 from the column.
+    Set Journey's column to the column.
+    Set Journey's row to 0.
+    Stop.
+  If Journey's place is "Viridian City" and the row is at least the map height and the column is at least 14 and the column is at most 18:
+    Set Journey's place to "Route 1".
+    Subtract 10 from the column.
+    Set Journey's column to the column.
+    Set Journey's row to 0.
+    Stop.
+  If Journey's place is "Viridian City" and the row is at least the map height and the column is at least 20 and the column is at most 21:
+    Set Journey's place to "Route 1".
+    Subtract 10 from the column.
+    Set Journey's column to the column.
+    Set Journey's row to 0.
+    Stop.
+  If Journey's place is "Viridian City" and the row is at least the map height and the column is at least 23 and the column is at most 27:
+    Set Journey's place to "Route 1".
+    Subtract 10 from the column.
+    Set Journey's column to the column.
+    Set Journey's row to 0.
+    Stop.
+  If Journey's place is "Viridian City" and the row is at least the map height and the column is at least 29 and the column is at most 29:
+    Set Journey's place to "Route 1".
+    Subtract 10 from the column.
+    Set Journey's column to the column.
+    Set Journey's row to 0.
+    Stop.
+  If Journey's place is "Viridian City" and the row is less than 0 and the column is at least 17 and the column is at most 19:
+    Set Journey's place to "Route 2".
+    Subtract 10 from the column.
+    Set Journey's column to the column.
+    Set Journey's row to the map height - 1.
+    Stop.
+  If Journey's place is "Route 2" and the row is at least the map height and the column is at least 7 and the column is at most 9:
+    Set Journey's place to "Viridian City".
+    Add 10 to the column.
+    Set Journey's column to the column.
+    Set Journey's row to 0.
+    Stop.
+  If Journey's place is "Route 2" and the row is less than 0 and the column is at least 0 and the column is at most 1:
+    Set Journey's place to "Pewter City".
+    Add 10 to the column.
+    Set Journey's column to the column.
+    Set Journey's row to the map height - 1.
+    Stop.
+  If Journey's place is "Route 2" and the row is less than 0 and the column is at least 8 and the column is at most 9:
+    Set Journey's place to "Pewter City".
+    Add 10 to the column.
+    Set Journey's column to the column.
+    Set Journey's row to the map height - 1.
+    Stop.
+  If Journey's place is "Route 2" and the row is less than 0 and the column is at least 16 and the column is at most 19:
+    Set Journey's place to "Pewter City".
+    Add 10 to the column.
+    Set Journey's column to the column.
+    Set Journey's row to the map height - 1.
+    Stop.
+  If Journey's place is "Pewter City" and the row is at least the map height and the column is at least 18 and the column is at most 19:
+    Set Journey's place to "Route 2".
+    Subtract 10 from the column.
+    Set Journey's column to the column.
+    Set Journey's row to 0.
+    Stop.
+  If Journey's place is "Viridian City" and the column is less than 0 and the row is at least 14 and the row is at most 17:
+    Set Journey's place to "Route 22".
+    Subtract 8 from the row.
+    Set Journey's row to the row.
+    Set Journey's column to the map width - 1.
+    Stop.
+  If Journey's place is "Route 22" and the column is at least the map width and the row is at least 6 and the row is at most 9:
+    Set Journey's place to "Viridian City".
+    Add 8 to the row.
+    Set Journey's row to the row.
+    Set Journey's column to 0.
+    Stop.
+  If Journey's place is "Route 1" or Journey's place is "Route 22":
+    If the ledge at the column by the row is yes:
+      If Journey's facing is "south":
+        Add 1 to the row.
+      If Journey's facing is "west":
+        Subtract 1 from the column.
+      If Journey's facing is "east":
+        Add 1 to the column.
+  If the terrain at the column by the row is "wall":
+    Stop.
+  If the person at the column by the row is not "":
+    Stop.
+  Set Journey's column to the column.
+  Set Journey's row to the row.
+  Cross.

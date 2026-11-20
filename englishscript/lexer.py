@@ -437,7 +437,7 @@ class Line:
     indent: int
     tokens: list = field(default_factory=list)
     terminator: str = "."
-    children: list = field(default_factory=list)
+    children: list = field(default_factory=list, repr=False)
     library: str = None  # the library whose SOURCE this line is from, if any
     unit: object = None  # the file it is from (compiler.Unit): the program, a chapter or a library
     # Only when the linter reads a program with problems in its layout:
@@ -445,7 +445,7 @@ class Line:
     unfinished: bool = False  # it had no period or colon
     stray: bool = False  # sentences are indented under it, but it doesn't open a block
     raw: str = None  # the line as written, comment included, for corrections
-    after: object = None  # the next line of the file, if any
+    after: object = field(default=None, repr=False)  # the next line of the file, if any
     question: bool = False  # it ended with "?" and reads as a question; the compiler explains
 
 

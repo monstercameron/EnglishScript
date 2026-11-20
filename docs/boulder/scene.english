@@ -1,0 +1,78 @@
+This chapter shares only prepare, move and refresh.
+
+Use the page library.
+Use the field chapter.
+
+To jar at a left (number):
+  Fill Screen from the left by 6 with 6 over 10 as 3.
+  Let the inside be the left + 1.
+  Fill Screen from the inside by 8 with 4 over 6 as 0.
+  Fill Screen from the inside by 11 with 4 over 3 as 1.
+  Fill Screen from the inside by 5 with 4 over 2 as 3.
+
+To shelve at a left (number):
+  Fill Screen from the left by 2 with 44 over 20 as 3.
+  Let the inside be the left + 2.
+  Fill Screen from the inside by 4 with 40 over 14 as 0.
+  Fill Screen from the inside by 17 with 40 over 2 as 2.
+  Let the first jar be the left + 6.
+  Let the second jar be the left + 18.
+  Let the third jar be the left + 30.
+  Jar at the first jar.
+  Jar at the second jar.
+  Jar at the third jar.
+
+To equip:
+  Fill Screen from 59 by 22 with 42 over 17 as 3.
+  Fill Screen from 62 by 24 with 36 over 12 as 1.
+  Fill Screen from 65 by 26 with 14 over 8 as 0.
+  Fill Screen from 67 by 28 with 2 over 4 as 2.
+  Fill Screen from 70 by 27 with 2 over 5 as 3.
+  Fill Screen from 73 by 29 with 2 over 3 as 2.
+  Fill Screen from 83 by 26 with 11 over 8 as 0.
+  Fill Screen from 85 by 28 with 7 over 4 as 3.
+  Fill Screen from 88 by 28 with 2 over 3 as 0.
+
+To doorway:
+  Fill Screen from 0 by 120 with 160 over 24 as 2.
+  Fill Screen from 16 by 123 with 48 over 3 as 3.
+  Fill Screen from 96 by 123 with 48 over 3 as 3.
+  Fill Screen from 64 by 120 with 32 over 24 as 3.
+  Fill Screen from 68 by 120 with 24 over 20 as 0.
+  Fill Screen from 72 by 122 with 16 over 3 as 1.
+  Fill Screen from 72 by 134 with 16 over 2 as 1.
+
+To refresh:
+  Fill Screen from Player's column by Player's row with 8 over 8 as 3.
+  Let the face column be Player's column + 1.
+  Let the face row be Player's row + 2.
+  Fill Screen from the face column by the face row with 6 over 3 as 0.
+  Let the eye be Player's column + 2.
+  Paint Screen at the eye by the face row with 3.
+  Let the other eye be the eye + 3.
+  Paint Screen at the other eye by the face row with 3.
+  Let the coat be Player's row + 5.
+  Fill Screen from the face column by the coat with 6 over 2 as 2.
+
+To prepare:
+  Fill Screen from 0 by 0 with 160 over 24 as 2.
+  Fill Screen from 0 by 24 with 8 over 96 as 3.
+  Fill Screen from 152 by 24 with 8 over 96 as 3.
+  Shelve at 9.
+  Shelve at 107.
+  Equip.
+  Doorway.
+  Refresh.
+
+To move by a sideways (number) toward a forward (number):
+  Let the next column be Player's column + the sideways.
+  Let the next row be Player's row + the forward.
+  If the next column is less than 8 or the next column is more than 144:
+    Stop.
+  If the next row is less than 40 or the next row is more than 112:
+    Stop.
+  Fill Screen from Player's column by Player's row with 8 over 8 as 0.
+  Set Player's column to the next column.
+  Set Player's row to the next row.
+  Add 1 to Player's step count.
+  Refresh.

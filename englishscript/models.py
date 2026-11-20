@@ -516,12 +516,13 @@ class Jev:
     returns the response as a dict.
     """
 
-    def __init__(self, model=JEV, send=None):
+    def __init__(self, model=JEV, send=None, api_key=None):
         self.name = model
+        self.api_key = api_key
         self.send = send if send is not None else self._post
 
     def _post(self, body):
-        key = os.environ.get("TYPESAFE_API_KEY") or os.environ.get("JEV_API_KEY")
+        key = self.api_key if self.api_key is not None else (os.environ.get("TYPESAFE_API_KEY") or os.environ.get("JEV_API_KEY"))
         if not key:
             raise problem("Jev would not answer: there is no key in TYPESAFE_API_KEY.")
         headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
@@ -599,11 +600,12 @@ class Jev:
 class OpenAIWriter:
     """System 2 through the OpenAI Responses API."""
 
-    def __init__(self, name):
+    def __init__(self, name, api_key=None):
         self.name = name
+        self.api_key = api_key
 
     def model(self, question, state, shape, complaint):
-        key = os.environ.get("OPENAI_API_KEY")
+        key = self.api_key if self.api_key is not None else os.environ.get("OPENAI_API_KEY")
         if not key:
             raise problem("The OpenAI writer needs OPENAI_API_KEY.")
         headers = {"Authorization": "Bearer " + key, "Content-Type": "application/json"}

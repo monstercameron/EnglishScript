@@ -70,6 +70,7 @@ The argument at length is **[the treatise](https://monstercameron.github.io/Engl
 | **[The treatise](https://monstercameron.github.io/EnglishScript/)** | The argument for the language, with examples that run where they stand, and a chapter on agents and what a program means. |
 | **[The playground](https://monstercameron.github.io/EnglishScript/playground.html)** | An editor that marks your program as a teacher would, with corrections you can accept, twenty-four examples and a list of how to say things. |
 | **[A page](https://monstercameron.github.io/EnglishScript/todo.html)** | A to-do list for the web written in EnglishScript, as a book of four chapters, with its files and the things behind the page shown beside it. |
+| **[Pokémon Red through Brock](https://monstercameron.github.io/EnglishScript/red/)** | Play the campaign in your browser, from Pallet Town to the Boulder Badge. |
 | **[Three systems](https://monstercameron.github.io/EnglishScript/systems.html)** | The program's own exact sentences (System 0), a model that judges in the manner of TypeSafe's Jev (System 1), and a model that writes (System 2): which work belongs to which, with eight examples from a single rule to a cascade through all three. |
 | **[The opposition](https://monstercameron.github.io/EnglishScript/opposition.html)** | Seventy years of programming in English, from FLOW-MATIC to Inform 7, and the new languages that ask a model: what each did with a sentence that could mean two things, and what EnglishScript should borrow or fear. |
 | **[FizzBuzz, every way](https://monstercameron.github.io/EnglishScript/fizzbuzz.html)** | FizzBuzz in EnglishScript, kept beside FizzBuzz in each rival, from COBOL and AppleScript to Inform 7 and the languages that ask a model. Each sample says how far it was checked. |
@@ -81,6 +82,16 @@ The argument at length is **[the treatise](https://monstercameron.github.io/Engl
 The site is dressed as a printed English book: blackletter, the Fell types and Garamond.
 
 ## Run it on your own computer
+
+**Pokémon Red through Brock** is a playable EnglishScript campaign. Name your trainer and rival, pick a starter at Oak’s lab, deliver the parcel from Viridian City, and take the forest route to Pewter Gym. Defeating Brock awards the Boulder Badge, prize money and TM34. EnglishScript chapters implement the story, map collisions, battle turns, party, item bag, procedural artwork, and musical score. The browser hosts a 160×144 canvas and a Pyodide worker. [Campaign entry point](docs/red/main.english)
+
+Play the campaign on the [project site](https://monstercameron.github.io/EnglishScript/red/), or run `python tools/serve_red.py --port 8769` from the repository root for the local service. The first load downloads Pyodide. Use the arrow keys to walk, Z to interact, X to back out and Enter to open the field menu. Your progress resumes in the same browser. The field menu’s SAVE keeps a separate checkpoint. Choose **Watch the badge run** for a controller replay through Brock. The Adventure log contains the sound controls. The source tabs below the handheld show the chapters that drive it. [Open the local game](http://127.0.0.1:8769/red/)
+
+Face a character and press **Talk** in the sidebar or **Shift** on the keyboard. Type into the game screen. **Next** pages through a reply and **Close** returns to the same moment in the story. On the project site, conversation uses local replies. The optional local service can provide live replies: Jev interprets your words from that character’s perspective and GPT-6 Luna answers using their backstory and recent conversation. For local-only play, turn off live replies. Enter provider credentials under **Companion replies → API keys**, or set `JEV_API_KEY` (or `TYPESAFE_API_KEY`) and `OPENAI_API_KEY` in the server environment. Entered keys stay in session-specific server memory for up to one hour and can be forgotten from the panel.
+
+Run `python -m unittest tests.test_red_campaign` for the controller replay and `python tools/build_site.py` after changing chapter imports. The map layouts draw on the [Pokémon Red disassembly](https://github.com/pret/pokered). The art, battle mechanics, timing and sound still differ from the Game Boy original.
+
+**Boulder Badge Field Lab** is the earlier calibration room. It tests movement and pixel updates during a recorded asynchronous model request. [Play the Field Lab](https://monstercameron.github.io/EnglishScript/boulder/) · [Read the benchmark plan](apps/boulder/EnglishScript%20-%20The%20Boulder%20Badge%20benchmark%20plan.md)
 
 **[Maintenance Desk](apps/maintenance/README.md)** is a complete application written in EnglishScript. It takes a facilities inbox, gets a trade and urgency from System 1, asks System 2 for handoffs and second opinions, and applies System 0 budget and crew limits to produce a shift plan. Its Windows launcher includes a replayable six-ticket demo.
 

@@ -1,0 +1,9 @@
+Use the page library.
+
+An adventure has a place (text), a column (number), a row (number), a facing (text), a mode (text), a message (text), a stage (text), an objective (text), a starter (text), a rival starter (text), a trainer (text), a rival (text), a parcel (number), a dex (number), a badge (number), a tm34 (number), a town map (number), a blue house entered (number), a daisy walking (number), a route rival beaten (number), a wallet (number), a selection (number), an animation (number) and an opponent (text).
+A controller has an action (text) and a rendering (number).
+A controller is ready when its action is not "".
+
+There is a canvas called Screen whose width is 160 and whose height is 144.
+There is an adventure called Journey whose mode is "opening" and whose place is "" and whose trainer is "RED" and whose rival is "BLUE" and whose facing is "down" and whose wallet is 3000 and whose column is 0 and whose row is 0 and whose message is "" and whose stage is "" and whose objective is "" and whose starter is "" and whose rival starter is "" and whose parcel is 0 and whose dex is 0 and whose badge is 0 and whose tm34 is 0 and whose town map is 0 and whose blue house entered is 0 and whose daisy walking is 0 and whose route rival beaten is 0 and whose selection is 0 and whose animation is 0 and whose opponent is "".
+There is a controller called Controls whose action is "" and whose rendering is 1.

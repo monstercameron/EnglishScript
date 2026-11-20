@@ -1,6 +1,6 @@
 # The page library
 
-`Use the page library.` lets an EnglishScript program be a web page. It adds thirteen kinds of thing, and each thing of one of those kinds **is** an element of the page. The program never touches the page. It makes things and changes them, and the page follows; a person presses and types, and the things change.
+`Use the page library.` lets an EnglishScript program be a web page. It adds fifteen kinds of thing, and each thing of one of those kinds **is** an element of the page. The program never touches the page. It makes things and changes them, and the page follows; a person presses and types, and the things change.
 
 `examples/web_almanac.english` is a small one: a menu of years and a table of feasts, set out over three chapters that know nothing about pages. `examples/web_todo.english` is a to-do list written this way, and [the page called "A page"](todo.html) runs it. Its work is divided among four chapters of the book in `examples/tasks`: what is on the page, what a task is, which cards are in sight, and what is remembered.
 
@@ -29,6 +29,7 @@ Whenever Clicker becomes pressed:
 | `button` | Something to press | `label (text)`, `panel (panel, if any)` | `pressed`, `chosen`, `hidden` |
 | `card` | A line with a tick box, words that can be edited where they stand, a tag, a star, and a cross to dismiss it | `wording (text)`, `tag (text, if any)`, `order (number, if any)`, `panel (panel, if any)` | `ticked`, `starred`, `reworded`, `dismissed`, `hidden` |
 | `gauge` | A bar that shows how far along something is | `level (number)`, `limit (number)`, `panel (panel, if any)` | `hidden` |
+| `canvas` | A four-shade pixel drawing | `width (number)`, `height (number)`, `panel (panel, if any)` | `hidden` |
 | `picture` | An image | `source (text)`, `caption (text, if any)`, `panel (panel, if any)` | `hidden` |
 | `link` | Words that lead somewhere else | `wording (text)`, `target (text)`, `panel (panel, if any)` | `hidden` |
 | `table` | Rows of cells | `title (text, if any)`, `panel (panel, if any)` | `hidden` |
@@ -65,6 +66,20 @@ There is an option called Autumn whose wording is "Autumn" and whose menu is Sea
 Whenever an option becomes picked:
   Set Verdict's wording to "{the option's wording} it is.".
 ```
+
+**Canvases.** A canvas holds pixels in four shades: 0 is white, 1 light gray, 2 dark gray, and 3 black. Width and height must be whole numbers from 1 to 1024; a rule rejects an invalid size when the canvas is made or changed, and `Try` can catch the problem. Columns and rows start at 0, at the top left. A new canvas is white. Painting, filling, reading a pixel, or synchronizing the page observes its dimensions; if they differ from the dimensions last observed, the pixels are cleared to white. If a dimension changes and changes back before any of those operations, the pixels remain.
+
+```text
+There is a canvas called Screen whose width is 160 and whose height is 144.
+Fill Screen from 10 by 12 with 5 over 4 as 2.
+Paint Screen at 10 by 12 with 3.
+Trace Screen from 10 by 12 to 14 at 15 with 1.
+Let the corners be a list of 0, 0, 8, 0, 4 and 6.
+Shade Screen at 10 by 12 with the corners as 3.
+Say the pixel of Screen at 10 by 12.
+```
+
+A fill specifies its left column, top row, width, height, and shade; the whole rectangle must fit inside the canvas. A trace draws a one-pixel-wide solid line between two inclusive endpoints using Bresenham's algorithm. Both endpoints must be whole-number coordinates inside the canvas, and the shade must be a whole number from 0 to 3. A shade fills a polygon in one shade, including its contour. Its list contains at least three pairs of whole-number coordinates, alternating columns and rows, relative to the given whole-number origin. Local coordinates may be negative, but every translated vertex must fit inside the canvas. The interior uses the even-odd rule. The pixel value can be read before the page is shown. Painting, filling, tracing, and shading are external effects, like remembering, and are not reversed if a later sentence fails. In a browser the canvas is drawn when the page is brought up to date; outside a browser the stand-in retains its pixels. A host running in a worker may call `page.use_remote_canvas(world, callback)` in the `on_world` hook of `run_async`, before the page is first used. The selection belongs to that world. The callback receives the canvas serial, name, width, height, and a row-major `bytes` frame of shade indices whenever a changed canvas is synchronized. This backend supports canvases only.
 
 **Pictures and links.** A picture's `caption` is read out to a reader who cannot see it, so it should say what the picture shows. An address may lead to the web (`https://...`), to the post (`mailto:...`, for a link), or to somewhere on the same site. Any other kind of address is not used: the picture is left empty, and the link is struck through and leads nowhere. A program cannot make a page run a script by putting one in a text.
 
@@ -219,9 +234,9 @@ When a thing is removed, its element is given the attribute `data-leaving` and s
 
 ## What it does not do
 
-- There are thirteen kinds of element, and the list stops there: no sound or moving pictures, no drawing, and no page made of several pages.
+- There are fifteen kinds of element, and the list stops there: no sound or moving pictures, and no page made of several pages.
 - A picture cannot be pressed, and a link cannot be answered with `Whenever`: it only leads away.
-- Using the library takes thirteen everyday words for its kinds (`row`, `cell`, `table`, `menu`, `link` and the rest). A program that uses it cannot give those words another meaning.
+- Using the library takes fifteen everyday words for its kinds (`row`, `cell`, `table`, `menu`, `link` and the rest). A program that uses it cannot give those words another meaning.
 - Only cards can be put in an order of the program's choosing. Everything else stands in the order made.
 - A program cannot ask where the pointer is, or what key was pressed, beyond Enter in a field.
 - A panel cannot be put inside a panel.

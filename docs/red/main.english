@@ -1,0 +1,113 @@
+Use the page library.
+Use the foundation chapter.
+Use the story chapter.
+Use the battle chapter.
+Use the commands chapter.
+Use the maps chapter.
+Use the pack chapter.
+Use the people chapter.
+Use the conversation chapter.
+Use the overworld chapter.
+Use the lettering chapter.
+Use the opening chapter.
+Use the arena chapter.
+Use the sound chapter.
+Use the town map chapter.
+
+An adventure is equipping when its mode is "battle bag" or its mode is "battle party".
+An adventure is browsing when its mode is "battle bag" or its mode is "battle party" or its mode is "field menu" or its mode is "party" or its mode is "bag" or its mode is "card" or its mode is "shop".
+
+To illustrate:
+  If Talk's phase is not "closed":
+    Landscape.
+    Portray.
+    Stop.
+  If Journey's mode is "town map":
+    Chart.
+    Stop.
+  If Journey is browsing:
+    Catalogue.
+    Stop.
+  If Journey's mode is "battle":
+    Arena.
+    Stop.
+  If Journey's mode is "walk" or Journey's mode is "dialogue":
+    Landscape.
+    If Journey's mode is "dialogue":
+      Caption Journey's message.
+    Stop.
+  Fill Screen from 0 by 0 with 160 over 144 as 0.
+  Opening.
+
+To work out the local music (text):
+  If Combat's active is 1:
+    If Combat's foe is "brock":
+      The answer is "leader".
+    If Combat's foe is "wild":
+      The answer is "wild".
+    The answer is "trainer".
+  If Journey's mode is "opening":
+    The answer is "intro duel".
+  If Journey's mode is "title" or Journey's mode is "menu":
+    The answer is "opening".
+  If Journey's place is "":
+    The answer is "oak speech".
+  If Journey's place is "Pallet Town" or Journey's place is "Bedroom" or Journey's place is "Home" or Journey's place is "Blue's House":
+    The answer is "pallet".
+  If Journey's place is "Oak's Lab":
+    The answer is "lab".
+  If Journey's place is "Viridian Center" or Journey's place is "Pewter Center" or Journey's place is "Viridian Mart" or Journey's place is "Pewter Mart":
+    The answer is "center".
+  If Journey's place is "Route 1" or Journey's place is "Route 2":
+    The answer is "route".
+  If Journey's place is "Route 22":
+    The answer is "route west".
+  If Journey's place is "Viridian Forest" or Journey's place is "Route 22 Gate":
+    The answer is "forest".
+  If Journey's place is "Pewter Gym":
+    The answer is "gym".
+  The answer is "city".
+
+To work out the menu position (text):
+  If Journey's mode is "battle":
+    The answer is "{Orders's phase} {Orders's cursor} {Combat's choice}".
+  If Journey is browsing:
+    The answer is "{Journey's mode} {Stock's cursor}".
+  If Journey's mode is "menu" or Journey's mode is "starter" or Journey's mode contains "naming":
+    The answer is "{Journey's mode} {Journey's selection}".
+  The answer is "".
+
+Whenever Controls becomes ready:
+  Let the key be Controls's action.
+  Set Controls's action to "".
+  If Talk's phase is not "closed":
+    Stop.
+  Let the previous position be the menu position.
+  Let the previous cue be Score's effect count.
+  If the key is "tick":
+    Add 1 to Journey's animation.
+  If Journey's mode is "town map":
+    Navigate the key.
+  Otherwise if Journey is equipping:
+    Inventory the key.
+    Resolve.
+  Otherwise if Journey is browsing:
+    Inventory the key.
+  Otherwise if Journey's mode is "walk" and the key is "start":
+    Inventory the key.
+  Otherwise:
+    Advance the key.
+  Play the local music.
+  If Score's effect count is the previous cue and the menu position is not the previous position:
+    Sound "select".
+  If Controls's rendering is 1:
+    Illustrate.
+
+Whenever Talk becomes commanded:
+  Settle.
+  Illustrate.
+
+Play the local music.
+Illustrate.
+
+

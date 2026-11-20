@@ -1173,6 +1173,25 @@ class Libraries(Base):
             run("Use the paint library.\nBreak Easel.")
         self.assertEqual(len(self.finished), 1)
 
+    def test_a_library_preserves_known_problem_kinds(self):
+        source = (
+            "Use the paint library.\nTry:\n  Break Easel.\nIf that fails:\n"
+            "  If the problem is a missing item:\n    Say \"missing item\".\n"
+            "  If the problem is a bad number:\n    Say \"bad number\".\n"
+            "  If the problem is a bad reply:\n    Say \"bad reply\".\n"
+            "  If the problem is no model:\n    Say \"no model\".\n"
+            "  If the problem is a library problem:\n    Say \"library problem\".\n"
+        )
+        cases = (("missing_item", "missing item"), ("rounding", "bad number"),
+                 ("bad_reply", "bad reply"), ("no_model", "no model"), ("fail", "library problem"))
+        for key, expected in cases:
+            with self.subTest(key=key):
+                self.failure = lambda: EnglishError("x", stage="run", recoverable=True, teach=key)
+                self.assertEqual(run(source), [expected])
+        self.failure = lambda: EnglishError("x", stage="run", recoverable=True, teach="rounding",
+                                            problem="missing item")
+        self.assertEqual(run(source), ["missing item"])
+
     def test_finish_is_called_once_however_the_run_ends(self):
         endings = {
             "normal end": ('Splash "red" on Easel with no.', None),

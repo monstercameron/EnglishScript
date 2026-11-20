@@ -1,0 +1,72 @@
+This chapter shares only command, Orders, commandboard.
+
+Use the foundation chapter.
+Use the battle chapter.
+Use the pack chapter.
+
+A commandboard has a phase (text) and a cursor (number).
+There is a commandboard called Orders whose phase is "commands" and whose cursor is 1.
+
+To command a key (text):
+  If Combat's active is 0:
+    Stop.
+  If the key is "b" or the key is "x" or the key is "escape":
+    If Orders's phase is "moves":
+      Set Orders's phase to "commands".
+    Stop.
+  If Orders's phase is "moves":
+    If the key is "left" or the key is "right":
+      If Combat's choice is 1 or Combat's choice is 3:
+        Add 1 to Combat's choice.
+      Otherwise:
+        Subtract 1 from Combat's choice.
+      Stop.
+    If the key is "up" or the key is "down":
+      If Combat's choice is at most 2:
+        Add 2 to Combat's choice.
+      Otherwise:
+        Subtract 2 from Combat's choice.
+      Stop.
+    If the key is "a" or the key is "enter" or the key is "z":
+      Let the previous turn be Combat's turn.
+      Fight "a".
+      If Combat's turn is more than the previous turn or Combat's active is 0:
+        Set Orders's phase to "commands".
+    Stop.
+  If the key is "left" or the key is "right":
+    If Orders's cursor is 1 or Orders's cursor is 3:
+      Add 1 to Orders's cursor.
+    Otherwise:
+      Subtract 1 from Orders's cursor.
+    Stop.
+  If the key is "up" or the key is "down":
+    If Orders's cursor is at most 2:
+      Add 2 to Orders's cursor.
+    Otherwise:
+      Subtract 2 from Orders's cursor.
+    Stop.
+  If the key is not "a" and the key is not "enter" and the key is not "z":
+    Stop.
+  If Orders's cursor is 1:
+    Set Orders's phase to "moves".
+    Set Combat's choice to 1.
+    Stop.
+  If Orders's cursor is 2:
+    Set Stock's cursor to 0.
+    Set Stock's notice to "".
+    Set Journey's mode to "battle party".
+    Stop.
+  If Orders's cursor is 3:
+    Set Stock's cursor to 0.
+    Set Stock's notice to "".
+    Set Journey's mode to "battle bag".
+    Stop.
+  If Combat's foe is not "wild":
+    Set Combat's message to "No running from a trainer battle!".
+    Stop.
+  Set Combat's active to 0.
+  Set Combat's outcome to "escaped".
+  Set Combat's message to "Got away safely!".
+
+
+

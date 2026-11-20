@@ -27,6 +27,12 @@ def read(name):
 
 
 class WhatTheSiteServes(unittest.TestCase):
+    def test_the_red_worker_loads_every_imported_chapter(self):
+        paths = json.loads(read("red/chapters.json"))
+        self.assertEqual(paths, build_site.red_chapters(), REBUILD)
+        for name in paths:
+            self.assertTrue((DOCS / "red" / name).is_file(), name)
+
     def test_every_page_has_the_same_way_round_and_links_only_to_what_exists(self):
         for name in PAGES:
             with self.subTest(name):

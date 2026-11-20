@@ -3,6 +3,7 @@
 There is no browser here, so the library uses its stand-in page. The tests
 press, type and tick on it through the same listeners a browser would call.
 """
+import asyncio
 import unittest
 from pathlib import Path
 
@@ -707,6 +708,131 @@ class TheWebToDoList(unittest.TestCase):
         again, _ = open_page(self.source, kept=dict(page.STORE))
         self.assertEqual(self.cards(again), ["[ ] * Buy milk  #home", "[x] Walk the dog"])
 
+
+
+class CanvasTests(unittest.TestCase):
+    def test_paint_and_readback_through_english(self):
+        world, lines = open_page('''
+Use the page library.
+There is a canvas called Screen whose width is 3 and whose height is 2.
+Paint Screen at 2 by 1 with 3.
+Say the pixel of Screen at 2 by 1.
+Say the pixel of Screen at 0 by 0.
+''')
+        self.assertEqual(lines[:2], ["3", "0"])
+        self.assertEqual(page.element(world, "Screen").node.tag, "canvas")
+        self.assertEqual(page.sketch(world), "(canvas: 3 by 2)")
+
+    def test_remote_sends_one_frame_per_changed_sync(self):
+        frames = []
+        program = compile_source('''
+Use the page library.
+There is a canvas called Screen whose width is 2 and whose height is 2.
+Paint Screen at 1 by 0 with 2.
+Paint Screen at 0 by 1 with 3.
+''')
+        world = asyncio.run(program.run_async(out=lambda *args: None,
+                            on_world=lambda world: page.use_remote_canvas(world, lambda *frame: frames.append(frame))))
+        self.assertEqual(len(frames), 1)
+        self.assertEqual(frames[0][1:], ("Screen", 2, 2, bytes([0, 2, 3, 0])))
+        page.sync(world)
+        self.assertEqual(len(frames), 1)
+        screen = page.element(world, "Screen").thing
+        page.verb_paint(world, screen, 0, 0, 1)
+        page.sync(world)
+        self.assertEqual(frames[-1][-1], bytes([1, 2, 3, 0]))
+
+    def test_rectangle_fill_and_world_isolation(self):
+        frames = []
+        source = """Use the page library.
+There is a canvas called Screen whose width is 4 and whose height is 3.
+Fill Screen from 1 by 1 with 2 over 2 as 2.
+Say the pixel of Screen at 2 by 2.
+"""
+        program = compile_source(source)
+        world = asyncio.run(program.run_async(out=lambda *args: None,
+                            on_world=lambda world: page.use_remote_canvas(world, lambda *frame: frames.append(frame))))
+        self.assertEqual(frames[0][-1], bytes([0, 0, 0, 0, 0, 2, 2, 0, 0, 2, 2, 0]))
+        other, lines = open_page(source)
+        self.assertEqual(lines[0], "2")
+        self.assertIsNone(page._state(other)["backend"].remote_canvas)
+        self.assertEqual(len(frames), 1)
+        with self.assertRaises(RuntimeError):
+            page.use_remote_canvas(world, lambda *args: None)
+
+    def test_size_rules_are_recoverable_and_resize_is_observed_on_use(self):
+        _, lines = open_page('''
+Use the page library.
+There is a canvas called Screen whose width is 2 and whose height is 2.
+Paint Screen at 1 by 1 with 3.
+Try:
+  Set Screen's width to 0.
+If that fails:
+  Say "zero caught".
+Try:
+  Set Screen's height to 1.5.
+If that fails:
+  Say "fraction caught".
+Try:
+  Set Screen's width to 1025.
+If that fails:
+  Say "large caught".
+Set Screen's width to 3.
+Set Screen's width to 2.
+Say the pixel of Screen at 1 by 1.
+Set Screen's width to 3.
+Say the pixel of Screen at 1 by 1.
+Set Screen's width to 2.
+Say the pixel of Screen at 1 by 1.
+''')
+        self.assertEqual(lines[:6], ["zero caught", "fraction caught", "large caught", "3", "0", "0"])
+
+    def test_invalid_sizes_coordinates_and_shades(self):
+        from englishscript.lexer import EnglishError
+        for width, height in [(0, 1), (1025, 1), (1, 0), (1, "1.5")]:
+            with self.subTest(width=width, height=height), self.assertRaises(EnglishError):
+                open_page(f"Use the page library.\nThere is a canvas called Screen whose width is {width} and whose height is {height}.\n")
+        world, _ = open_page("Use the page library.\nThere is a canvas called Screen whose width is 2 and whose height is 2.\n")
+        screen = page.element(world, "Screen").thing
+        for left, top, width, height in [(0, 0, 0, 1), (1, 1, 2, 1), (0, 1, 1, 2), (-1, 0, 1, 1)]:
+            with self.subTest(left=left, top=top, width=width, height=height), self.assertRaises(EnglishError):
+                page.verb_fill(world, screen, left, top, width, height, 1)
+        for column, down, shade in [(-1, 0, 0), (2, 0, 0), (0, 2, 0), (0, 0, 4), (0, 0, -1)]:
+            with self.subTest(column=column, down=down, shade=shade), self.assertRaises(EnglishError):
+                page.verb_paint(world, screen, column, down, shade)
+
+    def test_browser_draws_pixels_and_resize_clears_them(self):
+        world, _ = open_page("Use the page library.\nThere is a canvas called Screen whose width is 2 and whose height is 2.\n")
+        binding = page.element(world, "Screen")
+        state = page._state(world)
+        page.verb_paint(world, binding.thing, 1, 0, 3)
+
+        class Context:
+            def __init__(self):
+                self.calls = []
+                self.fillStyle = None
+
+            def fillRect(self, x, y, width, height):
+                self.calls.append((self.fillStyle, x, y, width, height))
+
+        context = Context()
+        binding.node.getContext = lambda kind: context
+        state["backend"].browser = True
+        page._show_canvas(state, binding)
+        self.assertEqual((binding.node.width, binding.node.height), (2, 2))
+        self.assertEqual(context.calls, [("#ffffff", 0, 0, 1, 1), ("#000000", 1, 0, 1, 1),
+                                         ("#ffffff", 0, 1, 2, 1)])
+        binding.thing.fields["width"] = 3
+        self.assertEqual(page.value_pixel(world, binding.thing, 1, 0), 0)
+        page._show_canvas(state, binding)
+        self.assertEqual((binding.node.width, binding.node.height), (3, 2))
+
+    def test_remote_rejects_other_page_elements(self):
+        from englishscript.lexer import EnglishError
+        program = compile_source('Use the page library.\nThere is a note called Message whose wording is "Hi".\n')
+        with self.assertRaises(EnglishError):
+            asyncio.run(program.run_async(out=lambda *args: None,
+                        on_world=lambda world: page.use_remote_canvas(world, lambda *frame: None)))
 
 if __name__ == "__main__":
     unittest.main()

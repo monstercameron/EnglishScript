@@ -1,0 +1,101 @@
+This chapter shares only navigate and chart.
+
+Use the page library.
+Use the foundation chapter.
+Use the lettering chapter.
+
+An atlas has a current (number), a horizontal (number), a vertical (number) and a label (text).
+There is an atlas called Navigator whose current is 0 and whose horizontal is 0 and whose vertical is 0 and whose label is "".
+
+The map locations are horizontal, vertical and label, in that order:
+  "0" has 2, 11 and "PALLET TOWN".
+  "1" has 2, 10 and "ROUTE 1".
+  "2" has 2, 8 and "VIRIDIAN CITY".
+  "3" has 0, 8 and "ROUTE 22".
+  "4" has 2, 6 and "ROUTE 2".
+  "5" has 2, 4 and "VIRIDIAN FOREST".
+  "6" has 2, 3 and "PEWTER CITY".
+  "7" has 10, 2 and "CERULEAN CITY".
+  "8" has 14, 5 and "LAVENDER TOWN".
+  "9" has 10, 9 and "VERMILION CITY".
+  "10" has 7, 5 and "CELADON CITY".
+  "11" has 8, 13 and "FUCHSIA CITY".
+  "12" has 2, 15 and "CINNABAR ISLAND".
+  "13" has 0, 2 and "INDIGO PLATEAU".
+  "14" has 10, 5 and "SAFFRON CITY".
+
+To locate an index (number):
+  Let the location be the map locations for "{the index}".
+  If the location is not nothing:
+    Set Navigator's horizontal to the location's horizontal.
+    Set Navigator's vertical to the location's vertical.
+    Set Navigator's label to the location's label.
+
+To navigate a key (text):
+  If the key is "b":
+    Set Journey's mode to "bag".
+    Stop.
+  If the key is "up" or the key is "left":
+    Subtract 1 from Journey's selection.
+    If Journey's selection is less than 0:
+      Set Journey's selection to 14.
+  If the key is "down" or the key is "right":
+    Add 1 to Journey's selection.
+    If Journey's selection is more than 14:
+      Set Journey's selection to 0.
+
+To chart:
+  Set Navigator's current to 0.
+  If Journey's place is "Route 1":
+    Set Navigator's current to 1.
+  If Journey's place is "Viridian City" or Journey's place is "Viridian Mart" or Journey's place is "Viridian Center" or Journey's place is "Viridian School":
+    Set Navigator's current to 2.
+  If Journey's place is "Route 22" or Journey's place is "Route 22 Gate":
+    Set Navigator's current to 3.
+  If Journey's place is "Route 2" or Journey's place is "Forest South Gate" or Journey's place is "Forest North Gate":
+    Set Navigator's current to 4.
+  If Journey's place is "Viridian Forest":
+    Set Navigator's current to 5.
+  If Journey's place is "Pewter City" or Journey's place is "Pewter Gym" or Journey's place is "Pewter Mart" or Journey's place is "Pewter Center" or Journey's place is "Pewter Museum":
+    Set Navigator's current to 6.
+  Fill Screen from 0 by 0 with 160 over 144 as 0.
+  Inscribe "TOWN MAP" at 10 by 4.
+  Fill Screen from 23 by 19 with 114 over 100 as 1.
+  Fill Screen from 26 by 22 with 108 over 94 as 2.
+  Fill Screen from 39 by 34 with 4 over 66 as 1.
+  Fill Screen from 39 by 33 with 60 over 4 as 1.
+  Fill Screen from 39 by 51 with 85 over 4 as 1.
+  Fill Screen from 87 by 33 with 4 over 65 as 1.
+  Fill Screen from 39 by 97 with 65 over 4 as 1.
+  Fill Screen from 39 by 109 with 52 over 4 as 1.
+  Fill Screen from 41 by 89 with 4 over 4 as 3.
+  Fill Screen from 41 by 83 with 4 over 4 as 3.
+  Fill Screen from 41 by 71 with 4 over 4 as 3.
+  Fill Screen from 29 by 71 with 4 over 4 as 3.
+  Fill Screen from 41 by 59 with 4 over 4 as 3.
+  Fill Screen from 41 by 47 with 4 over 4 as 3.
+  Fill Screen from 41 by 41 with 4 over 4 as 3.
+  Fill Screen from 89 by 35 with 4 over 4 as 3.
+  Fill Screen from 113 by 53 with 4 over 4 as 3.
+  Fill Screen from 89 by 77 with 4 over 4 as 3.
+  Fill Screen from 71 by 53 with 4 over 4 as 3.
+  Fill Screen from 77 by 101 with 4 over 4 as 3.
+  Fill Screen from 41 by 113 with 4 over 4 as 3.
+  Fill Screen from 29 by 35 with 4 over 4 as 3.
+  Fill Screen from 89 by 53 with 4 over 4 as 3.
+  Locate Navigator's current.
+  Let the player x be 28 + Navigator's horizontal * 6.
+  Let the player y be 22 + Navigator's vertical * 6.
+  Fill Screen from the player x by the player y with 6 over 6 as 0.
+  Locate Journey's selection.
+  Let the cursor x be 27 + Navigator's horizontal * 6.
+  Let the cursor y be 21 + Navigator's vertical * 6.
+  Fill Screen from the cursor x by the cursor y with 1 over 8 as 0.
+  Inscribe Navigator's label at 8 by 121.
+  Inscribe "ARROWS B BACK" at 8 by 133.
+
+
+
+
+
+

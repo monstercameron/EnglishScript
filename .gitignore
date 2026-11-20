@@ -7,6 +7,12 @@ gpu_triangle.png
 .env.*
 !.env.example
 /shared/
+api keys.md
+*.gb
+*.gbc
+*.sav
+*.state
 /recordings/
+/work/
 /apps/maintenance/.local/
 /apps/maintenance/shift-plan.txt

@@ -310,7 +310,7 @@ def call_library(lib, fn, world, roles):
         return fn(world, **roles)
     except EnglishError as error:
         error.stage = "run"  # whatever the library wrote, it happened while running
-        if error.problem is None and error.key not in ("rule_broken", "removed", "zero", "file", "count"):
+        if error.problem is None and (error.key not in PROBLEM_KINDS or error.key == "fail"):
             error.problem = "library problem"
         raise
     except _Signal:
@@ -328,27 +328,29 @@ MODEL_TRIES = 3  # a reply that can't be read is asked for again, being told why
 MODEL_FAULT = "This is a fault in what is connected as the model, not in your program."
 
 
-def call_listener(fn, *args):
-    """Ask whoever listens for "Ask the model" or "Judge" (World.model, World.judge). A
-    problem it reports (EnglishError) is a problem of the program, of the kind "a bad
-    reply" unless it says otherwise; anything else it raises is a fault in it, which
-    ends the program, as a library's does."""
+@contextmanager
+def listener_errors():
     try:
-        return fn(*args)
+        yield
     except EnglishError as error:
-        error.stage = "run"  # whatever the listener wrote, it happened while running
+        error.stage = "run"
         if error.problem is None and error.key in ("fail", "sentence_form"):
             error.teach("bad_reply")
         elif error.problem is None and error.key not in PROBLEM_KINDS:
             error.problem = "bad reply"
         else:
-            error.teach(error.key)  # its category is now that of a problem while running
+            error.teach(error.key)
         raise
     except _Signal:
         raise
-    except Exception as error:  # noqa: BLE001 - the listener's own fault, reported in English
+    except Exception as error:
         raise EnglishError(f"The model failed: {type(error).__name__}: {error}", stage="run", hint=MODEL_FAULT,
                            teach="model_fault") from None
+
+
+def call_listener(fn, *args):
+    with listener_errors():
+        return fn(*args)
 
 
 def no_model():
@@ -362,36 +364,49 @@ def bad_judgement(wanted, result):
                         recoverable=True, teach="bad_reply")
 
 
-def ask_model(world, asked, about, shape):
-    """Ask world.model (which is there) and read its reply as `shape` (Compiler.reply_shape),
-    asking again, with a complaint, up to MODEL_TRIES times in all. The same question about
-    the same state, for the same shape, is asked once in a run (World.answers)."""
-    key = ("model", asked, about, shape["type"], tuple(shape["choices"] or ()), shape["items"], shape["optional"])
-    if key in world.answers:
-        return world.answers[key]
-    value = _ask_model(world, asked, about, shape)
-    world.answers[key] = value
-    return value
+class ModelRequest:
+    def __init__(self, asked, about, shape):
+        self.shape = shape
+        self.key = ("model", asked, about, shape["type"], tuple(shape["choices"] or ()),
+                    shape["items"], shape["optional"])
+        self.complaint = None
+        self.attempts = 0
 
+    def arguments(self):
+        self.attempts += 1
+        return dict(self.shape, choices=list(self.shape["choices"]) if self.shape["choices"] else None), self.complaint
 
-def _ask_model(world, asked, about, shape):
-    complaint = reply = None
-    for _ in range(MODEL_TRIES):
-        fresh = dict(shape, choices=list(shape["choices"]) if shape["choices"] else None)
-        reply = call_listener(world.model, asked, about, fresh, complaint)
+    def read(self, reply):
         if reply is None:
             raise EnglishError("The model gave no reply: it refused to answer, or its answer was cut short.",
                                stage="run", recoverable=True, teach="bad_reply")
         if not isinstance(reply, str):
             raise EnglishError(f"The model failed: it gave back {type(reply).__name__}, not text.",
                                stage="run", hint=MODEL_FAULT, teach="model_fault")
-        read, value = read_model_reply(reply, shape)
+        read, value = read_model_reply(reply, self.shape)
         if read:
+            return True, value
+        if self.attempts == MODEL_TRIES:
+            raise EnglishError(f'The model\'s reply could not be read as {expected(self.shape)}: "{shortened(reply)}"',
+                               stage="run", recoverable=True, teach="bad_reply")
+        self.complaint = (f'I could not read "{shortened(value)}": the reply has to be {expected(self.shape)}, and '
+                          "nothing else.")
+        return False, None
+
+
+def ask_model(world, asked, about, shape):
+    if getattr(world, "async_run", False):
+        raise EnglishError("Only a top-level model question can wait in an asynchronous run.",
+                           stage="run", teach="model_form")
+    request = ModelRequest(asked, about, shape)
+    if request.key in world.answers:
+        return world.answers[request.key]
+    while True:
+        fresh, complaint = request.arguments()
+        read, value = request.read(call_listener(world.model, asked, about, fresh, complaint))
+        if read:
+            world.answers[request.key] = value
             return value
-        complaint = (f'I could not read "{shortened(value)}": the reply has to be {expected(shape)}, and '
-                     "nothing else.")
-    raise EnglishError(f'The model\'s reply could not be read as {expected(shape)}: "{shortened(reply)}"',
-                       stage="run", recoverable=True, teach="bad_reply")
 
 
 def judge_request(asked, about, cset, scale=False):
@@ -841,6 +856,24 @@ class Workout:
 
 
 @dataclass
+class FactTable:
+    name: str
+    kind: str
+    rows: dict
+    unit: object
+
+
+@dataclass(frozen=True)
+class FactRow:
+    name: str
+    values: tuple
+    removed: bool = False
+
+    def __str__(self):
+        return self.name
+
+
+@dataclass
 class Coll:
     kind: str
     fn: object  # env -> [Thing]
@@ -1038,6 +1071,7 @@ class Compiler:
         self.choice_names = View(lambda word, c: self.can_see(c.unit, word), index)
         self.choice_words = View(lambda key, entry: self.can_see(entry.unit, key), index)
         self.workouts = View(lambda key, w: self.can_see(w.unit, key), index)
+        self.fact_tables = View(lambda key, t: self.can_see(t.unit, key), index)
         self.member_names = NameSet({"name"}, index)
         self.adjective_names = NameSet((), index)
         self.globals = Scope()
@@ -1163,6 +1197,8 @@ class Compiler:
             if name not in found or (shared(entry) and not shared(found[name])):
                 found[name] = entry
         for kind, K in self.kinds.items():
+            if kind.startswith("\0facts:"):
+                continue
             put(K.word, K.unit, K.word, "kind")
             put(K.plural, K.unit, K.word, "kind")
         for key, entry in self.names.every():
@@ -1171,6 +1207,8 @@ class Compiler:
             put(verb, proc.unit, verb, "verb")
         for name, w in self.workouts.every():
             put(name, w.unit, name, "worked-out value")
+        for name, table in self.fact_tables.every():
+            put(name, table.unit, name, "fact table")
         for b in self.globals.names.values():
             if b.unit is not None:
                 put(b.name, b.unit, b.name, "variable")
@@ -2199,6 +2237,18 @@ class Compiler:
         found = self.list_phrase(s, the) or self.number_phrase(s, the)
         if found:
             return found
+        table = self.match_words(s, self.fact_tables)
+        if table and s.peek(table[1]).is_word("for"):
+            name, count = table
+            for _ in range(count + 1):
+                s.next()
+            key = self.primary(s)
+            self.need(s, key)
+            if key.type != "text":
+                s.fail_span(f"A fact table key must be text, but {key.text} is {self.describe(key.type)}.", key.span)
+            lookup = self.fact_tables[name]
+            kf = key.fn
+            return Expr(opt(lookup.kind), lambda env: lookup.rows.get(kf(env)))
         match = self.match_words(s, self.workouts)
         if match:
             return self.use_workout(s, match)
@@ -3537,6 +3587,10 @@ class Compiler:
         if line.tokens[0].is_word("if"):
             i, step = self.if_chain(lines, i)
             return i, self.located(line, step)
+        if self.fact_table_ahead(Sentence(line)):
+            self.line = line
+            self.define_fact_table(Sentence(line))
+            return i + 1, None
         step = self.statement(line)
         if step is None:
             return i + 1, None
@@ -3691,6 +3745,7 @@ class Compiler:
         step.leaves = getattr(fn, "leaves", False)
         step.line = line
         step.judging = getattr(fn, "judging", None)
+        step.async_model = getattr(fn, "async_model", None)
         return step
 
     @staticmethod
@@ -4066,6 +4121,9 @@ class Compiler:
         if word == "judge" and self.judge_ahead(s):
             self.needs_block(s, False)
             return self.judge(s)
+        if word == "set" and self.except_assignment_ahead(s):
+            self.needs_block(s, True)
+            return self.except_assignment(s)
         if word in simple:
             self.needs_block(s, False)
             return simple[word](s)
@@ -4468,6 +4526,106 @@ class Compiler:
             self.advise_inside(line.children)
 
     # definitions --------------------------------------------------------
+
+    def fact_table_ahead(self, s):
+        toks = s.toks
+        return (s.line.terminator == ":" and len(toks) >= 7 and toks[0].is_word("the")
+                and any(t.is_word("are") for t in toks[1:])
+                and [t.low for t in toks[-4:-1]] == ["in", "that", "order"])
+
+    def define_fact_table(self, s):
+        if self.scope is not self.globals:
+            s.fail("A fact table belongs at the top level.")
+        s.next()
+        names = []
+        while s.peek().kind == "WORD" and not s.at_word("are"):
+            names.append(s.next())
+        if not names:
+            s.fail("A fact table needs a name.")
+        name = " ".join(t.low for t in names)
+        self.check_new_name(s, names, "a fact table name")
+        self.name_is_new(s, name, names[0])
+        s.expect_word("are")
+        columns = []
+        column_tokens = []
+        while not s.at_words("in", "that", "order"):
+            words = []
+            while s.peek().kind == "WORD" and not s.at_word("and", "in"):
+                words.append(s.next())
+            if not words:
+                s.fail("A fact table needs a column name here.")
+            self.check_new_name(s, words, "a column name")
+            column = " ".join(t.low for t in words)
+            if column in columns:
+                s.fail(f'Column "{column}" is listed twice.', words[0])
+            columns.append(column)
+            column_tokens.append(words)
+            if s.at_words("in", "that", "order"):
+                break
+            if not (s.eat_punct(",") or s.eat_word("and")):
+                s.fail('Separate columns with commas or "and".')
+            s.eat_word("and")
+        for word in ("in", "that", "order"):
+            s.expect_word(word)
+        self.end(s)
+        if not s.line.children:
+            s.fail("A fact table needs at least one row.")
+        rows = {}
+        types = None
+        for line in s.line.children:
+            row = Sentence(line)
+            key = row.next()
+            if key.kind != "STRING" or "{" in key.text or "}" in key.text:
+                row.fail("A fact table row starts with a literal quoted text key.", key)
+            key_value = key.text[1:-1].replace('""', '"')
+            if key_value in rows:
+                row.fail(f'The key {key.text} is listed twice.', key)
+            row.expect_word("has")
+            values, row_types = [], []
+            while not row.at_end():
+                minus = bool(row.eat_punct("-"))
+                tok = row.next()
+                if tok.kind not in ("NUMBER", "MONEY", "PERCENT", "STRING") or (minus and tok.kind == "STRING"):
+                    row.fail("A fact table value must be a literal number, money, percent or quoted text.", tok)
+                if tok.kind == "STRING":
+                    if "{" in tok.text or "}" in tok.text:
+                        row.fail("A fact table value must be literal text without fill-ins.", tok)
+                    value = tok.text[1:-1].replace('""', '"')
+                else:
+                    value = -tok.value if minus else tok.value
+                values.append(value)
+                row_types.append(tok.kind.lower() if tok.kind != "STRING" else "text")
+                if row.at_end():
+                    break
+                if not (row.eat_punct(",") or row.eat_word("and")):
+                    row.fail('Separate values with commas or "and".')
+                row.eat_word("and")
+                if row.at_end():
+                    row.fail("A value is missing after the separator.")
+            if line.children or line.terminator != ".":
+                row.fail("A fact table row ends with a period and has no block.")
+            if len(values) != len(columns):
+                row.fail(f"This row has {len(values)} value{'s' if len(values) != 1 else ''}, but the table has "
+                         f"{len(columns)} column{'s' if len(columns) != 1 else ''}.", key)
+            if types is None:
+                types = row_types
+            elif types != row_types:
+                mismatch = next(i for i, (a, b) in enumerate(zip(types, row_types)) if a != b)
+                row.fail(f'The "{columns[mismatch]}" column needs {types[mismatch]}, but this row has {row_types[mismatch]}.', key)
+            rows[key_value] = FactRow(key_value, tuple(values))
+        kind = f"\0facts:{self.uid()}"
+        K = Kind(kind, name, s.line, word=f"row of {name}")
+        K.adjectives = View(lambda word, adj: True)
+        K.props = View(lambda word, prop: True)
+        for i, (column, type_) in enumerate(zip(columns, types)):
+            K.props[column] = Prop(column, type_, lambda world, row, i=i: row.values[i], "a fact table")
+        self.kinds[kind] = K
+        self.member_names.update(columns)
+        self.fact_tables[name] = FactTable(name, kind, rows, self.unit)
+        self.defines("fact table", name, s.line, names[0].col, names[-1].end - names[0].col)
+        for column, words, type_ in zip(columns, column_tokens, types):
+            self.defines("property", column, s.line, words[0].col, words[-1].end - words[0].col,
+                         of=name, type_=type_)
 
     def define_kind(self, s):
         s.next()
@@ -5026,7 +5184,7 @@ class Compiler:
                 if b.name == name and b.unit is not None and b.unit is not unit and b.unit.shares_name(name):
                     return "a variable", b.unit
         for view, what in ((self.names, "a thing"), (self.workouts, "a worked-out value"), (self.nouns, "a kind"),
-                           (self.choice_words, "a choice")):
+                           (self.choice_words, "a choice"), (self.fact_tables, "a fact table")):
             found = view.clash(name, unit, shared_as)
             if found is not None:
                 if view is self.nouns:
@@ -5799,7 +5957,7 @@ class Compiler:
             for name, prop in K.props.every():
                 if prop.unit is unit and unit.shares_name(name):
                     found.append((name, "a property", K))
-        for view, what in ((self.names, "a thing"), (self.workouts, "a worked-out value"), (self.procs, "a verb")):
+        for view, what in ((self.names, "a thing"), (self.workouts, "a worked-out value"), (self.procs, "a verb"), (self.fact_tables, "a fact table")):
             found += [(key, what, None) for key, value in view.every()
                       if value.unit is unit and unit.shares_name(key)]
         found += [(b.name, "a variable", None) for b in self.globals.names.values()
@@ -5831,6 +5989,8 @@ class Compiler:
                     mine = ("a thing", self.names[word].unit)
                 elif word in self.workouts:
                     mine = ("a worked-out value", self.workouts[word].unit)
+                elif word in self.fact_tables:
+                    mine = ("a fact table", self.fact_tables[word].unit)
                 elif word in self.nouns:
                     plural = self.nouns[word][1]
                     mine = ("the plural of a kind" if plural else "a kind", self.kinds[self.nouns[word][0]].unit)
@@ -5955,6 +6115,8 @@ class Compiler:
             found.append("thing")
         if any(proc.unit is unit for proc in self.procs.anywhere(name)):
             found.append("verb")
+        if any(t.unit is unit for t in self.fact_tables.anywhere(name)):
+            found.append("fact table")
         if any(w.unit is unit for w in self.workouts.anywhere(name)):
             found.append("worked-out value")
         if any(b.name == name and b.unit is unit for b in self.globals.names.values()):
@@ -6448,6 +6610,64 @@ class Compiler:
             s.fail(f'"{verb.capitalize()}" goes with "{link}": {verb.capitalize()} ... {link} ..., not "{tok.text}".',
                    tok, teach="linking_word", fix=swap(s.line, tok.col, tok.end, link))
 
+    @staticmethod
+    def except_assignment_ahead(s):
+        tokens = s.toks
+        return len(tokens) >= 3 and tokens[-2].is_word("except") and tokens[-3].is_punct(",")
+
+    def except_assignment(self, s):
+        s.next()
+        target = self.target(s)
+        if target.target[0] == "var":
+            self.scope.find(target.target[1]).reads -= 1
+        self.linking(s, "set", "to")
+        s.expect_word("to", hint='For example: "Set the total to 0."', teach="linking_word")
+        value = self.whole_value(s, target.declared)
+        s.expect_punct(",")
+        s.expect_word("except")
+        self.end(s)
+        self.assignment_fit(s, target, value, value)
+        branches = []
+        result_type = value.type
+        if not s.line.children:
+            s.fail('Write at least one indented "Use ... for ..." sentence under this line.', teach="block")
+        for line in s.line.children:
+            self.line = line
+            child = Sentence(line)
+            if self.linting(line):
+                self.lint.capital(line)
+            self.needs_block(child, False)
+            child.expect_word("use", hint='Write: Use the result for the key when the condition.')
+            result = self.whole_value(child, target.declared)
+            child.expect_word("for")
+            key = self.whole_value(child, value.type)
+            guard = self.condition(child) if child.eat_word("when") else None
+            self.end(child)
+            left = Expr(value.type, value.fn)
+            left.text, left.span = value.text, key.span
+            self.compare(child, "=", left, key)
+            self.assignment_fit(child, target, result, result)
+            if result.type == "nothing" or is_opt(result.type):
+                result_type = target.declared
+            branches.append((key.fn, guard.fn if guard else None, result.fn))
+        self.line = s.line
+        vf = value.fn
+        identity = value.type in self.kinds
+
+        def choose(env):
+            original = vf(env)
+            for key, guard, result in branches:
+                other = key(env)
+                if (original is other if identity else original == other) and (guard is None or guard(env)):
+                    return result(env)
+            return original
+
+        new = Expr(result_type, choose)
+        new.text, new.span = value.text, value.span
+        if target.target[0] == "item":
+            target, new = self.item_set(s, target, new)
+        return self.finish_assignment(s, target, new, value)
+
     def assign(self, s):
         verb = s.next().low
         if verb == "set":
@@ -6488,6 +6708,9 @@ class Compiler:
             value = self.expr(s)
             new = self.arith(s, "*" if verb == "multiply" else "/", target, value)
         self.end(s)
+        return self.finish_assignment(s, target, new, value)
+
+    def assignment_fit(self, s, target, new, value):
         want = target.declared
         if not self.fits(new.type, want):
             if base(new.type) == base(want):
@@ -6496,6 +6719,10 @@ class Compiler:
                 f"{cap(target.text)} is {self.describe(want)}, but that would make it {self.describe(new.type)}.",
                 value.span, teach="fit",
             )
+
+    def finish_assignment(self, s, target, new, value):
+        self.assignment_fit(s, target, new, value)
+        want = target.declared
         # Whatever was known about this property or variable no longer holds.
         if target.target[0] == "var":
             self.forget(("var", target.target[1]))
@@ -6737,6 +6964,8 @@ class Compiler:
         if thing.type not in self.kinds:
             s.fail_span(f"Only a thing can be removed, but {thing.text} is {self.describe(thing.type)}.", thing.span,
                         teach="props_of")
+        if thing.type.startswith("\0facts:"):
+            s.fail_span("Facts in a table cannot be removed.", thing.span)
         if not self.kind_visible(thing.type):
             K = self.kinds[thing.type]
             s.fail_span(f"{cap(thing.text)} is {article(K.name)}, a kind this file can't name, so it can't remove "
@@ -6997,9 +7226,17 @@ class Compiler:
         qf, sf = question.fn, state
 
         def step(env):
+            if getattr(env.world, "async_run", False):
+                raise EnglishError("Only a top-level model question can wait in an asynchronous run.",
+                                   stage="run", teach="model_form")
             if env.world.model is None:
                 raise no_model()
             env.vars[slot] = ask_model(env.world, qf(env), sf(env) if sf is not None else None, shape)
+
+        def prepare(env):
+            return qf(env), sf(env) if sf is not None else None, shape, slot
+
+        step.async_model = prepare
         return step
 
     def judge_ahead(self, s):
@@ -7462,6 +7699,17 @@ class Compiler:
 # ------------------------------------------------------------------ program
 
 
+@contextmanager
+def run_limits():
+    limit = sys.getrecursionlimit()
+    sys.setrecursionlimit(max(limit, RECURSION_LIMIT))
+    try:
+        with no_digit_limit():
+            yield
+    finally:
+        sys.setrecursionlimit(limit)
+
+
 class Program:
     def __init__(self, steps, notes, compiler):
         self.steps = steps
@@ -7532,6 +7780,105 @@ class Program:
                                hint="This is a fault in the library, not in your program.", teach="library_run")
         return world
 
+    async def run_async(self, out=print, ask=None, trace=None, model=None, judge=None, *, judges=None,
+                        on_world=None):
+        """Run with an awaitable model listener for direct top-level model questions.
+
+        on_world receives the World before the first sentence. While a model reply
+        is pending, the host may bring in events with World.event. Nested model
+        questions and cooperative slicing of synchronous sentences are not supported.
+        """
+        world = World(out, ask, model, judge, judges)
+        world.async_run = True
+        world.trace = trace
+        for name in self.compiler.libraries:
+            world.libraries[name] = {}
+        world.rules = {}
+        to_the_end = False
+        failures = []
+        try:
+            if on_world is not None:
+                on_world(world)
+            for step in self.steps:
+                if world.ended:
+                    break
+                world.busy = True
+                try:
+                    with run_limits():
+                        world.changed = False
+                        if getattr(step, "async_model", None) is None:
+                            step(world.globals)
+                        else:
+                            if world.trace is not None:
+                                world.traced(step.line)
+                            asked, about, shape, slot = step.async_model(world.globals)
+                except EnglishError as error:
+                    if error.line is None:
+                        error.line = step.line
+                    raise
+                finally:
+                    world.busy = False
+                if getattr(step, "async_model", None) is not None:
+                    try:
+                        value = await self._async_model(world, asked, about, shape)
+                    except EnglishError as error:
+                        if error.line is None:
+                            error.line = step.line
+                        raise
+                    if world.ended:
+                        break
+                    world.globals.vars[slot] = value
+                world.busy = True
+                try:
+                    with run_limits():
+                        if world.settlers or world.keepers:
+                            world.settle(step.line)
+                finally:
+                    world.busy = False
+            else:
+                to_the_end = True
+        except _EndProgram:
+            pass
+        except RecursionError:
+            raise EnglishError("This program nests more deeply than I can follow.", stage="run",
+                               teach="depth") from None
+        finally:
+            world.busy = False
+            world.ended = not to_the_end
+            if to_the_end:
+                failures = self.call_libraries(world, "live", "could not go on")
+                if failures:
+                    world.ended = True
+            failures += self.call_libraries(world, "finish", "could not finish")
+        if failures:
+            raise EnglishError("A library " + "; ".join(failures), stage="run",
+                               hint="This is a fault in the library, not in your program.", teach="library_run")
+        return world
+
+    @staticmethod
+    async def _async_model(world, asked, about, shape):
+        if world.model is None:
+            raise no_model()
+        request = ModelRequest(asked, about, shape)
+        if request.key in world.answers:
+            return world.answers[request.key]
+        while True:
+            fresh, complaint = request.arguments()
+            try:
+                with listener_errors():
+                    reply = await world.model(asked, about, fresh, complaint)
+            except Exception:
+                if world.ended:
+                    return None
+                raise
+            if world.ended:
+                return None
+            with run_limits():
+                read, value = request.read(reply)
+            if read:
+                world.answers[request.key] = value
+                return value
+
     def test(self):
         """Carry out the program with nothing said, nothing asked (as if input had
         ended at once), no model listening and no file written, and give back every "For example" it
@@ -7573,3 +7920,4 @@ def compile_file(path):
     path = Path(path)
     source = path.read_text(encoding="utf-8")
     return compile_source(source, folder=path.parent, name=str(path))
+

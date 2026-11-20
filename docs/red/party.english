@@ -1,0 +1,206 @@
+This chapter shares only roster, teammate, Team, First, Second, Third, Fourth, Fifth, Sixth, record, switch, replace, revive and capture.
+
+Use the battle chapter.
+
+A roster has a count (number), a selected (number), a result (text) and a notice (text).
+There is a roster called Team whose count is 0 and whose selected is 1 and whose result is "" and whose notice is "".
+A teammate has a starter (text), a species (text), a level (number), a experience (number), a health (number), a maximum health (number), a attack (number), a defense (number), a special (number), a speed (number), a base speed (number), a move one (text), a move two (text), a move three (text), a move four (text), a pp one (number), a pp two (number), a pp three (number) and a pp four (number).
+There is a teammate called First whose starter is "", whose species is "", whose level is 0, whose experience is 0, whose health is 0, whose maximum health is 0, whose attack is 0, whose defense is 0, whose special is 0, whose speed is 0, whose base speed is 0, whose move one is "", whose move two is "", whose move three is "", whose move four is "", whose pp one is 0, whose pp two is 0, whose pp three is 0 and whose pp four is 0.
+There is a teammate called Second whose starter is "", whose species is "", whose level is 0, whose experience is 0, whose health is 0, whose maximum health is 0, whose attack is 0, whose defense is 0, whose special is 0, whose speed is 0, whose base speed is 0, whose move one is "", whose move two is "", whose move three is "", whose move four is "", whose pp one is 0, whose pp two is 0, whose pp three is 0 and whose pp four is 0.
+There is a teammate called Third whose starter is "", whose species is "", whose level is 0, whose experience is 0, whose health is 0, whose maximum health is 0, whose attack is 0, whose defense is 0, whose special is 0, whose speed is 0, whose base speed is 0, whose move one is "", whose move two is "", whose move three is "", whose move four is "", whose pp one is 0, whose pp two is 0, whose pp three is 0 and whose pp four is 0.
+There is a teammate called Fourth whose starter is "", whose species is "", whose level is 0, whose experience is 0, whose health is 0, whose maximum health is 0, whose attack is 0, whose defense is 0, whose special is 0, whose speed is 0, whose base speed is 0, whose move one is "", whose move two is "", whose move three is "", whose move four is "", whose pp one is 0, whose pp two is 0, whose pp three is 0 and whose pp four is 0.
+There is a teammate called Fifth whose starter is "", whose species is "", whose level is 0, whose experience is 0, whose health is 0, whose maximum health is 0, whose attack is 0, whose defense is 0, whose special is 0, whose speed is 0, whose base speed is 0, whose move one is "", whose move two is "", whose move three is "", whose move four is "", whose pp one is 0, whose pp two is 0, whose pp three is 0 and whose pp four is 0.
+There is a teammate called Sixth whose starter is "", whose species is "", whose level is 0, whose experience is 0, whose health is 0, whose maximum health is 0, whose attack is 0, whose defense is 0, whose special is 0, whose speed is 0, whose base speed is 0, whose move one is "", whose move two is "", whose move three is "", whose move four is "", whose pp one is 0, whose pp two is 0, whose pp three is 0 and whose pp four is 0.
+
+To store a member (teammate):
+  Set the member's starter to Combat's starter.
+  Set the member's species to Combat's species.
+  Set the member's level to Combat's level.
+  Set the member's experience to Combat's experience.
+  Set the member's health to Combat's health.
+  Set the member's maximum health to Combat's maximum health.
+  Set the member's attack to Combat's attack.
+  Set the member's defense to Combat's defense.
+  Set the member's special to Combat's special.
+  Set the member's speed to Combat's speed.
+  Set the member's base speed to Combat's base speed.
+  Set the member's move one to Combat's move one.
+  Set the member's move two to Combat's move two.
+  Set the member's move three to Combat's move three.
+  Set the member's move four to Combat's move four.
+  Set the member's pp one to Combat's pp one.
+  Set the member's pp two to Combat's pp two.
+  Set the member's pp three to Combat's pp three.
+  Set the member's pp four to Combat's pp four.
+
+To restore a member (teammate):
+  Set Combat's starter to the member's starter.
+  Set Combat's species to the member's species.
+  Set Combat's level to the member's level.
+  Set Combat's experience to the member's experience.
+  Set Combat's health to the member's health.
+  Set Combat's maximum health to the member's maximum health.
+  Set Combat's attack to the member's attack.
+  Set Combat's defense to the member's defense.
+  Set Combat's special to the member's special.
+  Set Combat's speed to the member's speed.
+  Set Combat's base speed to the member's base speed.
+  Set Combat's move one to the member's move one.
+  Set Combat's move two to the member's move two.
+  Set Combat's move three to the member's move three.
+  Set Combat's move four to the member's move four.
+  Set Combat's pp one to the member's pp one.
+  Set Combat's pp two to the member's pp two.
+  Set Combat's pp three to the member's pp three.
+  Set Combat's pp four to the member's pp four.
+
+To record:
+  If Combat's starter is "":
+    Stop.
+  If Team's count is 0:
+    Set Team's count to 1.
+    Set Team's selected to 1.
+  If Team's selected is 1:
+    Store First.
+  If Team's selected is 2:
+    Store Second.
+  If Team's selected is 3:
+    Store Third.
+  If Team's selected is 4:
+    Store Fourth.
+  If Team's selected is 5:
+    Store Fifth.
+  If Team's selected is 6:
+    Store Sixth.
+
+To load a slot (number):
+  If the slot is 1:
+    Restore First.
+  If the slot is 2:
+    Restore Second.
+  If the slot is 3:
+    Restore Third.
+  If the slot is 4:
+    Restore Fourth.
+  If the slot is 5:
+    Restore Fifth.
+  If the slot is 6:
+    Restore Sixth.
+
+To switch to a slot (number):
+  Set Team's notice to "".
+  If the slot is less than 1 or the slot is more than Team's count:
+    Set Team's notice to "NO POKEMON".
+    Stop.
+  Record.
+  Load the slot.
+  If Combat's health is less than 1:
+    Load Team's selected.
+    Set Team's notice to "FAINTED".
+    Stop.
+  Set Team's selected to the slot.
+  Set Combat's attack stage to 0.
+  Set Combat's defense stage to 0.
+  Set Team's notice to "READY".
+
+To revive:
+  Record.
+  Let the former be Team's selected.
+  Let the slot be 1.
+  While the slot is at most Team's count:
+    Set Team's selected to the slot.
+    Load the slot.
+    Heal.
+    Record.
+    Add 1 to the slot.
+  Set Team's selected to the former.
+  If Team's count is more than 0:
+    Load the former.
+
+To replace:
+  Record.
+  Set Team's result to "loss".
+  If Team's selected is not 1 and Team's count is at least 1 and First's health is more than 0:
+    Switch to 1.
+    Set Team's result to "replacement".
+  Otherwise if Team's selected is not 2 and Team's count is at least 2 and Second's health is more than 0:
+    Switch to 2.
+    Set Team's result to "replacement".
+  Otherwise if Team's selected is not 3 and Team's count is at least 3 and Third's health is more than 0:
+    Switch to 3.
+    Set Team's result to "replacement".
+  Otherwise if Team's selected is not 4 and Team's count is at least 4 and Fourth's health is more than 0:
+    Switch to 4.
+    Set Team's result to "replacement".
+  Otherwise if Team's selected is not 5 and Team's count is at least 5 and Fifth's health is more than 0:
+    Switch to 5.
+    Set Team's result to "replacement".
+  Otherwise if Team's selected is not 6 and Team's count is at least 6 and Sixth's health is more than 0:
+    Switch to 6.
+    Set Team's result to "replacement".
+  If Team's result is "replacement":
+    Set Combat's active to 1.
+    Set Combat's outcome to "".
+    Set Combat's message to "Go! {Combat's species}!".
+    Stop.
+  Heal.
+  Record.
+  Set Combat's outcome to "loss".
+
+To capture:
+  Set Team's result to "".
+  If Combat's active is 0 or Combat's foe is not "wild":
+    Set Team's result to "trainer".
+    Stop.
+  Record.
+  If Team's count is at least 6:
+    Set Team's result to "full".
+    Stop.
+  Let the rate be 255.
+  If Combat's opponent is "Pikachu":
+    Set the rate to 190.
+  If Combat's opponent is "Nidoran F" or Combat's opponent is "Nidoran M":
+    Set the rate to 235.
+  If Combat's opponent is "Metapod" or Combat's opponent is "Kakuna":
+    Set the rate to 120.
+  Set Combat's seed to the remainder of (Combat's seed * 109 + 89) divided by 256.
+  If Combat's seed is more than the rate:
+    Set Team's result to "escaped".
+    Stop.
+  Let the divisor be (Combat's enemy health / 4) rounded down to the nearest 1.
+  If the divisor is less than 1:
+    Set the divisor to 1.
+  Let the chance be (Combat's enemy maximum health * 255 / 12) rounded down to the nearest 1.
+  Set the chance to (the chance / the divisor) rounded down to the nearest 1.
+  If the chance is more than 255:
+    Set the chance to 255.
+  Set Combat's seed to the remainder of (Combat's seed * 109 + 89) divided by 256.
+  If Combat's seed is more than the chance:
+    Set Team's result to "escaped".
+    Stop.
+  Let the former be Team's selected.
+  Add 1 to Team's count.
+  Set Team's selected to Team's count.
+  Set Combat's starter to Combat's opponent.
+  Set Combat's level to Combat's enemy level.
+  Set Combat's experience to Combat's level * Combat's level * Combat's level.
+  If Combat's starter is "Nidoran F" or Combat's starter is "Nidoran M" or Combat's starter is "Pidgey":
+    Set Combat's experience to ((6 * Combat's level * Combat's level * Combat's level / 5) rounded down to the nearest 1) - 15 * Combat's level * Combat's level + 100 * Combat's level - 140.
+  Recalculate.
+  Heal.
+  Set Combat's health to Combat's enemy health.
+  If Combat's health is more than Combat's maximum health:
+    Set Combat's health to Combat's maximum health.
+  Record.
+  Set Team's selected to the former.
+  Load the former.
+  Set Combat's active to 0.
+  Set Combat's outcome to "caught".
+  Set Combat's message to "Caught {Combat's opponent}!".
+  Set Team's result to "caught".
+
+
+
+
+
+

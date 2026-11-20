@@ -35,7 +35,7 @@ There is a knight called Robin whose purse is $20 and whose courage is 2.
 - **A colon opens a block.** The sentences that belong to it are indented further, with spaces. Tabs are refused. Any depth of indent works, but sentences in the same block must line up.
 - **A closing quote may end a sentence**, so `Say "Hello."` needs no second period. That is the one exception to the period, and it stays: a sentence whose last word is a text ends at its closing quotation mark, and the examples in this document write no period after it.
 - **`#` starts a comment** that runs to the end of the line. Blank lines are ignored.
-- **Capitals don't matter.** `Say`, `say` and `SAY` are the same word, and so are `Smaug` and `smaug`. A name is shown the way it was first written.
+- **Capitals don't matter.** `Say`, `say` and `SAY` are the same word, and so are `Smaug` and `smaug`. A name is shown the way it was first written. Text values, including fact-table keys, keep their case.
 - Curly quotes (“ ” ’) are read as straight ones.
 
 ```englishscript
@@ -58,6 +58,7 @@ Every value has one of these types. The compiler works out each type before the 
 | `percent` | `10%`, `2.5%` | `10%`, `2.5%` |
 | `text` | `"Hello"` | `Hello` |
 | `yes or no` | `yes`, `no` | `yes`, `no` |
+| a fact-table row | `the base stats for "Nidorino"` | cannot be said; read its columns |
 | a kind, such as `dragon` | the thing's name, `Smaug` | `Smaug` |
 | `list of <plural type>`, such as `list of text` | `a list of 3, 8 and 5`; see "Lists" below | cannot be said yet; see `joined with` |
 
@@ -560,6 +561,30 @@ If the feeling is happy:
   Say "Strange."
 ```
 
+### 4.7 Fact tables
+
+A fact table names a set of columns and gives one row for each text key:
+
+```text
+The <table> are <column>, <column> ... and <column>, in that order:
+  "<key>" has <value>, <value> ... and <value>.
+```
+
+Each key is literal text and must be unique. The rows give values in the declared column order. The first row establishes each column's type; table values are number, money, percent or text literals. A table is a definition, and its columns are read-only. A chapter can share a table by name (section 9.6).
+
+Look up a row with `the <table> for <expression>`, where the expression gives text. Keys match exactly, including capitalisation. The result is a record that may be nothing when the key is absent; its columns may be read as properties. Check the record first, or use `or else` for a missing column value (section 2, "Nothing").
+
+```englishscript
+The base stats are health, attack and defense, in that order:
+  "Nidorino" has 61, 72 and 57.
+  "Nidorina" has 70, 62 and 67.
+Let the profile be the base stats for "Nidorino".
+If the profile is not nothing:
+  Say the profile's attack.                  #> 72
+Let the missing be the base stats for "nidorino".
+Say the missing's health or else 0.          #> 0
+```
+
 ## 5. Expressions
 
 ### 5.1 Referring to something
@@ -958,6 +983,24 @@ Divide <target> by <expression>.
 
 A target is a variable made with `Let`, or a stored property of a thing. The new value must have the target's type. These cannot be changed: a worked-out property, a `name`, a role of a verb, the noun of a `For each`, and a variable made with `always`. A stored adjective is changed with `Now` (section 4.3).
 
+A `Set` can choose an exception to its base value:
+
+```text
+Set <target> to <base>, except:
+  Use <result> for <key> [when <condition>].
+  ...
+```
+
+The base is worked out once. The cases are considered in order against that original value; the first matching key whose condition, if present, holds supplies the result. If none matches, the base is used. Each key is worked out only when its case is reached, its condition only when the key matches, and its result only when that case is selected. The selected value is assigned once, using the usual `Set` rules. Keys must be comparable with the base, and results must fit the target's type. The target can also be a list item (`Set item 1 of the scores to ...`).
+
+```englishscript
+Let the score be 0.
+Set the score to 10, except:
+  Use 20 for 10 when the score is 0.
+  Use 30 for 10.
+Say the score.                     #> 20
+```
+
 `Add <text> to the file <text>.` is a different sentence (section 7.7). Text cannot be added up, so the two are never confused. When the target is a list, `Add` puts the value at its end, and `Remove <value> from <list>.` takes one out (section 2, "Lists").
 
 ```englishscript
@@ -1119,6 +1162,8 @@ A running program may ask a model, as it may ask a person with `Ask` (section 7.
 **What this changes, and what it does not.** The compiler is as deterministic as before, and has no model in it: every sentence still has exactly one meaning, and the same program is compiled the same way every time. A model is something the program asks while it runs, and what comes back is checked against the type asked for, or is a problem a `Try` can recover from. A program that asks a model is as repeatable as the model, exactly as a program that asks a person is as repeatable as the person.
 
 Who answers is decided by whoever runs the program, never by the program: `python -m englishscript program.english --model SPEC` (the listeners that come with EnglishScript are described in `englishscript/models.py`), or `Program.run(..., model=..., judge=...)` from Python. When nothing is listening, which is the case by default and always with `--test` (section 7.4), every question to a model is the problem `no model`, whose text is `No model is listening.`; a program can catch it and ask a person instead.
+
+**Waiting for a reply in a browser.** A Python host can use `await program.run_async(model=listener, on_world=ready)`. The host supplies an awaitable listener with the same four arguments as the synchronous model listener. The `ready` callback receives the world before the first sentence runs. When a direct, top-level `Ask the model` is waiting, the host can deliver input through `world.event`. The reply resumes execution at that question and retains earlier changes and output. This runner refuses model questions inside blocks, verbs or worked-out values. Other sentences, including loops and calls to a synchronous judge, run synchronously.
 
 **Asking a model**
 
@@ -2156,8 +2201,10 @@ Words in capitals are names from the program's own vocabulary. Quoted words are 
 ```text
 sentence    = definition | action | block-opener
 
-definition  = kind | thing | adjective | stored-adj | property | rule | verb | work-out
+definition  = kind | thing | adjective | stored-adj | property | rule | verb | work-out | fact-table
             | reaction | settled | library | chapter | shares | choices | keep | meaning   (top level only)
+fact-table  = "The" NAME "are" NAME { sep NAME } "," "in that order" ":"
+              (indented rows: TEXT "has" literal { sep literal } ".")
 meaning     = "For" article CHOICE-SET "," CHOICE "means" TEXT "."             (TEXT: without braces)
 keep        = "Keep each" KIND "'s" PROPERTY "as" whole "." | "Keep" THING "'s" PROPERTY "as" whole "."
             | "Keep each" KIND ADJECTIVE "when" condition "."
@@ -2224,7 +2271,9 @@ judge       = "Judge" expression "about" model-state "and let" [ "the" ] NAME
 write       = ( "Write" | "Add" ) expression "to the file" value "."
 fail        = "Fail because" expression "." | "Fail again."           (Fail again: inside If that fails)
 
-block-opener = "If" condition ":"
+block-opener = "Set" target "to" expression "," "except" ":"
+            | "Set item" value "of" target "to" expression "," "except" ":"
+            | "If" condition ":"
             | "Otherwise if" condition ":"
             | "Otherwise" ":"
             | "For each" { ADJECTIVE } KIND [ "of" value ] [ filter ] ":"
@@ -2234,6 +2283,8 @@ block-opener = "If" condition ":"
             | "Try" ":"                                                (followed by "If that fails:")
             | "If that fails" ":"                                      (perhaps followed by "Either way:")
             | "Either way" ":"
+
+exception-case = "Use" expression "for" expression [ "when" condition ] "."  (inside Set ... except)
 
 condition   = test { "and" test } | test { "or" test }
 test        = "not" test | "(" condition ")" | expression comparison
@@ -2275,6 +2326,7 @@ value       = NUMBER | MONEY | PERCENT | TEXT | "(" expression ")" | "nothing" |
             | "the" ( "length" | "words" | "lines" ) "of" value
             | "the" ( "first" | "last" ) factor "letters of" value
             | "the" ( "text" | "lines" ) "of the file" value
+            | "the" NAME "for" expression                              (fact-table lookup)
             | "the" KIND "called" value
             | "the problem"                                          (inside If that fails)
 group       = [ "all" ] { ADJECTIVE } KINDS [ "of" value ] [ filter ]
@@ -2817,7 +2869,7 @@ Sections 12 and 13 settle most of what used to be listed here. These remain open
 - Chapters and books (section 9.6) reach only the chapters beside a file, and the books beside it or beside the program: there is no shelf of books shared by programs.
 - Chance: a number or a thing picked at random.
 - Rules that span several things, rules about worked-out properties or adjectives, and rules that read a variable that can change. Today a rule may read only values written out, variables made with `always`, and its own thing's stored properties (section 4.5), because it is checked only when that thing's stored properties change; a rule that read anything else could be broken without anyone noticing. Checking such rules would mean finding, after every change, every rule whose answer that change could alter.
-- Lookup tables from one value to another. Today the nearest thing is finding a thing by its name.
+- Lookup tables keyed by values other than text, or containing values other than number, money, percent and text literals (section 4.7).
 - Asking a model (section 7.8) for a thing of a kind, for a list of things or of choices, or for several values in one reply; a limit on how long a model may take; and handing a model a group of things, or a thing's adjectives and worked-out properties, other than by filling them into the question.
 
 **Values**

@@ -227,6 +227,10 @@ function remembered() {
 }
 // ---- painting the program, with its problems underlined
 
+function characterOffset(text, column) {
+  return Array.from(text).slice(0, column).join("").length;
+}
+
 function paintLine(text, marks) {
   const kinds = new Array(text.length).fill("");
   const cut = commentStart(text);
@@ -239,7 +243,8 @@ function paintLine(text, marks) {
   let atEnd = "";
   for (const mark of marks) {
     const name = mark.kind === "warning" ? "warn" : "bad";
-    let start = mark.col, end = mark.col === null ? 0 : mark.col + mark.width;
+    let start = mark.col === null ? null : characterOffset(text, mark.col);
+    let end = mark.col === null ? 0 : characterOffset(text, mark.col + mark.width);
     if (start === null) {  // no place given: the whole sentence
       start = text.length - text.trimStart().length;
       end = text.slice(0, cut).trimEnd().length;
@@ -289,10 +294,10 @@ function goTo(problem) {
   let offset = 0;
   for (let i = 0; i < problem.line - 1 && i < lines.length; i++) offset += lines[i].length + 1;
   const line = lines[problem.line - 1] || "";
-  const col = problem.col === null ? line.length - line.trimStart().length : Math.min(problem.col, line.length);
-  const width = problem.col === null ? line.trim().length : problem.width;
+  const col = problem.col === null ? line.length - line.trimStart().length : characterOffset(line, problem.col);
+  const end = problem.col === null ? col + line.trim().length : characterOffset(line, problem.col + problem.width);
   source.focus();
-  source.setSelectionRange(offset + col, Math.min(offset + col + width, offset + line.length));
+  source.setSelectionRange(offset + col, Math.min(offset + end, offset + line.length));
   const lineHeight = parseFloat(getComputedStyle(source).lineHeight);
   source.scrollTop = Math.max(0, (problem.line - 1) * lineHeight - source.clientHeight / 2);
   syncScroll();

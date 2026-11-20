@@ -1,0 +1,17 @@
+This chapter shares only Screen, Input, Player, Practice, control, explorer, drill and ready.
+
+Use the page library.
+
+A control has an action (text).
+A control is ready when its action is not "".
+An explorer has a column (number), a row (number) and a step count (number).
+A drill has a field note (text).
+
+There is a canvas called Screen whose width is 160 and whose height is 144.
+There is a control called Input whose action is "".
+There is an explorer called Player whose column is 72 and whose row is 80 and whose step count is 0.
+There is a drill called Practice whose field note is "Waiting for calibration".
+
+
+
+
