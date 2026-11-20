@@ -57,6 +57,7 @@ English is easy to read because it leaves things unsaid. The compiler allows tha
 | "$5", "10%" | Money, numbers and percentages are different types and do not mix. |
 | "never", "always" | A rule checked every time the property changes. |
 | "For example, ..." | A test that runs with the program. |
+| "if any" | A value that may be missing cannot be used until the program has checked it is there. |
 
 Layout carries the nesting: one sentence per line, a colon and an indent for a block.
 
@@ -74,6 +75,10 @@ The full reference is [docs/SYNTAX.md](docs/SYNTAX.md). Its examples are run by 
 | Teach a verb | `To send a knight against a dragon:` |
 | Use a verb | `Send Gawain against Smaug.` |
 | Variables | `Let the total be 0.` then `Set`, `Add ... to`, `Subtract ... from`, `Multiply ... by`, `Divide ... by` |
+| Fixed variables | `Let the tax rate always be 10%.` |
+| Values that may be missing | `a mount (horse, if any)`, `nothing`, `If Wat has a mount:`, `Wat's mount's speed or else 0` |
+| Work out a value | `To work out the bounty (money) for a dragon:` with `The answer is ...`, used as `the bounty for Smaug` |
+| Leave early | `Stop.`, `Stop repeating.`, `Skip this treasure.`, `End the program.` |
 | Output | `Say "{its name} is {its age}."` |
 | Branch | `If ...:`, `Otherwise if ...:`, `Otherwise:` |
 | Compare | `is`, `is not`, `is less than`, `is more than`, `is at least`, `is at most`, `is divisible by` |
@@ -89,7 +94,7 @@ Types are `number`, `money`, `text`, `percent`, and any kind you describe. Comme
 - `englishscript/compiler.py` parses, checks and compiles each sentence into a Python closure in one pass.
 - `englishscript/runtime.py` holds what exists while a program runs.
 - `englishscript/tour.py` is the guided tour.
-- `examples/` has three programs; `tests/` has the test suite.
+- `examples/` has six programs; `tests/` has the test suite.
 
 ```bash
 python -m unittest discover tests
@@ -97,7 +102,7 @@ python -m unittest discover tests
 
 ### What it does not do
 
-- It has no lists, dates, text operations, or verbs that return a value.
+- It has no lists, dates, text operations, input or concurrency yet. Sections 12 and 13 of [docs/SYNTAX.md](docs/SYNTAX.md) give each of these a designed syntax that is not built.
 - Plurals are formed by rule ("dragons", "ponies", "foxes"), so irregular ones such as "people" are not recognised.
 - It does not accept loose English. The natural next step is the original experiment turned around: use a language model only to rewrite loose English into this strict form, and let this compiler be the judge of whether the result is unambiguous.
 

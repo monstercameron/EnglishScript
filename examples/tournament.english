@@ -1,0 +1,53 @@
+# A tournament: values that may be missing, working out a value, and leaving early.
+
+A horse has a speed (number).
+A knight has a courage (number), a purse (money), and a mount (horse, if any).
+
+There is a horse called Shadowfax whose speed is 40.
+There is a horse called Bill whose speed is 12.
+
+There is a knight called Gawain whose courage is 8, whose purse is $300, and whose mount is Shadowfax.
+There is a knight called Robin whose courage is 2, whose purse is $20, and whose mount is Bill.
+There is a knight called Kay whose courage is 6 and whose purse is $90.
+
+Let the entry fee always be $25.
+
+# A knight on foot scores on courage alone. After the first "If", the compiler
+# knows the knight has a mount, so the mount's speed can be used.
+
+To work out the score (number) of a knight:
+  If the knight has no mount:
+    The answer is the knight's courage.
+  The answer is the knight's courage * 10 + the knight's mount's speed.
+
+To enter a knight:
+  If the knight's purse is less than the entry fee:
+    Say "{the knight} cannot pay the fee."
+    Stop.
+  Subtract the entry fee from the knight's purse.
+  Say "{the knight} enters with a score of {the score of the knight}."
+
+To work out the champion (knight, if any):
+  Let the best (knight, if any) be nothing.
+  Let the top be 0.
+  For each knight:
+    If the score of the knight is more than the top:
+      Set the best to the knight.
+      Set the top to the score of the knight.
+  The answer is the best.
+
+For example, the score of Gawain is 120.
+For example, the score of Kay is 6.
+
+For each knight:
+  Enter the knight.
+
+Let the winner be the champion.
+If the winner is nothing:
+  Say "Nobody entered."
+  End the program.
+
+If the winner has a mount:
+  Say "{the winner} wins, riding {the winner's mount}."
+Otherwise:
+  Say "{the winner} wins on foot."

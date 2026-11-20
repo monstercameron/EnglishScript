@@ -58,6 +58,9 @@ class World:
 
 def fmt(value, type_):
     """Render a value the way a person would write it."""
+    if value is None:
+        return "nothing"
+    type_ = type_.rstrip("?")  # "money?" is money that turned out to be there
     if type_ == "money":
         cents = round(Fraction(value) * 100)
         sign = "-" if cents < 0 else ""

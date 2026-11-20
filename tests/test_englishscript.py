@@ -275,6 +275,7 @@ class Examples(Base):
             "hello.english": "The score is 216.",
             "dragons.english": "All the treasure in the world: $10,840.",
             "invoices.english": "To ada@example.com: you now owe $85 in late fees.",
+            "tournament.english": "Gawain wins, riding Shadowfax.",
         }
         for name, last_line in expected.items():
             with self.subTest(name):
@@ -299,6 +300,257 @@ class Examples(Base):
         text = caught.exception.render()
         self.assertIn("Say $5 + 5.", text)
         self.assertIn("^^^^^^", text)
+
+
+STABLE = """
+A horse has a speed (number).
+A squire has a wage (money) and a mount (horse, if any).
+A dragon has an age (number) and a parent (dragon, if any).
+A treasure has a worth (money) and an owner (dragon).
+The hoard of a dragon is the total worth of its treasures.
+A dragon is ancient when its age is at least 500.
+There is a horse called Shadowfax whose speed is 40.
+There is a horse called Bill whose speed is 5.
+There is a squire called Wat whose wage is $3 and whose mount is Shadowfax.
+There is a squire called Tom whose wage is $2.
+There is a dragon called Smaug whose age is 771.
+There is a dragon called Norbert whose age is 1 and whose parent is Smaug.
+There is a treasure called Goblet whose worth is $3,000 and whose owner is Smaug.
+There is a treasure called Cup whose worth is $500 and whose owner is Smaug.
+"""
+
+
+class Nothing(Base):
+    def test_a_property_left_out_is_nothing(self):
+        source = STABLE + "Say Tom's mount.\nSay Wat's mount.\nSay Tom's mount's speed or else 0.\nSay Wat's mount's speed or else 0."
+        self.assertEqual(run(source), ["nothing", "Shadowfax", "0", "40"])
+
+    def test_a_kind_can_point_at_its_own_kind(self):
+        source = STABLE + "Say Norbert's parent.\nSay Smaug's parent's parent's age or else 0.\nSay the number of dragons of Smaug."
+        self.assertEqual(run(source), ["Smaug", "0", "1"])
+
+    def test_using_what_may_be_nothing_is_refused(self):
+        for sentence in (
+            "Say Tom's mount's speed + 1.",
+            "If Tom's mount is Bill:\n  Say 1.",
+            "If Tom's mount's speed is more than 3:\n  Say 1.",
+            "Set Tom's mount's speed to 3.",
+            "Say the number of squires of Tom's mount.",
+            "Repeat Tom's mount's speed times:\n  Say 1.",
+        ):
+            with self.subTest(sentence):
+                error = self.refuses(STABLE + sentence, "may be nothing")
+                self.assertIn("If Tom has a mount:", error.hint)
+
+    def test_a_check_makes_the_value_usable(self):
+        cases = {
+            "If Wat has a mount:\n  Say Wat's mount's speed + 1.": ["41"],
+            "If Wat has no mount:\n  Say 0.\nOtherwise:\n  Say Wat's mount's speed + 1.": ["41"],
+            "If Wat's mount is not nothing:\n  Say Wat's mount's speed + 1.": ["41"],
+            "If Tom's mount is nothing:\n  Say 0.\nOtherwise:\n  Say Tom's mount's speed + 1.": ["0"],
+            "If Wat has a mount and Wat's mount's speed is more than 30:\n  Say 1.": ["1"],
+            "If Tom has no mount or Tom's mount's speed is less than 10:\n  Say 1.": ["1"],
+            "If not Wat has no mount:\n  Say Wat's mount's speed + 1.": ["41"],
+            "If Tom has a mount:\n  Say 1.\nOtherwise if Wat has a mount:\n  Say Wat's mount's speed + 1.": ["41"],
+            "Set Tom's mount to Bill.\nSay Tom's mount's speed + 1.": ["6"],
+        }
+        for source, said in cases.items():
+            with self.subTest(source):
+                self.assertEqual(run(STABLE + source), said)
+
+    def test_a_guard_that_leaves_counts_as_a_check(self):
+        source = STABLE + (
+            "To greet a squire:\n"
+            "  If the squire has no mount:\n"
+            "    Say \"{the squire} walks.\"\n"
+            "    Stop.\n"
+            "  Say the squire's mount's speed + 1.\n"
+            "Greet Wat.\nGreet Tom.\n"
+        )
+        self.assertEqual(run(source), ["41", "Tom walks."])
+        # A branch that does not leave is not a guard.
+        self.refuses(
+            STABLE + "To greet a squire:\n  If the squire has no mount:\n    Say 0.\n  Say the squire's mount's speed + 1.",
+            "may be nothing",
+        )
+
+    def test_a_check_stops_counting_once_things_may_have_changed(self):
+        unseat = "To unseat a squire:\n  Set the squire's mount to nothing.\n"
+        for source in (
+            "If Wat has a mount:\n  Set Wat's mount to nothing.\n  Say Wat's mount's speed + 1.",
+            unseat + "If Wat has a mount:\n  Unseat Wat.\n  Say Wat's mount's speed + 1.",
+            "If Wat has a mount:\n  Repeat 2 times:\n    Say Wat's mount's speed + 1.\n    Set Wat's mount to nothing.",
+            "If Wat has a mount or Wat's wage is $3:\n  Say Wat's mount's speed + 1.",
+            "If Wat has a mount:\n  Say 1.\nSay Wat's mount's speed + 1.",
+        ):
+            with self.subTest(source):
+                self.refuses(STABLE + source, "may be nothing")
+        # A loop that changes nothing relied on keeps the check.
+        self.assertEqual(run(STABLE + "If Wat has a mount:\n  Repeat 2 times:\n    Say Wat's mount's speed + 1."), ["41", "41"])
+
+    def test_checks_that_cannot_matter_are_refused(self):
+        self.refuses(STABLE + "If Wat has a wage:\n  Say 1.", "always has a wage")
+        self.refuses(STABLE + "If Wat's wage is nothing:\n  Say 1.", "can't be nothing here")
+        self.refuses(STABLE + "Say Wat's wage or else $0.", "isn't needed")
+        self.refuses(STABLE + "Say Tom's mount or else 5.", "stand-in")
+        self.refuses(STABLE + "If Wat has a mount:\n  If Wat's mount is nothing:\n    Say 1.", "can't be nothing here")
+        self.refuses(STABLE + "Say nothing + 1.", "can't be used as a value")
+
+    def test_definitions_can_check_too(self):
+        source = STABLE + (
+            "A squire is mounted when it has a mount.\n"
+            "A squire is quick when it has a mount and its mount's speed is at least 30.\n"
+            "Say the number of mounted squires.\nSay the number of quick squires.\n"
+            "Say the total speed of horses.\n"
+        )
+        self.assertEqual(run(source), ["1", "1", "45"])
+
+    def test_variables_may_be_nothing(self):
+        source = (
+            "Let the winner (horse, if any) be nothing.\nSay the winner.\n"
+            "If the winner is nothing:\n  Say \"nobody\"\n"
+            "Set the winner to Bill.\nSay the winner's speed + 0.\n"
+            "Set the winner to nothing.\nSay the winner.\n"
+            "Let the pick be Tom's mount.\nSay the pick.\n"
+        )
+        self.assertEqual(run(STABLE + source), ["nothing", "nobody", "5", "nothing", "nothing"])
+        self.refuses("Let x be nothing.", "Nothing of what sort")
+        self.refuses("Let n (number) be $5.", "is to hold a plain number")
+        self.refuses(STABLE + "Let the pick (horse) be Tom's mount.", "may be nothing")
+        self.refuses(STABLE + "Set Wat's wage to nothing.", "is money, but that would make it nothing")
+        self.refuses("A cat has an age (number, maybe).", '"if any"')
+
+
+class FixedVariables(Base):
+    def test_always_makes_a_variable_that_cannot_change(self):
+        self.assertEqual(run("Let the rate always be 10%.\nSay the rate of $50."), ["$5"])
+        self.assertEqual(run("Let the cap (number) always be 3.\nSay the cap + 1."), ["4"])
+        for change in ("Set the rate to 5%.", "Multiply the rate by 2."):
+            self.refuses("Let the rate always be 10%.\n" + change, 'made with "always"')
+
+
+class Leaving(Base):
+    def test_stop_ends_the_verb(self):
+        source = "To count:\n  Say 1.\n  Stop.\n  Say 2.\nCount.\nSay 3."
+        self.assertEqual(run(source), ["1", "3"])
+        source = WORLD + "To find:\n  For each dragon:\n    Say the dragon.\n    Stop.\nFind.\nSay \"after\""
+        self.assertEqual(run(source), ["Smaug", "after"])
+        self.refuses("Stop.", "isn't inside one")
+        self.refuses("To go:\n  Stop now.", "not this part")
+
+    def test_stop_repeating_ends_the_loop(self):
+        self.assertEqual(run("Let n be 0.\nRepeat 10 times:\n  Add 1 to n.\n  If n is 3:\n    Stop repeating.\nSay n."), ["3"])
+        self.assertEqual(run("Let n be 0.\nWhile n is at least 0:\n  Add 1 to n.\n  If n is 5:\n    Stop repeating.\nSay n."), ["5"])
+        self.assertEqual(run(WORLD + "For each dragon:\n  Say the dragon.\n  Stop repeating."), ["Smaug"])
+        self.refuses("Stop repeating.", "needs a loop")
+        self.refuses(WORLD + "For each dragon:\n  For each treasure of the dragon:\n    Stop repeating.", "either of the loops")
+        # A loop outside a verb is not around the sentences inside the verb.
+        source = "To scan:\n  Repeat 3 times:\n    Stop repeating.\n  Say \"scanned\"\nRepeat 2 times:\n  Scan."
+        self.assertEqual(run(source), ["scanned", "scanned"])
+
+    def test_skip_goes_on_to_the_next(self):
+        source = WORLD + "For each treasure:\n  If the treasure's worth is less than $1,000:\n    Skip this treasure.\n  Say the treasure."
+        self.assertEqual(run(source), ["Goblet"])
+        source = "Let n be 0.\nRepeat 6 times:\n  Add 1 to n.\n  If n is divisible by 2:\n    Skip this round.\n  Say n."
+        self.assertEqual(run(source), ["1", "3", "5"])
+        source = WORLD + (
+            "For each dragon:\n  For each treasure of the dragon:\n"
+            "    If the treasure's worth is less than $1,000:\n      Skip this dragon.\n"
+            "    Say the treasure.\n  Say \"end {the dragon}\""
+        )
+        self.assertEqual(run(source), ["Goblet", "end Norbert"])
+        self.refuses(WORLD + "For each dragon:\n  Skip this round.", "has no rounds")
+        self.refuses(WORLD + "For each dragon:\n  Skip this treasure.", 'no "For each treasure"')
+        self.refuses("Skip this round.", "needs a loop")
+        self.refuses("Repeat 2 times:\n  Repeat 2 times:\n    Skip this round.", "either of the loops")
+
+    def test_end_the_program(self):
+        self.assertEqual(run('Say "a"\nEnd the program.\nSay "b"'), ["a"])
+        self.assertEqual(run("To halt:\n  End the program.\nSay 1.\nHalt.\nSay 2."), ["1"])
+        self.refuses("End the show.", "End the program")
+
+    def test_the_new_words_are_reserved(self):
+        for word in ("stop", "skip", "end", "nothing", "answer"):
+            with self.subTest(word):
+                self.refuses(f"Let {word} be 1.", "already has a meaning")
+
+
+class WorkingOut(Base):
+    BOUNTY = STABLE + (
+        "To work out the bounty (money) for a dragon:\n"
+        "  If the dragon is ancient:\n"
+        "    The answer is $1,000.\n"
+        "  The answer is 10% of the dragon's hoard.\n"
+    )
+    CHANGE = "To work out the change (money) from an amount (money) for a price (money):\n  The answer is the amount - the price.\n"
+
+    def test_a_value_is_worked_out_and_used(self):
+        self.assertEqual(run(self.BOUNTY + "Say the bounty for Smaug.\nSay the bounty for Norbert + $1."), ["$1,000", "$1"])
+
+    def test_roles_come_in_any_order_and_take_one_value_each(self):
+        source = self.CHANGE + "Say the change from $20 for $12.50.\nSay the change for $1 from $5.\nSay the change from ($10 + $10) for $12.50 + $1."
+        self.assertEqual(run(source), ["$7.50", "$4", "$8.50"])
+
+    def test_it_may_use_itself_and_its_own_variables(self):
+        source = (
+            "To work out the factorial (number) of a count (number):\n"
+            "  If the count is at most 1:\n    The answer is 1.\n"
+            "  The answer is the count * the factorial of (the count - 1).\n"
+            "To work out the sum (number) to a limit (number):\n"
+            "  Let the total be 0.\n  Let n be 0.\n"
+            "  While n is less than the limit:\n    Add 1 to n.\n    Add n to the total.\n"
+            "  The answer is the total.\n"
+            "Say the factorial of 10.\nSay the sum to 100.\n"
+        )
+        self.assertEqual(run(source), ["3,628,800", "5,050"])
+
+    def test_the_answer_may_be_nothing(self):
+        source = STABLE + (
+            "To work out the eldest (dragon, if any):\n"
+            "  Let the best (dragon, if any) be nothing.\n  Let the top be 0.\n"
+            "  For each dragon:\n    If the dragon's age is more than the top:\n"
+            "      Set the best to the dragon.\n      Set the top to the dragon's age.\n"
+            "  The answer is the best.\n"
+            "Say the eldest.\nSay the eldest's age or else 0.\n"
+        )
+        self.assertEqual(run(source), ["Smaug", "771"])
+        self.refuses(source + "Say the eldest's age + 1.", "may be nothing")
+
+    def test_it_can_be_used_in_definitions(self):
+        source = self.BOUNTY + "A dragon is costly when the bounty for the dragon is at least $500.\nSay the number of costly dragons."
+        self.assertEqual(run(source), ["1"])
+
+    def test_every_path_must_answer(self):
+        grade = "To work out the grade (text) for a score (number):\n  If the score is at least 50:\n    The answer is \"pass\".\n"
+        self.refuses(grade, "Not every path")
+        self.assertEqual(run(grade + "  Otherwise:\n    The answer is \"fail\".\nSay the grade for 60.\nSay the grade for 10."), ["pass", "fail"])
+        self.refuses("To work out the x (number):\n  Repeat 2 times:\n    The answer is 1.", "Not every path")
+
+    def test_working_out_changes_nothing(self):
+        head = "To work out the x (number):\n"
+        self.refuses(head + "  Say 1.\n  The answer is 1.", "can't say anything")
+        self.refuses(STABLE + head + "  Set Smaug's age to 1.\n  The answer is 1.", "can't change anything")
+        self.refuses("Let g be 1.\n" + head + "  Set g to 2.\n  The answer is g.", "can't change anything")
+        self.refuses("To cheer:\n  Say 1.\n" + head + "  Cheer.\n  The answer is 1.", "is a verb")
+        self.refuses(head + "  Stop.", 'finish with "The answer is')
+        self.refuses(head + "  End the program.", 'finish with "The answer is')
+
+    def test_types_and_roles_are_checked(self):
+        self.refuses("To work out the x (number):\n  The answer is $5.", "is a plain number, but $5 is money")
+        self.refuses("To work out the x:\n  The answer is 5.", "What sort of value")
+        self.refuses(self.BOUNTY + "Say the bounty.", "missing something: for a dragon")
+        self.refuses(self.BOUNTY + "Say the bounty for Goblet.", "wants a dragon here")
+        self.refuses(self.BOUNTY + "Say the bounty for Norbert's parent.", "may be nothing")
+        self.refuses("The answer is 5.", 'belongs inside a "To work out')
+
+    def test_names_cannot_collide(self):
+        self.refuses(STABLE + "To work out the hoard (money) of a dragon:\n  The answer is $1.", "already a property")
+        self.refuses("To work out the x (number):\n  The answer is 1.\nLet x be 2.", "already means something")
+        self.refuses("To work out the x (number):\n  The answer is 1.\nA cat has an x (number).", "worked out")
+        self.refuses("To work out the x (number):\n  The answer is 1.\nTo work out the x (number):\n  The answer is 2.", "already know how to work out")
+
+    def test_endless_working_out_is_stopped(self):
+        self.refuses("To work out the loop (number):\n  The answer is the loop.\nSay the loop.", "keeps using itself", stage="run")
 
 
 class SyntaxDocument(Base):
