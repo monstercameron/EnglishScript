@@ -23,6 +23,7 @@ export function mountSnippets(root = document) {
     const whole = figure.hasAttribute("data-with-world") ? world + text : text;
     const refused = program.dataset.expect === "refused";
     let shown = figure.querySelector("pre.output");
+    let failure = null;
     program.innerHTML = tint(text);
 
     const bar = document.createElement("div");
@@ -48,6 +49,7 @@ export function mountSnippets(root = document) {
       runButton.disabled = true;
       runButton.setAttribute("aria-busy", "true");
       figure.classList.add("working");
+      if (failure) { failure.remove(); failure = null; }
       const live = document.createElement("div");
       live.className = "output";
       try {
@@ -56,15 +58,17 @@ export function mountSnippets(root = document) {
         if (result.state === "waiting") result.events.push(["note", "This program asks a question. Open it in the playground to answer."]);
         if (!result.events.length) result.events.push(["note", "It ran, and said nothing."]);
         show(live, result.events);
+        if (shown) shown.replaceWith(live); else bar.after(live);
+        shown = live;
       } catch (error) {
         failed(live, error);
-        runButton.textContent = "Run it";
+        if (shown) shown.after(live); else bar.after(live);
+        failure = live;
+        runButton.textContent = "Try again";
       }
       say("");
       figure.classList.remove("working");
       runButton.removeAttribute("aria-busy");
-      if (shown) shown.replaceWith(live); else bar.after(live);
-      shown = live;
       runButton.disabled = false;
     });
   }

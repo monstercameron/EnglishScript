@@ -208,8 +208,7 @@ def page():
 <a class="to-top" href="#top" aria-label="Back to the top of the page"><span aria-hidden="true">↑</span> Top</a>
 
 <script type="module">
-import {{ mountSnippets }} from "./play/snippets.js";
-mountSnippets();
+{pages.SNIPPET_CONTROLS}
 
 // The button back to the top shows only once the reader has scrolled away from it.
 const button = document.querySelector(".to-top");

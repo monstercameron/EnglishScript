@@ -152,12 +152,22 @@ def check(source):
 
 let engine = null;
 
+class StartupError extends Error {}
+
+async function startupStep(message, action) {
+  try {
+    return await action();
+  } catch (error) {
+    throw new StartupError(message);
+  }
+}
+
 function loadScript(src) {
   return new Promise((resolve, reject) => {
     const tag = document.createElement("script");
     tag.src = src;
     tag.onload = resolve;
-    tag.onerror = () => reject(new Error("could not load " + src));
+    tag.onerror = () => { tag.remove(); reject(new Error("Script failed to load")); };
     document.head.append(tag);
   });
 }
@@ -209,31 +219,64 @@ export function startEngine(say = () => {}) {
   if (!engine) {
     engine = (async () => {
       const steps = 4;
+      await startupStep("WebAssembly is unavailable or disabled in this browser. Enable WebAssembly or try a current browser, then try again.", () => {
+        if (typeof WebAssembly !== "object" || typeof WebAssembly.validate !== "function" || typeof WebAssembly.compile !== "function" ||
+            !WebAssembly.validate(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0]))) throw new Error();
+      });
+      await startupStep("WebAssembly could not compile a program. Your browser or its security settings may be blocking it. Enable WebAssembly or try a current browser, then try again.",
+        () => WebAssembly.compile(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0])));
       say("Fetching Python", { step: 1, steps, overall: 0, note: "the first time only" });
-      await Promise.all([
-        loadScript(PYODIDE + "pyodide.js"),
-        fetchRuntime((fraction, got, total) => say("Fetching Python", {
-          step: 1, steps, overall: 0.7 * fraction, note: megabytes(got) + " of " + megabytes(total) + " MB",
-        })),
-      ]);
+      await startupStep("The Pyodide loader (pyodide.js) could not be loaded. Check your connection and access to cdn.jsdelivr.net, then try again.", async () => {
+        let reporting = true;
+        try {
+          await Promise.all([
+            loadScript(PYODIDE + "pyodide.js"),
+            fetchRuntime((fraction, got, total) => {
+              if (reporting) say("Fetching Python", {
+                step: 1, steps, overall: 0.7 * fraction, note: megabytes(got) + " of " + megabytes(total) + " MB",
+              });
+            }),
+          ]);
+          if (typeof globalThis.loadPyodide !== "function") throw new Error();
+        } finally {
+          reporting = false;
+        }
+      });
       say("Starting Python", { step: 2, steps, overall: 0.72 });
-      const py = await globalThis.loadPyodide({ indexURL: PYODIDE });
+      const py = await startupStep("Pyodide could not start Python or load its runtime files. Check your connection and access to cdn.jsdelivr.net, then try again. If it still fails, try a current browser.",
+        () => globalThis.loadPyodide({ indexURL: PYODIDE }));
       say("Fetching the compiler", { step: 3, steps, overall: 0.88 });
-      const response = await fetch(new URL("englishscript.zip", HERE));
-      if (!response.ok) throw new Error("could not load the compiler");
-      py.FS.mkdirTree("/site");
-      py.FS.mkdirTree("/work");
-      py.unpackArchive(await response.arrayBuffer(), "zip", { extractDir: "/site" });
+      const bundle = await startupStep("The compiler bundle (englishscript.zip) could not be downloaded. Check your connection, then try again. If it still fails, reload the page.", async () => {
+        const response = await fetch(new URL("englishscript.zip", HERE));
+        if (!response.ok) throw new Error();
+        return response.arrayBuffer();
+      });
+      await startupStep("The compiler bundle (englishscript.zip) could not be unpacked. Reload the page and try again.", () => {
+        py.FS.mkdirTree("/site");
+        py.FS.mkdirTree("/work");
+        py.unpackArchive(bundle, "zip", { extractDir: "/site" });
+      });
       say("Reading the compiler", { step: 4, steps, overall: 0.94 });
-      await new Promise((resolve) => setTimeout(resolve, 30));  // let the page show it
-      py.runPython(BRIDGE);
-      // The books a program may use ("Use the calendar chapter of the almanac book.").
-      const shelf = await fetch(new URL("shelf.json", HERE));
-      if (shelf.ok) py.globals.get("stock")(await shelf.text());
+      await new Promise((resolve) => setTimeout(resolve, 30));
+      const bridge = await startupStep("The compiler or its library could not be initialized. Reload the page and try again.", () => {
+        py.runPython(BRIDGE);
+        const stock = py.globals.get("stock");
+        const play = py.globals.get("play");
+        const check = py.globals.get("check");
+        if (typeof stock !== "function" || typeof play !== "function" || typeof check !== "function") throw new Error();
+        return { stock, play, check };
+      });
+      const shelf = await startupStep("The example library (shelf.json) could not be loaded. Check your connection, then try again. If it still fails, reload the page.", async () => {
+        const response = await fetch(new URL("shelf.json", HERE));
+        if (!response.ok) throw new Error();
+        return response.text();
+      });
+      await startupStep("The example library (shelf.json) could not be set up. Reload the page and try again.", () => bridge.stock(shelf));
       say("Ready", { step: steps, steps, overall: 1, done: true });
-      return { play: py.globals.get("play"), check: py.globals.get("check"), py };
+      return { play: bridge.play, check: bridge.check, py };
     })();
-    engine.catch(() => { engine = null; });
+    const starting = engine;
+    starting.catch(() => { if (engine === starting) engine = null; });
   }
   return engine;
 }
@@ -325,7 +368,8 @@ export function addLine(box, kind, text) {
 }
 
 export function failed(box, error) {
-  show(box, [["error", "This page could not start Python: " + error.message + ".\nIt needs a connection to cdn.jsdelivr.net the first time."]]);
+  const message = error instanceof StartupError ? error.message : "The program could not run. Try again; if it still fails, reload the page.";
+  show(box, [["error", message]]);
 }
 
 // A program packed into the part of an address after "#p=", and back again.

@@ -19,28 +19,29 @@ self.redReady = () => { accepting = true; };
 async function start(history) {
   if (started) return;
   started = true;
-  importScripts(PYODIDE + 'pyodide.js');
-  python = await loadPyodide({ indexURL: PYODIDE });
-  const manifest = await fetch(new URL('chapters.json', self.location.href));
-  if (!manifest.ok) throw new Error('Could not load the adventure chapters.');
-  const paths = await manifest.json();
-  if (!Array.isArray(paths) || !paths.includes('main.english') || paths.some(path => typeof path !== 'string' || !/^[a-zA-Z0-9_./-]+\.english$/.test(path) || path.includes('..'))) throw new Error('The adventure chapter list is invalid.');
+  try {
+    importScripts(new URL("../play/worker-start.js", self.location.href).href);
+  } catch (_) {
+    throw new Error("Could not load startup helper worker-start.js. Check your connection and site files, then reload.");
+  }
+  python = await self.workerStart.python(PYODIDE);
+  const paths = await self.workerStart.download("chapters.json", "chapter manifest", "json");
+  if (!Array.isArray(paths) || !paths.includes('main.english') || paths.some(path => typeof path !== 'string' || !/^[a-zA-Z0-9_./-]+\.english$/.test(path) || path.includes('..'))) throw new Error('The chapter manifest chapters.json is invalid. Check the site files, then reload.');
   const [archive, bridge, ...files] = await Promise.all([
-    fetch(new URL('../play/englishscript.zip', self.location.href)),
-    fetch(new URL('bridge.py', self.location.href)),
-    ...paths.map(path => fetch(new URL(path, self.location.href)))
+    self.workerStart.download("../play/englishscript.zip", "compiler archive", "arrayBuffer"),
+    self.workerStart.download("bridge.py", "bridge", "text"),
+    ...paths.map(path => self.workerStart.download(path, "chapter", "text"))
   ]);
-  if (!archive.ok || !bridge.ok || files.some(file => !file.ok)) throw new Error('Could not load the compiler or adventure chapters.');
   python.FS.mkdirTree('/site');
   python.FS.mkdirTree('/work');
-  python.unpackArchive(await archive.arrayBuffer(), 'zip', { extractDir: '/site' });
+  self.workerStart.unpack(python, archive);
   for (let i = 0; i < paths.length; i++) {
     const target = '/work/' + paths[i];
     const slash = target.lastIndexOf('/');
     python.FS.mkdirTree(target.slice(0, slash));
-    python.FS.writeFile(target, await files[i].text());
+    python.FS.writeFile(target, files[i]);
   }
-  python.runPython(await bridge.text());
+  try { python.runPython(bridge); } catch (error) { throw new Error('Could not initialize bridge.py. Check the site files, then reload. ' + String(error && error.message || error)); }
   act = python.globals.get('act');
   replay = python.globals.get('replay');
   talkOpen = python.globals.get('talk_open');
@@ -49,7 +50,7 @@ async function start(history) {
   talkPage = python.globals.get('talk_page');
   talkClose = python.globals.get('talk_close');
   const run = python.globals.get('start');
-  try { await run(); } finally { run.destroy(); }
+  try { await run(); } catch (error) { throw new Error('Could not compile or start the adventure chapters. Check the diagnostic below and reload after fixing the problem. ' + String(error && error.message || error)); } finally { run.destroy(); }
   if (!accepting) return;
   if (history.length) replay(JSON.stringify(history));
   self.postMessage({ type: 'ready' });

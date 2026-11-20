@@ -26,7 +26,6 @@
   <meta name="twitter:image" content="https://monstercameron.github.io/EnglishScript/assets/social-preview.png">
   <meta name="twitter:image:alt" content="EnglishScript and a dragon program written in English.">
   <link rel="stylesheet" href="style.css">
-  <script src="main.js" defer></script>
 </head>
 <body>
   <main class="page">
@@ -46,22 +45,34 @@
         </div>
         <div class="device-bottom">
           <div class="direction-pad" aria-label="Direction controls">
-            <button class="up" data-action="up" aria-label="Move up">▲</button>
-            <button class="left" data-action="left" aria-label="Move left">◀</button>
+            <button class="up" disabled data-action="up" aria-label="Move up">▲</button>
+            <button class="left" disabled data-action="left" aria-label="Move left">◀</button>
             <span class="pad-center" aria-hidden="true"></span>
-            <button class="right" data-action="right" aria-label="Move right">▶</button>
-            <button class="down" data-action="down" aria-label="Move down">▼</button>
+            <button class="right" disabled data-action="right" aria-label="Move right">▶</button>
+            <button class="down" disabled data-action="down" aria-label="Move down">▼</button>
           </div>
           <div class="control-copy"><strong>Explore the field</strong><p>Use the arrow keys or the directional pad.</p><button id="restart" class="restart" type="button">Restart field</button></div>
         </div>
       </div>
       <aside class="field-notes" aria-label="Field notes">
-        <div class="notes-heading"><h2>Field notes</h2><span id="connection">Connecting</span></div>
+        <div class="notes-heading"><h2>Field notes</h2><span id="connection" role="status">Connecting</span></div>
         <p class="notes-intro">This practice uses a recorded offline response. It arrives after five seconds; you can keep moving while you wait.</p>
         <div class="activity" aria-live="polite" aria-atomic="true"><span class="activity-label">Latest activity</span><p id="activity">Preparing the field…</p></div>
       </aside>
     </section>
   </main>
+  <script>
+    function fieldUnavailable(downloadFailed = false) {
+      document.getElementById('display-status').textContent = 'Stopped';
+      document.getElementById('connection').textContent = 'Stopped';
+      document.getElementById('activity').textContent = (downloadFailed ? 'The field could not load main.js.' : 'The field could not start.') + ' Reload the page to try again.';
+      document.querySelectorAll('[data-action], #restart').forEach(button => button.disabled = true);
+    }
+    window.addEventListener('error', event => {
+      if (event.filename && /\/main\.js(?:[?#]|$)/.test(event.filename)) fieldUnavailable();
+    });
+  </script>
+  <script src="main.js" defer onerror="fieldUnavailable(true)"></script>
 </body>
 </html>
 

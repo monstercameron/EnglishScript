@@ -13,6 +13,7 @@ let image;
 let timers = new Set();
 let pending = 0;
 let fieldResult;
+let ready = false;
 
 function drawFrame(message) {
   const { width, height } = message;
@@ -46,18 +47,21 @@ function drawFrame(message) {
 
 function showError(message) {
   generation += 1;
+  ready = false;
   if (worker) worker.terminate();
   worker = undefined;
   for (const timer of timers) clearTimeout(timer);
   timers.clear();
   connection.textContent = 'Stopped';
   displayStatus.textContent = 'Stopped';
-  activity.textContent = `${message} Try restarting the field.`;
+  activity.textContent = /reload/i.test(message) ? message : message + ' Try restarting the field or reloading the page.';
+  document.querySelectorAll('[data-action]').forEach(button => button.disabled = true);
 }
 
 function startField() {
   generation += 1;
   const current = generation;
+  ready = false;
   if (worker) worker.terminate();
   for (const timer of timers) clearTimeout(timer);
   timers = new Set();
@@ -72,6 +76,7 @@ function startField() {
   displayStatus.textContent = 'Starting';
   connection.textContent = 'Connecting';
   activity.textContent = 'Preparing the field…';
+  document.querySelectorAll('[data-action]').forEach(button => button.disabled = true);
   try {
     worker = new Worker('worker.js');
     const activeWorker = worker;
@@ -80,6 +85,8 @@ function startField() {
       try {
         if (data.type === 'frame') drawFrame(data);
         if (data.type === 'ready') {
+          ready = true;
+          document.querySelectorAll('[data-action]').forEach(button => button.disabled = false);
           connection.textContent = pending ? 'Waiting for reply' : 'Ready';
           if (activity.textContent === 'Preparing the field…') activity.textContent = 'The field is ready to explore.';
         }
@@ -90,7 +97,8 @@ function startField() {
           const timer = setTimeout(() => {
             timers.delete(timer);
             if (current !== generation) return;
-            activeWorker.postMessage({ type: 'reply', id: data.id, text: practiceResponse });
+            try { activeWorker.postMessage({ type: 'reply', id: data.id, text: practiceResponse }); }
+            catch (error) { showError(`Could not send the practice reply: ${error.message || 'unknown error'}.`); return; }
             connection.textContent = 'Applying reply';
             activity.textContent = 'Recorded offline practice response sent; waiting for the field.';
           }, 5000);
@@ -111,16 +119,22 @@ function startField() {
       }
     };
     activeWorker.onerror = () => {
-      if (current === generation) showError('The field could not start.');
+      if (current === generation) showError('The field worker (worker.js) could not load or stopped unexpectedly. Check your connection.');
+    };
+    activeWorker.onmessageerror = () => {
+      if (current === generation) showError('The field worker sent an unreadable message.');
     };
     activeWorker.postMessage({ type: 'start' });
   } catch (error) {
-    showError('The field could not start.');
+    showError(`The field worker could not start: ${error.message || 'unknown error'}.`);
   }
 }
 
 function move(action) {
-  if (worker) worker.postMessage({ type: 'action', action });
+  if (ready && worker) {
+    try { worker.postMessage({ type: 'action', action }); }
+    catch (error) { showError(`Could not send input to the field: ${error.message || 'unknown error'}.`); }
+  }
 }
 
 document.querySelectorAll('[data-action]').forEach(button => {

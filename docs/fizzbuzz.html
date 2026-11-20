@@ -1060,8 +1060,14 @@ Call System.out's println and pass it word.</pre>
 <a class="to-top" href="#top" aria-label="Back to the top of the page"><span aria-hidden="true">↑</span> Top</a>
 
 <script type="module">
-import { mountSnippets } from "./play/snippets.js";
-mountSnippets();
+import("./play/snippets.js").then(({ mountSnippets }) => mountSnippets()).catch(() => {
+  for (const figure of document.querySelectorAll("figure.snippet")) {
+    const notice = document.createElement("p");
+    notice.setAttribute("role", "status");
+    notice.textContent = "The controls for this example could not load. Reload the page to try again.";
+    figure.querySelector("pre.program").after(notice);
+  }
+});
 
 // The button back to the top shows only once the reader has scrolled away from it.
 const button = document.querySelector(".to-top");

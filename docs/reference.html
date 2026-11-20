@@ -2482,8 +2482,14 @@ group        = ... | group "in order of" PROPERTY | group "in reverse order of" 
 </main>
 
 <script type="module">
-import { mountSnippets } from "./play/snippets.js";
-mountSnippets();
+import("./play/snippets.js").then(({ mountSnippets }) => mountSnippets()).catch(() => {
+  for (const figure of document.querySelectorAll("figure.snippet")) {
+    const notice = document.createElement("p");
+    notice.setAttribute("role", "status");
+    notice.textContent = "The controls for this example could not load. Reload the page to try again.";
+    figure.querySelector("pre.program").after(notice);
+  }
+});
 </script>
 </body>
 </html>

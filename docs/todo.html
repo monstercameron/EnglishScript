@@ -119,6 +119,7 @@
 <div class="leaf">
   <div id="englishscript-page" aria-live="polite"></div>
   <div class="status" id="status" role="status">Loading…</div>
+  <button class="button small" id="retry" type="button" hidden>Try again</button>
 </div>
 
 <div id="said" aria-live="polite"></div>
@@ -127,7 +128,7 @@
   <section class="pane">
     <div class="title">
       <span class="grow">The program, and its book</span>
-      <button class="button small" id="edit" type="button">Change it</button>
+      <button class="button small" id="edit" type="button" disabled>Change it</button>
       <button class="button small primary" id="again" type="button" hidden>Run it again</button>
       <button class="button small" id="back" type="button" hidden>Put it back</button>
     </div>
@@ -140,7 +141,7 @@
   <section class="pane">
     <div class="title">
       <span class="grow">The things behind the page</span>
-      <button class="button small" id="forget" type="button" title="Forget what the browser has kept, and start again">Forget</button>
+      <button class="button small" id="forget" type="button" disabled title="Forget what the browser has kept, and start again">Forget</button>
     </div>
     <div class="body">
       <ul id="things" aria-label="Every thing of the page, as the program holds it"></ul>
@@ -202,7 +203,8 @@
 </main>
 
 <script type="module">
-import { startEngine, tint, loader, painted } from "./play/engine.js";
+try {
+const { startEngine, tint, loader, painted } = await import("./play/engine.js");
 
 // The Python side of this page. open_page runs a program whose page the
 // library builds inside #englishscript-page; things() lists what it holds.
@@ -389,21 +391,59 @@ for (const kind of ["click", "change", "input", "keydown", "focusout"]) {
   page.addEventListener(kind, () => setTimeout(showThings, 0));
 }
 
-try {
-  const [main, shelf] = await Promise.all([fetch("play/" + MAIN), fetch("play/shelf.json")]);
-  if (!main.ok || !shelf.ok) throw new Error("could not load the program");
-  const chapters = await shelf.json();
-  const text = await main.text();
-  files.set(MAIN, { original: text, text });
-  for (const name of ORDER.slice(1)) files.set(name, { original: chapters[name], text: chapters[name] });
-  makeTabs();
-  showFile();
-  const engine = await startEngine(grandly);
-  engine.py.runPython(BRIDGE);
-  python = { open_page: engine.py.globals.get("open_page"), things: engine.py.globals.get("things"), put: engine.py.globals.get("put") };
-  await run(grandly);
+async function readFile(name, request) {
+  let response;
+  try { response = await request; }
+  catch (error) { throw new Error(name + " could not be downloaded. Check your connection and try again."); }
+  if (!response.ok) throw new Error(name + " could not be downloaded (HTTP " + response.status + "). Try again.");
+  try { return await response.text(); }
+  catch (error) { throw new Error(name + " could not be read. Try again."); }
+}
+
+async function start() {
+  const retry = document.getElementById("retry");
+  retry.hidden = true;
+  buttons.edit.disabled = buttons.forget.disabled = true;
+  let stage = "files";
+  try {
+    quietly("Loading the program and its chapters…");
+    const [text, shelf] = await Promise.all([
+      readFile(MAIN, fetch("play/" + MAIN)),
+      readFile("shelf.json", fetch("play/shelf.json")),
+    ]);
+    if (!text.trim()) throw new Error(MAIN + " is empty. Try again.");
+    let chapters;
+    try { chapters = JSON.parse(shelf); }
+    catch (error) { throw new Error("shelf.json could not be read as JSON. Try again."); }
+    const missing = ORDER.slice(1).find((name) => !chapters || typeof chapters[name] !== "string" || !chapters[name].trim());
+    if (missing) throw new Error("shelf.json is missing " + missing + ". Try again.");
+    files.set(MAIN, { original: text, text });
+    for (const name of ORDER.slice(1)) files.set(name, { original: chapters[name], text: chapters[name] });
+    makeTabs();
+    showFile();
+    stage = "compiler";
+    const engine = await startEngine(grandly);
+    stage = "bridge";
+    engine.py.runPython(BRIDGE);
+    python = { open_page: engine.py.globals.get("open_page"), things: engine.py.globals.get("things"), put: engine.py.globals.get("put") };
+    stage = "program";
+    await run(grandly);
+    buttons.edit.disabled = buttons.forget.disabled = false;
+  } catch (error) {
+    leaf.classList.remove("working");
+    if (stage === "files" || stage === "compiler") quietly(error.message || "Could not start the page. Try again.");
+    else if (stage === "bridge") quietly("The to-do page could not initialize its compiler connection. Reload the page and try again.");
+    else quietly("The to-do program could not start. Try again.");
+    if (stage === "files") about.textContent = "The program and its chapters could not be loaded.";
+    retry.hidden = false;
+  }
+}
+document.getElementById("retry").addEventListener("click", start);
+await start();
 } catch (error) {
-  quietly("This page could not start Python: " + error.message + ". It needs a connection to cdn.jsdelivr.net the first time.");
+  document.getElementById("status").textContent = "The page controls could not load. Reload the page to try again.";
+  document.getElementById("about").textContent = "The program and its chapters could not be displayed.";
+  for (const id of ["edit", "again", "back", "forget"]) document.getElementById(id).disabled = true;
 }
 </script>
 </body>

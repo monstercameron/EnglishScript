@@ -149,6 +149,8 @@
     <span id="status" role="status" aria-live="polite"></span>
   </div>
   <p id="note"></p>
+  <p id="examples-status" role="status"></p>
+  <button class="button small" id="retry-examples" type="button" hidden>Retry loading examples</button>
 
   <div class="work">
     <div class="column">
@@ -202,7 +204,8 @@
 </main>
 
 <script type="module">
-import { play, lint, show, failed, escapeHtml, commentStart, tint, toLink, fromLink, addLine, loader } from "./play/engine.js";
+try {
+const { play, lint, show, failed, escapeHtml, commentStart, tint, toLink, fromLink, addLine, loader } = await import("./play/engine.js");
 
 const DRAFT = "englishscript.playground.draft";
 const STARTER = `# Write sentences here. Whatever the compiler cannot read is underlined,
@@ -563,7 +566,9 @@ tabs.how.addEventListener("click", () => selectTab("how"));
 async function loadPhrases() {
   const list = document.getElementById("phrases");
   try {
-    const phrases = await (await fetch("play/phrases.json")).json();
+    const response = await fetch("play/phrases.json");
+    if (!response.ok) throw new Error("Phrases unavailable");
+    const phrases = await response.json();
     for (const phrase of phrases) {
       const item = document.createElement("li");
       const heading = document.createElement("h3");
@@ -601,13 +606,24 @@ async function loadPhrases() {
 // ---- starting up
 
 async function loadExamples() {
+  const previous = pick.value;
   try {
-    examples = await (await fetch("play/examples.json")).json();
+    const response = await fetch("play/examples.json");
+    if (!response.ok) throw new Error("Examples unavailable");
+    const loaded = await response.json();
+    if (!Array.isArray(loaded)) throw new Error("Invalid examples");
+    examples = loaded;
+    document.getElementById("examples-status").textContent = "";
+    document.getElementById("retry-examples").hidden = true;
   } catch (error) {
     examples = [];
+    document.getElementById("examples-status").textContent = "Examples could not be loaded. You can still write and run your own program.";
+    document.getElementById("retry-examples").hidden = false;
   }
   pick.replaceChildren(new Option("A fresh start", "starter"), ...examples.map((example) => new Option(example.title, example.id)), new Option("(your own)", ""));
+  pick.value = [...pick.options].some((option) => option.value === previous) ? previous : "";
 }
+document.getElementById("retry-examples").addEventListener("click", loadExamples);
 
 pick.addEventListener("change", () => {
   if (pick.value === "starter") { setNote(""); setProgram(STARTER); pick.value = "starter"; return; }
@@ -629,6 +645,12 @@ if (first === null || !first.trim()) { first = STARTER; pick.value = "starter"; 
 source.value = first;
 changed();
 loadPhrases();
+} catch (error) {
+  document.getElementById("pick").replaceChildren(new Option("Examples unavailable", ""));
+  for (const id of ["run", "explain", "share"]) document.getElementById(id).disabled = true;
+  document.getElementById("badge").textContent = "Checking unavailable";
+  document.getElementById("status").textContent = "The playground controls could not load. Reload the page to try again.";
+}
 </script>
 </body>
 </html>

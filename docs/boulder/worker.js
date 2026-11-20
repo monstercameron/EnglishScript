@@ -41,24 +41,32 @@ self.boulderRequest = (prompt) => new Promise((resolve) => {
 async function start() {
   if (started) return;
   started = true;
-  importScripts(PYODIDE + "pyodide.js");
-  python = await loadPyodide({ indexURL: PYODIDE });
+  try {
+    importScripts(new URL("../play/worker-start.js", self.location.href).href);
+  } catch (_) {
+    throw new Error("Could not load startup helper worker-start.js. Check your connection and site files, then reload.");
+  }
+  python = await self.workerStart.python(PYODIDE);
   const paths = ["main.english", "field.english", "scene.english", "bridge.py"];
-  const [archive, ...files] = await Promise.all([
-    fetch(new URL("../play/englishscript.zip", self.location.href)),
-    ...paths.map((path) => fetch(new URL(path, self.location.href))),
+  const [archive, ...texts] = await Promise.all([
+    self.workerStart.download("../play/englishscript.zip", "compiler archive", "arrayBuffer"),
+    ...paths.map((path) => self.workerStart.download(path, path === "bridge.py" ? "bridge" : "chapter", "text")),
   ]);
-  if (!archive.ok || files.some((file) => !file.ok)) throw new Error("Could not load the compiler or Boulder chapters.");
   python.FS.mkdirTree("/site");
   python.FS.mkdirTree("/work");
-  python.unpackArchive(await archive.arrayBuffer(), "zip", { extractDir: "/site" });
-  const texts = await Promise.all(files.map((file) => file.text()));
+  self.workerStart.unpack(python, archive);
   paths.slice(0, -1).forEach((path, index) => python.FS.writeFile("/work/" + path, texts[index]));
-  python.runPython(texts[texts.length - 1]);
+  try {
+    python.runPython(texts[texts.length - 1]);
+  } catch (error) {
+    throw new Error("Could not initialize bridge.py. Check the site files, then reload. " + String(error && error.message || error));
+  }
   act = python.globals.get("act");
   const run = python.globals.get("start");
   try {
     await run();
+  } catch (error) {
+    throw new Error("Could not compile or start the Boulder chapters. Check the diagnostic below and reload after fixing the problem. " + String(error && error.message || error));
   } finally {
     run.destroy();
   }

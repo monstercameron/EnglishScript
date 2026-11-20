@@ -280,10 +280,19 @@ def share_tags(name, title, description):
     return tags
 
 
+SNIPPET_CONTROLS = '''import("./play/snippets.js").then(({ mountSnippets }) => mountSnippets()).catch(() => {
+  for (const figure of document.querySelectorAll("figure.snippet")) {
+    const notice = document.createElement("p");
+    notice.setAttribute("role", "status");
+    notice.textContent = "The controls for this example could not load. Reload the page to try again.";
+    figure.querySelector("pre.program").after(notice);
+  }
+});'''
+
+
 def document(*, title, description, current, heading, standfirst, body, contents=None, runnable=True, colophon=""):
     """A whole page: the navigation, an optional contents list, and the text."""
-    script = ('<script type="module">\nimport { mountSnippets } from "./play/snippets.js";\nmountSnippets();\n</script>\n'
-              if runnable else "")
+    script = f'<script type="module">\n{SNIPPET_CONTROLS}\n</script>\n' if runnable else ""
     side = contents + "\n" if contents else ""
     sharing = "\n".join(share_tags(current, title, description))
     return f'''<!doctype html>

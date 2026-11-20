@@ -2,14 +2,16 @@ const canvas = document.querySelector('#screen');
 const context = canvas.getContext('2d');
 const screenWrap = document.querySelector('.screen-wrap');
 const bezel = screenWrap.parentElement;
-new ResizeObserver(() => {
+const resizeScreen = () => {
   const style = getComputedStyle(bezel);
   const available = bezel.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
   const scale = Math.max(1, Math.min(3, Math.floor(available / 160)));
   screenWrap.style.width = `${scale * 160}px`;
   canvas.style.width = `${scale * 160}px`;
   canvas.style.height = `${scale * 144}px`;
-}).observe(bezel);
+};
+if (typeof ResizeObserver === 'function') new ResizeObserver(resizeScreen).observe(bezel);
+else { resizeScreen(); window.addEventListener('resize', resizeScreen); }
 const palette = [[224,248,208],[136,192,112],[52,104,86],[8,24,32]];
 const saveVersion = 2;
 const storageKey = 'englishscript-red-adventure-v2';
@@ -17,8 +19,12 @@ const manualKey = 'englishscript-red-manual-save-v2';
 const allowed = new Set(['up','down','left','right','a','b','start','select','tick']);
 const watching = new URLSearchParams(location.search).get('watch') === 'badge';
 const validSave = saved => saved && saved.version === saveVersion && Array.isArray(saved.actions) && saved.actions.every(action => allowed.has(action));
-const manualCache = createRedSaveCache(validSave);
-const audio = typeof createRedAudio === 'function' ? createRedAudio() : null;
+let manualCache = { read: async () => null, write: async () => false };
+let audio = null;
+try { if (typeof createRedSaveCache === 'function') manualCache = createRedSaveCache(validSave); }
+catch { featureUnavailable('Backup saves'); }
+try { if (typeof createRedAudio === 'function') audio = createRedAudio(); }
+catch { featureUnavailable('Sound'); }
 const soundButton = document.querySelector('#sound-toggle');
 const musicTitle = document.querySelector('#music-title');
 const trackNames = {
@@ -109,13 +115,20 @@ function display(next) {
   if (audio) audio.update(state);
 }
 function fail(message) {
+  generation++;
+  conversationRevision++;
+  clearTimeout(showTimer);
   stopHeldDirection();
   if (audio) audio.setPaused(true);
   ready = false;
+  document.querySelectorAll('[data-action]').forEach(button => button.disabled = true);
   if (worker) worker.terminate();
   worker = null;
   document.querySelector('#display-status').textContent = 'STOPPED';
-  document.querySelector('#connection').textContent = message;
+  document.querySelector('#watch-controls').hidden = true;
+  document.querySelector('#talk-open').disabled = true;
+  const recovery = /reload/i.test(message) ? '' : ' Reload the page to try again.';
+  document.querySelector('#connection').textContent = message + recovery + ' Reloading keeps your saved progress.';
   document.querySelector('#loading').textContent = 'The adventure could not continue.';
 }
 function startGame(resume, restoredHistory) {
@@ -135,6 +148,7 @@ function startGame(resume, restoredHistory) {
   document.querySelector('#loading').textContent = history.length ? 'Continuing your adventure…' : 'Preparing your adventure…';
   document.querySelector('#connection').textContent = history.length ? 'Restoring your adventure…' : 'Connecting to the game…';
   document.querySelector('#display-status').textContent = 'STARTING';
+  document.querySelectorAll('[data-action]').forEach(button => button.disabled = true);
   try {
     worker = new Worker('worker.js');
     worker.onmessage = ({ data }) => {
@@ -144,8 +158,9 @@ function startGame(resume, restoredHistory) {
         if (data.type === 'state') display(data.state);
         if (data.type === 'ready') {
           ready = true;
+          if (!watching) document.querySelectorAll('[data-action]').forEach(button => button.disabled = false);
           document.querySelector('#connection').textContent = storageAvailable ? 'Playing · progress saved in this browser' : 'Playing · browser save unavailable';
-          if (watching) startShow().catch(error => fail(error.message));
+          if (watching) startShow(current).catch(error => { if (current === generation) fail(error.message); });
           pump();
         }
         if (data.type === 'talk-asked') replyTo(data);
@@ -173,9 +188,10 @@ function startGame(resume, restoredHistory) {
         if (data.type === 'error') fail(data.message || 'The game stopped.');
       } catch (error) { fail(error.message); }
     };
-    worker.onerror = () => { if (current === generation) fail('The game could not start. Check your connection and reload.'); };
+    worker.onerror = () => { if (current === generation) fail('The game worker (worker.js) could not load or stopped unexpectedly. Check your connection.'); };
+    worker.onmessageerror = () => { if (current === generation) fail('The game worker sent an unreadable message.'); };
     worker.postMessage({ type: 'start', history });
-  } catch { fail('The game could not start.'); }
+  } catch (error) { fail(`The game worker could not start: ${error.message || 'unknown error'}.`); }
 }
 function pump() {
   if (!ready || busy || !worker || !queue.length) return;
@@ -183,7 +199,8 @@ function pump() {
   const item = queue.shift();
   currentJob = typeof item === 'object' ? item : null;
   cosmeticTick = item === 'tick' && state.mode === 'title';
-  worker.postMessage(typeof item === 'string' ? { type: 'action', action: item } : item);
+  try { worker.postMessage(typeof item === 'string' ? { type: 'action', action: item } : item); }
+  catch (error) { fail(`Could not send input to the game: ${error.message || 'unknown error'}.`); }
 }
 function input(action) {
   if (watching) return;
@@ -381,11 +398,17 @@ setInterval(() => {
   if (!watching && ready && !busy && !queue.length && ['opening', 'title'].includes(state.mode)) { queue.push('tick'); pump(); }
 }, 125);
 let recording = [], cursor = 0, paused = false, showTimer;
-async function startShow() {
+async function startShow(current) {
   document.querySelector('#connection').textContent = 'Loading the Boulder Badge run…';
-  const response = await fetch('replay.json');
-  if (!response.ok) throw Error('The recording could not be loaded.');
-  recording = await response.json();
+  let response;
+  try { response = await fetch('replay.json'); }
+  catch { throw Error('Could not download replay.json. Check your connection.'); }
+  if (!response.ok) throw Error(`Could not download replay.json (HTTP ${response.status}).`);
+  let loaded;
+  try { loaded = await response.json(); }
+  catch { throw Error('The recording in replay.json could not be read.'); }
+  if (current !== generation) return;
+  recording = loaded;
   if (!Array.isArray(recording) || !recording.length || !recording.every(key => allowed.has(key))) throw Error('The recording is incomplete.');
   document.querySelector('#watch-controls').hidden = false;
   for (const element of document.querySelectorAll('#companion, .talk-controls, .help, #continue-save, #restart')) element.hidden = true;

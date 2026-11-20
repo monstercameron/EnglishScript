@@ -401,6 +401,7 @@ Subtract $500 from Robin's purse.</pre>
       <span id="status" role="status" aria-live="polite"></span>
     </div>
     <p id="note"></p>
+    <button class="button small" id="retry-examples" type="button" hidden>Retry loading examples</button>
     <div class="bench">
       <div class="pane">
         <div class="title"><label for="source">The program</label></div>
@@ -565,10 +566,17 @@ Ada still has $40.</pre>
 </footer>
 
 <script type="module">
-import { play, show, failed, loader } from "./play/engine.js";
-import { mountSnippets } from "./play/snippets.js";
+import("./play/snippets.js").then(({ mountSnippets }) => mountSnippets()).catch(() => {
+  for (const figure of document.querySelectorAll("figure.snippet")) {
+    const notice = document.createElement("p");
+    notice.setAttribute("role", "status");
+    notice.textContent = "The controls for this example could not load. Reload the page to try again.";
+    figure.querySelector("pre.program").after(notice);
+  }
+});
 
-mountSnippets();
+try {
+const { play, show, failed, loader } = await import("./play/engine.js");
 
 const source = document.getElementById("source");
 const pick = document.getElementById("pick");
@@ -651,16 +659,29 @@ document.getElementById("finish").addEventListener("click", () => {
   step("run");
 });
 
-try {
-  const response = await fetch("play/examples.json");
-  examples = await response.json();
-  pick.replaceChildren(...examples.map((example) => new Option(example.title, example.id)));
-  pick.append(new Option("(your own)", ""));
-  pick.value = "dragons";
-  loadExample("dragons");
+async function loadExamples() {
+  try {
+    const response = await fetch("play/examples.json");
+    if (!response.ok) throw new Error("Examples unavailable");
+    examples = await response.json();
+    if (!Array.isArray(examples)) throw new Error("Invalid examples");
+    pick.replaceChildren(...examples.map((example) => new Option(example.title, example.id)));
+    pick.append(new Option("(your own)", ""));
+    document.getElementById("retry-examples").hidden = true;
+    if (!source.value) { pick.value = "dragons"; loadExample("dragons"); }
+    else { pick.value = ""; setNote(""); }
+  } catch (error) {
+    pick.replaceChildren(new Option("Examples unavailable", ""));
+    setNote("Examples could not be loaded. You can still type a program and run it.");
+    document.getElementById("retry-examples").hidden = false;
+  }
+}
+document.getElementById("retry-examples").addEventListener("click", loadExamples);
+await loadExamples();
 } catch (error) {
-  pick.replaceChildren(new Option("(examples could not be loaded)", ""));
-  setNote("Type a program below and run it.");
+  document.getElementById("pick").replaceChildren(new Option("Examples unavailable", ""));
+  for (const id of ["run", "explain", "check"]) document.getElementById(id).disabled = true;
+  document.getElementById("status").textContent = "The program controls could not load. Reload the page to try again.";
 }
 </script>
 </body>
