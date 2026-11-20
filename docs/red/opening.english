@@ -332,12 +332,12 @@ To Opening:
       Logo.
       Trainer.
       Let the choice be the remainder of Journey's animation divided by 96.
-      If the choice is less than 32:
-        Portrait "Charmander" at 44 by 93.
-      If the choice is at least 32 and the choice is less than 64:
-        Portrait "Bulbasaur" at 44 by 89.
+      Let the starter be "Charmander".
       If the choice is at least 64:
-        Portrait "Squirtle" at 44 by 89.
+        Set the starter to "Squirtle".
+      Otherwise if the choice is at least 32:
+        Set the starter to "Bulbasaur".
+      Portrait the starter at 44 by 93.
       Inscribe "95 96 98 GAME FREAK" at 20 by 136.
     For "menu":
       Fill Screen from 12 by 16 with 136 over 64 as 3.

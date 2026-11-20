@@ -4,58 +4,110 @@ Use the page library.
 Use the foundation chapter.
 
 To drawbulbasaur at an x (number) by a y (number):
-  Let the bulb outline be a list of 13, 22, 10, 17, 11, 12, 15, 9, 16, 5, 20, 7, 24, 2, 29, 5, 32, 2, 36, 7, 38, 13, 36, 20, 32, 24.
-  Shade Screen at the x by the y with the bulb outline as 3.
-  Let the bulb midtone be a list of 13, 17, 14, 11, 17, 10, 17, 7, 21, 10, 24, 4, 28, 7, 31, 5, 35, 8, 36, 14, 33, 20, 23, 22.
-  Shade Screen at the x by the y with the bulb midtone as 2.
-  Let the bulb highlight be a list of 15, 13, 18, 11, 20, 13, 24, 7, 25, 13, 30, 8, 29, 15, 33, 11, 32, 18, 25, 20, 20, 17.
-  Shade Screen at the x by the y with the bulb highlight as 1.
-  Let the body outline be a list of 19, 22, 24, 19, 33, 19, 39, 22, 42, 27, 42, 36, 39, 40, 34, 40, 31, 37, 27, 39, 15, 37, 12, 31.
-  Shade Screen at the x by the y with the body outline as 3.
-  Let the body color be a list of 19, 24, 25, 21, 33, 21, 38, 24, 40, 29, 39, 36, 36, 38, 33, 34, 30, 35, 27, 37, 18, 35, 15, 30.
-  Shade Screen at the x by the y with the body color as 1.
-  Let the back spot be a list of 32, 24, 35, 23, 37, 26, 34, 28, 31, 27.
-  Shade Screen at the x by the y with the back spot as 2.
-  Let the rump spot be a list of 36, 31, 39, 30, 39, 34, 36, 35, 34, 33.
-  Shade Screen at the x by the y with the rump spot as 2.
-  Let the hind foot outline be a list of 30, 32, 36, 31, 39, 35, 39, 41, 36, 43, 30, 42, 28, 39.
-  Shade Screen at the x by the y with the hind foot outline as 3.
-  Let the hind foot color be a list of 31, 34, 35, 33, 37, 36, 37, 40, 35, 41, 31, 40, 30, 38.
-  Shade Screen at the x by the y with the hind foot color as 1.
-  Let the hind inner claw be a list of 31, 39, 32, 38, 33, 41, 31, 41.
-  Shade Screen at the x by the y with the hind inner claw as 0.
-  Let the hind outer claw be a list of 35, 39, 36, 38, 37, 40, 36, 41.
-  Shade Screen at the x by the y with the hind outer claw as 0.
-  Let the head outline be a list of 4, 28, 5, 22, 7, 20, 6, 14, 12, 17, 16, 16, 23, 17, 26, 14, 28, 20, 30, 23, 30, 31, 27, 35, 24, 36, 23, 41, 20, 43, 14, 42, 12, 39, 9, 41, 4, 40, 2, 37, 2, 31.
-  Shade Screen at the x by the y with the head outline as 3.
-  Let the head color be a list of 4, 29, 6, 23, 9, 22, 8, 17, 12, 19, 16, 18, 22, 19, 26, 17, 26, 22, 28, 24, 28, 30, 26, 33, 22, 34, 21, 40, 19, 41, 15, 40, 14, 36, 11, 37, 9, 39, 5, 38, 4, 35.
-  Shade Screen at the x by the y with the head color as 1.
-  Let the near ear shadow be a list of 8, 20, 9, 18, 12, 20, 10, 22.
-  Shade Screen at the x by the y with the near ear shadow as 2.
-  Let the far ear shadow be a list of 22, 20, 26, 18, 26, 22, 24, 23.
-  Shade Screen at the x by the y with the far ear shadow as 2.
-  Let the forehead spot be a list of 7, 24, 10, 22, 13, 23, 12, 25, 9, 26.
-  Shade Screen at the x by the y with the forehead spot as 2.
-  Let the crown spot be a list of 18, 19, 21, 20, 20, 22, 17, 22.
-  Shade Screen at the x by the y with the crown spot as 2.
-  Let the near eye outline be a list of 5, 27, 10, 26, 12, 27, 11, 30, 9, 31, 6, 30.
-  Shade Screen at the x by the y with the near eye outline as 3.
-  Let the near eye light be a list of 6, 27, 10, 27, 10, 29, 8, 30, 6, 29.
-  Shade Screen at the x by the y with the near eye light as 0.
-  Let the far eye outline be a list of 20, 26, 25, 24, 26, 25, 25, 29, 22, 30, 20, 29.
-  Shade Screen at the x by the y with the far eye outline as 3.
-  Let the far eye light be a list of 21, 26, 24, 25, 24, 28, 22, 29, 21, 28.
-  Shade Screen at the x by the y with the far eye light as 0.
-  Let the mouth be a list of 13, 32, 15, 32, 16, 33, 19, 32, 20, 33, 18, 34, 15, 35, 12, 34.
-  Shade Screen at the x by the y with the mouth as 3.
-  Let the nostril be a list of 13, 29, 14, 29, 14, 30, 13, 30.
-  Shade Screen at the x by the y with the nostril as 3.
-  Let the first near claw be a list of 5, 37, 6, 36, 7, 39, 5, 39.
-  Shade Screen at the x by the y with the first near claw as 0.
-  Let the second near claw be a list of 8, 38, 9, 37, 10, 39, 9, 40.
-  Shade Screen at the x by the y with the second near claw as 0.
-  Let the far claw be a list of 17, 39, 18, 38, 19, 41, 17, 41.
-  Shade Screen at the x by the y with the far claw as 0.
+  Let the left be the x + 4.
+  Let the top be the y + 3.
+  Let the bulb silhouette be a list of 11, 16, 11, 13, 14, 10, 19, 8, 24, 7, 27, 4, 29, 6, 29, 11, 31, 13, 32, 13, 34, 16, 34, 22, 31, 25, 29, 26, 23, 24, 18, 21.
+  Shade Screen at the left by the top with the bulb silhouette as 3.
+  Let the outer husk be a list of 12, 13, 15, 11, 19, 9, 23, 9, 27, 5, 27, 7, 29, 12, 31, 13, 33, 16, 33, 21, 31, 24, 28, 25, 21, 22, 16, 21, 12, 17.
+  Shade Screen at the left by the top with the outer husk as 2.
+  Let the back glint be a list of 13, 13, 15, 10, 20, 9, 21, 8, 20, 10, 17, 11, 15, 12, 14, 14.
+  Shade Screen at the left by the top with the back glint as 0.
+  Let the central fold be a list of 15, 13, 18, 11, 24, 8, 27, 5, 25, 8, 26, 11, 23, 13, 17, 15.
+  Shade Screen at the left by the top with the central fold as 1.
+  Let the central light be a list of 15, 12, 22, 10, 27, 5, 26, 8, 24, 9, 21, 11, 18, 12, 16, 14.
+  Shade Screen at the left by the top with the central light as 0.
+  Let the leaf seam be a list of 23, 18, 25, 14, 27, 8, 25, 14, 23, 18, 25, 20, 24, 20.
+  Shade Screen at the left by the top with the leaf seam as 3.
+  Let the upright leaf be a list of 25, 18, 27, 14, 28, 9, 28, 7, 28, 11, 30, 13, 31, 17, 31, 20, 29, 21, 27, 19.
+  Shade Screen at the left by the top with the upright leaf as 1.
+  Let the leaf glint be a list of 28, 15, 28, 12, 28, 17, 27, 18, 26, 18.
+  Shade Screen at the left by the top with the leaf glint as 0.
+  Let the outer fold be a list of 30, 13, 32, 15, 33, 17, 33, 22, 30, 23, 28, 23, 28, 20, 31, 17.
+  Shade Screen at the left by the top with the outer fold as 2.
+  Let the outer glint be a list of 33, 16, 33, 21, 31, 23, 30, 23, 33, 20.
+  Shade Screen at the left by the top with the outer glint as 1.
+  Let the back husk seam be a list of 12, 13, 19, 10, 16, 11, 14, 13, 13, 15, 12, 15.
+  Shade Screen at the left by the top with the back husk seam as 2.
+  Let the inner fold shadow be a list of 15, 13, 18, 14, 22, 13, 25, 11, 24, 13, 19, 15, 16, 16.
+  Shade Screen at the left by the top with the inner fold shadow as 2.
+  Let the leaf edge be a list of 30, 11, 31, 13, 32, 18, 31, 20, 32, 17.
+  Shade Screen at the left by the top with the leaf edge as 3.
+  Let the hindquarters be a list of 17, 21, 22, 19, 29, 22, 29, 25, 33, 31, 33, 34, 31, 38, 30, 39, 28, 39, 25, 36, 23, 35, 21, 35, 22, 37, 20, 39, 19, 39, 17, 37, 14, 37, 10, 34, 10, 30, 14, 27.
+  Shade Screen at the left by the top with the hindquarters as 3.
+  Let the flank be a list of 17, 22, 22, 20, 29, 23, 28, 26, 31, 29, 32, 32, 32, 35, 30, 38, 28, 38, 27, 36, 25, 35, 23, 32, 20, 34, 20, 38, 18, 36, 14, 36, 12, 34, 12, 31.
+  Shade Screen at the left by the top with the flank as 2.
+  Let the chest be a list of 10, 31, 13, 30, 18, 31, 21, 32, 18, 35, 17, 35, 15, 36, 11, 34.
+  Shade Screen at the left by the top with the chest as 1.
+  Let the chest light be a list of 11, 32, 12, 33, 14, 34, 13, 35, 11, 34.
+  Shade Screen at the left by the top with the chest light as 0.
+  Let the thigh be a list of 26, 29, 27, 29, 30, 31, 30, 34, 29, 35, 27, 35, 24, 34.
+  Shade Screen at the left by the top with the thigh as 1.
+  Let the thigh glint be a list of 25, 32, 26, 30, 28, 32, 28, 35, 25, 34.
+  Shade Screen at the left by the top with the thigh glint as 0.
+  Let the flank spot be a list of 27, 25, 28, 23, 28, 25, 25, 25.
+  Shade Screen at the left by the top with the flank spot as 3.
+  Trace Screen from (the left + 22) by (the top + 26) to (the left + 23) at (the top + 28) with 3.
+  Let the head outline be a list of 3, 24, 4, 20, 6, 18, 5, 17, 5, 15, 6, 14, 8, 14, 10, 16, 14, 15, 16, 15, 18, 13, 20, 13, 22, 15, 23, 18, 21, 18, 23, 23, 25, 24, 22, 27, 23, 29, 20, 32, 18, 35, 14, 32, 11, 32, 9, 31, 8, 30, 6, 31, 3, 30, 2, 28, 1, 27, 3, 26.
+  Shade Screen at the left by the top with the head outline as 3.
+  Let the cheek shadow be a list of 4, 23, 7, 19, 6, 16, 7, 16, 10, 17, 16, 17, 18, 14, 20, 14, 22, 17, 21, 18, 23, 21, 23, 26, 21, 27, 22, 29, 21, 32, 18, 34, 13, 30, 10, 30, 8, 29, 6, 30, 3, 29, 2, 27.
+  Shade Screen at the left by the top with the cheek shadow as 2.
+  Let the brow be a list of 4, 22, 5, 20, 7, 18, 6, 16, 8, 15, 8, 16, 9, 17, 15, 16, 17, 18, 15, 19, 13, 21, 15, 24, 4, 24.
+  Shade Screen at the left by the top with the brow as 1.
+  Let the forehead light be a list of 5, 20, 7, 18, 6, 17, 6, 15, 7, 16, 9, 17, 11, 17, 10, 19, 8, 21, 7, 20, 4, 23.
+  Shade Screen at the left by the top with the forehead light as 0.
+  Let the near ear be a list of 16, 16, 17, 15, 19, 14, 20, 14, 21, 16, 19, 18, 17, 18.
+  Shade Screen at the left by the top with the near ear as 1.
+  Let the ear light be a list of 16, 16, 18, 14, 19, 14.
+  Shade Screen at the left by the top with the ear light as 0.
+  Let the forehead marking be a list of 12, 19, 14, 18, 13, 19.
+  Shade Screen at the left by the top with the forehead marking as 3.
+  Let the bulb base shadow be a list of 16, 16, 18, 18, 21, 15, 21, 17, 20, 18, 17, 18.
+  Shade Screen at the left by the top with the bulb base shadow as 2.
+  Let the far eye be a list of 4, 22, 7, 21, 7, 20, 8, 22, 7, 23, 5, 23.
+  Shade Screen at the left by the top with the far eye as 3.
+  Trace Screen from (the left + 6) by (the top + 20) to (the left + 7) at (the top + 21) with 0.
+  Let the near eye be a list of 14, 22, 17, 19, 18, 22, 19, 22, 19, 24, 17, 25.
+  Shade Screen at the left by the top with the near eye as 3.
+  Let the near sclera be a list of 16, 22, 17, 21, 19, 24, 17, 24.
+  Shade Screen at the left by the top with the near sclera as 0.
+  Trace Screen from (the left + 16) by (the top + 21) to (the left + 16) at (the top + 22) with 2.
+  Let the open mouth be a list of 3, 26, 5, 26, 13, 24, 15, 26, 15, 28, 12, 29, 4, 27.
+  Shade Screen at the left by the top with the open mouth as 3.
+  Let the tongue be a list of 7, 27, 14, 27, 10, 28.
+  Shade Screen at the left by the top with the tongue as 1.
+  Let the near foreleg be a list of 16, 24, 19, 24, 23, 28, 23, 29, 21, 31, 17, 31, 16, 29, 15, 28.
+  Shade Screen at the left by the top with the near foreleg as 3.
+  Let the near foreleg skin be a list of 16, 26, 19, 25, 21, 27, 22, 29, 18, 31, 16, 29.
+  Shade Screen at the left by the top with the near foreleg skin as 1.
+  Let the near foreleg light be a list of 17, 25, 19, 25, 19, 26, 20, 27, 19, 29, 18, 30, 16, 28.
+  Shade Screen at the left by the top with the near foreleg light as 0.
+  Let the near paw shadow be a list of 16, 29, 17, 30, 19, 28, 21, 27, 21, 30, 17, 30.
+  Shade Screen at the left by the top with the near paw shadow as 1.
+  Let the far foreleg be a list of 1, 27, 2, 25, 8, 28, 11, 28, 10, 30, 8, 31, 5, 31, 3, 30.
+  Shade Screen at the left by the top with the far foreleg as 3.
+  Let the far foreleg light be a list of 3, 27, 5, 26, 8, 29, 7, 30, 4, 31, 2, 29.
+  Shade Screen at the left by the top with the far foreleg light as 0.
+  Let the underjaw be a list of 10, 29, 16, 29, 18, 31, 16, 32, 12, 31.
+  Shade Screen at the left by the top with the underjaw as 1.
+  Let the underjaw light be a list of 10, 29, 15, 29, 15, 30, 12, 30.
+  Shade Screen at the left by the top with the underjaw light as 0.
+  Trace Screen from (the left + 14) by (the top + 24) to (the left + 13) at (the top + 25) with 1.
+  Trace Screen from (the left + 7) by (the top + 24) to (the left + 13) at (the top + 24) with 1.
+  Trace Screen from (the left + 24) by (the top + 30) to (the left + 23) at (the top + 33) with 3.
+  Trace Screen from (the left + 18) by (the top + 32) to (the left + 16) at (the top + 33) with 2.
+  Trace Screen from (the left + 22) by (the top + 22) to (the left + 23) at (the top + 20) with 3.
+  Trace Screen from (the left + 11) by (the top + 32) to (the left + 11) at (the top + 34) with 0.
+  Trace Screen from (the left + 2) by (the top + 28) to (the left + 4) at (the top + 30) with 3.
+  Trace Screen from (the left + 5) by (the top + 30) to (the left + 6) at (the top + 31) with 2.
+  Trace Screen from (the left + 6) by (the top + 30) to (the left + 7) at (the top + 29) with 1.
+  Trace Screen from (the left + 8) by (the top + 30) to (the left + 9) at (the top + 30) with 2.
+  Trace Screen from (the left + 14) by (the top + 13) to (the left + 14) at (the top + 15) with 3.
+  Trace Screen from (the left + 15) by (the top + 12) to (the left + 16) at (the top + 11) with 3.
+  Trace Screen from (the left + 16) by (the top + 16) to (the left + 17) at (the top + 17) with 3.
+  Trace Screen from (the left + 21) by (the top + 21) to (the left + 22) at (the top + 22) with 3.
+  Trace Screen from (the left + 16) by (the top + 29) to (the left + 17) at (the top + 30) with 2.
+  Trace Screen from (the left + 17) by (the top + 30) to (the left + 19) at (the top + 31) with 2.
+  Trace Screen from (the left + 16) by (the top + 34) to (the left + 21) at (the top + 34) with 3.
 
 To drawcharmander at an x (number) by a y (number):
   Let the left be the x + 4.
@@ -104,60 +156,122 @@ To drawcharmander at an x (number) by a y (number):
   Shade Screen at the left by the top with the smile as 3.
 
 To drawsquirtle at an x (number) by a y (number):
-  Let the curled tail outline be a list of 32, 32, 37, 30, 38, 27, 36, 24, 36, 21, 39, 19, 43, 20, 46, 23, 46, 27, 44, 30, 41, 30, 39, 28, 40, 25, 42, 24, 43, 26, 42, 27, 44, 27, 44, 24, 42, 22, 39, 22, 38, 24, 40, 27, 39, 31, 36, 35.
-  Shade Screen at the x by the y with the curled tail outline as 3.
-  Let the curled tail color be a list of 35, 32, 38, 30, 39, 27, 38, 24, 39, 21, 42, 21, 45, 23, 45, 27, 43, 29, 41, 28, 41, 26, 42, 25, 43, 26, 42, 27, 44, 28, 45, 26, 44, 23, 41, 22, 39, 23, 40, 26, 40, 29, 38, 32.
-  Shade Screen at the x by the y with the curled tail color as 1.
-  Let the shell outline be a list of 15, 24, 19, 21, 28, 21, 35, 24, 38, 29, 38, 35, 35, 39, 30, 41, 20, 40, 15, 36, 13, 30.
-  Shade Screen at the x by the y with the shell outline as 3.
-  Let the shell rim be a list of 16, 25, 20, 23, 28, 23, 34, 25, 36, 29, 36, 34, 33, 37, 29, 39, 21, 38, 17, 35, 15, 30.
-  Shade Screen at the x by the y with the shell rim as 0.
-  Let the shell shadow be a list of 21, 24, 28, 24, 33, 27, 34, 31, 32, 36, 27, 38, 21, 36, 18, 33, 18, 28.
-  Shade Screen at the x by the y with the shell shadow as 2.
-  Let the shell panel outline be a list of 21, 26, 26, 25, 31, 27, 32, 31, 30, 35, 26, 37, 21, 35, 19, 32, 19, 29.
-  Shade Screen at the x by the y with the shell panel outline as 3.
-  Let the shell panel color be a list of 21, 28, 26, 26, 30, 28, 31, 31, 29, 34, 26, 35, 22, 34, 20, 31.
-  Shade Screen at the x by the y with the shell panel color as 1.
-  Let the shell vertical seam be a list of 25, 26, 26, 26, 27, 35, 26, 36.
-  Shade Screen at the x by the y with the shell vertical seam as 3.
-  Let the shell horizontal seam be a list of 20, 31, 31, 30, 31, 31, 20, 32.
-  Shade Screen at the x by the y with the shell horizontal seam as 3.
-  Let the near foot outline be a list of 18, 33, 22, 35, 23, 40, 21, 43, 15, 43, 12, 41, 13, 37.
-  Shade Screen at the x by the y with the near foot outline as 3.
-  Let the near foot color be a list of 16, 35, 20, 36, 21, 40, 20, 41, 16, 41, 14, 40.
-  Shade Screen at the x by the y with the near foot color as 1.
-  Let the far foot outline be a list of 28, 35, 32, 34, 35, 37, 36, 40, 34, 43, 28, 43, 26, 41.
-  Shade Screen at the x by the y with the far foot outline as 3.
-  Let the far foot color be a list of 29, 36, 32, 36, 34, 39, 34, 41, 29, 41, 28, 40.
-  Shade Screen at the x by the y with the far foot color as 1.
-  Let the near arm outline be a list of 15, 25, 12, 24, 8, 26, 5, 29, 6, 32, 9, 33, 13, 31, 17, 30.
-  Shade Screen at the x by the y with the near arm outline as 3.
-  Let the near arm color be a list of 14, 26, 12, 26, 9, 27, 7, 30, 8, 31, 12, 29, 15, 29.
-  Shade Screen at the x by the y with the near arm color as 1.
-  Let the head outline be a list of 10, 12, 12, 7, 17, 4, 24, 3, 31, 5, 35, 9, 36, 14, 35, 19, 32, 22, 28, 24, 21, 25, 15, 23, 11, 21, 8, 18, 8, 15.
-  Shade Screen at the x by the y with the head outline as 3.
-  Let the head color be a list of 11, 13, 14, 8, 18, 6, 24, 5, 30, 7, 33, 10, 34, 14, 33, 18, 30, 20, 27, 22, 21, 23, 16, 21, 12, 20, 10, 17, 10, 15.
-  Shade Screen at the x by the y with the head color as 1.
-  Let the muzzle light be a list of 10, 16, 14, 17, 19, 18, 23, 18, 26, 20, 24, 22, 19, 22, 14, 20, 11, 19.
-  Shade Screen at the x by the y with the muzzle light as 0.
-  Let the near eye outline be a list of 15, 11, 16, 8, 19, 8, 21, 11, 20, 16, 18, 17, 15, 15.
-  Shade Screen at the x by the y with the near eye outline as 3.
-  Let the near eye light be a list of 16, 10, 17, 9, 18, 9, 19, 10, 18, 12, 16, 12.
-  Shade Screen at the x by the y with the near eye light as 0.
-  Let the far eye outline be a list of 27, 10, 29, 9, 31, 10, 32, 13, 31, 16, 29, 17, 27, 15.
-  Shade Screen at the x by the y with the far eye outline as 3.
-  Let the far eye light be a list of 28, 10, 29, 10, 30, 11, 30, 12, 28, 12.
-  Shade Screen at the x by the y with the far eye light as 0.
-  Let the mouth be a list of 12, 19, 15, 20, 20, 21, 24, 20, 23, 22, 19, 23, 15, 22, 12, 21.
-  Shade Screen at the x by the y with the mouth as 3.
-  Let the nostril be a list of 11, 15, 12, 15, 12, 16, 11, 16.
-  Shade Screen at the x by the y with the nostril as 3.
-  Let the near foot first claw be a list of 15, 40, 16, 39, 17, 41, 15, 41.
-  Shade Screen at the x by the y with the near foot first claw as 0.
-  Let the near foot second claw be a list of 19, 40, 20, 39, 21, 41, 19, 41.
-  Shade Screen at the x by the y with the near foot second claw as 0.
-  Let the far foot claw be a list of 29, 40, 30, 39, 31, 41, 29, 41.
-  Shade Screen at the x by the y with the far foot claw as 0.
+  Let the left be the x + 4.
+  Let the top be the y + 3.
+  Let the curled tail be a list of 21, 30, 25, 30, 27, 29, 29, 26, 31, 24, 33, 24, 35, 26, 37, 30, 34, 33, 31, 33, 28, 34, 27, 36, 25, 36, 23, 34, 21, 33.
+  Shade Screen at the left by the top with the curled tail as 3.
+  Let the tail shadow be a list of 22, 31, 25, 31, 27, 30, 28, 28, 30, 26, 32, 25, 34, 26, 35, 28, 37, 30, 31, 33, 30, 32, 28, 33, 26, 36, 24, 34.
+  Shade Screen at the left by the top with the tail shadow as 2.
+  Let the tail light be a list of 24, 32, 27, 30, 29, 29, 29, 27, 31, 25, 33, 25, 35, 27, 36, 29, 35, 31, 34, 32, 31, 30, 28, 34, 27, 35, 25, 35.
+  Shade Screen at the left by the top with the tail light as 1.
+  Let the spiral groove be a list of 29, 30, 29, 28, 31, 27, 33, 27, 35, 28, 35, 30, 34, 31, 34, 29, 33, 28, 31, 28, 30, 29, 30, 31.
+  Shade Screen at the left by the top with the spiral groove as 3.
+  Let the spiral highlight be a list of 29, 28, 31, 26, 33, 26, 35, 28, 33, 26.
+  Shade Screen at the left by the top with the spiral highlight as 0.
+  Let the tail tip be a list of 30, 30, 31, 27, 34, 29, 33, 31, 32, 31.
+  Shade Screen at the left by the top with the tail tip as 0.
+  Let the tail base light be a list of 26, 33, 27, 33, 28, 31, 28, 35, 26, 35.
+  Shade Screen at the left by the top with the tail base light as 0.
+  Let the shell outline be a list of 16, 17, 19, 15, 21, 16, 23, 18, 23, 20, 25, 22, 26, 24, 26, 28, 27, 29, 25, 32, 22, 34, 19, 33, 17, 30.
+  Shade Screen at the left by the top with the shell outline as 3.
+  Let the shell plates be a list of 18, 18, 20, 15, 22, 17, 23, 19, 22, 21, 25, 22, 24, 23, 25, 26, 26, 27, 25, 30, 20, 32.
+  Shade Screen at the left by the top with the shell plates as 2.
+  Let the top scute be a list of 20, 16, 22, 18, 21, 20, 20, 20, 18, 19.
+  Shade Screen at the left by the top with the top scute as 1.
+  Let the top shine be a list of 19, 17, 20, 16, 22, 18, 22, 19, 20, 19.
+  Shade Screen at the left by the top with the top shine as 0.
+  Let the shell stripe be a list of 22, 22, 23, 21, 24, 22, 24, 26, 23, 28, 24, 30, 23, 31, 22, 29.
+  Shade Screen at the left by the top with the shell stripe as 1.
+  Let the side scute be a list of 24, 25, 26, 23, 25, 24, 25, 27, 26, 30.
+  Shade Screen at the left by the top with the side scute as 0.
+  Let the far foot be a list of 8, 26, 10, 29, 10, 31, 8, 33, 6, 33, 3, 30, 3, 28, 5, 27.
+  Shade Screen at the left by the top with the far foot as 3.
+  Let the far foot skin be a list of 3, 28, 5, 29, 7, 27, 9, 31, 8, 32, 6, 32.
+  Shade Screen at the left by the top with the far foot skin as 2.
+  Let the far foot light be a list of 4, 28, 6, 28, 7, 27, 8, 29, 6, 31, 4, 30.
+  Shade Screen at the left by the top with the far foot light as 1.
+  Let the far toe be a list of 4, 28, 5, 28, 4, 30.
+  Shade Screen at the left by the top with the far toe as 0.
+  Let the belly outline be a list of 10, 19, 16, 18, 18, 20, 20, 21, 20, 23, 21, 26, 24, 28, 21, 31, 20, 33, 17, 34, 14, 33, 10, 33, 8, 29, 7, 28, 7, 24.
+  Shade Screen at the left by the top with the belly outline as 3.
+  Let the belly shade be a list of 9, 22, 12, 20, 17, 20, 19, 22, 20, 24, 20, 28, 21, 30, 18, 32, 14, 32, 12, 33, 10, 31, 9, 28.
+  Shade Screen at the left by the top with the belly shade as 2.
+  Let the belly be a list of 10, 25, 12, 22, 16, 21, 18, 23, 19, 25, 20, 28, 16, 32, 11, 32, 8, 27.
+  Shade Screen at the left by the top with the belly as 1.
+  Let the upper plates be a list of 9, 23, 12, 24, 12, 23, 12, 24, 10, 23, 9, 24, 8, 24.
+  Shade Screen at the left by the top with the upper plates as 0.
+  Let the middle plate be a list of 13, 24, 15, 25, 17, 24, 16, 27, 16, 28, 14, 28, 13, 27.
+  Shade Screen at the left by the top with the middle plate as 0.
+  Let the left plate be a list of 8, 26, 12, 25, 10, 26, 9, 27, 8, 27.
+  Shade Screen at the left by the top with the left plate as 0.
+  Let the left hip plate be a list of 10, 29, 11, 29, 11, 32.
+  Shade Screen at the left by the top with the left hip plate as 0.
+  Let the lower belly plate be a list of 12, 28, 15, 29, 18, 29, 15, 29, 13, 31.
+  Shade Screen at the left by the top with the lower belly plate as 0.
+  Let the lower belly seam be a list of 12, 29, 14, 28, 16, 28, 19, 30, 14, 28.
+  Shade Screen at the left by the top with the lower belly seam as 2.
+  Let the shell lip be a list of 17, 23, 20, 24, 20, 29, 23, 30, 20, 31, 19, 26.
+  Shade Screen at the left by the top with the shell lip as 2.
+  Let the near leg be a list of 18, 29, 21, 29, 23, 31, 23, 34, 20, 38, 17, 38, 16, 37, 16, 33.
+  Shade Screen at the left by the top with the near leg as 3.
+  Let the near knee be a list of 18, 30, 20, 29, 24, 33, 21, 33, 20, 37, 18, 37, 17, 35, 15, 33.
+  Shade Screen at the left by the top with the near knee as 2.
+  Let the near leg light be a list of 18, 33, 20, 35, 22, 36, 19, 37, 17, 37, 17, 35, 15, 34.
+  Shade Screen at the left by the top with the near leg light as 1.
+  Let the near toe be a list of 17, 35, 18, 37, 17, 37.
+  Shade Screen at the left by the top with the near toe as 0.
+  Let the far arm be a list of 9, 20, 11, 21, 10, 21, 8, 22, 6, 25, 3, 25, 3, 23.
+  Shade Screen at the left by the top with the far arm as 3.
+  Let the far arm skin be a list of 4, 24, 8, 21, 7, 22, 8, 23, 4, 25.
+  Shade Screen at the left by the top with the far arm skin as 1.
+  Let the far paw be a list of 4, 23, 5, 24, 3, 25.
+  Shade Screen at the left by the top with the far paw as 0.
+  Let the near arm be a list of 13, 20, 16, 20, 18, 21, 21, 21, 19, 24, 17, 25, 11, 25.
+  Shade Screen at the left by the top with the near arm as 3.
+  Let the near arm skin be a list of 13, 21, 16, 21, 18, 22, 18, 23, 15, 25, 14, 24, 13, 24.
+  Shade Screen at the left by the top with the near arm skin as 1.
+  Let the near paw be a list of 12, 24, 15, 23, 16, 24, 14, 25.
+  Shade Screen at the left by the top with the near paw as 0.
+  Let the head silhouette be a list of 5, 12, 6, 10, 8, 8, 10, 7, 16, 7, 18, 9, 20, 12, 20, 15, 19, 18, 17, 20, 14, 21, 10, 21, 8, 20, 6, 18, 5, 16.
+  Shade Screen at the left by the top with the head silhouette as 3.
+  Let the head shade be a list of 6, 12, 7, 10, 9, 8, 15, 8, 17, 9, 20, 12, 19, 13, 19, 16, 18, 18, 16, 19, 10, 19, 6, 17.
+  Shade Screen at the left by the top with the head shade as 2.
+  Let the crown be a list of 6, 11, 8, 9, 10, 8, 16, 8, 19, 12, 19, 13, 17, 14, 16, 15, 14, 15, 12, 16, 9, 15, 6, 15.
+  Shade Screen at the left by the top with the crown as 1.
+  Let the crown glint be a list of 8, 10, 9, 7, 10, 8.
+  Shade Screen at the left by the top with the crown glint as 0.
+  Let the muzzle be a list of 6, 16, 9, 16, 12, 15, 15, 16, 18, 16, 19, 15, 19, 18, 15, 19, 8, 19.
+  Shade Screen at the left by the top with the muzzle as 1.
+  Let the smile be a list of 8, 17, 14, 17, 12, 19, 10, 19.
+  Shade Screen at the left by the top with the smile as 2.
+  Let the eye shadow be a list of 8, 15, 12, 15, 10, 15, 8, 16.
+  Shade Screen at the left by the top with the eye shadow as 2.
+  Let the chin shadow be a list of 8, 20, 10, 20, 13, 22, 18, 19, 17, 21, 14, 22.
+  Shade Screen at the left by the top with the chin shadow as 2.
+  Let the far eye be a list of 7, 13, 8, 15, 7, 15.
+  Shade Screen at the left by the top with the far eye as 3.
+  Let the near eye be a list of 14, 13, 15, 15, 14, 15.
+  Shade Screen at the left by the top with the near eye as 3.
+  Paint Screen at (the left + 8) by (the top + 13) with 0.
+  Paint Screen at (the left + 15) by (the top + 13) with 0.
+  Trace Screen from (the left + 8) by (the top + 17) to (the left + 9) at (the top + 17) with 3.
+  Paint Screen at (the left + 9) by (the top + 18) with 3.
+  Trace Screen from (the left + 18) by (the top + 16) to (the left + 19) at (the top + 15) with 2.
+  Trace Screen from (the left + 11) by (the top + 25) to (the left + 12) at (the top + 26) with 2.
+  Trace Screen from (the left + 12) by (the top + 27) to (the left + 13) at (the top + 28) with 2.
+  Trace Screen from (the left + 11) by (the top + 30) to (the left + 11) at (the top + 32) with 2.
+  Trace Screen from (the left + 22) by (the top + 25) to (the left + 22) at (the top + 29) with 1.
+  Trace Screen from (the left + 19) by (the top + 17) to (the left + 17) at (the top + 19) with 3.
+  Trace Screen from (the left + 9) by (the top + 20) to (the left + 15) at (the top + 20) with 3.
+  Paint Screen at (the left + 7) by (the top + 15) with 2.
+  Paint Screen at (the left + 14) by (the top + 15) with 2.
+  Trace Screen from (the left + 5) by (the top + 25) to (the left + 7) at (the top + 23) with 2.
+  Trace Screen from (the left + 13) by (the top + 24) to (the left + 14) at (the top + 25) with 1.
+  Trace Screen from (the left + 9) by (the top + 28) to (the left + 10) at (the top + 28) with 3.
+  Trace Screen from (the left + 12) by (the top + 30) to (the left + 12) at (the top + 32) with 2.
+  Trace Screen from (the left + 18) by (the top + 30) to (the left + 16) at (the top + 32) with 3.
+  Trace Screen from (the left + 22) by (the top + 31) to (the left + 22) at (the top + 33) with 3.
+  Trace Screen from (the left + 32) by (the top + 30) to (the left + 33) at (the top + 31) with 3.
 
 To depict a species (text) at an x (number) by a y (number):
   If the species is "Bulbasaur":
