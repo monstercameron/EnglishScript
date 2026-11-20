@@ -12,8 +12,11 @@ from __future__ import annotations
 
 import html
 import re
+from pathlib import PurePosixPath
 
 SOURCE = "https://github.com/monstercameron/EnglishScript"
+SITE_URL = "https://monstercameron.github.io/EnglishScript/"
+THEME_COLOR = "#f5eedc"
 FONTS = (
     '<link rel="preconnect" href="https://fonts.googleapis.com">\n'
     '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
@@ -251,17 +254,46 @@ class Markdown:
         return '<nav class="contents" aria-label="Contents">\n<h2>Contents</h2>\n<ol>\n' + "\n".join(rows) + "\n</ol>\n</nav>"
 
 
+def share_tags(name, title, description):
+    path = PurePosixPath(name)
+    canonical = SITE_URL + (name.removesuffix("index.html") if path.name == "index.html" else name)
+    assets = "../" * (len(path.parts) - 1) + "assets/"
+    if name == "red/index.html":
+        image = SITE_URL + "assets/red-preview.png"
+        alt = "The EnglishScript Pokémon Red demo shows Bulbasaur facing Brock’s Geodude."
+    else:
+        image = SITE_URL + "assets/social-preview.png"
+        alt = "EnglishScript and a dragon program written in English."
+    tags = [
+        f'<link rel="canonical" href="{html.escape(canonical)}">',
+        f'<link rel="icon" href="{assets}favicon.ico">',
+        f'<link rel="icon" type="image/png" sizes="32x32" href="{assets}favicon-32.png">',
+        f'<link rel="apple-touch-icon" sizes="180x180" href="{assets}apple-touch-icon.png">',
+    ]
+    for key, value in (("title", title), ("description", description), ("url", canonical),
+                       ("type", "website"), ("site_name", "EnglishScript"), ("image", image),
+                       ("image:alt", alt), ("image:width", "1200"), ("image:height", "630"), ("image:type", "image/png")):
+        tags.append(f'<meta property="og:{key}" content="{html.escape(value)}">')
+    for key, value in (("card", "summary_large_image"), ("title", title), ("description", description),
+                       ("image", image), ("image:alt", alt)):
+        tags.append(f'<meta name="twitter:{key}" content="{html.escape(value)}">')
+    return tags
+
+
 def document(*, title, description, current, heading, standfirst, body, contents=None, runnable=True, colophon=""):
     """A whole page: the navigation, an optional contents list, and the text."""
     script = ('<script type="module">\nimport { mountSnippets } from "./play/snippets.js";\nmountSnippets();\n</script>\n'
               if runnable else "")
     side = contents + "\n" if contents else ""
+    sharing = "\n".join(share_tags(current, title, description))
     return f'''<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="{THEME_COLOR}">
 <title>{html.escape(title)}</title>
+{sharing}
 <meta name="description" content="{html.escape(description)}">
 {FONTS}</head>
 <body>

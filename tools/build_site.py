@@ -247,7 +247,7 @@ def vulkan_page():
     return pages.document(
         title="The vulkan library of EnglishScript",
         description="Draw shaded triangles on a graphics card from EnglishScript, through the real Vulkan API.",
-        current="",
+        current="vulkan.html",
         heading="The Vulkan Library",
         standfirst="English sentences that draw on a real graphics card, each beside the Vulkan calls it makes.",
         body=source.render(),
@@ -265,7 +265,7 @@ def page_library_page():
     return pages.document(
         title="The page library of EnglishScript",
         description="Web pages written in EnglishScript: seven kinds of thing that are elements of a page, bound both ways.",
-        current="",
+        current="page.html",
         heading="The Page Library",
         standfirst="Things that are elements of a web page, and the sentences that answer a press or a keystroke.",
         body=source.render(),
@@ -283,7 +283,7 @@ def concerns_page():
     return pages.document(
         title="Risks and open questions about EnglishScript",
         description="Forty-two concerns about EnglishScript, each measured or probed against the compiler and given a verdict.",
-        current="",
+        current="concerns.html",
         heading="Risks and Open Questions",
         standfirst="Forty-two concerns raised about the language, and what measuring the compiler says about each.",
         body=source.render(),
@@ -301,7 +301,7 @@ def editors_page():
     return pages.document(
         title="EnglishScript in an editor",
         description="A language server and a rename tool for EnglishScript: marks as you type, corrections, hover, completion and safe renaming.",
-        current="",
+        current="editors.html",
         heading="In an Editor",
         standfirst="A language server that marks a program as you write it, and a rename that the compiler checks.",
         body=source.render(),
@@ -334,7 +334,7 @@ def fizzbuzz_page():
     """docs/fizzbuzz.html: FizzBuzz in EnglishScript beside FizzBuzz in each rival."""
     import rivals
 
-    return render_page(rivals.page())
+    return site_metadata(render_page(rivals.page()), "fizzbuzz.html")
 
 
 def systems_page():
@@ -348,6 +348,33 @@ def systems_page():
 PRINTED = [("reference.html", reference_page), ("vulkan.html", vulkan_page), ("page.html", page_library_page),
            ("concerns.html", concerns_page), ("editors.html", editors_page),
            ("opposition.html", opposition_page), ("systems.html", systems_page), ("fizzbuzz.html", fizzbuzz_page)]
+
+
+def site_metadata(page, name):
+    import pages
+
+    head_match = re.search(r"<head\b[^>]*>(.*?)</head\s*>", page, re.S | re.I)
+    if not head_match:
+        raise ValueError(f"Missing head in {name}")
+    head = head_match.group(1)
+    managed = (r'<link rel="canonical"[^>]*>|'
+               r'<link rel="(?:icon|apple-touch-icon)"[^>]*href="(?:\.\./)*assets/(?:favicon\.ico|favicon-32\.png|apple-touch-icon\.png)"[^>]*>|'
+               r'<meta property="og:(?:title|description|url|type|site_name|image|image:alt|image:width|image:height|image:type)"[^>]*>|'
+               r'<meta name="twitter:(?:card|title|description|image|image:alt)"[^>]*>')
+    head = re.sub(r"(?m)^[ \t]*(?:" + managed + r")[ \t]*\n", "", head)
+    title_match = re.search(r"(?m)^([ \t]*)<title>(.*?)</title>", head, re.S | re.I)
+    description_match = re.search(r'<meta\s+name="description"\s+content="([^"]*)"\s*/?>', head, re.I)
+    if not title_match or not description_match:
+        raise ValueError(f"Missing title or description in {name}")
+    indent, title = title_match.groups()
+    description = html.unescape(description_match.group(1))
+    title = html.unescape(title)
+    before_title = head[:title_match.start()]
+    if not re.search(r'<meta\s+name="theme-color"', head, re.I):
+        before_title += indent + f'<meta name="theme-color" content="{pages.THEME_COLOR}">\n'
+    tags = pages.share_tags(name, title, description)
+    head = before_title + title_match.group() + "\n" + "\n".join(indent + tag for tag in tags) + head[title_match.end():]
+    return page[:head_match.start(1)] + head + page[head_match.end(1):]
 
 
 def red_chapters():
@@ -375,14 +402,21 @@ def main():
     print(f"docs/play/englishscript.zip: {len(files)} files, {sum(len(data) for _, data in files):,} bytes of Python")
     print(f"docs/play/examples.json: {len(EXAMPLES)} programs")
     print(f"docs/play/phrases.json: {len(PHRASES)} ways to say things")
-    for name in WRITTEN:
-        page = (ROOT / "docs" / name).read_text(encoding="utf-8")
-        (ROOT / "docs" / name).write_text(render_page(page), encoding="utf-8", newline="\n")
-        print(f"docs/{name}: {len(SNIPPET.findall(page))} printed programs given their output")
-    for name, make in PRINTED:
-        text = make()
-        (ROOT / "docs" / name).write_text(text, encoding="utf-8", newline="\n")
-        print(f"docs/{name}: {len(text):,} characters, printed from Markdown")
+    printed = dict(PRINTED)
+    docs = ROOT / "docs"
+    names = {path.relative_to(docs).as_posix() for path in docs.rglob("*.html")}
+    for name in sorted(names.union(printed, WRITTEN)):
+        path = docs / name
+        original = path.read_text(encoding="utf-8") if path.exists() or name not in printed else ""
+        if name in printed:
+            page = printed[name]()
+        else:
+            page = render_page(original) if name in WRITTEN else original
+            page = site_metadata(page, name)
+        if page != original:
+            path.write_text(page, encoding="utf-8", newline="\n")
+            print(f"docs/{name}: updated")
+
 
 
 if __name__ == "__main__":
