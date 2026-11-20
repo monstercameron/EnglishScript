@@ -218,6 +218,7 @@ class Jev(unittest.TestCase):
 
     def test_without_a_key_it_says_so(self):
         saved = os.environ.pop("TYPESAFE_API_KEY", None)
+        alias = os.environ.pop("JEV_API_KEY", None)
         try:
             with self.assertRaises(EnglishError) as caught:
                 models.Jev().judge("Q", None, None, None)
@@ -225,6 +226,8 @@ class Jev(unittest.TestCase):
         finally:
             if saved is not None:
                 os.environ["TYPESAFE_API_KEY"] = saved
+            if alias is not None:
+                os.environ["JEV_API_KEY"] = alias
 
 
 class Connecting(unittest.TestCase):

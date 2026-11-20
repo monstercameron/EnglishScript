@@ -302,9 +302,10 @@ If that fails:
 python -m englishscript program.english --model anthropic       a Claude model writes and judges
 python -m englishscript program.english --model jev             TypeSafe's Jev judges
 python -m englishscript program.english --model jev+anthropic   Jev judges, Claude writes
+python -m englishscript program.english --model jev+openai:gpt-6-luna   Jev judges, GPT-6 Luna writes
 python -m englishscript program.english --model replay:answers.txt</pre>
 
-<p>Jev writes no text, so with <code>--model jev</code> alone, a program that asks a model to write gets “no model” and falls back. A Claude model can judge as well as write, but its probabilities are an estimate written down by a model that writes, not a calibrated answer. The Claude and Jev connections were written from those services' published documentation and have not yet been run against them.</p>
+<p>Jev supplies judgments. Used alone, it raises “no model” for a writing request. The maintenance desk combines Jev with GPT-6 Luna for written handoffs and second opinions. Both connections have been checked against their live services with the six-ticket sample and with an image question. Automated tests also check the OpenAI and Anthropic request and reply formats. Claude can estimate probabilities.</p>
 
 <h2 id="cautions">What to be careful of</h2>
 

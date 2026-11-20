@@ -1,10 +1,13 @@
 """What exists while a program runs: things, the world, variables, formatting."""
 from __future__ import annotations
 
+import hashlib
 import math
+import os
 import re
 import sys
 from contextlib import contextmanager
+from dataclasses import dataclass, field
 from fractions import Fraction
 
 from .lexer import EnglishError
@@ -578,6 +581,40 @@ def read_reply(text, type_):
 #
 # "Ask the model" and "Judge" (section 7.8). What is asked is handed to whoever
 # listens (World.model, World.judge); what comes back is read and checked here.
+
+@dataclass(frozen=True)
+class ImageState:
+    """A local image explicitly supplied as the subject of a model question."""
+    format: str
+    data: bytes = field(repr=False)
+    name: str = field(compare=False)
+
+    def __str__(self):
+        return self.name
+
+    def fingerprint(self):
+        return {"image": self.format, "sha256": hashlib.sha256(self.data).hexdigest()}
+
+
+def read_image(path):
+    limit = 16 * 1024 * 1024
+    try:
+        with open(path, "rb") as handle:
+            data = handle.read(limit + 1)
+    except (ValueError, OSError) as error:
+        raise EnglishError(f'I could not read the image file "{path}": {error}.', stage="run",
+                           recoverable=True, teach="file") from None
+    if data.startswith(b"\x89PNG\r\n\x1a\n"):
+        kind = "png"
+    elif data.startswith(b"\xff\xd8\xff"):
+        kind = "jpeg"
+    else:
+        kind = None
+    if kind is None or len(data) > limit:
+        raise EnglishError(f'The image file "{path}" must be a PNG or JPEG of at most 16 MiB.', stage="run",
+                           recoverable=True, teach="file")
+    return ImageState(kind, data, os.path.basename(path))
+
 
 ITEM_PLURALS = {"number": "numbers", "money": "money", "text": "text", "percent": "percentages"}
 

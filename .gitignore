@@ -3,3 +3,10 @@ __pycache__
 todo.txt
 gpu_triangle.png
 .claude/launch.json
+.venv/
+.env.*
+!.env.example
+/shared/
+/recordings/
+/apps/maintenance/.local/
+/apps/maintenance/shift-plan.txt

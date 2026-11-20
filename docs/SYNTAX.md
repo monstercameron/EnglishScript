@@ -1117,6 +1117,8 @@ Who answers is decided by whoever runs the program, never by the program: `pytho
 
 **Asking a model**
 
+Both `Ask the model` and `Judge` accept `about the image in the file <text>`. The program loads a local PNG or JPEG (up to 16 MiB) when the question runs. The Jev, OpenAI and Anthropic listeners send the image itself. A Python listener receives an `ImageState` with `format`, `data` and `name`. Ordinary text paths and a page library picture still have their usual text and object meanings. A transcript identifies an image by format and SHA-256 digest.
+
 - `the model` is recognised by its place, straight after `Ask`; `model` is not reserved. While a name in view starts with the word `model` (a variable, a role, a thing, a worked-out value or a kind), `Ask the model ...` is refused, because it could also ask a person about what that name holds. Rename it.
 - The question is text, with fill-ins as in any text.
 - `about <value>` hands over what the question is about: a text, or a thing. A thing is handed over written out, in this layout: a first line `<kind> called <name>`, then one line `<property>: <value>` for each stored property, in the order the kind lists them. Each value is said as `Say` says it; a property that is a thing is given by its name; a missing value is `nothing`; a list is written as a list is written in a program, `a list of 3, 8 and 5`, or `an empty list`. Its adjectives and worked-out properties are not handed over: to hand one over, fill it into the question.
@@ -1138,6 +1140,8 @@ Who answers is decided by whoever runs the program, never by the program: `pytho
 - **Judgements put together.** Consecutive `Judge` sentences in the same block, about the same state written the same way (capitals and spaces aside), may be put to the judge together, in one request, when whoever runs the program has connected a judge that takes several at once (`judges`, section 10). A sentence that reads a name set by an earlier one of them (in its question or what it is about) starts a new group. This never changes the result: the questions are independent, and each gets the answer it would have got alone. The answers are checked in the order of the sentences, and the first that can't be used is the problem, at its own sentence, after the sentences before it have kept their answers; `no model` arises at the first sentence. With no such judge connected, each sentence is put to the judge by itself, in order.
 
 **One answer per question**
+
+The meanings attached to the choices are part of a judgment's identity. Two chapters may have private choices with identical names and different meanings. Each gets its own judgment. Recorded questions also distinguish reply types, verdicts and ordered grades. A recording preserves recoverable provider errors and their order, so repeating a failed question inside a fallback replays the same branch. Transcripts written before typed request metadata was introduced can still be replayed in their original order.
 
 Within one run, the same question to a model about the same state, wanting the same type of reply, is asked once: a later asking gets the earlier answer, and the model is not asked again. The same holds for a judgement: the same question, about the same state, with the same choices and of the same sort (chance, verdict or grade). The question and the state are compared as they were worked out, after the fill-ins. A reply that could not be read and was asked for again is not kept; only the answer that was finally read. A failed `Try` does not forget an answer: like a file written, an answer is outside the world. One sentence means one thing, and a question asked twice about the same thing should not get two answers in one run. A program that wants a fresh answer asks a different question, or about a different state.
 - A choice may be given a meaning for the judge, at the top level, after its set is described: `For a team, returns means "the customer wants to send something back".` Each choice may have one meaning, in plain text without braces; each is optional. The meanings are handed to whoever judges, with the choices. They change nothing else.
@@ -2205,9 +2209,10 @@ create      = "There is" new-thing "."
 new-thing   = article "new" { ADJECTIVE } KIND [ "called" expression ] [ whose { sep whose } ]
 remove      = "Remove" expression "."
 ask         = "Ask" expression "and let" [ "the" ] NAME "(" type ")" "be the reply" "."
-ask-model   = "Ask the model" expression [ "about" expression ] "and let" [ "the" ] NAME "(" type ")"
+model-state = expression | "the image in the file" value
+ask-model   = "Ask the model" expression [ "about" model-state ] "and let" [ "the" ] NAME "(" type ")"
               "be the reply" "."
-judge       = "Judge" expression "about" expression "and let" [ "the" ] NAME
+judge       = "Judge" expression "about" model-state "and let" [ "the" ] NAME
               ( "(" "percent" ")" "be the chance"
               | "(" CHOICE-SET ")" ( "be the verdict" | "be the grade" )
                 [ "and" [ "the" ] NAME "(" "percent" ")" "be the likelihood" ] ) "."

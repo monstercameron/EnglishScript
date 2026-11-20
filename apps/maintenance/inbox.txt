@@ -1,0 +1,6 @@
+East stacks|75|A wooden display shelf sags slightly. The other shelves are usable and this can wait.
+Reading room|120|The only ceiling light in the reading room is out, and the room is closed until it is relit.
+Garden room|65|The sink tap drips steadily after use. Staff can use the other basin today.
+Archive|240|The archive needs a new set of fitted wooden cabinets.
+Map room|90|The drawer will not slide and its lamp flickers. Staff cannot tell which repair is needed first.
+West stacks|80|The wooden bookcase door rubs its frame. Other bookcases are available this week.

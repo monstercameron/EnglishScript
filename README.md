@@ -82,6 +82,8 @@ The site is dressed as a printed English book: blackletter, the Fell types and G
 
 ## Run it on your own computer
 
+**[Maintenance Desk](apps/maintenance/README.md)** is a complete application written in EnglishScript. It takes a facilities inbox, gets a trade and urgency from System 1, asks System 2 for handoffs and second opinions, and applies System 0 budget and crew limits to produce a shift plan. Its Windows launcher includes a replayable six-ticket demo.
+
 It needs Python 3 and nothing else. It has been tested on Python 3.12.
 
 ```bash

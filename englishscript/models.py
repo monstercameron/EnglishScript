@@ -60,6 +60,10 @@ The specs ``connect`` understands
     TypeSafe AI's Jev answers "Judge" (it writes no text, so it cannot answer
     "Ask the model"). The key is read from ``TYPESAFE_API_KEY``.
 
+``openai`` or ``openai:<model id>``
+    GPT-6 Luna writes typed replies through the Responses API with OPENAI_API_KEY.
+    This listener accepts text and explicitly supplied PNG or JPEG images.
+
 ``A+B``
     Two listeners together: the first that can answer each kind of question
     does. ``jev+anthropic`` judges with Jev and writes with Claude.
@@ -72,16 +76,21 @@ The specs ``connect`` understands
 ``record:<file>:<spec>``
     Asks ``<spec>``, and writes every question and answer to the file.
 
-The ``anthropic`` and ``jev`` listeners were written from those services'
-published documentation and have NOT been run against the live services by the
-authors of this module. The others are covered by the test suite.
+Jev and GPT-6 Luna have been exercised together against the live services
+with text and image subjects. Automated tests also use stand-ins for the
+Responses API and the Anthropic SDK.
 """
 from __future__ import annotations
 
+import base64
 import json
 import os
+import uuid
+import urllib.error
+import urllib.request
 
 from .lexer import EnglishError
+from .runtime import ImageState
 
 #: The Claude model asked when none is named.
 CLAUDE = "claude-opus-5-5"
@@ -109,6 +118,7 @@ def one_by_one(judge):
 
     def judges(requests):
         return [judge(r["question"], r["state"], r["choices"], r["meanings"]) for r in requests]
+    judges.sequential = True
     return judges
 
 
@@ -163,7 +173,18 @@ class Person:
             self.say("The model is asked about this:")
             for line in str(state).splitlines():
                 self.say("    " + line)
-        return self.ask(f"[You are the model] {question} (Answer with {wanted(shape)}.)")
+        prompt = f"[You are the model] {question} (Answer with {wanted(shape)}.)"
+        if shape.get("type") != "list":
+            return self.ask(prompt)
+        first = self.ask(prompt + " Enter one item per reply; finish with an empty reply.")
+        if first is None or (shape.get("optional") and first.strip().lower() == "nothing"):
+            return first
+        items = []
+        value = first
+        while value is not None and value.strip():
+            items.append(value)
+            value = self.ask("Next item (leave empty to finish):")
+        return "\n".join(items)
 
     def judge(self, question, state, choices, meanings):
         if state:
@@ -177,14 +198,32 @@ class Person:
             if meanings and choice in meanings:
                 self.say(f"    {choice}: {meanings[choice]}")
         reply = self.ask(f"[You are the judge] {question} (One of {', '.join(choices)}; then how sure, "
-                         f"as a percentage. For example: {choices[0]} 80%)")
+                          f"as a percentage. For example: {choices[0]} 80%. "
+                          "To give the full distribution, write choice=percent for each choice, separated by commas.)")
         if reply is None:
             raise problem("The judge gave no answer.")
-        words = reply.replace(",", " ").split()
-        picked = next((choice for choice in choices if words and choice.lower() == words[0].lower()), None)
+        names = {choice.casefold(): choice for choice in choices}
+        if "=" in reply:
+            distribution = {}
+            for entry in reply.split(","):
+                label, _, value = entry.partition("=")
+                choice = names.get(" ".join(label.split()).casefold())
+                if choice is None or choice in distribution:
+                    raise problem("Give each declared choice exactly once.")
+                distribution[choice] = _share(value)
+            if len(distribution) != len(choices):
+                raise problem("Give each declared choice exactly once.")
+            return distribution
+        answer = " ".join(reply.replace(",", " ").split()).casefold()
+        picked = names.get(answer)
+        sure = 1.0
+        if picked is None:
+            label, _, confidence = answer.rpartition(" ")
+            picked = names.get(label)
+            if picked is not None:
+                sure = _share(confidence)
         if picked is None:
             raise problem(f'The judge answered "{reply.strip()}", which is not one of {", ".join(choices)}.')
-        sure = _share(words[1]) if len(words) > 1 else 1.0
         rest = (1.0 - sure) / (len(choices) - 1) if len(choices) > 1 else 0.0
         return {choice: (sure if choice == picked else rest) for choice in choices}
 
@@ -262,29 +301,56 @@ class Transcript:
         with open(self.path, "a", encoding="utf-8", newline="") as handle:
             handle.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
-    def _next(self, kind, question, state):
+    def _next(self, key):
         for index, entry in enumerate(self.kept):
-            if entry.get("kind") == kind and entry.get("question") == question and entry.get("state") == state:
-                return self.kept.pop(index)["answer"]
-        raise problem(f'Nothing was recorded for the question "{question}".')
+            # Legacy transcripts contain only kind, question, state and answer.
+            if all(entry.get(k) == v for k, v in key.items() if k != "request" or k in entry):
+                self.kept.pop(index)
+                if "error" in entry:
+                    raise EnglishError(stage="run", **entry["error"])
+                return entry["answer"]
+        raise problem(f'Nothing was recorded for the question "{key["question"]}".')
+
+    def _exchange(self, kind, question, state, request, listen):
+        key = {"kind": kind, "question": question,
+               "state": state.fingerprint() if isinstance(state, ImageState) else state, "request": request}
+        if self.inner is None:
+            return self._next(key)
+        try:
+            if listen is None:
+                raise EnglishError("No model is listening.", stage="run", recoverable=True, teach="no_model")
+            answer = listen()
+        except EnglishError as error:
+            self._write(dict(key, error={"message": error.message, "hint": error.hint, "teach": error.key,
+                                         "recoverable": error.recoverable, "problem": error.problem}))
+            raise
+        self._write(dict(key, answer=answer))
+        return answer
 
     def model(self, question, state, shape, complaint):
-        if self.inner is None:
-            return self._next("ask", question, state)
-        if self.inner[0] is None:
-            raise problem("No model is listening.")
-        answer = self.inner[0](question, state, shape, complaint)
-        self._write({"kind": "ask", "question": question, "state": state, "answer": answer})
-        return answer
+        writer = self.inner[0] if self.inner else None
+        return self._exchange("ask", question, state, {"shape": shape, "complaint": complaint},
+                              (lambda: writer(question, state, shape, complaint)) if writer else None)
 
     def judge(self, question, state, choices, meanings):
-        if self.inner is None:
-            return self._next("judge", question, state)
-        if self.inner[1] is None:
-            raise problem("No model is listening.")
-        answer = self.inner[1](question, state, choices, meanings)
-        self._write({"kind": "judge", "question": question, "state": state, "answer": answer})
-        return answer
+        return self._judgement(question, state, choices, meanings, False)
+
+    def _judgement(self, question, state, choices, meanings, scale):
+        request = {"choices": choices, "meanings": meanings, "scale": scale}
+        judge = self.inner[1] if self.inner else None
+        judges = getattr(self.inner, "judges", None)
+        listen = None
+        if judges and (scale or not judge):
+            listen = lambda: judges([dict(request, question=question, state=state)])[0]
+        elif judge:
+            listen = lambda: judge(question, state, choices, meanings)
+        return self._exchange("judge", question, state, request, listen)
+
+    def judges(self, requests):
+        return [self._judgement(**request) for request in requests]
+
+    # Commit each outcome before asking the next question, including across a failed Try.
+    judges.sequential = True
 
 
 # --------------------------------------------------------------------- Claude
@@ -315,15 +381,22 @@ class Claude:
             self.client = anthropic.Anthropic()
         return self.client
 
-    def _send(self, text, schema):
+    def _send(self, text, schema, images=()):
         """Ask for a JSON object of the given schema. Gives the object, or None for no reply."""
         client = self._client()
+        content = text
+        if images:
+            content = [{"type": "text", "text": text}]
+            for label, image in images:
+                content.extend([{"type": "text", "text": label}, {"type": "image", "source": {
+                    "type": "base64", "media_type": "image/" + image.format,
+                    "data": base64.b64encode(image.data).decode("ascii")}}])
         try:
             response = client.beta.messages.create(
                 model=self.name,
                 max_tokens=16000,
                 system=self.SYSTEM,
-                messages=[{"role": "user", "content": text}],
+                messages=[{"role": "user", "content": content}],
                 # A short, typed answer does not need deep thought.
                 output_config={"effort": "low", "format": {"type": "json_schema", "schema": schema}},
                 # If the model declines on policy grounds, let the service try its fallback.
@@ -365,7 +438,8 @@ class Claude:
         parts.append(f'Put the answer in "reply" as {wanted(shape)}.')
         if complaint:
             parts.append("Your last reply could not be used. " + complaint)
-        found = self._send("\n\n".join(parts), schema)
+        images = [("Image for this question", state)] if isinstance(state, ImageState) else []
+        found = self._send("\n\n".join(parts), schema, images)
         if found is None or "reply" not in found:
             return None
         answer = found["reply"]
@@ -374,10 +448,11 @@ class Claude:
     def judge(self, question, state, choices, meanings):
         """An ESTIMATE: a model that writes text, asked to write down probabilities."""
         about = ("\n\nIt is about this:\n" + str(state)) if state else ""
+        images = [("Image for this question", state)] if isinstance(state, ImageState) else []
         if choices is None:
             schema = {"type": "object", "properties": {"probability": {"type": "number"}},
                       "required": ["probability"], "additionalProperties": False}
-            found = self._send(f"How likely is the following to be so? Give a probability from 0 to 1.\n\n{question}{about}", schema)
+            found = self._send(f"How likely is the following to be so? Give a probability from 0 to 1.\n\n{question}{about}", schema, images)
             if found is None:
                 raise problem("The model gave no judgement.")
             return found.get("probability")
@@ -387,14 +462,14 @@ class Claude:
         found = self._send(
             f"{question}\n\nThe possible answers are: {', '.join(choices)}.{glosses}\n\n"
             f"For each possible answer give the probability, from 0 to 1, that it is the right one. "
-            f"The probabilities should add up to 1.{about}", schema)
+            f"The probabilities should add up to 1.{about}", schema, images)
         if found is None:
             raise problem("The model gave no judgement.")
         return found
 
     def judges(self, requests):
         """Several ESTIMATES in one call, one property of the reply for each question."""
-        if len(requests) == 1:
+        if len(requests) == 1 and not requests[0].get("scale"):
             r = requests[0]
             return [self.judge(r["question"], r["state"], r["choices"], r["meanings"])]
         properties, parts = {}, []
@@ -418,7 +493,13 @@ class Claude:
         if shared:
             text += "\n\nEvery question is about this:\n" + str(shared)
         schema = {"type": "object", "properties": properties, "required": list(properties), "additionalProperties": False}
-        found = self._send(text, schema)
+        images = []
+        if isinstance(shared, ImageState):
+            images.append(("Image for every question", shared))
+        elif shared is None:
+            images = [(f"Image for q{n}", r["state"]) for n, r in enumerate(requests, 1)
+                      if isinstance(r["state"], ImageState)]
+        found = self._send(text, schema, images)
         if found is None:
             raise problem("The model gave no judgement.")
         return [found.get(f"q{number}") for number in range(1, len(requests) + 1)]
@@ -430,8 +511,7 @@ class Claude:
 class Jev:
     """TypeSafe AI's Jev, a model that answers typed questions with probabilities.
 
-    Written from TypeSafe's published documentation (docs.typesafe.ai); not run
-    against the live service by the authors of this module. ``send`` may be
+    Written from TypeSafe's published documentation (docs.typesafe.ai). ``send`` may be
     passed in (a test passes a stand-in): it takes the request as a dict and
     returns the response as a dict.
     """
@@ -441,15 +521,15 @@ class Jev:
         self.send = send if send is not None else self._post
 
     def _post(self, body):
-        import urllib.error  # noqa: PLC0415 - only when this listener is used
-        import urllib.request  # noqa: PLC0415
-
-        key = os.environ.get("TYPESAFE_API_KEY")
+        key = os.environ.get("TYPESAFE_API_KEY") or os.environ.get("JEV_API_KEY")
         if not key:
             raise problem("Jev would not answer: there is no key in TYPESAFE_API_KEY.")
+        headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+        if "assets" in body:
+            headers["TypeSafe-Danger-Zone-Images"] = "true"
         request = urllib.request.Request(
             JEV_ENDPOINT, data=json.dumps(body).encode("utf-8"), method="POST",
-            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"})
+            headers=headers)
         try:
             with urllib.request.urlopen(request, timeout=30) as response:  # noqa: S310 - a fixed https address
                 return json.loads(response.read().decode("utf-8"))
@@ -489,25 +569,82 @@ class Jev:
         answers = [None] * len(requests)
         states = {}
         for index, r in enumerate(requests):
-            states.setdefault("" if r["state"] is None else str(r["state"]), []).append(index)
+            states.setdefault(r["state"] or "", []).append(index)
         for state, indexes in states.items():
             questions = {f"q{index}": self._question(requests[index]["question"], requests[index]["choices"],
                                                     requests[index]["meanings"], requests[index].get("scale"))
                          for index in indexes}
-            found = self.send({"model": self.name, "state": state, "questions": questions})
-            try:
-                for index in indexes:
-                    r = requests[index]
+            body = {"model": self.name, "state": state, "questions": questions}
+            if isinstance(state, ImageState):
+                ref = str(uuid.uuid4())
+                body["state"] = {"image": ref}
+                body["assets"] = {ref: {"type": "image", "format": state.format,
+                                        "data_base64": base64.b64encode(state.data).decode("ascii")}}
+            found = self.send(body)
+            if not isinstance(found, dict) or not isinstance(found.get("answers"), dict):
+                raise problem("Jev's answer was not in the form its documentation describes.")
+            for index in indexes:
+                r = requests[index]
+                try:
                     answers[index] = self._answer(found["answers"][f"q{index}"], r["choices"], r.get("scale"))
-            except (KeyError, TypeError):
-                raise problem("Jev's answer was not in the form its documentation describes.") from None
+                except (KeyError, TypeError, AttributeError):
+                    # The runtime reports a bad answer at this sentence, after preceding ones finish.
+                    answers[index] = None
         return answers
 
 
 # -------------------------------------------------------------------- connect
 
 
-LISTENERS = ("person", "anthropic", "jev")
+class OpenAIWriter:
+    """System 2 through the OpenAI Responses API."""
+
+    def __init__(self, name):
+        self.name = name
+
+    def model(self, question, state, shape, complaint):
+        key = os.environ.get("OPENAI_API_KEY")
+        if not key:
+            raise problem("The OpenAI writer needs OPENAI_API_KEY.")
+        headers = {"Authorization": "Bearer " + key, "Content-Type": "application/json"}
+        endpoint = "https://api.openai.com/v1/responses"
+        content = [{"type": "input_text", "text": question}]
+        if isinstance(state, ImageState):
+            data = base64.b64encode(state.data).decode("ascii")
+            content.append({"type": "input_image", "image_url": f"data:image/{state.format};base64,{data}"})
+        elif state is not None:
+            content.append({"type": "input_text", "text": "Subject:\n" + state})
+        instructions = "Return only " + wanted(shape) + "."
+        if complaint:
+            instructions += " The previous reply could not be used. " + complaint
+        body = {"model": self.name, "input": [{"role": "user", "content": content}],
+                "instructions": instructions, "store": False}
+        request = urllib.request.Request(endpoint, data=json.dumps(body).encode(), headers=headers)
+        try:
+            with urllib.request.urlopen(request, timeout=120) as response:
+                result = json.load(response)
+        except urllib.error.HTTPError as error:
+            try:
+                detail = json.load(error)
+                reason = detail.get("error", {}).get("code") if isinstance(detail, dict) else None
+            except (ValueError, OSError, AttributeError):
+                reason = None
+            if reason in ("credit_balance_exhausted", "insufficient_quota"):
+                raise problem("The OpenAI project has no available API credit.") from None
+            raise problem(f"The OpenAI writer returned HTTP {error.code}.") from None
+        except (OSError, ValueError) as error:
+            raise problem(f"The writer could not answer ({type(error).__name__}).") from None
+        if result.get("status") != "completed":
+            return None
+        parts = [part for item in result.get("output", []) if item.get("type") == "message"
+                 for part in item.get("content", [])]
+        if any(part.get("type") == "refusal" for part in parts):
+            return None
+        replies = [p["text"] for p in parts if p.get("type") == "output_text"]
+        return "\n".join(replies) if replies else None
+
+
+LISTENERS = ("person", "anthropic", "jev", "openai")
 
 
 def _split_record(rest):
@@ -534,11 +671,11 @@ def connect(spec):
         raise problem("No listener was named. Try: person, anthropic, jev, replay:<file>.")
     if spec.startswith("replay:"):
         transcript = Transcript(spec[len("replay:"):])
-        return Listeners(transcript.model, transcript.judge, one_by_one(transcript.judge))
+        return Listeners(transcript.model, transcript.judge, transcript.judges)
     if spec.startswith("record:"):
         path, inner = _split_record(spec[len("record:"):])
         transcript = Transcript(path, connect(inner))
-        return Listeners(transcript.model, transcript.judge, one_by_one(transcript.judge))
+        return Listeners(transcript.model, transcript.judge, transcript.judges)
     model = judge = judges = None
     for part in spec.split("+"):
         name, _, which = part.strip().partition(":")
@@ -551,8 +688,10 @@ def connect(spec):
         elif name == "jev":
             found = Jev(which or JEV)
             found_model, found_judge, found_judges = None, found.judge, found.judges
+        elif name == "openai":
+            found_model, found_judge, found_judges = OpenAIWriter(which or "gpt-6-luna").model, None, None
         else:
-            raise problem(f'I don\'t know a listener called "{name}". There are: person, anthropic, jev, '
+            raise problem(f'I don\'t know a listener called "{name}". There are: person, anthropic, jev, openai, '
                           f'replay:<file> and record:<file>:<listener>.')
         model = model or found_model
         if judge is None and found_judge is not None:

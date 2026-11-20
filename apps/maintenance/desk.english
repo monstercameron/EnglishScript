@@ -1,0 +1,133 @@
+# Maintenance Desk prepares a shift plan from inbox.txt in the current folder.
+Use the intake chapter.
+
+A trade is one of plumbing, lighting or joinery.
+For a trade, plumbing means "taps, drains, sinks and supply fittings".
+For a trade, lighting means "lamps, light fittings and switches".
+For a trade, joinery means "doors, shelves, drawers and woodwork".
+
+A priority is one of routine, prompt or urgent.
+For a priority, routine means "cosmetic, or fully usable until a later shift".
+For a priority, prompt means "inconvenient but a workaround exists".
+For a priority, urgent means "the room or essential fixture cannot be used".
+
+A ticket has a location (text), a quote (money), a description (text), a craft (trade, if any), a rank (priority, if any), a handoff (text) and a reason (text).
+A ticket can be eligible.
+A ticket can be scheduled.
+A ticket's quote is never less than $0.
+
+Let the opening budget always be $300.
+Let the remaining budget be the opening budget.
+Let the intake count be 0.
+Let the rejected count be 0.
+Let the intake notes be "".
+
+To accept a record (text):
+  Add 1 to the intake count.
+  Let the cells be the columns of the record.
+  If the number of items in the cells is not 3:
+    Fail because "expected location|estimated dollars|description".
+  Let the site be (item 1 of the cells) or else "".
+  Let the price be (item 2 of the cells) or else "".
+  Let the note be (item 3 of the cells) or else "".
+  Let the dollars be the price as a number.
+  If the dollars is nothing:
+    Fail because "the estimate must be a number".
+  If the dollars is less than 0:
+    Fail because "the estimate must be zero or greater".
+  Let the cents be the dollars * 100.
+  If the cents is not (the cents rounded to the nearest 1):
+    Fail because "the estimate must be an amount in whole cents".
+  If (the number of items in the words of the site is 0) or (the number of items in the words of the note is 0):
+    Fail because "the location and description are required".
+  There is a new ticket called "M-{the intake count}" whose location is the site and whose quote is $1 * the dollars and whose description is the note and whose handoff is the note and whose reason is "Awaiting assessment".
+
+To work out the brief (text) of a report (text), ask the model "Write one factual sentence for the next maintenance shift. Summarize the reported problem without promising a repair.".
+
+To assess a ticket:
+  If the ticket's quote is more than $200:
+    Set the ticket's reason to "Supervisor approval required for estimates over $200".
+    Stop.
+  Try:
+    Judge "Which trade owns this repair?" about the ticket's description and let the pick (trade) be the verdict and the certainty (percent) be the likelihood.
+    Judge "How urgently does the reported loss of use need attention?" about the ticket's description and let the level (priority) be the grade.
+    Set the ticket's rank to the level.
+    If the certainty is less than 50%:
+      Set the ticket's reason to "Trade uncertain; supervisor review".
+      Stop.
+    If the certainty is less than 85%:
+      Try:
+        Ask the model "Which single maintenance trade should own this repair? Use the description independently." about the ticket's description and let the second opinion (trade) be the reply.
+        If the second opinion is not the pick:
+          Set the ticket's reason to "Trade opinions disagree; supervisor review".
+          Stop.
+      If that fails:
+        Set the ticket's reason to "Second opinion unavailable; supervisor review ({the problem})".
+        Stop.
+    Set the ticket's craft to the pick.
+    Now the ticket is eligible.
+  If that fails:
+    Set the ticket's reason to "Assessment unavailable; supervisor review".
+    Stop.
+  Try:
+    Set the ticket's handoff to the brief of the ticket's description.
+  If that fails:
+    Set the ticket's handoff to "{the ticket's description} [Original report. Handoff unavailable: {the problem}]".
+
+To allocate a band (priority):
+  For each eligible ticket:
+    If the ticket's rank is nothing:
+      Skip this ticket.
+    If the ticket's rank is not the band:
+      Skip this ticket.
+    Let the selected trade be the ticket's craft.
+    If the selected trade is nothing:
+      Skip this ticket.
+    If the ticket's quote is more than the remaining budget:
+      Set the ticket's reason to "Wait for next shift budget".
+      Skip this ticket.
+    Let the occupied be 0.
+    For each earlier in scheduled tickets:
+      If the earlier has a craft:
+        If the earlier's craft is the selected trade:
+          Add 1 to the occupied.
+    If the occupied is at least 2:
+      Set the ticket's reason to "Wait for next crew slot".
+      Skip this ticket.
+    Now the ticket is scheduled.
+    Subtract the ticket's quote from the remaining budget.
+    Set the ticket's reason to "Scheduled".
+
+Let the entries be the lines of the file "inbox.txt".
+For each entry in the entries:
+  If the entry is "":
+    Skip this entry.
+  Try:
+    Accept the entry.
+  If that fails:
+    Add 1 to the intake count.
+    Add 1 to the rejected count.
+    Set the intake notes to "{the intake notes}Rejected M-{the intake count}: {the problem}{new line}".
+
+For each ticket:
+  Assess the ticket.
+Allocate urgent.
+Allocate prompt.
+Allocate routine.
+
+Let the plan be "MAINTENANCE DESK | SHIFT PLAN{new line}{the intake notes}".
+For each ticket:
+  Let the crew be "unassigned".
+  If the ticket has a craft:
+    Set the crew to "{the ticket's craft}".
+  Let the urgency be "ungraded".
+  If the ticket has a rank:
+    Set the urgency to "{the ticket's rank}".
+  Set the plan to "{the plan}{the ticket} | {the ticket's location} | {the ticket's quote} | {the crew} | {the urgency} | {the ticket's reason}{new line}  {the ticket's handoff}{new line}".
+Let the reserved be the opening budget - the remaining budget.
+Set the plan to "{the plan}Scheduled {the number of scheduled tickets} of {the number of tickets}. Reserved {the reserved}. Remaining {the remaining budget}. Rejected {the rejected count}.".
+For example, the remaining budget is at least $0.
+For example, the reserved + the remaining budget is the opening budget.
+For example, the number of tickets + the rejected count is the intake count.
+Write the plan to the file "shift-plan.txt".
+Say the plan.

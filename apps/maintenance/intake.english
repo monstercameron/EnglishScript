@@ -1,0 +1,15 @@
+# Each nonblank line is location|estimated dollars|reported problem.
+To work out the columns (list of text) of a record (text):
+  Let the cells be an empty list of text.
+  Let the cell be "".
+  Let the cursor be 0.
+  Repeat the length of the record times:
+    Add 1 to the cursor.
+    Let the glyph be (letter the cursor of the record) or else "".
+    If the glyph is "|":
+      Add the cell to the cells.
+      Set the cell to "".
+    Otherwise:
+      Set the cell to "{the cell}{the glyph}".
+  Add the cell to the cells.
+  The answer is the cells.

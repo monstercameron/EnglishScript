@@ -44,7 +44,7 @@ from .lexer import (
 )
 from .runtime import (
     RECURSION_LIMIT, Env, Example, Reaction, Thing, World, _EndProgram, _Signal, alive, chance_of, expected, fmt,
-    no_digit_limit, power, read_file, read_model_reply, read_number, read_reply, remainder, rounded, said, shortened,
+    no_digit_limit, power, read_file, read_image, read_model_reply, read_number, read_reply, remainder, rounded, said, shortened,
     split_lines, square_root, thing_state, verdict_of, write_file,
 )
 
@@ -408,7 +408,8 @@ def judge_request(asked, about, cset, scale=False):
 def judge_key(request):
     """What a judgement is kept under in World.answers."""
     kind = "chance" if request["choices"] is None else "grade" if request["scale"] else "verdict"
-    return ("judge", request["question"], request["state"], tuple(request["choices"] or ()), kind)
+    return ("judge", request["question"], request["state"], tuple(request["choices"] or ()),
+            tuple(sorted((request["meanings"] or {}).items())), kind)
 
 
 def fresh_request(request):
@@ -466,7 +467,7 @@ def judgement_group(steps):
 
     def step(env):
         world = env.world
-        if world.judges is None:
+        if world.judges is None or getattr(world.judges, "sequential", False):
             for one in steps:
                 one(env)
             return
@@ -519,7 +520,7 @@ def ask_judge(world, asked, about, cset, scale=False):
     key = judge_key(request)
     if key in world.answers:
         return world.answers[key]
-    if world.judge is not None:
+    if world.judge is not None and not (scale and world.judges is not None):
         fresh = fresh_request(request)
         result = call_listener(world.judge, fresh["question"], fresh["state"], fresh["choices"], fresh["meanings"])
     else:
@@ -1033,6 +1034,7 @@ class Compiler:
         self.member_names = NameSet({"name"}, index)
         self.adjective_names = NameSet((), index)
         self.globals = Scope()
+        self.judgement_reads = None  # slots referenced while compiling the current Judge's question and subject
         self.globals.shown = lambda b: b.unit is None or self.can_see(b.unit, b.name)
         self.globals.own = lambda name: self.slot(name, self.unit)
         self.scope = self.globals
@@ -2004,6 +2006,11 @@ class Compiler:
         s.fail(f'This needs a value here, and "{tok.text}" is not one.', tok,
                hint="A value is a number, money, quoted text, or a name.", teach="value_needed")
 
+    def read_binding(self, binding):
+        binding.reads += 1
+        if self.judgement_reads is not None:
+            self.judgement_reads.add(binding.slot)
+
     def pronoun(self, s, tok):
         candidates = [b for b in self.scope.visible().values() if b.focus]
         if not candidates:
@@ -2022,7 +2029,7 @@ class Compiler:
                 hint=f"{readings}\nSay which one, such as \"the {candidates[0].name}{suffix}\".", teach="pronoun",
             )
         b = candidates[0]
-        b.reads += 1
+        self.read_binding(b)
         self.note(f'"{tok.text}" → the {b.name}')
         slot = b.slot
         expr = Expr(b.type, lambda env: env.get(slot))
@@ -2038,7 +2045,7 @@ class Compiler:
         if self.rule_for is not None and b.slot != self.rule_for and not b.fixed:
             self.rule_refuses(s, (start, s.prev_end(start)), f'the variable "{name}"',
                               hint=f'Make it with "always" ("Let {name} always be ..."), or write the value itself.')
-        b.reads += 1
+        self.read_binding(b)
         slot = b.slot  # where the value is kept: the name, unless it is a private one of this file
         expr = Expr(b.type, lambda env: env.get(slot))
         expr.key = ("var", slot)
@@ -3669,15 +3676,15 @@ class Compiler:
         while k < len(steps):
             run = [steps[k]]
             if getattr(steps[k], "judging", None) is not None:
-                state, sets = steps[k].judging["state"], list(steps[k].judging["sets"])
+                state, sets = steps[k].judging["state"], set(steps[k].judging["sets"])
                 while k + len(run) < len(steps):
                     nxt = steps[k + len(run)]
                     info = getattr(nxt, "judging", None)
                     if (info is None or info["state"] != state or places[k + len(run)] != places[k] + len(run)
-                            or any(re.search(r"\b" + re.escape(name) + r"\b", info["reads"]) for name in sets)):
+                            or not sets.isdisjoint(info["reads"])):
                         break
                     run.append(nxt)
-                    sets += info["sets"]
+                    sets.update(info["sets"])
             out.append(run[0] if len(run) == 1 else judgement_group(run))
             k += len(run)
         return out
@@ -6908,6 +6915,11 @@ class Compiler:
     def state_value(self, s, usage, teach):
         """What a question to a model is about: a text, or a thing, handed over written
         out (runtime.thing_state). Returns env -> text."""
+        if s.at_words("the", "image", "in", "the", "file"):
+            for _ in range(5):
+                s.next()
+            path = self.file_name(s).fn
+            return lambda env: read_image(path(env))
         value = self.expr(s)
         self.need(s, value)
         if value.type == "text":
@@ -6987,15 +6999,18 @@ class Compiler:
         self.no_change_here(s, "ask for a judgement")
         usage = ('For example: "Judge "Is this letter angry?" about the letter and let the anger (percent) be the '
                  'chance."')
-        begins = s.peek().col
-        question = self.question_text(s, 'Put the question in quotes: Judge "Is it urgent?" about ...')
-        if not s.eat_word("about"):
-            s.fail('A judgement is always about something: after the question comes "about" and what it is about.',
-                   hint=usage, teach="judge_form")
-        state_at = s.peek().col
-        state = self.state_value(s, usage, "judge_form")
-        state_text = " ".join(s.line.text[state_at:s.prev_end(state_at)].split())
-        reads = s.line.text[begins:s.prev_end(state_at)].lower()  # the question and the state, as written
+        reads = set()
+        self.judgement_reads = reads
+        try:
+            question = self.question_text(s, 'Put the question in quotes: Judge "Is it urgent?" about ...')
+            if not s.eat_word("about"):
+                s.fail('A judgement is always about something: after the question comes "about" and what it is about.',
+                       hint=usage, teach="judge_form")
+            start = s.i
+            state = self.state_value(s, usage, "judge_form")
+            state_tokens = tuple(t.low if t.kind == "WORD" else t.text for t in s.toks[start:s.i])
+        finally:
+            self.judgement_reads = None
         s.expect_word("and", hint=usage, teach="judge_form")
         s.expect_word("let", hint=usage, teach="judge_form")
         name, toks, type_, type_tok = self.reply_name(s, usage, "judge_form")
@@ -7054,8 +7069,8 @@ class Compiler:
             finish(env, ask_judge(world, request["question"], request["state"], cset, scale))
         # For putting consecutive judgements to the judge together (Compiler.group_judgements):
         # what the state is, as written, and which names the sentence sets and reads.
-        sets = [name] + ([likely[0]] if likely else [])
-        step.judging = {"state": state_text.lower(), "sets": sets, "reads": reads, "prepare": prepare,
+        sets = [slot] + ([lslot] if likely else [])
+        step.judging = {"state": state_tokens, "sets": sets, "reads": reads, "prepare": prepare,
                         "finish": finish}
         return step
 
@@ -7427,7 +7442,7 @@ class Program:
         self.notes = notes
         self.compiler = compiler
 
-    def run(self, out=print, ask=None, trace=None, model=None, judge=None, judges=None, testing=False):
+    def run(self, out=print, ask=None, trace=None, model=None, judge=None, testing=False, *, judges=None):
         """Carry out the program. `ask` takes a question and returns the reply,
         or None (or raises EOFError) when input has ended; by default it reads
         a line from standard input.
