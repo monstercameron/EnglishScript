@@ -570,7 +570,7 @@ The <table> are <column>, <column> ... and <column>, in that order:
   "<key>" has <value>, <value> ... and <value>.
 ```
 
-Each key is literal text and must be unique. The rows give values in the declared column order. The first row establishes each column's type; table values are number, money, percent or text literals. A table is a definition, and its columns are read-only. A chapter can share a table by name (section 9.6).
+Each key is literal text and must be unique in an ordinary table. The rows give values in the declared column order. The first row establishes each column's type; table values are number, money, percent or text literals. A table is a definition, and its columns are read-only. A chapter can share a table by name (section 9.6).
 
 Look up a row with `the <table> for <expression>`, where the expression gives text. Keys match exactly, including capitalisation. The result is a record that may be nothing when the key is absent; its columns may be read as properties. Check the record first, or use `or else` for a missing column value (section 2, "Nothing").
 
@@ -583,6 +583,30 @@ If the profile is not nothing:
   Say the profile's attack.                  #> 72
 Let the missing be the base stats for "nidorino".
 Say the missing's health or else 0.          #> 0
+```
+
+A row can name its columns instead of giving their values in order. Each declared column must appear exactly once; the fields may be in any order. Their values are the same kinds of literals as in a compact row, and text literals cannot contain fill-ins. Compact and named rows may be mixed in one table.
+
+```englishscript
+The people are voice and home, in that order:
+  "Oak" has:
+    Home is "Pallet Town".
+    Voice is "Welcome!".
+  "Misty" has "Hello!" and "Cerulean City".
+Let the person be the people for "Oak".
+Say the person's home or else "unknown"       #> Pallet Town
+```
+
+A table can instead give rows from numeric literal thresholds. Every row in such a table must have `from`; the same key may appear at different thresholds, but not twice at the same threshold. Look it up with `the <table> for <text> at <number>`. For that key, the result is the row with the greatest threshold no greater than the number, regardless of the order the rows were written. It is nothing if no threshold qualifies or the key is absent. A table cannot mix threshold and ordinary rows; threshold rows can use either compact or named fields.
+
+```englishscript
+The evolutions are result, in that order:
+  "Nidoran M" from 32 has "Nidoking".
+  "Nidoran M" from 16 has "Nidorino".
+Let the evolution be the evolutions for "Nidoran M" at 20.
+Say the evolution's result or else "none"      #> Nidorino
+Let the early be the evolutions for "Nidoran M" at 10.
+Say the early's result or else "none"          #> none
 ```
 
 ## 5. Expressions
@@ -1970,6 +1994,8 @@ A program can be split over several files. A **chapter** is a file `<name>.engli
 ```text
 Use the <name> chapter.
 Use the <name> chapter of the <book> book.
+Use the <name>, <name> and <name> chapters [of the <book> book].
+Use the <name>, <name> and <name> libraries.
 This chapter shares only <name>, <name> and <name>.
 This chapter shares nothing.
 ```
@@ -1984,9 +2010,18 @@ This chapter shares nothing.
 
 **What using a chapter does.**
 
-- `Use` is allowed only at the top level. A file may use a chapter only once.
+- `Use` is allowed only at the top level. A file may use a chapter only once. A grouped sentence uses each named chapter in order, as though it had a separate `Use` sentence for each; the same duplicate and visibility rules apply. Names may be separated by commas, a final `and`, or an Oxford comma before `and`. Without a book, every chapter is found beside the file that says it; with `of the <book> book`, every chapter is found in that book.
 - A chapter is read **once** in a program, at the first `Use` that reaches it. Its sentences are carried out then, in order, before the file that uses it goes on: it is an ordinary program, read aloud once. Its things are made, its variables set, its `Say` and `For example` sentences carried out, and its rules and reactions apply from then on, to the whole world. A later `Use` of the same chapter, by another file, reads nothing again.
 - Chapters that use each other in a circle are refused, and the message names the circle: `calendar -> feasts -> calendar`.
+
+For example, inside a chapter in `examples/almanac`, either of these uses the other two chapters of the same book, provided the program is beside `almanac`:
+
+```text
+Use the calendar, numerals chapters.
+Use the calendar and numerals chapters of the almanac book.
+```
+
+Each line is an alternative; writing both in one file would use both chapters twice. Grouped libraries work the same way, for example `Use the paint and page libraries.`
 
 **Private names, shared names.** A name a file defines at its top level (a kind, a thing, an adjective of a kind, a worked-out property, a verb, a worked-out value, a variable) is either shared or private.
 
@@ -2024,13 +2059,12 @@ Let the roman be "MMXXVI"
 
 A name that exists elsewhere, but may not be said here, is refused with a message that says why: the chapter does not share it, or the file does not use that chapter.
 
-**Libraries.** `Use the ... library.` is likewise said once in each file that wants the library's words. The library is loaded once for the whole program, at the first `Use`, and it is told when the program goes on working and when it ends once (section 9.4).
+**Libraries.** `Use the ... library.` is likewise said once in each file that wants the library's words. `Use the ... libraries.` groups library names with the same separators and processes them in order, as separate uses; each file may use each library only once. The library is loaded once for the whole program, at the first `Use`, and it is told when the program goes on working and when it ends once (section 9.4).
 
 The examples in this document use the book in `examples/almanac`, whose chapters are `calendar`, `numerals` and `feasts`. `calendar` shares `leapness`, `month length`, `month title` and `weekday`; `numerals` shares `roman` and `reading`; `feasts` shares the kind `feast`, the adjective `wintry`, the worked-out value `falling` and the thing `Michaelmas`, and uses `calendar` itself.
 
 ```englishscript
-Use the numerals chapter of the almanac book.
-Use the feasts chapter of the almanac book.
+Use the numerals and feasts chapters of the almanac book.
 
 Say the roman of 1666.                         #> MDCLXVI
 Say the reading of "MMXXVI"                    #> 2,026
@@ -2204,7 +2238,8 @@ sentence    = definition | action | block-opener
 definition  = kind | thing | adjective | stored-adj | property | rule | verb | work-out | fact-table
             | reaction | settled | library | chapter | shares | choices | keep | meaning   (top level only)
 fact-table  = "The" NAME "are" NAME { sep NAME } "," "in that order" ":"
-              (indented rows: TEXT "has" literal { sep literal } ".")
+              (indented rows: TEXT [ "from" NUMBER ] "has" literal { sep literal } "."
+               or TEXT [ "from" NUMBER ] "has" ":" with indented NAME "is" literal "." fields)
 meaning     = "For" article CHOICE-SET "," CHOICE "means" TEXT "."             (TEXT: without braces)
 keep        = "Keep each" KIND "'s" PROPERTY "as" whole "." | "Keep" THING "'s" PROPERTY "as" whole "."
             | "Keep each" KIND ADJECTIVE "when" condition "."
@@ -2223,7 +2258,9 @@ work-out    = "To work out the" NAME "(" type ")" { ( PREPOSITION | "of" ) role 
 reaction    = "Whenever" ( article KIND | THING ) "becomes" [ "not" ] ADJECTIVE ":"
 settled     = "Whenever everything has settled" ":"
 library     = "Use the" NAME "library" "."
-chapter     = "Use the" WORDS "chapter" [ "of the" WORDS "book" ] "."    (WORDS: plain words, letters only)
+            | "Use the" NAME sep NAME { sep NAME } "libraries" "."
+chapter     = "Use the" WORDS "chapter" [ "of the" WORDS "book" ] "."
+            | "Use the" WORDS sep WORDS { sep WORDS } "chapters" [ "of the" WORDS "book" ] "."    (WORDS: plain words, letters only)
 shares      = "This chapter shares" ( "nothing" | "only" NAME { sep NAME } ) "."
                                                           (the first sentence of its file)
 outside     = ( verb | work-out ) without its ":", then "is done by the library" "."
@@ -2326,7 +2363,7 @@ value       = NUMBER | MONEY | PERCENT | TEXT | "(" expression ")" | "nothing" |
             | "the" ( "length" | "words" | "lines" ) "of" value
             | "the" ( "first" | "last" ) factor "letters of" value
             | "the" ( "text" | "lines" ) "of the file" value
-            | "the" NAME "for" expression                              (fact-table lookup)
+            | "the" NAME "for" expression [ "at" expression ]          (fact-table lookup)
             | "the" KIND "called" value
             | "the problem"                                          (inside If that fails)
 group       = [ "all" ] { ADJECTIVE } KINDS [ "of" value ] [ filter ]

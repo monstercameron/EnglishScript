@@ -1,12 +1,7 @@
 This chapter shares only pack, Stock, inventory, catalogue, examine and available feature.
 
 Use the page library.
-Use the foundation chapter.
-Use the battle chapter.
-Use the party chapter.
-Use the maps chapter.
-Use the lettering chapter.
-Use the sound chapter.
+Use the foundation, battle, party, maps, lettering and sound chapters.
 
 A pack has a potions (number), a cursor (number), a notice (text), a save request (number) and a pc taken (number), a antidotes (number), a balls (number), a moon stones (number), a hp ups (number), a forest antidote (number), a forest potion (number), a forest ball (number), a route stone (number) and a route hp (number) and a shop item (number).
 There is a pack called Stock whose potions is 0 and whose cursor is 0 and whose notice is "" and whose save request is 0 and whose pc taken is 0 and whose antidotes is 0 and whose balls is 0 and whose moon stones is 0 and whose hp ups is 0 and whose forest antidote is 0 and whose forest potion is 0 and whose forest ball is 0 and whose route stone is 0 and whose route hp is 0 and whose shop item is 0.
@@ -26,6 +21,35 @@ To work out the available feature (text) at a column (number) by a map row (numb
     If the item is "HP Up" and Stock's route hp is 1:
       The answer is "".
   The answer is the item.
+
+The field signs are wording, in that order:
+  "TEXT_REDSHOUSE1F_TV" has "There's a movie on TV. Four boys are walking on railroad tracks.".
+  "TEXT_PALLETTOWN_OAKSLAB_SIGN" has "OAK POKEMON RESEARCH LAB".
+  "TEXT_PALLETTOWN_SIGN" has "PALLET TOWN: Shades of your journey await!".
+  "TEXT_ROUTE1_SIGN" has "ROUTE 1: PALLET TOWN - VIRIDIAN CITY".
+  "TEXT_VIRIDIANCITY_SIGN" has "VIRIDIAN CITY: The eternally green paradise".
+  "TEXT_VIRIDIANCITY_MART_SIGN" has "POKE MART: Shop for useful items.".
+  "TEXT_PEWTERCITY_MART_SIGN" has "POKE MART: Shop for useful items.".
+  "TEXT_VIRIDIANCITY_POKECENTER_SIGN" has "POKEMON CENTER: Heal your POKEMON!".
+  "TEXT_PEWTERCITY_POKECENTER_SIGN" has "POKEMON CENTER: Heal your POKEMON!".
+  "TEXT_VIRIDIANCITY_GYM_SIGN" has "VIRIDIAN CITY POKEMON GYM".
+  "TEXT_ROUTE2_SIGN" has "ROUTE 2: VIRIDIAN CITY - PEWTER CITY".
+  "TEXT_ROUTE2_DIGLETTS_CAVE_SIGN" has "DIGLETT'S CAVE".
+  "TEXT_VIRIDIANFOREST_USE_ANTIDOTE_SIGN" has "If a POKEMON is poisoned, use an ANTIDOTE!".
+  "TEXT_VIRIDIANFOREST_LEAVING_SIGN" has "Leaving VIRIDIAN FOREST. PEWTER CITY ahead.".
+  "TEXT_PEWTERCITY_SIGN" has "PEWTER CITY: A stone gray city".
+  "TEXT_PEWTERCITY_MUSEUM_SIGN" has "PEWTER MUSEUM OF SCIENCE".
+  "TEXT_PEWTERCITY_GYM_SIGN" has "PEWTER CITY POKEMON GYM: LEADER BROCK".
+  "TEXT_PEWTERCITY_POLICE_NOTICE_SIGN" has "NOTICE: Report suspicious activity to the police.".
+  "TEXT_ROUTE22_POKEMON_LEAGUE_SIGN" has "POKEMON LEAGUE: Front gate".
+
+To work out the inscription (text) for a sign (text):
+  If the sign is "TEXT_PALLETTOWN_PLAYERSHOUSE_SIGN":
+    The answer is "{Journey's trainer}'s house".
+  If the sign is "TEXT_PALLETTOWN_RIVALSHOUSE_SIGN":
+    The answer is "{Journey's rival}'s house".
+  Let the notice be the field signs for the sign.
+  The answer is the notice's wording or else "TRAINER TIPS: Check your POKEMON and items often!".
 
 To examine:
   Let the column be Journey's column.
@@ -72,45 +96,7 @@ To examine:
     Sound "item".
     Set Journey's message to "Found an HP UP!".
     Stop.
-  Set Journey's message to "TRAINER TIPS: Check your POKEMON and items often!".
-  If the item is "TEXT_REDSHOUSE1F_TV":
-    Set Journey's message to "There's a movie on TV. Four boys are walking on railroad tracks.".
-  If the item is "TEXT_PALLETTOWN_OAKSLAB_SIGN":
-    Set Journey's message to "OAK POKEMON RESEARCH LAB".
-  If the item is "TEXT_PALLETTOWN_SIGN":
-    Set Journey's message to "PALLET TOWN: Shades of your journey await!".
-  If the item is "TEXT_PALLETTOWN_PLAYERSHOUSE_SIGN":
-    Set Journey's message to "{Journey's trainer}'s house".
-  If the item is "TEXT_PALLETTOWN_RIVALSHOUSE_SIGN":
-    Set Journey's message to "{Journey's rival}'s house".
-  If the item is "TEXT_ROUTE1_SIGN":
-    Set Journey's message to "ROUTE 1: PALLET TOWN - VIRIDIAN CITY".
-  If the item is "TEXT_VIRIDIANCITY_SIGN":
-    Set Journey's message to "VIRIDIAN CITY: The eternally green paradise".
-  If the item is "TEXT_VIRIDIANCITY_MART_SIGN" or the item is "TEXT_PEWTERCITY_MART_SIGN":
-    Set Journey's message to "POKE MART: Shop for useful items.".
-  If the item is "TEXT_VIRIDIANCITY_POKECENTER_SIGN" or the item is "TEXT_PEWTERCITY_POKECENTER_SIGN":
-    Set Journey's message to "POKEMON CENTER: Heal your POKEMON!".
-  If the item is "TEXT_VIRIDIANCITY_GYM_SIGN":
-    Set Journey's message to "VIRIDIAN CITY POKEMON GYM".
-  If the item is "TEXT_ROUTE2_SIGN":
-    Set Journey's message to "ROUTE 2: VIRIDIAN CITY - PEWTER CITY".
-  If the item is "TEXT_ROUTE2_DIGLETTS_CAVE_SIGN":
-    Set Journey's message to "DIGLETT'S CAVE".
-  If the item is "TEXT_VIRIDIANFOREST_USE_ANTIDOTE_SIGN":
-    Set Journey's message to "If a POKEMON is poisoned, use an ANTIDOTE!".
-  If the item is "TEXT_VIRIDIANFOREST_LEAVING_SIGN":
-    Set Journey's message to "Leaving VIRIDIAN FOREST. PEWTER CITY ahead.".
-  If the item is "TEXT_PEWTERCITY_SIGN":
-    Set Journey's message to "PEWTER CITY: A stone gray city".
-  If the item is "TEXT_PEWTERCITY_MUSEUM_SIGN":
-    Set Journey's message to "PEWTER MUSEUM OF SCIENCE".
-  If the item is "TEXT_PEWTERCITY_GYM_SIGN":
-    Set Journey's message to "PEWTER CITY POKEMON GYM: LEADER BROCK".
-  If the item is "TEXT_PEWTERCITY_POLICE_NOTICE_SIGN":
-    Set Journey's message to "NOTICE: Report suspicious activity to the police.".
-  If the item is "TEXT_ROUTE22_POKEMON_LEAGUE_SIGN":
-    Set Journey's message to "POKEMON LEAGUE: Front gate".
+  Set Journey's message to the inscription for the item.
 
 To inventory a key (text):
   If Journey's mode is "walk" and the key is "start":

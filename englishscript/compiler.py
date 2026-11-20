@@ -39,6 +39,7 @@ from dataclasses import dataclass, field
 from fractions import Fraction
 
 from . import libraries
+from .imports import import_parts
 from .lexer import (
     PROBLEM_KINDS, PROBLEM_NAMES, QUESTION_WORDS, RULES, EnglishError, Token, chapter_of, read_source, swap, tokenize,
 )
@@ -861,6 +862,7 @@ class FactTable:
     kind: str
     rows: dict
     unit: object
+    threshold: bool = False
 
 
 @dataclass(frozen=True)
@@ -2248,6 +2250,19 @@ class Compiler:
                 s.fail_span(f"A fact table key must be text, but {key.text} is {self.describe(key.type)}.", key.span)
             lookup = self.fact_tables[name]
             kf = key.fn
+            if lookup.threshold:
+                s.expect_word("at", 'A threshold fact table lookup needs "at" and a number.')
+                level = self.primary(s)
+                self.need(s, level)
+                if level.type != "number":
+                    s.fail_span(f"A fact table threshold must be a number, but {level.text} is {self.describe(level.type)}.", level.span)
+                lf = level.fn
+                def find_row(env):
+                    candidates = lookup.rows.get(kf(env), {})
+                    limit = lf(env)
+                    threshold = max((n for n in candidates if n <= limit), default=None)
+                    return candidates.get(threshold)
+                return Expr(opt(lookup.kind), find_row)
             return Expr(opt(lookup.kind), lambda env: lookup.rows.get(kf(env)))
         match = self.match_words(s, self.workouts)
         if match:
@@ -3687,31 +3702,42 @@ class Compiler:
                 return True
             if first.is_word("keep") and any(t.is_word("as", "when") for t in line.tokens):
                 return True  # "Keep ... as ...": kept values are kept in step at the end of each turn
-            words = self.chapter_words(line.tokens[2:]) if first.is_word("use") and folder is not None else None
-            if words is not None:
-                place = self.book_place(folder, words[1])
-                path = self.chapter_file(place[0] if isinstance(place, tuple) else place, *words)
-                key = os.path.normcase(os.path.abspath(path))
-                if key in seen:
-                    continue
-                seen.add(key)
-                try:
-                    inner = read_source(self.chapter_text(path), problems=[])
-                except (OSError, ValueError):
-                    continue  # reported when the "Use" sentence is compiled
-                if self.expects_reactions(inner, path.parent, seen):
-                    return True
+            if not first.is_word("use"):
                 continue
-            if first.is_word("use") and len(line.tokens) > 2 and line.tokens[2].kind == "WORD":
-                name = line.tokens[2].low
-                if name not in self.library_names():
+            toks = line.tokens[2:]
+            parts = import_parts(toks)
+            if parts is None or parts[4] is not None:
+                continue
+            kind, groups, book, _, _ = parts
+            for group in groups:
+                if kind in ("chapter", "chapters") and folder is not None:
+                    words = ([t.low for t in group], [t.low for t in book])
+                    if not all(w.isalpha() for w in words[0] + words[1]):
+                        continue
+                    place = self.book_place(folder, words[1])
+                    path = self.chapter_file(place[0] if isinstance(place, tuple) else place, *words)
+                    key = os.path.normcase(os.path.abspath(path))
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    try:
+                        inner = read_source(self.chapter_text(path), problems=[])
+                    except (OSError, ValueError):
+                        continue
+                    if self.expects_reactions(inner, path.parent, seen):
+                        return True
                     continue
-                try:
-                    source = getattr(importlib.import_module(f"{libraries.__name__}.{name}"), "SOURCE", "")
-                except Exception:  # noqa: BLE001 - reported when the "Use" sentence is compiled
-                    continue
-                if isinstance(source, str) and WHENEVER_LINE.search(source):
-                    return True
+                use = group + [toks[parts[3]]]
+                if len(group) == 1 and kind in ("library", "libraries") and use[0].kind == "WORD":
+                    name = use[0].low
+                    if name not in self.library_names():
+                        continue
+                    try:
+                        source = getattr(importlib.import_module(f"{libraries.__name__}.{name}"), "SOURCE", "")
+                    except Exception:
+                        continue
+                    if isinstance(source, str) and WHENEVER_LINE.search(source):
+                        return True
         return False
 
     def past_sentence(self, lines, i):
@@ -4533,6 +4559,17 @@ class Compiler:
                 and any(t.is_word("are") for t in toks[1:])
                 and [t.low for t in toks[-4:-1]] == ["in", "that", "order"])
 
+    def fact_literal(self, s):
+        minus = bool(s.eat_punct("-"))
+        tok = s.next()
+        if tok.kind not in ("NUMBER", "MONEY", "PERCENT", "STRING") or (minus and tok.kind == "STRING"):
+            s.fail("A fact table value must be a literal number, money, percent or quoted text.", tok)
+        if tok.kind == "STRING":
+            if "{" in tok.text or "}" in tok.text:
+                s.fail("A fact table value must be literal text without fill-ins.", tok)
+            return tok.text[1:-1].replace('""', '"'), "text"
+        return (-tok.value if minus else tok.value), tok.kind.lower()
+
     def define_fact_table(self, s):
         if self.scope is not self.globals:
             s.fail("A fact table belongs at the top level.")
@@ -4572,47 +4609,82 @@ class Compiler:
             s.fail("A fact table needs at least one row.")
         rows = {}
         types = None
+        threshold_table = None
         for line in s.line.children:
             row = Sentence(line)
             key = row.next()
             if key.kind != "STRING" or "{" in key.text or "}" in key.text:
                 row.fail("A fact table row starts with a literal quoted text key.", key)
             key_value = key.text[1:-1].replace('""', '"')
-            if key_value in rows:
-                row.fail(f'The key {key.text} is listed twice.', key)
-            row.expect_word("has")
-            values, row_types = [], []
-            while not row.at_end():
+            has_threshold = bool(row.eat_word("from"))
+            threshold = None
+            if has_threshold:
                 minus = bool(row.eat_punct("-"))
                 tok = row.next()
-                if tok.kind not in ("NUMBER", "MONEY", "PERCENT", "STRING") or (minus and tok.kind == "STRING"):
-                    row.fail("A fact table value must be a literal number, money, percent or quoted text.", tok)
-                if tok.kind == "STRING":
-                    if "{" in tok.text or "}" in tok.text:
-                        row.fail("A fact table value must be literal text without fill-ins.", tok)
-                    value = tok.text[1:-1].replace('""', '"')
-                else:
-                    value = -tok.value if minus else tok.value
-                values.append(value)
-                row_types.append(tok.kind.lower() if tok.kind != "STRING" else "text")
-                if row.at_end():
-                    break
-                if not (row.eat_punct(",") or row.eat_word("and")):
-                    row.fail('Separate values with commas or "and".')
-                row.eat_word("and")
-                if row.at_end():
-                    row.fail("A value is missing after the separator.")
-            if line.children or line.terminator != ".":
-                row.fail("A fact table row ends with a period and has no block.")
-            if len(values) != len(columns):
-                row.fail(f"This row has {len(values)} value{'s' if len(values) != 1 else ''}, but the table has "
-                         f"{len(columns)} column{'s' if len(columns) != 1 else ''}.", key)
+                if tok.kind != "NUMBER":
+                    row.fail("A fact table threshold must be a literal number.", tok)
+                threshold = -tok.value if minus else tok.value
+            if threshold_table is None:
+                threshold_table = has_threshold
+            elif threshold_table != has_threshold:
+                row.fail("A fact table cannot mix rows with and without thresholds.", key)
+            entries = rows.setdefault(key_value, {}) if has_threshold else rows
+            entry_key = threshold if has_threshold else key_value
+            if entry_key in entries:
+                row.fail(f'The key {key.text}' + (f' at {threshold}' if has_threshold else '') + ' is listed twice.', key)
+            row.expect_word("has")
+            values, row_types = [], []
+            field_locations = {}
+            if line.terminator == ":":
+                if not row.at_end():
+                    row.fail("A fact table row block starts after has.")
+                if not line.children:
+                    row.fail("A fact table row block needs its columns.")
+                fields = {}
+                for child in line.children:
+                    field = Sentence(child)
+                    words = []
+                    while field.peek().kind == "WORD" and not field.at_word("is"):
+                        words.append(field.next())
+                    column = " ".join(t.low for t in words)
+                    if column not in columns:
+                        field.fail(f'Column "{column}" is not declared in this table.', words[0] if words else field.peek())
+                    if column in fields:
+                        field.fail(f'Column "{column}" is listed twice.', words[0])
+                    field.expect_word("is")
+                    value, type_ = self.fact_literal(field)
+                    if not field.at_end() or child.children or child.terminator != ".":
+                        field.fail("A fact table field ends with a period and has no block.")
+                    fields[column] = (value, type_)
+                    field_locations[column] = (field, words[0])
+                missing = [c for c in columns if c not in fields]
+                if missing:
+                    row.fail(f'Column "{missing[0]}" is missing from this row.', key)
+                values, row_types = map(list, zip(*(fields[c] for c in columns)))
+            else:
+                while not row.at_end():
+                    value, type_ = self.fact_literal(row)
+                    values.append(value)
+                    row_types.append(type_)
+                    if row.at_end():
+                        break
+                    if not (row.eat_punct(",") or row.eat_word("and")):
+                        row.fail('Separate values with commas or "and".')
+                    row.eat_word("and")
+                    if row.at_end():
+                        row.fail("A value is missing after the separator.")
+                if line.children or line.terminator != ".":
+                    row.fail("A fact table row ends with a period and has no block.")
+                if len(values) != len(columns):
+                    row.fail(f"This row has {len(values)} value{'s' if len(values) != 1 else ''}, but the table has "
+                             f"{len(columns)} column{'s' if len(columns) != 1 else ''}.", key)
             if types is None:
                 types = row_types
             elif types != row_types:
                 mismatch = next(i for i, (a, b) in enumerate(zip(types, row_types)) if a != b)
-                row.fail(f'The "{columns[mismatch]}" column needs {types[mismatch]}, but this row has {row_types[mismatch]}.', key)
-            rows[key_value] = FactRow(key_value, tuple(values))
+                location, token = field_locations.get(columns[mismatch], (row, key))
+                location.fail(f'The "{columns[mismatch]}" column needs {types[mismatch]}, but this row has {row_types[mismatch]}.', token)
+            entries[entry_key] = FactRow(key_value, tuple(values))
         kind = f"\0facts:{self.uid()}"
         K = Kind(kind, name, s.line, word=f"row of {name}")
         K.adjectives = View(lambda word, adj: True)
@@ -4621,7 +4693,7 @@ class Compiler:
             K.props[column] = Prop(column, type_, lambda world, row, i=i: row.values[i], "a fact table")
         self.kinds[kind] = K
         self.member_names.update(columns)
-        self.fact_tables[name] = FactTable(name, kind, rows, self.unit)
+        self.fact_tables[name] = FactTable(name, kind, rows, self.unit, threshold_table)
         self.defines("fact table", name, s.line, names[0].col, names[-1].end - names[0].col)
         for column, words, type_ in zip(columns, column_tokens, types):
             self.defines("property", column, s.line, words[0].col, words[-1].end - words[0].col,
@@ -5734,6 +5806,28 @@ class Compiler:
                     hint=where_ + 'A chapter called "roman numerals" is the file roman_numerals.english.\n' + usage,
                     teach="chapter" if kind == "chapter" else "use_form")
 
+    def use_group(self, s, groups, end):
+        kind = s.toks[end]
+        singular = "chapter" if kind.is_word("chapters") else "library"
+        tail = s.toks[end + 1:]
+        steps = []
+        for words in groups:
+            tokens = s.toks[:2] + words + [Token("WORD", singular, kind.col)] + tail
+            step = self.use_library(Sentence(s.line, tokens))
+            if step is not None:
+                steps.append(step)
+        s.i = len(s.toks) - 1
+        if not steps:
+            return None
+        def step(env):
+            for index, inner in enumerate(steps):
+                if index:
+                    env.world.changed = False
+                inner(env)
+                if index < len(steps) - 1 and (env.world.settlers or env.world.keepers):
+                    env.world.settle(s.line)
+        return step
+
     def use_library(self, s):
         """Use the <name> library.  Compiles the library's SOURCE here, as if written here."""
         use = s.next()
@@ -5751,6 +5845,18 @@ class Compiler:
             s.fail('After "Use" comes "the": "Use the ...".', tok, hint=usage, teach="use_form",
                    fix=swap(s.line, tok.col, tok.col, "the "))
         s.expect_word("the", hint=usage, teach="use_form")
+        parts = import_parts(s.toks[s.i:])
+        if parts is not None:
+            kind, groups, _, end, error = parts
+            if error is not None:
+                s.fail('List names separated by commas or "and" before the plural.', error,
+                       hint=usage, teach="use_form")
+            if kind in ("chapters", "libraries"):
+                return self.use_group(s, groups, s.i + end)
+            if kind == "chapter":
+                self.use_name(s, usage)
+                s.i += end
+                return self.use_chapter(s, groups[0])
         self.use_name(s, usage)
         words = []
         while s.peek().kind == "WORD" and not s.at_word("library", "chapter"):
@@ -5847,22 +5953,6 @@ class Compiler:
         if near.is_dir() and far.is_dir():
             return (near, far)
         return main if far.is_dir() and not near.is_dir() else folder
-
-    @staticmethod
-    def chapter_words(toks):
-        """(name words, book words) from the words after 'Use the', or None if they are
-        not a use of a chapter. For looking ahead; use_chapter checks them properly."""
-        words = [t.low for t in toks if t.kind != "END"]
-        if "chapter" not in words:
-            return None
-        at = words.index("chapter")
-        name, rest = words[:at], words[at + 1:]
-        book = []
-        if rest[:2] == ["of", "the"] and rest[-1:] == ["book"]:
-            book = rest[2:-1]
-        if not name or not all(w.isalpha() for w in name + book):
-            return None
-        return name, book
 
     def use_chapter(self, s, words):
         """Use the <name> chapter [of the <book> book].  Reads that file here, once."""

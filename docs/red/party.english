@@ -11,6 +11,7 @@ There is a teammate called Third whose starter is "", whose species is "", whose
 There is a teammate called Fourth whose starter is "", whose species is "", whose level is 0, whose experience is 0, whose health is 0, whose maximum health is 0, whose attack is 0, whose defense is 0, whose special is 0, whose speed is 0, whose base speed is 0, whose move one is "", whose move two is "", whose move three is "", whose move four is "", whose pp one is 0, whose pp two is 0, whose pp three is 0 and whose pp four is 0.
 There is a teammate called Fifth whose starter is "", whose species is "", whose level is 0, whose experience is 0, whose health is 0, whose maximum health is 0, whose attack is 0, whose defense is 0, whose special is 0, whose speed is 0, whose base speed is 0, whose move one is "", whose move two is "", whose move three is "", whose move four is "", whose pp one is 0, whose pp two is 0, whose pp three is 0 and whose pp four is 0.
 There is a teammate called Sixth whose starter is "", whose species is "", whose level is 0, whose experience is 0, whose health is 0, whose maximum health is 0, whose attack is 0, whose defense is 0, whose special is 0, whose speed is 0, whose base speed is 0, whose move one is "", whose move two is "", whose move three is "", whose move four is "", whose pp one is 0, whose pp two is 0, whose pp three is 0 and whose pp four is 0.
+Let the members be a list of First, Second, Third, Fourth, Fifth and Sixth.
 
 To store a member (teammate):
   Set the member's starter to Combat's starter.
@@ -54,38 +55,25 @@ To restore a member (teammate):
   Set Combat's pp three to the member's pp three.
   Set Combat's pp four to the member's pp four.
 
+To work out the member (teammate, if any) at a slot (number):
+  If the slot is less than 1 or the slot is more than 6 or the slot is not (the slot rounded down to the nearest 1):
+    The answer is nothing.
+  The answer is item the slot of the members.
+
 To record:
   If Combat's starter is "":
     Stop.
   If Team's count is 0:
     Set Team's count to 1.
     Set Team's selected to 1.
-  If Team's selected is 1:
-    Store First.
-  If Team's selected is 2:
-    Store Second.
-  If Team's selected is 3:
-    Store Third.
-  If Team's selected is 4:
-    Store Fourth.
-  If Team's selected is 5:
-    Store Fifth.
-  If Team's selected is 6:
-    Store Sixth.
+  Let the found be the member at Team's selected.
+  If the found is not nothing:
+    Store the found.
 
 To load a slot (number):
-  If the slot is 1:
-    Restore First.
-  If the slot is 2:
-    Restore Second.
-  If the slot is 3:
-    Restore Third.
-  If the slot is 4:
-    Restore Fourth.
-  If the slot is 5:
-    Restore Fifth.
-  If the slot is 6:
-    Restore Sixth.
+  Let the found be the member at the slot.
+  If the found is not nothing:
+    Restore the found.
 
 To switch to a slot (number):
   Set Team's notice to "".
@@ -120,24 +108,13 @@ To revive:
 To replace:
   Record.
   Set Team's result to "loss".
-  If Team's selected is not 1 and Team's count is at least 1 and First's health is more than 0:
-    Switch to 1.
-    Set Team's result to "replacement".
-  Otherwise if Team's selected is not 2 and Team's count is at least 2 and Second's health is more than 0:
-    Switch to 2.
-    Set Team's result to "replacement".
-  Otherwise if Team's selected is not 3 and Team's count is at least 3 and Third's health is more than 0:
-    Switch to 3.
-    Set Team's result to "replacement".
-  Otherwise if Team's selected is not 4 and Team's count is at least 4 and Fourth's health is more than 0:
-    Switch to 4.
-    Set Team's result to "replacement".
-  Otherwise if Team's selected is not 5 and Team's count is at least 5 and Fifth's health is more than 0:
-    Switch to 5.
-    Set Team's result to "replacement".
-  Otherwise if Team's selected is not 6 and Team's count is at least 6 and Sixth's health is more than 0:
-    Switch to 6.
-    Set Team's result to "replacement".
+  Let the slot be 1.
+  For each candidate in the members:
+    If Team's selected is not the slot and Team's count is at least the slot and the candidate's health is more than 0:
+      Switch to the slot.
+      Set Team's result to "replacement".
+      Stop repeating.
+    Add 1 to the slot.
   If Team's result is "replacement":
     Set Combat's active to 1.
     Set Combat's outcome to "".

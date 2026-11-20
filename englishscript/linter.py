@@ -396,12 +396,16 @@ class Collector:
             if start < len(low) and low[start] == "the":
                 start += 1
             return [run_of_words(start, ("be",))]
-        if first == "use" and "chapter" in low:
+        if first == "use" and ("chapter" in low or "chapters" in low):
             # A chapter that couldn't be used: what it shares is unknown, so leave out
             # the errors about unknown names that follow, as for an unknown library.
             self.unknown_library = True
             return []
         if first == "use" and len(low) > 2:
+            if "libraries" in low:
+                return [name for token in words[2:low.index("libraries")]
+                        if token.kind == "WORD" and token.low != "and"
+                        for name in self.library_names(token.low)]
             return self.library_names(low[2])
         return self.assigned_name(words)
 

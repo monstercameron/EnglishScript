@@ -4,9 +4,7 @@
 # the folder "almanac" beside this file. Each of its chapters says at the top
 # which of its words it shares, and this program can use those and no others.
 
-Use the calendar chapter of the almanac book.
-Use the numerals chapter of the almanac book.
-Use the feasts chapter of the almanac book.
+Use the calendar, numerals and feasts chapters of the almanac book.
 
 Let the year be 2027.
 

@@ -1,10 +1,7 @@
 This chapter shares only discussion, commanded, Talk, settle and portray.
 
 Use the page library.
-Use the foundation chapter.
-Use the maps chapter.
-Use the people chapter.
-Use the lettering chapter.
+Use the foundation, maps, people and lettering chapters.
 
 A discussion has a command (text), a phase (text), an actor (text), a question (text), a wording (text), a transcript (text), a page (text) and a remainder (text).
 A discussion is commanded when its command is not "".

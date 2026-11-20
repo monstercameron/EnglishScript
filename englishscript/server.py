@@ -868,8 +868,9 @@ class Server:
         found = self.name_at(doc, number, col)
         if found is None:
             # On "Use the calendar chapter of the almanac book.": the chapter's file.
-            for use, _, path, _, text in self.neighbours(doc):
-                if use.line == number and path is not None and text is not None:
+            neighbours = [entry for entry in self.neighbours(doc) if entry[0].line == number and entry[2] is not None]
+            for use, _, path, _, text in neighbours:
+                if (use.start <= col < use.end or len(neighbours) == 1) and text is not None:
                     return {"uri": self.uri_of(doc, path), "range": Text(text).range(0, 0, 0)}
             return None
         places = [{"uri": uri, "range": text.range(name.line, name.start, name.end)}

@@ -9,6 +9,7 @@ from pathlib import Path
 
 from englishscript import compile_source, lint
 from englishscript.libraries import page
+from englishscript.rename import read_names
 
 EXAMPLES = Path(__file__).resolve().parent.parent / "examples"
 
@@ -564,7 +565,10 @@ class TheWebToDoList(unittest.TestCase):
     def test_the_work_is_in_the_chapters(self):
         # The program itself only says which chapters it uses and what happens when.
         sentences = [line for line in self.source.splitlines() if line.strip() and not line.lstrip().startswith("#")]
-        self.assertEqual(sum(1 for line in sentences if line.startswith("Use the ")), 5)
+        uses = read_names(self.source).uses
+        self.assertEqual([(use.what, " ".join(use.words), " ".join(use.book)) for use in uses],
+                         [("library", "page", ""), ("chapter", "layout", "tasks"), ("chapter", "cards", "tasks"),
+                          ("chapter", "keeping", "tasks"), ("chapter", "showing", "tasks")])
         self.assertGreaterEqual(sum(1 for line in sentences if line.startswith("Whenever ")), 10)
         # Nothing is brought up to date by hand: the chapters say what is kept, and the
         # program only saves the list, once, when everything has settled.

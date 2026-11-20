@@ -68,7 +68,7 @@ def classify(tileset, t):
         return 'I'
     return '.'
 
-lines = ['This chapter shares only scenery.', '', 'Use the foundation chapter.', 'Use the maps chapter.', '', 'To work out the scenery tiles (text):']
+lines = ['This chapter shares only scenery.', '', 'Use the foundation and maps chapters.', '', 'To work out the scenery tiles (text):']
 for name, map_name, tileset in maps:
     header = (reference / f'data/maps/headers/{map_name}.asm').read_text()
     key = re.search(r'map_header\s+\w+,\s*(\w+),', header).group(1)

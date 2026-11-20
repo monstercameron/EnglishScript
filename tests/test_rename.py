@@ -548,6 +548,17 @@ class Reading(unittest.TestCase):
         curly = renaming.scan("Say “Hello {the total}”.")
         self.assertEqual([t.text for t in curly if t.group], ["the", "total"])
 
+    def test_grouped_imports_keep_each_name_and_shared_book(self):
+        source = "Use the calendar, roman numerals, and feasts chapters of the almanac book.\nUse the page and vulkan libraries.\n"
+        uses = read_names(source).uses
+        self.assertEqual([(u.what, u.words, u.book) for u in uses], [
+            ("chapter", ("calendar",), ("almanac",)),
+            ("chapter", ("roman", "numerals"), ("almanac",)),
+            ("chapter", ("feasts",), ("almanac",)),
+            ("library", ("page",), ()), ("library", ("vulkan",), ())])
+        self.assertEqual([source.splitlines()[u.line][u.start:u.end] for u in uses],
+                         ["calendar", "roman numerals", "feasts", "page", "vulkan"])
+
     def test_chapters_and_libraries_are_found(self):
         reading = read_names((EXAMPLES / "almanac.english").read_text(encoding="utf-8"))
         self.assertEqual([(u.what, u.words, u.book) for u in reading.uses],

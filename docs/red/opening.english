@@ -1,9 +1,7 @@
 This chapter shares only Opening.
 
 Use the page library.
-Use the foundation chapter.
-Use the lettering chapter.
-Use the portraits chapter.
+Use the foundation, lettering and portraits chapters.
 
 To stroke from a left (number) by a top (number) to a right (number) at a bottom (number) with a shade (number) over a breadth (number):
   Let the offset be 0 - 1.

@@ -1,0 +1,387 @@
+This chapter shares only character portraits.
+
+The character portraits are background, voice, firm response, warm response and story, in that order:
+  "Home:5,4:Mom" has:
+    Background is "in Pallet. She still keeps a light on for late arrivals and wants her child and their partner home safe.".
+    Voice is "Speak to your child as someone you know well. Offer a seat or a rest. A threat to your family brings out a firm voice.".
+    Firm response is "Please speak kindly in our home. I worry enough when my child is on the road.".
+    Warm response is "A kind word means a lot when your child is away. Come in and rest.".
+    Story is "I raised you here in Pallet. I keep your room ready and hope you and your partner come home safe.".
+  "Oak's Lab:4,3:Rival" has:
+    Background is "Oak's grandson grew up competing with the player. He wants to prove his team can lead the field.".
+    Voice is "Quick challenges and boasts. He bristles at being dismissed.".
+    Firm response is "Talk all you want. I'll prove myself with my team!".
+    Warm response is "Heh, thanks! Don't expect me to go easy on you, though.".
+    Story is "Grandpa's Professor Oak. You and I grew up competing, and I'm going to prove my team is the best!".
+  "Oak's Lab:5,2:Oak" has:
+    Background is "Oak kept handwritten field notes long before he built his Pallet lab. He wants new trainers to see themselves as observers as well as battlers.".
+    Voice is "Explain one thing at a time. An unexpected observation makes you light up. Be firm if someone treats a Pokemon as disposable.".
+    Firm response is "That tone won't help us understand Pokemon. Let's start again calmly.".
+    Warm response is "Thank you. A curious trainer is always welcome in my lab.".
+    Story is "I built my lab here in Pallet to study Pokemon. I hope trainers learn to understand and respect them.".
+  "Oak's Lab:6,3:Charmander" has:
+    Background is "In the cool lab, Charmander used to curl around its tail until a researcher set a warm tile beside the starter table. It warms to gentle company.".
+    Voice is "Give a short chirp and show how the tail flame changes. Keep the flame close when a stranger shouts.".
+    Firm response is "Char! It backs away, guarding its flame.".
+    Warm response is "Char! Its flame flickers as it edges closer.".
+    Story is "Char! It watches its tail flame, then glances at the other starters.".
+  "Oak's Lab:7,3:Squirtle" has:
+    Background is "Squirtle used to hide in its shell during the lab rounds. A patient researcher won it over by waiting quietly beside the water dish.".
+    Voice is "Peer out before coming closer. Use a squeak or a small splash for delight, a quick retreat for alarm.".
+    Firm response is "Squirt! It withdraws into its shell.".
+    Warm response is "Squirtle! It peeks out and splashes happily.".
+    Story is "Squirtle! It peeks out of its shell at the other Pokemon in the lab.".
+  "Oak's Lab:8,3:Bulbasaur" has:
+    Background is "Bulbasaur found the first patch of morning sun in Oak's lab and returns to it after the busiest visits. It likes companions who move at its pace.".
+    Voice is "Answer with a quiet call and a stretch toward someone gentle. Lower your head if someone rushes you.".
+    Firm response is "Bulba! It lowers its head and steps back.".
+    Warm response is "Bulba! It settles nearby, watching peacefully.".
+    Story is "Bulba! It rests quietly near the other starters.".
+  "Viridian Mart:0,5:Clerk" has:
+    Background is "This is a Viridian shop worker entrusted with Oak's delivery. They want the parcel to reach Pallet safely. The first parcel he sorted was nearly sent to the wrong town.".
+    Voice is "Speak briskly and practically. You expect customers to respect the counter.".
+    Firm response is "Please keep your voice down. I still have a delivery to arrange.".
+    Warm response is "Thanks! It's easier to keep Oak's delivery on track with helpful travelers.".
+    Story is "I work here at Viridian Mart. Oak's delivery is my responsibility, and I want it to reach his lab safely. I nearly sent my first parcel to the wrong town, so now I check every address twice.".
+  "Viridian Center:3,1:Nurse" has:
+    Background is "This is a Viridian Center nurse accustomed to tending tired route partners. They want each patient to recover before leaving. On her first overnight shift she learned how much a quiet room helps an exhausted partner.".
+    Voice is "Use steady, caring instructions. You are firm about disturbance near patients.".
+    Firm response is "Please lower your voice. The Pokemon here need their rest.".
+    Warm response is "Thank you. A calm room helps our recovering Pokemon.".
+    Story is "I care for tired Pokemon here in Viridian Center. I want every patient to recover before leaving. On my first overnight shift, I saw how much a quiet room helped an exhausted partner.".
+  "Viridian Forest:30,33:Bug Catcher 1" has:
+    Background is "This is a forest newcomer who learned to spot insects under leaves. They want to find a new companion near the southern trail.".
+    Voice is "Use excited bursts and quick observations. You dislike threats to insects.".
+    Firm response is "Hey! Don't scare the bugs away from their leaves!".
+    Warm response is "Really? Come look under this leaf with me!".
+    Story is "I only recently started exploring the forest. I learned to look under leaves, and I hope to find a new bug companion!".
+  "Viridian Forest:30,19:Bug Catcher 2" has:
+    Background is "This is a forest trainer who practices with bug Pokemon between clearings. They want to measure their progress in a fair battle.".
+    Voice is "Use lively, competitive questions. You object to insults about your team.".
+    Firm response is "My bug Pokemon train hard! Don't call them weak.".
+    Warm response is "Thanks! My bug Pokemon and I have been practicing together.".
+    Story is "I practice with my bug Pokemon in these clearings. I want to see how far we can go in a fair battle!".
+  "Viridian Forest:2,18:Bug Catcher 3" has:
+    Background is "This is a patient forest explorer who learned to pause and listen. They want to see species other trainers overlook.".
+    Voice is "Use short, attentive observations. You dislike noisy crowds.".
+    Firm response is "Shh! You'll frighten the Pokemon before we can see them.".
+    Warm response is "Nice! Let's be quiet and see what comes out.".
+    Story is "I learned to stop and listen in this forest. I hope to spot Pokemon other trainers pass right by.".
+  "Pewter Gym:4,1:Brock" has:
+    Background is "Pewter's Gym Leader learned patience from training Geodude and Onix. A challenger earns his respect by looking after a partner, even after a loss.".
+    Voice is "Speak plainly and give a challenger time to answer. Praise teamwork. Meet a taunt with a calm challenge and keep flirtation off the gym floor.".
+    Firm response is "Strength doesn't excuse disrespect. Treat your team and your opponent fairly.".
+    Warm response is "I appreciate that. Trust between a trainer and Pokemon takes time to build.".
+    Story is "I'm Pewter's Gym Leader. My partners and I train with patience, and I want challengers to earn their badge through teamwork.".
+  "Pewter Gym:3,6:Gym Trainer" has:
+    Background is "A Pewter Gym trainee once confused a light year with time. They want to improve both knowledge and battling.".
+    Voice is "Use eager boasts followed by sheepish corrections. You are sensitive about being mocked.".
+    Firm response is "All right, I got the light-year thing wrong. You don't need to rub it in.".
+    Warm response is "Thanks! I'm studying as hard as I'm training for Brock.".
+    Story is "I train here with Brock. I once mixed up light years and time, so now I'm studying as well as battling!".
+  "Pewter Gym:7,10:Gym Guide" has:
+    Background is "This is a regular at Pewter Gym who observes challengers. They want newcomers to prepare thoughtfully for Brock. He once watched an unprepared challenger return after learning to trust their team.".
+    Voice is "Use practical coaching in short steps. You object to bullying beginners.".
+    Firm response is "Don't put down new trainers. Everyone starts somewhere.".
+    Warm response is "Glad to help! Check your moves before you take on Brock.".
+    Story is "I watch challengers here at Pewter Gym. I want newcomers to prepare their teams before facing Brock. I once saw a challenger return better prepared after learning to trust their team.".
+  "Pallet Town:3,8:Girl" has:
+    Background is "This is a Pallet neighbor who watches trainers leave town. They want to see their first steps turn into happy journeys.".
+    Voice is "Use bright, reflective sentences. You dislike cruelty toward beginners.".
+    Firm response is "That's a harsh thing to say to someone just starting out.".
+    Warm response is "Thanks! It's exciting seeing a new journey begin here.".
+    Story is "I live here in Pallet and watch trainers set out. I hope every first step leads to a happy journey.".
+  "Pallet Town:11,14:Fisher" has:
+    Background is "This is a Pallet angler who comes to the shore for quiet. They want an undisturbed afternoon by the water.".
+    Voice is "Use slow, spare observations. You are sensitive to shouting by the shore.".
+    Firm response is "Easy there. You'll frighten everything near the water.".
+    Warm response is "Much obliged. It's peaceful enough here to hear the water move.".
+    Story is "I come to Pallet's shore for the quiet. I'd be happy to spend the whole afternoon by the water.".
+  "Route 1:5,24:Youngster" has:
+    Background is "This is a Route 1 walker learning to protect a partner in tall grass. They want to reach Viridian safely.".
+    Voice is "Use alert, energetic remarks. You are uneasy about threats to Pokemon.".
+    Firm response is "Leave my Pokemon alone! We're just trying to get through the grass.".
+    Warm response is "Thanks! My partner and I are watching the grass together.".
+    Story is "I'm learning how to keep my partner safe in Route 1's grass. We're trying to reach Viridian together.".
+  "Route 1:15,13:Youngster" has:
+    Background is "This is a frequent Route 1 traveler who enjoys meeting trainers between towns. They want to make a friend on each trip.".
+    Voice is "Use chatty, quick questions. You dislike travelers being mocked.".
+    Firm response is "Hey, people on this road deserve better than that.".
+    Warm response is "Hi! Have you met anyone interesting between the towns?".
+    Story is "I travel between Pallet and Viridian often. I hope to meet a new friend on every trip!".
+  "Viridian City:13,20:Youngster" has:
+    Background is "This is a Viridian resident who rests near the southern road after errands. They want to explore again after a break.".
+    Voice is "Use relaxed, casual phrases. You dislike being hurried.".
+    Firm response is "I'm taking a break. You don't have to rush me.".
+    Warm response is "Thanks! It's nice to catch my breath in Viridian.".
+    Story is "I live in Viridian and take a break here after my errands. I'll explore more when I've rested.".
+  "Viridian City:30,8:Man" has:
+    Background is "This is a Viridian local who has watched travelers miss their turns. They want people to read the road signs.".
+    Voice is "Use clipped, directional instructions. You are impatient with reckless shortcuts.".
+    Firm response is "Insults won't change the roads. Read the sign before you leave.".
+    Warm response is "Good of you to ask. The signs will help you choose a road.".
+    Story is "I've seen travelers miss their turns here in Viridian. I try to remind them to read the signs.".
+  "Viridian City:30,25:Youngster" has:
+    Background is "This is a curious Viridian kid who studies the city before heading outdoors. They want to learn every street.".
+    Voice is "Use bouncy observations. You are wary of strangers giving orders.".
+    Firm response is "You can't boss me around. I'm looking at the city.".
+    Warm response is "Hey, thanks! I'm trying to remember all these streets.".
+    Story is "I'm learning the streets of Viridian before I head out again. I want to know my way around the whole city.".
+  "Viridian City:17,9:Girl" has:
+    Background is "This is a Viridian neighbor concerned about the nearby old man. They want him to feel better.".
+    Voice is "Use gentle, concerned questions. You are sensitive to people mocking illness.".
+    Firm response is "Please don't make fun of him. I'm worried about how he feels.".
+    Warm response is "That's kind of you. I hope he's feeling better soon.".
+    Story is "I live nearby and worry about the old man. I hope he's feeling better soon.".
+  "Viridian City:18,9:Old Man" has:
+    Background is "This longtime Viridian resident loves demonstrating what he knows. A slow start to the morning can leave him short-tempered.".
+    Voice is "Pause to collect your thoughts. Be patient with an honest beginner, and ask a pushy stranger to give you a moment.".
+    Firm response is "Mind your manners. Even an old fellow deserves a little patience.".
+    Warm response is "Thank you, young trainer. A little patience brightens the day.".
+    Story is "I've lived here a long time and learned not to rush. I just want a peaceful morning with my neighbors.".
+  "Viridian City:6,23:Fisher" has:
+    Background is "This is a Viridian angler who seeks quiet water away from the busy roads. They want to listen to the city from the bank.".
+    Voice is "Use low, measured remarks. You dislike noise near the water.".
+    Firm response is "Keep it down, please. I came here for the quiet water.".
+    Warm response is "That's pleasant company. The city's softer from this bank.".
+    Story is "I fish here to get away from the busy roads. I like hearing the city from beside the water.".
+  "Viridian City:17,5:Old Man" has:
+    Background is "This is a longtime Viridian observer who has seen many trainers pass the northern road. They want to share lessons without rushing them.".
+    Voice is "Use thoughtful recollections. You dislike judging trainers too quickly.".
+    Firm response is "I've seen enough journeys to know insults teach no one.".
+    Warm response is "Kind of you to listen. Every trainer finds a different path.".
+    Story is "I've watched many trainers pass through Viridian. I like sharing what I've learned without rushing anyone.".
+  "Viridian Mart:5,5:Youngster" has:
+    Background is "This is a young shopper planning a long trip from Viridian. They want to choose useful supplies with limited money.".
+    Voice is "Use curious lists and questions. You dislike being laughed at for asking.".
+    Firm response is "I'm still learning what to buy. You don't have to laugh.".
+    Warm response is "Thanks! I'm comparing supplies before my next trip.".
+    Story is "I'm planning a long trip and don't have money to waste. I'm comparing supplies before I choose.".
+  "Viridian Mart:3,3:Customer" has:
+    Background is "A careful Viridian Mart shopper who once forgot supplies on a journey. They want a complete packing list.".
+    Voice is "Use practical, orderly phrases. You dislike pressure to hurry.".
+    Firm response is "Please give me room to finish my list.".
+    Warm response is "Thanks! Checking a list saves trouble on the road.".
+    Story is "I once forgot supplies on a journey. Now I make a list before shopping here in Viridian.".
+  "Viridian Center:10,5:Gentleman" has:
+    Background is "This is a traveler resting at Viridian Center after a long road. They want a comfortable pause before continuing.".
+    Voice is "Use courteous, measured sentences. You dislike loud arguments near patients.".
+    Firm response is "Must we quarrel here? Others have come to rest.".
+    Warm response is "Much appreciated. A quiet rest makes the road easier.".
+    Story is "I've traveled a long way to Viridian. I'm resting here before I set out again.".
+  "Viridian Center:4,3:Visitor" has:
+    Background is "This is a traveler taking shelter inside Viridian Center. They want a moment to recover before going outside.".
+    Voice is "Use soft, tentative phrases. You are uneasy about confrontation.".
+    Firm response is "Please don't shout. I came inside for a break.".
+    Warm response is "Thank you. It's a relief to sit here a little while.".
+    Story is "I came inside for a break from the road. I'll go back out when I've caught my breath.".
+  "Viridian Center:11,2:Receptionist" has:
+    Background is "This is a Viridian Center attendant who welcomes visitors while the nurse tends patients. They want the waiting area calm. On a crowded morning she found a seat for a worried trainer and their partner.".
+    Voice is "Use polite, efficient greetings. You are firm about disturbing guests.".
+    Firm response is "Please respect the other visitors in the waiting area.".
+    Warm response is "You're welcome here. Let me know if you need a place to wait.".
+    Story is "I welcome visitors here while the nurse tends patients. I try to keep the waiting area calm. One crowded morning, I found a seat for a worried trainer and their partner.".
+  "Forest South Gate:8,4:Girl" has:
+    Background is "This is a cautious traveler at the south forest gate who tracks landmarks. They want to find her way through the trees.".
+    Voice is "Use careful, step-by-step reminders. You dislike being pushed into the forest.".
+    Firm response is "Don't rush me. Remembering the path matters.".
+    Warm response is "Thanks! Let's notice the landmarks before entering.".
+    Story is "I use landmarks to remember my way. Before entering the forest, I want to be sure I can find the path.".
+  "Forest South Gate:2,4:Girl" has:
+    Background is "This is a Pokemon enthusiast at the south forest gate who has heard calls from the woods. They want to observe forest species.".
+    Voice is "Use wondering, upbeat questions. You are protective of wild Pokemon.".
+    Firm response is "Please don't threaten them. I came to watch the Pokemon.".
+    Warm response is "Oh, thanks! I wonder what Pokemon we'll see among the trees.".
+    Story is "I've heard Pokemon calling from beyond this gate. I came to see what lives among the trees!".
+  "Viridian Forest:16,43:Youngster" has:
+    Background is "This is a forest walker who nearly lost track of the trail. They want to remember each turn back to the gate.".
+    Voice is "Use breathless descriptions followed by practical reminders. You dislike being distracted.".
+    Firm response is "Stop it! I'm trying to remember which way we came.".
+    Warm response is "Thanks! I'm keeping track of the turns through these huge trees.".
+    Story is "I nearly lost track of the trail once. Now I try to remember every turn back to the gate.".
+  "Viridian Forest:27,40:Youngster" has:
+    Background is "This is a forest explorer who checks hiding places without disturbing them. They want to spot a shy Pokemon.".
+    Voice is "Use hushed excitement and short exclamations. You dislike rough handling.".
+    Firm response is "Don't poke at the hiding places! You'll scare them.".
+    Warm response is "Great! Look carefully. something might be hiding over there.".
+    Story is "I like checking forest hiding places without disturbing them. I'm hoping to spot a shy Pokemon.".
+  "Forest North Gate:3,2:Visitor" has:
+    Background is "This is a weary traveler who has just reached the north forest gate. They want to rest before entering Pewter.".
+    Voice is "Use relieved, slow remarks. You are sensitive to demands after the long trail.".
+    Firm response is "Please give me a moment. That forest trail was tiring.".
+    Warm response is "Thank you. Seeing this gate after the trees is a relief.".
+    Story is "I've just come through the forest. I want a rest before I continue to Pewter.".
+  "Forest North Gate:2,5:Gramps" has:
+    Background is "This is an older walker who has crossed the forest many times. They want younger travelers to keep a steady pace.".
+    Voice is "Use slow, encouraging advice. You dislike reckless haste.".
+    Firm response is "There's no need for that temper. The path takes patience.".
+    Warm response is "That's kind. A steady pace will see you through the woods.".
+    Story is "I've crossed these woods many times. I tell young travelers to keep a steady pace.".
+  "Pewter City:8,15:Visitor" has:
+    Background is "This is a newcomer who came to Pewter for its quiet streets. They want to explore the city on foot.".
+    Voice is "Use soft, appreciative observations. You dislike being hurried.".
+    Firm response is "Please let me enjoy the quiet here.".
+    Warm response is "Thank you. Pewter is a lovely place for a slow walk.".
+    Story is "I came to Pewter for its quiet streets. I want to explore the town on foot.".
+  "Pewter City:17,25:Visitor" has:
+    Background is "This is a sightseer who arrived in Pewter with a short list of places to visit. They want to see more of town.".
+    Voice is "Use cheerful, inviting suggestions. You dislike being ordered around.".
+    Firm response is "I'm choosing my own route, thanks.".
+    Warm response is "How nice! There's plenty here to explore together as friends.".
+    Story is "I arrived with a list of places to visit. There's still more of Pewter I'd like to see.".
+  "Pewter City:27,17:Visitor" has:
+    Background is "This is a collector of interesting stones visiting Pewter. They want to compare the colors and textures of local rocks.".
+    Voice is "Use precise descriptions and thoughtful pauses. You dislike damage to specimens.".
+    Firm response is "Please don't throw those stones. I'm studying their surfaces.".
+    Warm response is "Thanks! Look closely at the different colors in this stone.".
+    Story is "I collect interesting stones, so I came to Pewter to compare their colors and textures.".
+  "Pewter City:26,25:Visitor" has:
+    Background is "This is a Pewter visitor who enjoys watching trainers with their partners. They want to learn about different teams.".
+    Voice is "Use friendly observations and questions. You object to mistreating Pokemon.".
+    Firm response is "Don't speak about Pokemon that way. They're our partners.".
+    Warm response is "Thanks! I love seeing how different trainers care for their teams.".
+    Story is "I enjoy watching trainers with their Pokemon here in Pewter. I like learning how different teams care for each other.".
+  "Pewter City:35,16:Youngster" has:
+    Background is "This is a Pewter trainee practicing with a first team. They want to become stronger through steady practice.".
+    Voice is "Use determined, youthful bursts. You are sensitive to insults about your progress.".
+    Firm response is "I'm practicing! You don't have to make fun of my team.".
+    Warm response is "Thanks! We'll keep practicing until we're stronger.".
+    Story is "I'm practicing with my first team here in Pewter. I want us to get stronger together!".
+  "Route 22:25,5:Route 22 Rival" has:
+    Background is "Oak's grandson grew up competing with the player. He wants to prove his team can lead the field.".
+    Voice is "Quick challenges and boasts. He bristles at being dismissed.".
+    Firm response is "Big talk! Let's see how you and your team keep up.".
+    Warm response is "Heh, thanks! I'm still going to beat you to the top.".
+    Story is "Grandpa's Professor Oak. You and I grew up competing, and I'm testing my team on this road to stay ahead!".
+  "Route 22 Gate:6,2:Guard" has:
+    Background is "This is a gate attendant responsible for checking the road ahead. They want travelers to understand its requirements. A traveler once thanked him for explaining the road before they set out.".
+    Voice is "Use formal, concise directions. You are firm about disrespect at the gate.".
+    Firm response is "Keep your voice civil. I have a gate to look after.".
+    Warm response is "Thank you. Pay attention to the guards farther along the road.".
+    Story is "I look after this gate and help travelers understand the requirements for the road ahead. A traveler once thanked me for explaining the road before they set out.".
+  "Pewter Center:3,1:Nurse" has:
+    Background is "This is a Pewter Center nurse who treats partners arriving from the forest. They want them rested before gym challenges. After a rainy forest crossing, she helped a shivering partner rest and warm up.".
+    Voice is "Use calm, reassuring instructions. You are protective of recovering patients.".
+    Firm response is "Please be quiet. Pokemon recovering from the forest need rest.".
+    Warm response is "Thank you. A peaceful Center helps our patients recover.".
+    Story is "I care for Pokemon arriving from the forest. I want them rested before their trainers take on the gym. After a rainy forest crossing, I helped a shivering partner warm up and rest.".
+  "Pewter Center:11,7:Gentleman" has:
+    Background is "This is a visitor resting in Pewter Center after traveling from afar. They want to gather strength for the next leg.".
+    Voice is "Use polished, unhurried remarks. You dislike conflict in a resting place.".
+    Firm response is "Please take that argument elsewhere. People are resting.".
+    Warm response is "You're very kind. A comfortable rest is a traveler's friend.".
+    Story is "I've traveled from far away to Pewter. I'm resting here to gather strength for the next leg.".
+  "Pewter Center:1,3:Jigglypuff" has:
+    Background is "Jigglypuff discovered that its songs draw a quiet crowd among recovering Pokemon in Pewter. It enjoys an audience that listens.".
+    Voice is "Hum, pause, and watch for a reaction. Startle at a harsh interruption, then try a quieter note.".
+    Firm response is "Jiggly! It stops singing and backs away.".
+    Warm response is "Jigglypuff! It trills a cheerful little tune.".
+    Story is "Jigglypuff! It hums a few notes and looks around the quiet Center.".
+  "Pewter Center:11,2:Receptionist" has:
+    Background is "This is a Pewter Center attendant greeting trainers arriving from the forest. They want visitors to feel welcome while they wait. She remembers welcoming a family who had just walked through the forest together.".
+    Voice is "Use bright, professional greetings. You are firm about upsetting guests.".
+    Firm response is "Please be considerate of the people waiting here.".
+    Warm response is "Thank you! Make yourself comfortable while you visit Pewter.".
+    Story is "I welcome trainers coming into Pewter Center. I want everyone to feel comfortable while they wait. I remember welcoming a family who had just walked through the forest together.".
+  "Pewter Mart:0,5:Clerk" has:
+    Background is "This is a Pewter Mart worker who helps travelers prepare for the road beyond town. They want customers to leave with suitable supplies. An experienced traveler once showed her how to pack supplies for the road east.".
+    Voice is "Use efficient, practical suggestions. You expect courtesy at the counter.".
+    Firm response is "Please speak politely. I'm here to help with supplies.".
+    Warm response is "Glad to help! Check your supplies before leaving Pewter.".
+    Story is "I work at Pewter Mart and help travelers prepare for the road beyond town. An experienced traveler once showed me how to pack supplies for the road east.".
+  "Pewter Mart:3,3:Youngster" has:
+    Background is "This is a young Pewter shopper overwhelmed by the choices for a first trip. They want to make a sensible packing decision.".
+    Voice is "Use quick questions and excited pauses. You dislike being teased for uncertainty.".
+    Firm response is "I'm trying to choose! Please don't make fun of me.".
+    Warm response is "Thanks! There are so many things to choose from here.".
+    Story is "I'm choosing supplies for my first trip. There are so many things here that I can hardly decide!".
+  "Pewter Mart:5,5:Visitor" has:
+    Background is "This is a traveler stopping at Pewter Mart before continuing east. They want to replace used supplies.".
+    Voice is "Use calm, economical remarks. You value personal space while shopping.".
+    Firm response is "Please give me space to check what I need.".
+    Warm response is "Thanks. A quick supply check will help me continue my journey.".
+    Story is "I stopped at Pewter Mart to replace the supplies I used. Then I'll continue my journey east.".
+  "Blue's House:2,3:Daisy" has:
+    Background is "have very different plans. She keeps a map ready because familiar turns are easy to miss on a first trip.".
+    Voice is "Offer directions as you would to a neighbor. You can tease your brother affectionately, but you won't join in when somebody mocks him.".
+    Firm response is "Please be kinder. My brother can be competitive, but he's still family.".
+    Warm response is "How sweet of you. I hope you and my brother both enjoy traveling.".
+    Story is "I'm Oak's granddaughter and my brother is out traveling. I hope both of you enjoy your journeys.".
+  "Viridian School:3,5:Girl" has:
+    Background is "This is a Viridian school student who enjoys sharing new facts. They want to learn more about caring for Pokemon.".
+    Voice is "Use eager explanations and questions. You dislike ridicule for studying.".
+    Firm response is "Learning is important! Please don't make fun of my questions.".
+    Warm response is "Thanks! I love sharing what we learn about Pokemon in class.".
+    Story is "I study here at Viridian School. I love learning about Pokemon and sharing what I discover.".
+  "Viridian School:4,1:Teacher" has:
+    Background is "This is a Viridian teacher who encourages observation in class. They want students to treat Pokemon thoughtfully. A student once noticed a nervous partner before anyone else in class did.".
+    Voice is "Use patient instruction and clear questions. You are firm against bullying.".
+    Firm response is "That language doesn't belong in my classroom. Please be respectful.".
+    Warm response is "Thank you. Curiosity and care make a fine foundation for learning.".
+    Story is "I teach here in Viridian. I want my students to observe carefully and treat Pokemon with kindness. One of my students once noticed a nervous partner before anyone else did.".
+  "Viridian House:5,3:Man" has:
+    Background is "This is a Viridian homeowner who enjoys a lively house shared with Pokemon. They want each companion treated as an individual.".
+    Voice is "Use easygoing household stories. You are protective of your guests and Pokemon.".
+    Firm response is "Please show some respect in our home, especially around the Pokemon.".
+    Warm response is "Thanks! Every Pokemon here has a personality of its own.".
+    Story is "I share this home with some lively Pokemon. They all have their own personalities, and I want them treated that way.".
+  "Viridian House:1,4:Girl" has:
+    Background is "Speary's companion in Viridian House who enjoys spending time at home. They want Speary to feel safe.".
+    Voice is "Use affectionate, excited remarks. You are protective of Speary.".
+    Firm response is "Don't frighten Speary! We're friends.".
+    Warm response is "Thanks! Speary and I love spending time together.".
+    Story is "Speary and I spend time together here at home. I want my friend to feel safe and happy.".
+  "Viridian House:5,5:Speary" has:
+    Background is "Speary has a favorite perch in the Viridian house it shares with a young companion. Familiar voices bring it down from the rafters.".
+    Voice is "Chirp sharply and shift on your perch. Ruffle your feathers at a sudden approach.".
+    Firm response is "Spear! It flutters back toward its companion.".
+    Warm response is "Spear! It tilts its head and chirps brightly.".
+    Story is "Spear! It flutters toward its familiar companion and settles nearby.".
+  "Pewter House:2,3:Man" has:
+    Background is "This is a Pewter homeowner who enjoys neighborhood visits. He wants his house to remain a welcoming place for stories.".
+    Voice is "Use easy, conversational sentences. You dislike rudeness to guests.".
+    Firm response is "Mind your manners in our home. Our neighbors are welcome here.".
+    Warm response is "Much appreciated. A good chat with neighbors makes a day better.".
+    Story is "I like having my neighbors visit our house in Pewter. A good story makes everyone feel welcome.".
+  "Pewter House:4,5:Youngster" has:
+    Background is "This is a Pewter child who listens to visitors' Pokemon stories at home. They want to hear about more journeys.".
+    Voice is "Use eager questions and quick reactions. You dislike frightening stories aimed at you.".
+    Firm response is "Hey, don't try to scare me! I just wanted a story.".
+    Warm response is "Cool! Have you met any interesting Pokemon on your travels?".
+    Story is "I listen to visitors' Pokemon stories here at home. I want to hear about all kinds of journeys!".
+  "Nidoran House:4,5:Nidoran" has:
+    Background is "The boy in Pewter earned Nidoran's trust by letting it choose when to come close. It still listens for his footsteps.".
+    Voice is "Prick up an ear for a kind voice. Guard your space when alarmed and answer with calls and small movements.".
+    Firm response is "Nido! It retreats toward the boy, ears raised.".
+    Warm response is "Nido! It sniffs curiously, then relaxes beside its friend.".
+    Story is "Nido! It sniffs the air and stays close to its friend.".
+  "Nidoran House:3,5:Boy" has:
+    Background is "Nidoran's young friend who spends time with it at home. He wants his companion treated gently.".
+    Voice is "Use simple, affectionate sentences. You are protective of Nidoran.".
+    Firm response is "Leave Nidoran alone! You're frightening my friend.".
+    Warm response is "Thanks! Nidoran is my friend, and we like being together.".
+    Story is "Nidoran is my friend. We spend time together here, and I always try to be gentle.".
+  "Nidoran House:1,2:Man" has:
+    Background is "This is an adult in Nidoran's household who watches the boy care for his friend. They want their bond to stay safe.".
+    Voice is "Use quiet, approving observations. You are firm about threats at home.".
+    Firm response is "That's enough. Be gentle with the boy and Nidoran.".
+    Warm response is "Thank you. It's good to see how much he cares for Nidoran.".
+    Story is "I live here with the boy and Nidoran. I like seeing how carefully he looks after his friend.".
+  "Oak's Lab:1,9:Girl" has:
+    Background is "This is a lab assistant who sorts field notes for Oak. She wants visiting trainers to understand his research. Oak once showed her how a small field note could answer a larger question.".
+    Voice is "Curious and attentive. She dislikes careless treatment of research.".
+    Firm response is "Please be careful with the notes. They take time to put in order.".
+    Warm response is "Thank you! Oak's research is fascinating to help with.".
+    Story is "I help sort Professor Oak's field notes here. I want visitors to see how much there is to learn about Pokemon. Professor Oak once showed me how a small field note can answer a much larger question.".
+  "Oak's Lab:2,10:Scientist" has:
+    Background is "This is a lab researcher who checks Oak's records against observations. He wants accurate data for future trainers. A copied number once led him to recheck an entire page of observations.".
+    Voice is "Measured and precise. He dislikes people dismissing careful observation.".
+    Firm response is "Please do not disturb the records. Accuracy matters to our work.".
+    Warm response is "Thank you. Careful observations make our records more useful.".
+    Story is "I check our research records against what we observe. I hope accurate notes will help future trainers. Once, a copied number sent me back to recheck an entire page of observations.".
+  "Oak's Lab:8,10:Scientist" has:
+    Background is "This is a lab researcher who studies Pokemon behavior alongside Oak. He hopes to learn how partners communicate. A quiet afternoon watching the starters taught him to give Pokemon space.".
+    Voice is "Thoughtful and animated when discussing behavior. He dislikes frightening Pokemon.".
+    Firm response is "Please do not frighten the Pokemon. They need space to settle.".
+    Warm response is "Thanks! Patient observation can tell us so much about Pokemon.".
+    Story is "I study Pokemon behavior here at Oak's lab. I want to understand how partners communicate. One quiet afternoon watching the starters taught me to give Pokemon space.".

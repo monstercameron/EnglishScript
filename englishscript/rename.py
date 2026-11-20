@@ -57,6 +57,8 @@ What a rename changes
 """
 from __future__ import annotations
 
+from .imports import import_parts
+
 import importlib
 import re
 import sys
@@ -448,23 +450,17 @@ class Reading:
         return pattern
 
     def _use(self, line):
-        code, low = line.code, line.low
-        words = [k for k in range(2, len(code)) if code[k].kind == "word"]
-        if len(code) >= 4 and low(3) == "library" and code[2].kind == "word":
-            self.uses.append(Use(line.number, "library", (low(2),), (), code[2].start, code[2].end))
+        parts = import_parts(line.code[2:])
+        if parts is None:
             return
-        for k in words:
-            if low(k) == "chapter" and k > 2:
-                name = tuple(code[j].low for j in range(2, k))
-                book = ()
-                if low(k + 1) == "of" and low(k + 2) == "the":
-                    for j in range(k + 3, len(code)):
-                        if low(j) == "book":
-                            book = tuple(code[i].low for i in range(k + 3, j))
-                            break
-                if all(code[j].kind == "word" for j in range(2, k)):
-                    self.uses.append(Use(line.number, "chapter", name, book, code[2].start, code[k - 1].end))
-                return
+        kind, groups, book, _, error = parts
+        if error is not None:
+            return
+        for group in groups:
+            if group:
+                self.uses.append(Use(line.number, "chapter" if kind.startswith("chapter") else "library",
+                                     tuple(tok.low for tok in group), tuple(tok.low for tok in book),
+                                     group[0].start, group[-1].end))
 
     def _shares(self, line):
         code, low = line.code, line.low

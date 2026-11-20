@@ -1,13 +1,6 @@
 This chapter shares only advance and resolve.
 
-Use the foundation chapter.
-Use the maps chapter.
-Use the battle chapter.
-Use the pack chapter.
-Use the party chapter.
-Use the commands chapter.
-Use the lettering chapter.
-Use the sound chapter.
+Use the foundation, maps, battle, pack, party, commands, lettering and sound chapters.
 
 A storybook has a scene (text), a challenger (text), a gym trainer beaten (number), a forest one beaten (number), a forest two beaten (number) and a forest three beaten (number) and a grass steps (number) and a route rival beaten (number) and a recovery place (text).
 There is a storybook called Story whose scene is "" and whose challenger is "" and whose gym trainer beaten is 0 and whose forest one beaten is 0 and whose forest two beaten is 0 and whose forest three beaten is 0 and whose grass steps is 0 and whose route rival beaten is 0 and whose recovery place is "Home".

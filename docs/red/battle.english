@@ -1,9 +1,6 @@
 This chapter shares only battle, Combat, enlist, heal, challenge, fight, recalculate, respond and encounter.
 
-Use the sound chapter.
-Use the cries chapter.
-Use the learnsets chapter.
-Use the encounters chapter.
+Use the sound, cries, learnsets and encounters chapters.
 
 A battle has a starter (text), an original (text), a species (text), an opponent (text), a message (text), a move one (text), a move two (text), a move three (text), a move four (text), an outcome (text), a foe (text), a level (number), an enemy level (number), a health (number), a maximum health (number), an enemy health (number), an enemy maximum health (number), a choice (number), a pp one (number), a pp two (number), a pp three (number), a pp four (number), a base speed (number), an enemy base speed (number), an active (number), an experience (number), an attack (number), a defense (number), a special (number), a speed (number), an enemy attack (number), an enemy defense (number), an enemy special (number), an enemy speed (number), a base experience (number), a turn (number), a seed (number), a bide (number), a stored damage (number), a enemy status (text), a full heals (number), an accuracy stage (number), a seeded (number), an attack stage (number), an enemy attack stage (number), a defense stage (number), an enemy defense stage (number), a second (number).
 There is a battle called Combat whose starter is "", whose original is "", whose species is "", whose opponent is "", whose message is "", whose move one is "", whose move two is "", whose move three is "", whose move four is "", whose outcome is "", whose foe is "", whose level is 5, whose enemy level is 5, whose health is 1, whose maximum health is 1, whose enemy health is 1, whose enemy maximum health is 1, whose choice is 1, whose pp one is 35, whose pp two is 40, whose pp three is 0, whose pp four is 0, whose base speed is 45, whose enemy base speed is 45, whose active is 0, whose experience is 0, whose attack is 1, whose defense is 1, whose special is 1, whose speed is 1, whose enemy attack is 1, whose enemy defense is 1, whose enemy special is 1, whose enemy speed is 1, whose base experience is 1, whose turn is 0, whose seed is 47, whose bide is 0, whose stored damage is 0, whose enemy status is "", whose full heals is 0, whose accuracy stage is 0, whose seeded is 0, whose attack stage is 0, whose enemy attack stage is 0, whose defense stage is 0, whose enemy defense stage is 0, and whose second is 0.
@@ -65,23 +62,26 @@ The battle rewards are experience, in that order:
   "Pikachu" has 82.
   "Spearow" has 58.
 
+The evolutions are species, in that order:
+  "Bulbasaur" from 16 has "Ivysaur".
+  "Charmander" from 16 has "Charmeleon".
+  "Squirtle" from 16 has "Wartortle".
+  "Caterpie" from 10 has "Butterfree".
+  "Caterpie" from 7 has "Metapod".
+  "Pidgey" from 36 has "Pidgeot".
+  "Pidgey" from 18 has "Pidgeotto".
+  "Rattata" from 20 has "Raticate".
+  "Nidoran F" from 16 has "Nidorina".
+  "Nidoran M" from 16 has "Nidorino".
+  "Metapod" from 10 has "Butterfree".
+  "Weedle" from 10 has "Beedrill".
+  "Weedle" from 7 has "Kakuna".
+  "Kakuna" from 10 has "Beedrill".
+  "Spearow" from 20 has "Fearow".
+
 To recalculate:
-  Set Combat's species to Combat's starter, except:
-    Use "Ivysaur" for "Bulbasaur" when Combat's level is at least 16.
-    Use "Charmeleon" for "Charmander" when Combat's level is at least 16.
-    Use "Wartortle" for "Squirtle" when Combat's level is at least 16.
-    Use "Butterfree" for "Caterpie" when Combat's level is at least 10.
-    Use "Metapod" for "Caterpie" when Combat's level is at least 7.
-    Use "Pidgeot" for "Pidgey" when Combat's level is at least 36.
-    Use "Pidgeotto" for "Pidgey" when Combat's level is at least 18.
-    Use "Raticate" for "Rattata" when Combat's level is at least 20.
-    Use "Nidorina" for "Nidoran F" when Combat's level is at least 16.
-    Use "Nidorino" for "Nidoran M" when Combat's level is at least 16.
-    Use "Butterfree" for "Metapod" when Combat's level is at least 10.
-    Use "Beedrill" for "Weedle" when Combat's level is at least 10.
-    Use "Kakuna" for "Weedle" when Combat's level is at least 7.
-    Use "Beedrill" for "Kakuna" when Combat's level is at least 10.
-    Use "Fearow" for "Spearow" when Combat's level is at least 20.
+  Let the evolution be the evolutions for Combat's starter at Combat's level.
+  Set Combat's species to the evolution's species or else Combat's starter.
   Let the profile be the base stats for "Bulbasaur".
   If the move sets for Combat's starter is not nothing:
     Set the profile to the base stats for Combat's species.
@@ -315,6 +315,22 @@ To triumph:
   Set Combat's outcome to "win".
   Set Combat's message to "You won the battle!".
 
+The move powers are power and category, in that order:
+  "Scratch" has 40 and "physical".
+  "Ember" has 40 and "special".
+  "Water Gun" has 40 and "special".
+  "Bubble" has 20 and "special".
+  "Gust" has 40 and "physical".
+  "Quick Attack" has 40 and "physical".
+  "Thundershock" has 40 and "special".
+  "Confusion" has 50 and "special".
+  "Struggle" has 50 and "physical".
+  "Horn Attack" has 65 and "physical".
+  "Hyper Fang" has 80 and "physical".
+  "Poison Sting" has 15 and "physical".
+  "Fury Attack" has 15 and "physical".
+  "Vine Whip" has 35 and "special".
+
 To attack with a move (text):
   If the move is "":
     Stop.
@@ -367,35 +383,20 @@ To attack with a move (text):
     Set Combat's seeded to 1.
     Set Combat's message to "The enemy was seeded!".
     Stop.
-  Let the power be 35.
-  If the move is "Scratch" or the move is "Ember" or the move is "Water Gun":
-    Set the power to 40.
-  If the move is "Bubble":
-    Set the power to 20.
-  If the move is "Gust" or the move is "Quick Attack" or the move is "Thundershock":
-    Set the power to 40.
-  If the move is "Confusion" or the move is "Struggle":
-    Set the power to 50.
-  If the move is "Horn Attack":
-    Set the power to 65.
-  If the move is "Hyper Fang":
-    Set the power to 80.
-  If the move is "Poison Sting" or the move is "Fury Attack":
-    Set the power to 15.
+  Let the entry be the move powers for the move.
+  Let the power be the entry's power or else 35.
+  Let the category be the entry's category or else "physical".
   Let the strength be the adjusted of Combat's attack at Combat's attack stage.
   Let the guard be the adjusted of Combat's enemy defense at Combat's enemy defense stage.
-  If the move is "Ember" or the move is "Bubble" or the move is "Water Gun" or the move is "Vine Whip" or the move is "Confusion" or the move is "Thundershock":
-    Set the strength to Combat's special.
-    Set the guard to Combat's enemy special.
   Set Combat's seed to the remainder of (Combat's seed * 109 + 89) divided by 256.
   Let the strike level be Combat's level.
   If Combat's seed is less than Combat's base speed / 2:
     Set the strike level to Combat's level * 2.
     Set the strength to Combat's attack.
     Set the guard to Combat's enemy defense.
-    If the move is "Ember" or the move is "Bubble" or the move is "Water Gun" or the move is "Vine Whip" or the move is "Confusion" or the move is "Thundershock":
-      Set the strength to Combat's special.
-      Set the guard to Combat's enemy special.
+  If the category is "special":
+    Set the strength to Combat's special.
+    Set the guard to Combat's enemy special.
   Let the hit be the damage from the strike level with the power by the strength against the guard.
   If the move is "Ember" or the move is "Bubble" or the move is "Water Gun" or the move is "Vine Whip" or the move is "Thundershock":
     Set the hit to (the hit * 3 / 2) rounded down to the nearest 1.

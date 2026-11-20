@@ -1,18 +1,8 @@
 Use the page library.
-Use the foundation chapter.
-Use the story chapter.
-Use the battle chapter.
-Use the commands chapter.
-Use the maps chapter.
-Use the pack chapter.
-Use the people chapter.
-Use the conversation chapter.
-Use the overworld chapter.
-Use the lettering chapter.
-Use the opening chapter.
-Use the arena chapter.
-Use the sound chapter.
-Use the town map chapter.
+Use the foundation, story, battle and commands chapters.
+Use the maps, pack, people and conversation chapters.
+Use the overworld, lettering, opening and arena chapters.
+Use the sound and town map chapters.
 
 An adventure is equipping when its mode is "battle bag" or its mode is "battle party".
 An adventure is browsing when its mode is "battle bag" or its mode is "battle party" or its mode is "field menu" or its mode is "party" or its mode is "bag" or its mode is "card" or its mode is "shop".

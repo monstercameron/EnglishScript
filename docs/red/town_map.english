@@ -1,8 +1,7 @@
 This chapter shares only navigate and chart.
 
 Use the page library.
-Use the foundation chapter.
-Use the lettering chapter.
+Use the foundation and lettering chapters.
 
 An atlas has a current (number), a horizontal (number), a vertical (number) and a label (text).
 There is an atlas called Navigator whose current is 0 and whose horizontal is 0 and whose vertical is 0 and whose label is "".

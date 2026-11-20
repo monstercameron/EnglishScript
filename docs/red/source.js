@@ -6,7 +6,7 @@
   ];
   const validPath = path => typeof path === 'string' && /^[a-zA-Z0-9_/-]+\.english$/.test(path) && !path.includes('..');
   const label = path => path.replace(/\.english$/, '').replace(/[_/]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-  const token = /"(?:[^"\\]|\\.)*"|\b\d+(?:\.\d+)?\b|\b(?:Ask the model|The answer is|For each|work out|in that order|except|has|for|when|Use|the|chapter|library|To|Whenever|If|Otherwise|Let|Set|be|is|are|not|and|or|contains|Stop|Repeat|while|Return|Book|Judge|Ask|about|verdict|reply|means|one of|text|number|perception|choice|Say)\b/gi;
+  const token = /"(?:[^"\\]|\\.)*"|\b\d+(?:\.\d+)?\b|\b(?:Ask the model|The answer is|For each|work out|in that order|except|has|from|for|at|when|Use|the|chapters|chapter|libraries|library|To|Whenever|If|Otherwise|Let|Set|be|is|are|not|and|or|contains|Stop|Repeat|while|Return|Book|Judge|Ask|about|verdict|reply|means|one of|text|number|perception|choice|Say)\b/gi;
 
   function highlight(document, source, firstLine = 1) {
     const fragment = document.createDocumentFragment();
@@ -17,14 +17,15 @@
       row.dataset.line = String(index + firstLine);
       let position = 0;
       const table = /^\s*The\s+.+\s+are\s+.+\bin that order:\s*$/i.test(line);
-      const tableRow = /^\s*"(?:[^"\\]|\\.)*"\s+has\b/i.test(line);
+      const tableRow = /^\s*"(?:[^"\\]|\\.)*"(?:\s+from\s+-?\d+(?:\.\d+)?)?\s+has\b/i.test(line);
+      const lookup = /\bthe\s+[a-z][a-z ]*\s+for\s+"(?:[^"\\]|\\.)*"\s+at\b/i.test(line);
       const exception = /^\s*Set\s+.+,\s*except:\s*$/i.test(line);
       const alternative = /^\s*Use\s+.+\s+for\s+.+\.\s*$/i.test(line);
       token.lastIndex = 0;
       for (const match of line.matchAll(token)) {
         const word = match[0].toLowerCase();
         if ((word === 'in that order' && !table) || (word === 'has' && !tableRow) ||
-            (word === 'except' && !exception) || (['for', 'when'].includes(word) && !alternative)) continue;
+            (word === 'from' && !tableRow) || (word === 'except' && !exception) || (word === 'for' && !alternative && !lookup) || (word === 'at' && !lookup) || (word === 'when' && !alternative)) continue;
         row.append(document.createTextNode(line.slice(position, match.index)));
         const part = document.createElement('span');
         part.className = match[0][0] === '"' ? 'source-string' : /^\d/.test(match[0]) ? 'source-number' : 'source-keyword';

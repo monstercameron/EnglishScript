@@ -87,6 +87,39 @@ Replace.
         self.assertEqual(world.named["combat"].fields["outcome"], "loss")
         self.assertGreater(world.named["combat"].fields["health"], 0)
 
+    def test_fractional_and_out_of_range_slots_keep_dispatch_behavior(self):
+        world = self.run_story('''Set Combat's starter to "Bulbasaur".
+Enlist.
+Record.
+Set Team's count to 2.
+Set Combat's health to 7.
+Switch to 1.5.
+Set Combat's health to 4.
+Record.
+Switch to 3.
+''')
+        team = world.named["team"].fields
+        self.assertEqual((team["selected"], team["notice"]), (1.5, "NO POKEMON"))
+        self.assertEqual(world.named["first"].fields["health"], 7)
+        self.assertEqual(world.named["second"].fields["health"], 0)
+        self.assertEqual(world.named["combat"].fields["health"], 4)
+
+    def test_replace_skips_selected_and_fainted_members_in_slot_order(self):
+        world = self.run_story('''Set Combat's starter to "Bulbasaur".
+Enlist.
+Record.
+Set Team's count to 4.
+Set Second's health to 0.
+Set Third's health to 4.
+Set Third's species to "Pidgey".
+Set Fourth's health to 5.
+Set Fourth's species to "Caterpie".
+Replace.
+''')
+        self.assertEqual(world.named["team"].fields["selected"], 3)
+        self.assertEqual(world.named["team"].fields["result"], "replacement")
+        self.assertEqual(world.named["combat"].fields["species"], "Pidgey")
+
     def test_failed_capture_and_party_healing(self):
         world = self.run_story('''Set Combat's starter to "Bulbasaur".
 Enlist.

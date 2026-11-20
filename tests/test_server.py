@@ -608,9 +608,18 @@ class Definitions(unittest.TestCase):
                 self.assertTrue(chapter.splitlines()[found["range"]["start"]["line"]].startswith(start))
 
     def test_from_the_use_sentence_to_the_file(self):
-        found = self.editor.request("textDocument/definition", self.editor.place(self.uri, "Use the numerals", 2))
+        found = self.editor.request("textDocument/definition", self.editor.place(self.uri, "numerals and feasts", 2))
         self.assertTrue(found["uri"].endswith("/examples/almanac/numerals.english"))
         self.assertEqual(found["range"]["start"], {"line": 0, "character": 0})
+
+    def test_grouped_chapter_definition_uses_the_selected_name(self):
+        source = "Use the calendar, numerals and feasts chapters of the almanac book.\nSay the leapness of 2000.\nSay the roman of 5.\n"
+        uri = self.editor.open(source, self.path.as_uri())
+        for name in ("calendar", "numerals", "feasts"):
+            found = self.editor.request("textDocument/definition", self.editor.place(uri, name, 2))
+            self.assertTrue(found["uri"].endswith(f"/examples/almanac/{name}.english"))
+        found = self.editor.request("textDocument/definition", self.editor.place(uri, "roman of 5", 2))
+        self.assertTrue(found["uri"].endswith("/examples/almanac/numerals.english"))
 
     def test_in_the_same_file(self):
         found = self.editor.request("textDocument/definition", self.editor.place(self.uri, "the roman of the year", 18))

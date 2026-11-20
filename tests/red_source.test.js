@@ -41,6 +41,15 @@ const response = value => ({ ok: true, json: async () => value, text: async () =
   assert.ok(syntax.children[4].children.some(node => node.className === 'source-string' && node.textContent.includes('for when except')));
   assert.ok(!syntax.children[5].children.some(node => node.className === 'source-keyword' && node.textContent === 'when'));
 
+  const expandedSource = 'Use the battle, party and sound chapters.\nUse the page and vulkan libraries.\n  "Oak" from 16 has:\n    Voice is "from chapters has".\nSay from.\nLet the result be the evolutions for "Oak" at 16.\n';
+  const expanded = highlight(document, expandedSource);
+  assert.equal(expanded.textContent, expandedSource);
+  for (const [line, words] of [[0, ['chapters']], [1, ['libraries']], [2, ['from', 'has']], [3, ['is']], [5, ['for', 'at']]]) {
+    for (const word of words) assert.ok(expanded.children[line].children.some(node => node.className === 'source-keyword' && node.textContent === word), word);
+  }
+  assert.ok(expanded.children[3].children.some(node => node.className === 'source-string' && node.textContent === '"from chapters has"'));
+  assert.ok(!expanded.children[4].children.some(node => node.className === 'source-keyword' && node.textContent === 'from'));
+
   const pending = {};
   const calls = [];
   const fetch = path => {

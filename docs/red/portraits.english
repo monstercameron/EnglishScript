@@ -1,11 +1,7 @@
 This chapter shares only portrait and back.
 
 Use the page library.
-Use the foundation chapter.
-Use the wild portraits chapter.
-Use the rock portraits chapter.
-Use the starter fronts chapter.
-Use the starter backs chapter.
+Use the foundation, wild portraits, rock portraits, starter fronts and starter backs chapters.
 
 To patch at a left (number) by a top (number) with a width (number) over a height (number) as a shade (number) from an x (number) toward a y (number):
   Let the column be the x + the left.
