@@ -248,36 +248,16 @@ To wildportrait a species (text) at an x (number) by a y (number):
   If the species is "Metapod":
     metapodbody at the x by the y.
     metapodbodyface at the x by the y.
-  If the species is "Nidoran F":
+  If the species is one of "Nidoran F", "Nidoran M", "Nidorina" or "Nidorino":
     nidoranbody at the x by the y.
     nidoranbodyface at the x by the y.
-  If the species is "Nidoran M":
-    nidoranbody at the x by the y.
-    nidoranbodyface at the x by the y.
-    Let the horn be a list of 36, 24, 40, 17, 40 and 26.
-    Shade Screen at the x by the y with the horn as 3.
-  If the species is "Nidorina":
-    nidoranbody at the x by the y.
-    nidoranbodyface at the x by the y.
-    Let the spines be a list of 17, 18, 20, 14, 23, 18, 26, 14, 29 and 20.
-    Shade Screen at the x by the y with the spines as 3.
-  If the species is "Nidorino":
-    nidoranbody at the x by the y.
-    nidoranbodyface at the x by the y.
-    Let the horn be a list of 36, 24, 40, 17, 40 and 26.
-    Shade Screen at the x by the y with the horn as 3.
-    Let the spines be a list of 17, 18, 20, 14, 23, 18, 26, 14, 29 and 20.
-    Shade Screen at the x by the y with the spines as 3.
-  If the species is "Spearow":
-    spearowbody at the x by the y.
-    spearowbodyface at the x by the y.
-  If the species is "Fearow":
-    spearowbody at the x by the y.
-    spearowbodyface at the x by the y.
-  If the species is "Pidgeotto":
-    spearowbody at the x by the y.
-    spearowbodyface at the x by the y.
-  If the species is "Pidgeot":
+    If the species is one of "Nidoran M" or "Nidorino":
+      Let the horn be a list of 36, 24, 40, 17, 40 and 26.
+      Shade Screen at the x by the y with the horn as 3.
+    If the species is one of "Nidorina" or "Nidorino":
+      Let the spines be a list of 17, 18, 20, 14, 23, 18, 26, 14, 29 and 20.
+      Shade Screen at the x by the y with the spines as 3.
+  If the species is one of "Spearow", "Fearow", "Pidgeotto" or "Pidgeot":
     spearowbody at the x by the y.
     spearowbodyface at the x by the y.
   If the species is "Butterfree":
@@ -305,33 +285,16 @@ To wildback a species (text) at an x (number) by a y (number):
     pikachubodyback at the x by the y.
   If the species is "Metapod":
     metapodbody at the x by the y.
-  If the species is "Nidoran F":
+  If the species is one of "Nidoran F", "Nidoran M", "Nidorina" or "Nidorino":
     nidoranbody at the x by the y.
     nidoranbodyback at the x by the y.
-  If the species is "Nidoran M":
-    nidoranbody at the x by the y.
-    nidoranbodyback at the x by the y.
-    Let the horn be a list of 36, 24, 40, 17, 40 and 26.
-    Shade Screen at the x by the y with the horn as 3.
-  If the species is "Nidorina":
-    nidoranbody at the x by the y.
-    nidoranbodyback at the x by the y.
-    Let the spines be a list of 17, 18, 20, 14, 23, 18, 26, 14, 29 and 20.
-    Shade Screen at the x by the y with the spines as 3.
-  If the species is "Nidorino":
-    nidoranbody at the x by the y.
-    nidoranbodyback at the x by the y.
-    Let the horn be a list of 36, 24, 40, 17, 40 and 26.
-    Shade Screen at the x by the y with the horn as 3.
-    Let the spines be a list of 17, 18, 20, 14, 23, 18, 26, 14, 29 and 20.
-    Shade Screen at the x by the y with the spines as 3.
-  If the species is "Spearow":
-    spearowbody at the x by the y.
-  If the species is "Fearow":
-    spearowbody at the x by the y.
-  If the species is "Pidgeotto":
-    spearowbody at the x by the y.
-  If the species is "Pidgeot":
+    If the species is one of "Nidoran M" or "Nidorino":
+      Let the horn be a list of 36, 24, 40, 17, 40 and 26.
+      Shade Screen at the x by the y with the horn as 3.
+    If the species is one of "Nidorina" or "Nidorino":
+      Let the spines be a list of 17, 18, 20, 14, 23, 18, 26, 14, 29 and 20.
+      Shade Screen at the x by the y with the spines as 3.
+  If the species is one of "Spearow", "Fearow", "Pidgeotto" or "Pidgeot":
     spearowbody at the x by the y.
   If the species is "Butterfree":
     butterfreebody at the x by the y.

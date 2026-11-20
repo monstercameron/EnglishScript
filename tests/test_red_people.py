@@ -1,11 +1,79 @@
 import unittest
-import re
 from pathlib import Path
 
 from englishscript import compile_source
 
 
 RED = Path(__file__).resolve().parents[1] / "docs" / "red"
+
+
+PLACEMENTS = (
+    ('Home', 5, 4, 'Mom', 0),
+    ("Oak's Lab", 4, 3, 'Rival', 0),
+    ("Oak's Lab", 5, 2, 'Oak', 0),
+    ("Oak's Lab", 1, 9, 'Girl', 0),
+    ("Oak's Lab", 2, 10, 'Scientist', 0),
+    ("Oak's Lab", 8, 10, 'Scientist', 0),
+    ("Oak's Lab", 6, 3, 'Charmander', 0),
+    ("Oak's Lab", 7, 3, 'Squirtle', 0),
+    ("Oak's Lab", 8, 3, 'Bulbasaur', 0),
+    ('Viridian Mart', 0, 5, 'Clerk', 0),
+    ('Viridian Center', 3, 1, 'Nurse', 0),
+    ('Viridian Forest', 30, 33, 'Bug Catcher 1', 0),
+    ('Viridian Forest', 30, 19, 'Bug Catcher 2', 0),
+    ('Viridian Forest', 2, 18, 'Bug Catcher 3', 0),
+    ('Pewter Gym', 4, 1, 'Brock', 0),
+    ('Pewter Gym', 3, 6, 'Gym Trainer', 0),
+    ('Pewter Gym', 7, 10, 'Gym Guide', 0),
+    ('Pallet Town', 3, 8, 'Girl', 0),
+    ('Pallet Town', 11, 14, 'Fisher', 0),
+    ('Route 1', 5, 24, 'Youngster', 0),
+    ('Route 1', 15, 13, 'Youngster', 0),
+    ('Viridian City', 13, 20, 'Youngster', 0),
+    ('Viridian City', 30, 8, 'Man', 0),
+    ('Viridian City', 30, 25, 'Youngster', 0),
+    ('Viridian City', 17, 9, 'Girl', 0),
+    ('Viridian City', 18, 9, 'Old Man', 0),
+    ('Viridian City', 6, 23, 'Fisher', 0),
+    ('Viridian City', 17, 5, 'Old Man', 0),
+    ('Viridian Mart', 5, 5, 'Youngster', 0),
+    ('Viridian Mart', 3, 3, 'Customer', 0),
+    ('Viridian Center', 10, 5, 'Gentleman', 0),
+    ('Viridian Center', 4, 3, 'Visitor', 0),
+    ('Viridian Center', 11, 2, 'Receptionist', 0),
+    ('Forest South Gate', 8, 4, 'Girl', 0),
+    ('Forest South Gate', 2, 4, 'Girl', 0),
+    ('Viridian Forest', 16, 43, 'Youngster', 0),
+    ('Viridian Forest', 27, 40, 'Youngster', 0),
+    ('Forest North Gate', 3, 2, 'Visitor', 0),
+    ('Forest North Gate', 2, 5, 'Gramps', 0),
+    ('Pewter City', 8, 15, 'Visitor', 0),
+    ('Pewter City', 17, 25, 'Visitor', 0),
+    ('Pewter City', 27, 17, 'Visitor', 0),
+    ('Pewter City', 26, 25, 'Visitor', 0),
+    ('Pewter City', 35, 16, 'Youngster', 0),
+    ('Route 22', 25, 5, 'Route 22 Rival', 0),
+    ('Route 22 Gate', 6, 2, 'Guard', 0),
+    ('Pewter Center', 3, 1, 'Nurse', 0),
+    ('Pewter Center', 11, 7, 'Gentleman', 0),
+    ('Pewter Center', 1, 3, 'Jigglypuff', 0),
+    ('Pewter Center', 11, 2, 'Receptionist', 0),
+    ('Pewter Mart', 0, 5, 'Clerk', 0),
+    ('Pewter Mart', 3, 3, 'Youngster', 0),
+    ('Pewter Mart', 5, 5, 'Visitor', 0),
+    ("Blue's House", 2, 3, 'Daisy', 0),
+    ("Blue's House", 6, 4, 'Daisy', 1),
+    ('Viridian School', 3, 5, 'Girl', 0),
+    ('Viridian School', 4, 1, 'Teacher', 0),
+    ('Viridian House', 5, 3, 'Man', 0),
+    ('Viridian House', 1, 4, 'Girl', 0),
+    ('Viridian House', 5, 5, 'Speary', 0),
+    ('Pewter House', 2, 3, 'Man', 0),
+    ('Pewter House', 4, 5, 'Youngster', 0),
+    ('Nidoran House', 4, 5, 'Nidoran', 0),
+    ('Nidoran House', 3, 5, 'Boy', 0),
+    ('Nidoran House', 1, 2, 'Man', 0),
+)
 
 
 def talk(person, question, setup=""):
@@ -37,6 +105,16 @@ class RedPeople(unittest.TestCase):
         self.assertIn("own", rival)
         self.assertNotEqual(oak, talk("Oak", "Tell me about your starter")[0])
 
+    def test_overlapping_topics_use_the_last_matching_response(self):
+        self.assertEqual(talk("Oak", "wild starter parcel pokedex")[0],
+                         "OAK: I study Pokemon, but I have more work to do before I can tell you about that.")
+        self.assertEqual(talk("Mom", "home oak starter")[0],
+                         "MOM: I wonder what Pokemon you'll meet on your journey. Be kind to them.")
+        self.assertEqual(talk("Rival", "battle grandpa starter")[0],
+                         "RIVAL: I'm ready to get a Pokemon of my own. Grandpa is taking his time!")
+        self.assertEqual(talk("Brock", "rock badge")[0],
+                         "BROCK: A badge is earned in battle. Face me when you're ready.")
+
     def test_companions_only_observe_progress(self):
         setup = '''Set Journey's stage to "parcel".
 Set Journey's objective to "Deliver it".
@@ -56,15 +134,7 @@ Set Journey's mode to "walk".'''
         self.assertIn("earned in battle", talk("Brock", "badge")[0])
 
     def test_every_mapped_person_has_a_distinct_reply_without_progress(self):
-        maps = (RED / "maps.english").read_text(encoding="utf-8-sig")
-        section = maps.split("To work out the person (text) at", 1)[1].split("\nTo work out", 1)[0]
-        headers = list(re.finditer(r"If Journey's place is \"([^\"]+)\" and the column is (\d+) and the row is (\d+)(?: and Journey\'s daisy walking is (\d+)| and [^:\n]+)?:", section))
-        placements = []
-        for index, header in enumerate(headers):
-            end = headers[index + 1].start() if index + 1 < len(headers) else len(section)
-            name = re.search(r'The answer is "([^\"]+)"', section[header.end():end])
-            if name:
-                placements.append((*header.groups()[:3], name.group(1), header.group(4)))
+        placements = PLACEMENTS
         self.assertEqual(len(placements), 65)
         source = ["Use the foundation chapter.", "Use the maps chapter.", "Use the people chapter.",
                   "Set Journey's stage to \"parcel\".", "Set Journey's objective to \"Deliver it\".",
@@ -76,6 +146,7 @@ Set Journey's mode to "walk".'''
                            f"Set Journey's column to {column}.",
                            f"Set Journey's row to {int(row) + 1}.",
                            "Set Journey's facing to \"north\".",
+                           f"Say the person at {column} by {row}.",
                            'Converse with the person ahead about "Hello".',
                            "Say Speaker's actor.", "Say Speaker's response.",
                            "Say Speaker's identity.", "Say Speaker's profile.", "Say Speaker's voice.",
@@ -88,11 +159,13 @@ Set Journey's mode to "walk".'''
         identities = []
         profiles = []
         for index, (place, column, row, name, walking) in enumerate(placements):
-            result = output[index * 11:index * 11 + 11]
+            result = output[index * 12:index * 12 + 12]
+            self.assertEqual(result.pop(0), name, (place, column, row, walking))
             self.assertEqual(result[0], name)
             self.assertNotIn("don't know enough", result[1])
             self.assertEqual(result[5:], ["parcel", "Deliver it", "1", "0", "0", "walk"])
             self.assertTrue(result[2] and result[3] and result[4], (place, column, row, name, result))
+            self.assertEqual(result[2], f"{place}:{column},{row}:{name}")
             identities.append(result[2])
             profiles.append(result[3])
             replies.append(result[1])

@@ -61,6 +61,16 @@ const response = value => ({ ok: true, json: async () => value, text: async () =
   assert.ok(choices.children[4].children.some(node => node.className === 'source-string' && node.textContent === '"not one of"'));
   assert.ok(!choices.children[6].children.some(node => node.className === 'source-keyword' && node.textContent === 'by'));
 
+  const dispatchSource = 'Depending on the mood:\n  For sleepy or grumpy:\n    Say "Depending on For"\n  Otherwise:\n    Say "other"\nSay depending on.\nSay for.\n';
+  const dispatch = highlight(document, dispatchSource);
+  assert.equal(dispatch.textContent, dispatchSource);
+  for (const [line, word] of [[0, 'Depending on'], [1, 'For'], [3, 'Otherwise']]) {
+    assert.ok(dispatch.children[line].children.some(node => node.className === 'source-keyword' && node.textContent === word), word);
+  }
+  assert.ok(dispatch.children[2].children.some(node => node.className === 'source-string' && node.textContent === '"Depending on For"'));
+  assert.ok(!dispatch.children[5].children.some(node => node.className === 'source-keyword' && node.textContent === 'depending on'));
+  assert.ok(!dispatch.children[6].children.some(node => node.className === 'source-keyword' && node.textContent === 'for'));
+
   const pending = {};
   const calls = [];
   const fetch = path => {

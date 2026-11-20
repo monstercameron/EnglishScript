@@ -40,7 +40,7 @@ def state():
         values["response"] = str(speaker.fields.get("response", ""))
     talk = world.named.get("talk")
     if talk is not None:
-        values.update({"talkPhase": talk.fields["phase"], "talkSession": talk_session,
+        values.update({"talkPhase": "reply" if talk.fields["phase"] == "answering" else talk.fields["phase"], "talkSession": talk_session,
                        "talkRequest": talk_request, "talkPerson": talk.fields["actor"],
                        "talkHasMore": bool(talk.fields["remainder"]),
                        "talkPage": visible_page(talk.fields["page"]),
@@ -187,7 +187,7 @@ def talk_page(session):
     if world is None or world.ended:
         return
     talk = world.named.get("talk")
-    if talk is None or talk.fields["phase"] != "reply" or session != talk_session:
+    if talk is None or talk.fields["phase"] != "answering" or session != talk_session:
         return
     command("page")
     publish()

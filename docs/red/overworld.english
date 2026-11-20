@@ -437,7 +437,7 @@ To player at a left (number) by a top (number) toward a direction (text):
     Add 2 to the x.
     Add 4 to the y.
     Fill Screen from the x by the y with 4 over 2 as 0.
-  If the direction is "west" or the direction is "east":
+  If the direction is one of "west" or "east":
     Set the x to the left + 5.
     Set the y to the top + 8.
     Fill Screen from the x by the y with 3 over 4 as 1.
@@ -454,7 +454,7 @@ To resident at a left (number) by a top (number) for an identity (text):
     Set the x to the left + 5.
     Set the y to the top + 8.
     Fill Screen from the x by the y with 6 over 3 as 2.
-  If the identity is "Girl" or the identity is "Daisy" or the identity is "Mom" or the identity is "Nurse" or the identity is "Receptionist":
+  If the identity is one of "Girl", "Daisy", "Mom", "Nurse" or "Receptionist":
     Subtract 1 from the x.
     Add 3 to the y.
     Fill Screen from the x by the y with 2 over 5 as 3.
@@ -463,27 +463,27 @@ To resident at a left (number) by a top (number) for an identity (text):
     Set the x to the left + 4.
     Set the y to the top + 11.
     Fill Screen from the x by the y with 8 over 2 as 2.
-  If the identity is "Oak" or the identity is "Clerk" or the identity is "Teacher":
+  If the identity is one of "Oak", "Clerk" or "Teacher":
     Set the x to the left + 5.
     Set the y to the top + 8.
     Fill Screen from the x by the y with 6 over 4 as 0.
     Add 3 to the x.
     Fill Screen from the x by the y with 1 over 4 as 3.
-  If the identity is "Youngster" or the identity is "Boy" or the identity is "Fisher" or the identity is "Bug Catcher 1" or the identity is "Bug Catcher 2" or the identity is "Bug Catcher 3":
+  If the identity is one of "Youngster", "Boy", "Fisher", "Bug Catcher 1", "Bug Catcher 2" or "Bug Catcher 3":
     Set the x to the left + 3.
     Set the y to the top + 3.
     Fill Screen from the x by the y with 10 over 2 as 3.
     Add 2 to the x.
     Subtract 1 from the y.
     Fill Screen from the x by the y with 6 over 1 as 0.
-  If the identity is "Rival" or the identity is "Route 22 Rival":
+  If the identity is one of "Rival" or "Route 22 Rival":
     Set the x to the left + 3.
     Fill Screen from the x by the y with 2 over 3 as 3.
     Add 8 to the x.
     Fill Screen from the x by the y with 2 over 3 as 3.
 
 To work out the interior (yes or no):
-  If Journey's place is "Bedroom" or Journey's place is "Home" or Journey's place is "Oak's Lab" or Journey's place is "Viridian Mart" or Journey's place is "Forest South Gate" or Journey's place is "Forest North Gate" or Journey's place is "Pewter Gym" or Journey's place is "Route 22 Gate" or Journey's place is "Viridian Center" or Journey's place is "Pewter Center" or Journey's place is "Pewter Mart" or Journey's place is "Blue's House" or Journey's place is "Viridian School" or Journey's place is "Viridian House" or Journey's place is "Pewter House" or Journey's place is "Nidoran House":
+  If Journey's place is one of "Bedroom", "Home", "Oak's Lab", "Viridian Mart", "Forest South Gate", "Forest North Gate", "Pewter Gym", "Route 22 Gate", "Viridian Center", "Pewter Center", "Pewter Mart", "Blue's House", "Viridian School", "Viridian House", "Pewter House" or "Nidoran House":
     The answer is yes.
   The answer is no.
 
@@ -511,7 +511,7 @@ To landscape:
         Water at the left by the top.
       If the ground is "door":
         Threshold at the left by the top.
-      If Journey's place is "Bedroom" or Journey's place is "Home":
+      If Journey's place is one of "Bedroom" or "Home":
         If the column is less than 0 or the map row is less than 0 or the column is at least the map width or the map row is at least the map height:
           Fill Screen from the left by the top with 16 over 16 as 3.
         Otherwise:
@@ -540,7 +540,7 @@ To landscape:
       If the landmark is "V":
         Panel at the left by the top.
         Stairs at the left by the top.
-      If the landmark is "C" or the landmark is "N":
+      If the landmark is one of "C" or "N":
         Cabinet at the left by the top with 2.
       If the landmark is "K":
         Cabinet at the left by the top with 1.
@@ -572,7 +572,7 @@ To landscape:
           Capsule at the left by the top.
       Let the resident be the person at the column by the map row.
       If the resident is not "":
-        If the resident is "Charmander" or the resident is "Squirtle" or the resident is "Bulbasaur":
+        If the resident is one of "Charmander", "Squirtle" or "Bulbasaur":
           Capsule at the left by the top.
         Otherwise:
           Resident at the left by the top for the resident.

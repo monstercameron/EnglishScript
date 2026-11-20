@@ -5,45 +5,47 @@ Use the foundation, battle and pack chapters.
 A commandboard has a phase (text) and a cursor (number).
 There is a commandboard called Orders whose phase is "commands" and whose cursor is 1.
 
+An intent is one of back, horizontal, vertical, confirm or ignore.
+
+To work out the intent (intent) for a key (text):
+  Choose the answer by the key:
+    For "b", "x" or "escape", use back.
+    For "left" or "right", use horizontal.
+    For "up" or "down", use vertical.
+    For "a", "enter" or "z", use confirm.
+    Otherwise, use ignore.
+
+To work out the next position (number) from a position (number) for an action (intent):
+  If the action is horizontal:
+    If the position is 1 or the position is 3:
+      The answer is the position + 1.
+    The answer is the position - 1.
+  If the position is at most 2:
+    The answer is the position + 2.
+  The answer is the position - 2.
+
 To command a key (text):
   If Combat's active is 0:
     Stop.
-  If the key is "b" or the key is "x" or the key is "escape":
+  Let the action be the intent for the key.
+  If the action is back:
     If Orders's phase is "moves":
       Set Orders's phase to "commands".
     Stop.
   If Orders's phase is "moves":
-    If the key is "left" or the key is "right":
-      If Combat's choice is 1 or Combat's choice is 3:
-        Add 1 to Combat's choice.
-      Otherwise:
-        Subtract 1 from Combat's choice.
+    If the action is horizontal or the action is vertical:
+      Set Combat's choice to the next position from Combat's choice for the action.
       Stop.
-    If the key is "up" or the key is "down":
-      If Combat's choice is at most 2:
-        Add 2 to Combat's choice.
-      Otherwise:
-        Subtract 2 from Combat's choice.
-      Stop.
-    If the key is "a" or the key is "enter" or the key is "z":
+    If the action is confirm:
       Let the previous turn be Combat's turn.
       Fight "a".
       If Combat's turn is more than the previous turn or Combat's active is 0:
         Set Orders's phase to "commands".
     Stop.
-  If the key is "left" or the key is "right":
-    If Orders's cursor is 1 or Orders's cursor is 3:
-      Add 1 to Orders's cursor.
-    Otherwise:
-      Subtract 1 from Orders's cursor.
+  If the action is horizontal or the action is vertical:
+    Set Orders's cursor to the next position from Orders's cursor for the action.
     Stop.
-  If the key is "up" or the key is "down":
-    If Orders's cursor is at most 2:
-      Add 2 to Orders's cursor.
-    Otherwise:
-      Subtract 2 from Orders's cursor.
-    Stop.
-  If the key is not "a" and the key is not "enter" and the key is not "z":
+  If the action is not confirm:
     Stop.
   If Orders's cursor is 1:
     Set Orders's phase to "moves".

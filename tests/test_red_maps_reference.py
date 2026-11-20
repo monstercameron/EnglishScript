@@ -7,6 +7,19 @@ RED = Path(__file__).resolve().parents[1] / "docs" / "red"
 
 
 class RedMapCounters(unittest.TestCase):
+    def test_fractional_coordinates_do_not_match_nearby_people_or_signs(self):
+        source = '''Use the foundation and maps chapters.
+Set Journey's place to "Home".
+Say the person at 5 by 4.
+Say the person at (5 + 1 / 1000000) by 4.
+Set Journey's place to "Pallet Town".
+Say the feature at 3 by 5.
+Say the feature at 3 by (5 - 1 / 1000000).
+'''
+        output = []
+        compile_source(source, folder=RED).run(out=output.append)
+        self.assertEqual(output[:4], ["Mom", "", "TEXT_PALLETTOWN_PLAYERSHOUSE_SIGN", ""])
+
     def test_daisy_has_one_placement_for_each_story_state(self):
         source = '''Use the foundation chapter.
 Use the maps chapter.

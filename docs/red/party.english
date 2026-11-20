@@ -124,6 +124,10 @@ To replace:
   Record.
   Set Combat's outcome to "loss".
 
+Let the high catch rate species be a list of "Nidoran F" and "Nidoran M".
+Let the low catch rate species be a list of "Metapod" and "Kakuna".
+Let the medium slow growth be a list of "Nidoran F", "Nidoran M" and "Pidgey".
+
 To capture:
   Set Team's result to "".
   If Combat's active is 0 or Combat's foe is not "wild":
@@ -136,9 +140,9 @@ To capture:
   Let the rate be 255.
   If Combat's opponent is "Pikachu":
     Set the rate to 190.
-  If Combat's opponent is "Nidoran F" or Combat's opponent is "Nidoran M":
+  If Combat's opponent is in the high catch rate species:
     Set the rate to 235.
-  If Combat's opponent is "Metapod" or Combat's opponent is "Kakuna":
+  If Combat's opponent is in the low catch rate species:
     Set the rate to 120.
   Set Combat's seed to the remainder of (Combat's seed * 109 + 89) divided by 256.
   If Combat's seed is more than the rate:
@@ -161,7 +165,7 @@ To capture:
   Set Combat's starter to Combat's opponent.
   Set Combat's level to Combat's enemy level.
   Set Combat's experience to Combat's level * Combat's level * Combat's level.
-  If Combat's starter is "Nidoran F" or Combat's starter is "Nidoran M" or Combat's starter is "Pidgey":
+  If Combat's starter is in the medium slow growth:
     Set Combat's experience to ((6 * Combat's level * Combat's level * Combat's level / 5) rounded down to the nearest 1) - 15 * Combat's level * Combat's level + 100 * Combat's level - 140.
   Recalculate.
   Heal.

@@ -8,7 +8,7 @@ An adventure is equipping when its mode is one of "battle bag" or "battle party"
 An adventure is browsing when it is equipping or its mode is one of "field menu", "party", "bag", "card" or "shop".
 
 To illustrate:
-  If Talk's phase is not "closed":
+  If Talk is open:
     Landscape.
     Portray.
   Otherwise if Journey's mode is "town map":
@@ -60,7 +60,7 @@ To work out the menu position (text):
 Whenever Controls becomes ready:
   Let the key be Controls's action.
   Set Controls's action to "".
-  If Talk's phase is not "closed":
+  If Talk is open:
     Stop.
   Let the previous position be the menu position.
   Let the previous cue be Score's effect count.

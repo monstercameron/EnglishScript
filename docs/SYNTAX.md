@@ -1349,6 +1349,32 @@ Otherwise:
   Say "low"
 ```
 
+### Choosing an action by value
+
+```text
+Depending on <subject>:
+  For <case>, <case> or <case>:
+    <sentences>
+  Otherwise:
+    <sentences>
+```
+
+EnglishScript reads the subject once. If it is text, use quoted cases with the exact spelling and capitalization. If it is a named choice, use members of its set. Each case may appear only once. EnglishScript runs the matching block, then continues after the whole statement. A final `Otherwise` block handles unmatched values. Without it, an unmatched value skips all the blocks.
+
+```englishscript
+A mood is one of sleepy, grumpy or cheerful.
+Let the feeling be sleepy.
+Depending on the feeling:
+  For sleepy or grumpy:
+    Say "Good morning".                 #> Good morning
+  Otherwise:
+    Say "Hello!".
+Depending on "Misty":
+  For "Oak" or "Red":
+    Say "Pallet Town".
+Say "Done".                             #> Done
+```
+
 ### 8.2 For each
 
 ```text
@@ -2355,6 +2381,8 @@ block-opener = "Set" target "to" expression "," "except" ":"
             | "If that fails" ":"                                      (perhaps followed by "Either way:")
             | "Either way" ":"
             | "Choose the answer by" expression ":"                    (inside To work out)
+            | "Depending on" expression ":"
+            | "For" case-list ":"                                    (inside Depending on)
 
 choose-case = "For" case-list ", use" expression "."
             | "Otherwise, use" expression "."

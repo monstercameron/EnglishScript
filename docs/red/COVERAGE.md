@@ -2,6 +2,8 @@
 
 ## Executable evidence
 
+The battle menu gives each key a named intent, so the move grid and the command grid share cursor movement. Conversation phases use a second named choice for opening, asking, and paging through a reply. The lettering chapter uses `Depending on` to select the strokes for each glyph. The same syntax selects an opening screen or runs the next scene after dialogue. [Battle controls](commands.english) · [Conversation phases](conversation.english) · [Lettering](lettering.english) · [Story](story.english)
+
 | Area | What to check |
 |---|---|
 | Campaign rules | Named things, fields, derived adjectives, typed verbs, worked-out values, arithmetic, conditions and reactions govern the parcel, the road gate, battles and the badge. Controller recordings for all three starters verify the reward and the second conversation with Brock. The tests load the full campaign book and render the final input for each starter. The Edge replay also draws the intermediate frames. [Campaign tests](https://github.com/monstercameron/EnglishScript/blob/main/tests/test_red_campaign.py) · [Browser replay](https://github.com/monstercameron/EnglishScript/blob/main/tools/check_red_browser.cjs) |

@@ -3,7 +3,7 @@ import re
 import sys
 
 reference = Path(sys.argv[1])
-out = Path(__file__).resolve().parents[1] / 'docs' / 'red' / 'scenery.english'
+out = Path(sys.argv[2]) if len(sys.argv) > 2 else Path(__file__).resolve().parents[1] / 'docs' / 'red' / 'scenery.english'
 maps = [
     ('Bedroom', 'RedsHouse2F', 'reds_house'), ('Home', 'RedsHouse1F', 'reds_house'),
     ('Pallet Town', 'PalletTown', 'overworld'), ("Oak's Lab", 'OaksLab', 'gym'),
@@ -68,7 +68,8 @@ def classify(tileset, t):
         return 'I'
     return '.'
 
-lines = ['This chapter shares only scenery.', '', 'Use the foundation and maps chapters.', '', 'To work out the scenery tiles (text):']
+lines = ['This chapter shares only scenery.', '', 'Use the foundation and maps chapters.', '', 'To work out the scenery tiles (text):', "  Choose the answer by Journey's place:"]
+groups = {}
 for name, map_name, tileset in maps:
     header = (reference / f'data/maps/headers/{map_name}.asm').read_text()
     key = re.search(r'map_header\s+\w+,\s*(\w+),', header).group(1)
@@ -82,6 +83,10 @@ for name, map_name, tileset in maps:
             offset = block * 16 + (y % 2) * 8 + (x % 2) * 2
             quartet = tuple(blockset[offset + i] for i in (0, 1, 4, 5))
             result.append(classify(tileset, quartet))
-    lines.extend([f'  If Journey\'s place is "{name}":', f'    The answer is "{"".join(result)}".'])
-lines.extend(['  The answer is "".', '', 'To work out the scenery (text) at a column (number) by a row (number):', '  If the column is less than 0 or the row is less than 0:', '    The answer is ".".', '  If the column is at least the map width or the row is at least the map height:', '    The answer is ".".', '  Let the tiles be the scenery tiles.', '  Let the position be the row * the map width + the column.', '  The answer is the first 1 letters of the last (the length of the tiles - the position) letters of the tiles.', ''])
+    groups.setdefault(''.join(result), []).append(name)
+for tiles, names in groups.items():
+    quoted = [f'"{name}"' for name in names]
+    choices = quoted[0] if len(quoted) == 1 else ', '.join(quoted[:-1]) + ' or ' + quoted[-1]
+    lines.append(f'    For {choices}, use "{tiles}".')
+lines.extend(['    Otherwise, use "".', '', 'To work out the scenery (text) at a column (number) by a row (number):', '  If the column is less than 0 or the row is less than 0:', '    The answer is ".".', '  If the column is at least the map width or the row is at least the map height:', '    The answer is ".".', '  Let the tiles be the scenery tiles.', '  Let the position be the row * the map width + the column.', '  The answer is the first 1 letters of the last (the length of the tiles - the position) letters of the tiles.', ''])
 out.write_text('\n'.join(lines), encoding='utf-8')

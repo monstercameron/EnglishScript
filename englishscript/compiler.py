@@ -3371,6 +3371,60 @@ class Compiler:
         self.line = s.line
         return step
 
+    def depending_on(self, s):
+        s.next()
+        s.next()
+        subject = self.whole_value(s)
+        self.need(s, subject)
+        if subject.type != "text" and subject.type not in self.choice_sets:
+            s.fail_span("Grouped choices need text or a set of choices.", subject.span)
+        self.end(s)
+        self.needs_block(s, True)
+        before, lost = self.present, set()
+        branches, otherwise = {}, None
+        all_answer, all_leave = True, True
+        for line in s.line.children:
+            self.line = line
+            child = Sentence(line)
+            self.needs_block(child, True)
+            if child.eat_word("otherwise"):
+                if otherwise is not None:
+                    child.fail('Only one "Otherwise" is allowed.')
+                self.end(child)
+                values = None
+            else:
+                if otherwise is not None:
+                    child.fail('"Otherwise" must be the last row.')
+                child.expect_word("for")
+                values = self.grouped_options(child, subject.type)
+                self.end(child)
+                for value in values:
+                    if value in branches:
+                        child.fail(f'"{value}" is listed twice.')
+            self.present = before
+            steps = self.block(line.children)
+            lost.update(before - self.present)
+            all_answer = all_answer and self.answers(steps)
+            all_leave = all_leave and self.leaves(steps)
+            if values is None:
+                otherwise = steps
+            else:
+                for value in values:
+                    branches[value] = steps
+        self.present = before - lost
+        covered = otherwise is not None or (subject.type in self.choice_sets and
+                    all(value in branches for value in self.choice_sets[subject.type].displays))
+        sf, run = subject.fn, self.run_block
+
+        def step(env):
+            steps = branches.get(sf(env), otherwise)
+            if steps is not None:
+                run(steps, env)
+        step.answers = covered and all_answer
+        step.leaves = covered and all_leave
+        self.line = s.line
+        return step
+
     def tail(self, s, left):
         """What follows "is": nothing, a comparison, an adjective, or a value."""
         if left.key == ("var", PROBLEM) and (s.at_word("a", "an") or s.at_words("no", "model")):
@@ -4175,6 +4229,9 @@ class Compiler:
                    'their verb, such as "Say" or "Set".', teach="verb_first")
         word = first.low
         top = self.scope is self.globals
+
+        if s.line.terminator == ":" and s.at_words("depending", "on"):
+            return self.depending_on(s)
 
         if s.line.terminator == ":" and s.at_words("choose", "the", "answer", "by"):
             return self.choose_answer(s)

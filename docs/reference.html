@@ -1159,6 +1159,26 @@ Otherwise if the score is more than 5:
 Otherwise:
   Say "low"</pre>
 </figure>
+<h3 id="choosing-an-action-by-value">Choosing an action by value</h3>
+<pre class="form">Depending on &lt;subject&gt;:
+  For &lt;case&gt;, &lt;case&gt; or &lt;case&gt;:
+    &lt;sentences&gt;
+  Otherwise:
+    &lt;sentences&gt;</pre>
+<p>EnglishScript reads the subject once. If it is text, use quoted cases with the exact spelling and capitalization. If it is a named choice, use members of its set. Each case may appear only once. EnglishScript runs the matching block, then continues after the whole statement. A final <code>Otherwise</code> block handles unmatched values. Without it, an unmatched value skips all the blocks.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">A mood is one of sleepy, grumpy or cheerful.
+Let the feeling be sleepy.
+Depending on the feeling:
+  For sleepy or grumpy:
+    Say "Good morning".                 #&gt; Good morning
+  Otherwise:
+    Say "Hello!".
+Depending on "Misty":
+  For "Oak" or "Red":
+    Say "Pallet Town".
+Say "Done".                             #&gt; Done</pre>
+</figure>
 <h3 id="s8-2">8.2 For each</h3>
 <pre class="form">For each [&lt;adjective&gt;]... &lt;kind&gt; [of &lt;thing&gt;] [whose &lt;property&gt; &lt;comparison&gt; [and whose ...]...]:</pre>
 <p>This is a group (section <a href="#s5-5">5.5</a>) written in the singular. Inside the block the current thing is <code>the &lt;kind&gt;</code>, and it is in view for pronouns. Things are visited in the order they were created, and the group is settled when the loop starts. A thing removed (section <a href="#s7-5">7.5</a>) before its turn comes is not visited.</p>
@@ -1992,6 +2012,8 @@ block-opener = "Set" target "to" expression "," "except" ":"
             | "If that fails" ":"                                      (perhaps followed by "Either way:")
             | "Either way" ":"
             | "Choose the answer by" expression ":"                    (inside To work out)
+            | "Depending on" expression ":"
+            | "For" case-list ":"                                    (inside Depending on)
 
 choose-case = "For" case-list ", use" expression "."
             | "Otherwise, use" expression "."

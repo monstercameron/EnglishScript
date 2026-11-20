@@ -167,5 +167,5 @@ To portrait a species (text) at an x (number) by a y (number):
 To back a species (text) at an x (number) by a y (number):
   Wildback the species at the x by the y.
   Turn the species at the x by the y.
-  If the species is "Caterpie" or the species is "Weedle" or the species is "Pidgey" or the species is "Rattata" or the species is "Kakuna" or the species is "Sandshrew" or the species is "Diglett":
+  If the species is one of "Caterpie", "Weedle", "Pidgey", "Rattata", "Kakuna", "Sandshrew" or "Diglett":
     Portrait the species at the x by the y.

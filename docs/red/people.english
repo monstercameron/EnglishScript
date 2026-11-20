@@ -56,6 +56,16 @@ The local greetings are greeting, in that order:
   "Nidoran House:3,5:Boy" has "BOY: Nidoran is my friend. I like spending time together at home.".
   "Nidoran House:1,2:Man" has "MAN: It is nice to see how much the boy cares for Nidoran.".
 
+To work out the familiar greeting (text) for a guest (text):
+  Choose the answer by the guest:
+    For "Bulbasaur", use "BULBASAUR: Bulba! The Pokemon watches you quietly.".
+    For "Charmander", use "CHARMANDER: Char! Its tail flame flickers as it looks your way.".
+    For "Squirtle", use "SQUIRTLE: Squirtle! It peeks at you with curiosity.".
+    For "Bug Catcher 1", use "BUG CATCHER: I love finding Pokemon in the forest. There's always another patch of grass to explore!".
+    For "Bug Catcher 2", use "BUG CATCHER: The forest is a great place to train. I like seeing what other trainers bring!".
+    For "Bug Catcher 3", use "BUG CATCHER: Slow down and look around! You might spot a Pokemon you've never seen before.".
+    Otherwise, use "".
+
 To converse with a guest (text) about a question (text):
   Set Speaker's actor to the guest.
   Set Speaker's identity to "".
@@ -64,25 +74,8 @@ To converse with a guest (text) about a question (text):
   Set Speaker's question to the question.
   Set Speaker's response to "I don't know enough about that to say. What else would you like to talk about?".
   Let the topic be the question in lower case.
-  Let the nearby column be Journey's column.
-  Let the nearby row be Journey's row.
-  If Journey's facing is "north":
-    Subtract 1 from the nearby row.
-  If Journey's facing is "south":
-    Add 1 to the nearby row.
-  If Journey's facing is "west":
-    Subtract 1 from the nearby column.
-  If Journey's facing is "east":
-    Add 1 to the nearby column.
-  If the person at the nearby column by the nearby row is "" and the counter at the nearby column by the nearby row is yes:
-    If Journey's facing is "north":
-      Subtract 1 from the nearby row.
-    If Journey's facing is "south":
-      Add 1 to the nearby row.
-    If Journey's facing is "west":
-      Subtract 1 from the nearby column.
-    If Journey's facing is "east":
-      Add 1 to the nearby column.
+  Let the nearby column be the conversation column.
+  Let the nearby row be the conversation row.
   If the guest is "":
     Set Speaker's response to "There is no one here to talk to.".
     Stop.
@@ -118,112 +111,89 @@ To converse with a guest (text) about a question (text):
   If the address is "Route 22:25,5:Route 22 Rival":
     Set Speaker's response to "ROUTE 22 RIVAL: Still keeping up, {Journey's trainer}? My team and I are training hard!".
     Stop.
-  If the address is "Blue's House:2,3:Daisy" or the address is "Blue's House:6,4:Daisy":
+  If the address is one of "Blue's House:2,3:Daisy" or "Blue's House:6,4:Daisy":
     Set Speaker's response to "DAISY: Hello, {Journey's trainer}! My brother can be competitive, but I hope you both enjoy your journeys.".
     Stop.
   If the guest is "Clerk" and Journey's place is "Pewter Mart":
     Set Speaker's response to "CLERK: Welcome to the Pewter Mart! Check your supplies before traveling.".
     Stop.
-  If the guest is "Nurse":
-    Set Speaker's response to "NURSE: Welcome! Taking care of your Pokemon is an important part of a journey.".
-    If Journey's place is "Pewter Center":
-      Set Speaker's response to "NURSE: Welcome to Pewter! I hope your Pokemon are feeling well after the road.".
-    Stop.
-  If the guest is "Bulbasaur":
-    Set Speaker's response to "BULBASAUR: Bulba! The Pokemon watches you quietly.".
-    Stop.
-  If the guest is "Charmander":
-    Set Speaker's response to "CHARMANDER: Char! Its tail flame flickers as it looks your way.".
-    Stop.
-  If the guest is "Squirtle":
-    Set Speaker's response to "SQUIRTLE: Squirtle! It peeks at you with curiosity.".
-    Stop.
-  If the guest is "Oak":
-    Set Speaker's response to "OAK: A good researcher observes carefully and treats Pokemon with respect. What would you like to know?".
-    If the topic contains "pokemon" or the topic contains "pokémon":
-      Set Speaker's response to "OAK: Pokemon are remarkable creatures. Some people keep them as companions, and others battle alongside them.".
-    If the topic contains "grass" or the topic contains "wild":
-      Set Speaker's response to "OAK: Wild Pokemon live in tall grass. Don't venture in without a Pokemon to protect you.".
-    If the topic contains "starter" or the topic contains "partner":
-      If Journey's starter is "":
-        Set Speaker's response to "OAK: I have three Pokemon at the lab. Choosing a partner is an important decision.".
-      Otherwise:
-        Set Speaker's response to "OAK: You chose {Journey's starter}. Spend time with your partner and learn what it can do.".
-    If the topic contains "parcel":
-      If Journey's parcel is 1 and Journey's dex is 0:
-        Set Speaker's response to "OAK: You have my parcel? Please speak to me normally so I can receive it.".
-      Otherwise if Journey's dex is 1:
-        Set Speaker's response to "OAK: Thank you for delivering my parcel. Your Pokedex can record Pokemon you encounter.".
-      Otherwise:
-        Set Speaker's response to "OAK: The Viridian City Mart may have something for me. Please check there.".
-    If the topic contains "pokedex" or the topic contains "pokédex":
-      If Journey's dex is 1:
-        Set Speaker's response to "OAK: The Pokedex records data on Pokemon you encounter. Catch them to learn more.".
-      Otherwise:
-        Set Speaker's response to "OAK: I study Pokemon, but I have more work to do before I can tell you about that.".
-    Stop.
-  If the guest is "Mom":
-    Set Speaker's response to "MOM: It's good to see you, {Journey's trainer}. Take care of yourself out there.".
-    If the topic contains "home" or the topic contains "miss" or the topic contains "you":
-      Set Speaker's response to "MOM: Home is always here for you. I'm cheering you on, even when you're far away.".
-    If the topic contains "oak" or the topic contains "professor":
-      Set Speaker's response to "MOM: Professor Oak lives next door. He knows so much about Pokemon.".
-    If the topic contains "pokemon" or the topic contains "pokémon" or the topic contains "starter":
-      If Journey's starter is "":
-        Set Speaker's response to "MOM: I wonder what Pokemon you'll meet on your journey. Be kind to them.".
-      Otherwise:
-        Set Speaker's response to "MOM: How is {Journey's starter}? Remember to look after your partner as well as yourself.".
-    Stop.
-  If the guest is "Rival":
-    Set Speaker's response to "RIVAL: Hey, {Journey's trainer}! Don't expect me to wait around while you make up your mind.".
-    If the topic contains "battle" or the topic contains "strong":
-      Set Speaker's response to "RIVAL: I'm going to train hard and get stronger. You'd better keep up!".
-    If the topic contains "oak" or the topic contains "grandpa":
-      Set Speaker's response to "RIVAL: Grandpa's always studying Pokemon. I want to get out there and prove myself!".
-    If the topic contains "starter" or the topic contains "pokemon" or the topic contains "pokémon":
-      If Journey's rival starter is "":
-        Set Speaker's response to "RIVAL: I'm ready to get a Pokemon of my own. Grandpa is taking his time!".
-      Otherwise:
-        Set Speaker's response to "RIVAL: My {Journey's rival starter} and I will make a great team. Just you watch!".
-    Stop.
-  If the guest is "Clerk":
-    Set Speaker's response to "CLERK: Welcome to the Viridian Mart! Can I help with something?".
-    If the topic contains "parcel" or the topic contains "oak":
-      If Journey's parcel is 1 and Journey's dex is 0:
-        Set Speaker's response to "CLERK: Please take Oak's parcel back to his lab in Pallet Town.".
-      Otherwise if Journey's dex is 1:
-        Set Speaker's response to "CLERK: Thanks for helping get that delivery to Professor Oak.".
-      Otherwise:
-        Set Speaker's response to "CLERK: I have a delivery for Professor Oak. Speak to me normally and I'll give it to you.".
-    Stop.
-  If the guest is "Brock":
-    Set Speaker's response to "BROCK: Training takes patience. Learn what your Pokemon can do and stand by them.".
-    If the topic contains "rock" or the topic contains "gym":
-      Set Speaker's response to "BROCK: I'm Pewter's Gym Leader. My Pokemon are rock hard and have true grit.".
-    If the topic contains "badge" or the topic contains "win":
-      If Journey's badge is 1:
-        Set Speaker's response to "BROCK: You earned the Boulderbadge. Your team proved its strength.".
-      Otherwise:
-        Set Speaker's response to "BROCK: A badge is earned in battle. Face me when you're ready.".
-    Stop.
-  If the guest is "Gym Trainer":
-    Set Speaker's response to "GYM TRAINER: Brock is tough. Don't underestimate the trainers in this gym, either!".
-    If the topic contains "light" or the topic contains "year":
-      Set Speaker's response to "GYM TRAINER: A light year measures distance. I should have remembered that!".
-    Stop.
-  If the guest is "Gym Guide":
-    Set Speaker's response to "GYM GUIDE: Take a look at your team's moves and prepare before you challenge Brock.".
-    If the topic contains "rock" or the topic contains "brock":
-      Set Speaker's response to "GYM GUIDE: Brock uses Rock-type Pokemon. Think carefully about which moves to bring.".
-    Stop.
-  If the guest is "Bug Catcher 1":
-    Set Speaker's response to "BUG CATCHER: I love finding Pokemon in the forest. There's always another patch of grass to explore!".
-    Stop.
-  If the guest is "Bug Catcher 2":
-    Set Speaker's response to "BUG CATCHER: The forest is a great place to train. I like seeing what other trainers bring!".
-    Stop.
-  If the guest is "Bug Catcher 3":
-    Set Speaker's response to "BUG CATCHER: Slow down and look around! You might spot a Pokemon you've never seen before.".
-
-
-
+  Depending on the guest:
+    For "Nurse":
+      Set Speaker's response to "NURSE: Welcome! Taking care of your Pokemon is an important part of a journey.".
+      If Journey's place is "Pewter Center":
+        Set Speaker's response to "NURSE: Welcome to Pewter! I hope your Pokemon are feeling well after the road.".
+    For "Oak":
+      Set Speaker's response to "OAK: A good researcher observes carefully and treats Pokemon with respect. What would you like to know?".
+      If the topic contains "pokemon" or the topic contains "pokémon":
+        Set Speaker's response to "OAK: Pokemon are remarkable creatures. Some people keep them as companions, and others battle alongside them.".
+      If the topic contains "grass" or the topic contains "wild":
+        Set Speaker's response to "OAK: Wild Pokemon live in tall grass. Don't venture in without a Pokemon to protect you.".
+      If the topic contains "starter" or the topic contains "partner":
+        If Journey's starter is "":
+          Set Speaker's response to "OAK: I have three Pokemon at the lab. Choosing a partner is an important decision.".
+        Otherwise:
+          Set Speaker's response to "OAK: You chose {Journey's starter}. Spend time with your partner and learn what it can do.".
+      If the topic contains "parcel":
+        If Journey's parcel is 1 and Journey's dex is 0:
+          Set Speaker's response to "OAK: You have my parcel? Please speak to me normally so I can receive it.".
+        Otherwise if Journey's dex is 1:
+          Set Speaker's response to "OAK: Thank you for delivering my parcel. Your Pokedex can record Pokemon you encounter.".
+        Otherwise:
+          Set Speaker's response to "OAK: The Viridian City Mart may have something for me. Please check there.".
+      If the topic contains "pokedex" or the topic contains "pokédex":
+        If Journey's dex is 1:
+          Set Speaker's response to "OAK: The Pokedex records data on Pokemon you encounter. Catch them to learn more.".
+        Otherwise:
+          Set Speaker's response to "OAK: I study Pokemon, but I have more work to do before I can tell you about that.".
+    For "Mom":
+      Set Speaker's response to "MOM: It's good to see you, {Journey's trainer}. Take care of yourself out there.".
+      If the topic contains "home" or the topic contains "miss" or the topic contains "you":
+        Set Speaker's response to "MOM: Home is always here for you. I'm cheering you on, even when you're far away.".
+      If the topic contains "oak" or the topic contains "professor":
+        Set Speaker's response to "MOM: Professor Oak lives next door. He knows so much about Pokemon.".
+      If the topic contains "pokemon" or the topic contains "pokémon" or the topic contains "starter":
+        If Journey's starter is "":
+          Set Speaker's response to "MOM: I wonder what Pokemon you'll meet on your journey. Be kind to them.".
+        Otherwise:
+          Set Speaker's response to "MOM: How is {Journey's starter}? Remember to look after your partner as well as yourself.".
+    For "Rival":
+      Set Speaker's response to "RIVAL: Hey, {Journey's trainer}! Don't expect me to wait around while you make up your mind.".
+      If the topic contains "battle" or the topic contains "strong":
+        Set Speaker's response to "RIVAL: I'm going to train hard and get stronger. You'd better keep up!".
+      If the topic contains "oak" or the topic contains "grandpa":
+        Set Speaker's response to "RIVAL: Grandpa's always studying Pokemon. I want to get out there and prove myself!".
+      If the topic contains "starter" or the topic contains "pokemon" or the topic contains "pokémon":
+        If Journey's rival starter is "":
+          Set Speaker's response to "RIVAL: I'm ready to get a Pokemon of my own. Grandpa is taking his time!".
+        Otherwise:
+          Set Speaker's response to "RIVAL: My {Journey's rival starter} and I will make a great team. Just you watch!".
+    For "Clerk":
+      Set Speaker's response to "CLERK: Welcome to the Viridian Mart! Can I help with something?".
+      If the topic contains "parcel" or the topic contains "oak":
+        If Journey's parcel is 1 and Journey's dex is 0:
+          Set Speaker's response to "CLERK: Please take Oak's parcel back to his lab in Pallet Town.".
+        Otherwise if Journey's dex is 1:
+          Set Speaker's response to "CLERK: Thanks for helping get that delivery to Professor Oak.".
+        Otherwise:
+          Set Speaker's response to "CLERK: I have a delivery for Professor Oak. Speak to me normally and I'll give it to you.".
+    For "Brock":
+      Set Speaker's response to "BROCK: Training takes patience. Learn what your Pokemon can do and stand by them.".
+      If the topic contains "rock" or the topic contains "gym":
+        Set Speaker's response to "BROCK: I'm Pewter's Gym Leader. My Pokemon are rock hard and have true grit.".
+      If the topic contains "badge" or the topic contains "win":
+        If Journey's badge is 1:
+          Set Speaker's response to "BROCK: You earned the Boulderbadge. Your team proved its strength.".
+        Otherwise:
+          Set Speaker's response to "BROCK: A badge is earned in battle. Face me when you're ready.".
+    For "Gym Trainer":
+      Set Speaker's response to "GYM TRAINER: Brock is tough. Don't underestimate the trainers in this gym, either!".
+      If the topic contains "light" or the topic contains "year":
+        Set Speaker's response to "GYM TRAINER: A light year measures distance. I should have remembered that!".
+    For "Gym Guide":
+      Set Speaker's response to "GYM GUIDE: Take a look at your team's moves and prepare before you challenge Brock.".
+      If the topic contains "rock" or the topic contains "brock":
+        Set Speaker's response to "GYM GUIDE: Brock uses Rock-type Pokemon. Think carefully about which moves to bring.".
+    Otherwise:
+      Let the guest greeting be the familiar greeting for the guest.
+      If the guest greeting is not "":
+        Set Speaker's response to the guest greeting.

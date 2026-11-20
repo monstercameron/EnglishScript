@@ -5,120 +5,98 @@ Use the foundation, maps, battle, pack, party, commands, lettering and sound cha
 A storybook has a scene (text), a challenger (text), a gym trainer beaten (number), a forest one beaten (number), a forest two beaten (number) and a forest three beaten (number) and a grass steps (number) and a route rival beaten (number) and a recovery place (text).
 There is a storybook called Story whose scene is "" and whose challenger is "" and whose gym trainer beaten is 0 and whose forest one beaten is 0 and whose forest two beaten is 0 and whose forest three beaten is 0 and whose grass steps is 0 and whose route rival beaten is 0 and whose recovery place is "Home".
 
+The dialogue transitions are next scene and dialogue, in that order:
+  "oak warning" has "oak lab" and "OAK: Come with me!".
+  "brock cash" has "brock badge" and "BROCK: I took you for granted. As proof of your victory, here's the BOULDERBADGE!".
+  "brock advice" has "brock tm" and "That's an official POKEMON LEAGUE BADGE! Its bearer's POKEMON become more powerful! The technique FLASH can now be used any time!".
+  "brock tm" has "brock tm received" and "Wait! Take this with you!".
+  "brock explanation" has "" and "A TM contains a technique that can be taught to POKEMON! A TM is good only once! TM34 contains BIDE! Your POKEMON will absorb damage in battle then pay it back double!".
+
+The challenge opponents are challenger, in that order:
+  "rival challenge" has "rival".
+  "brock challenge" has "brock".
+  "route rival challenge" has "route rival".
+
+The starter pairs are chosen starter and chosen rival starter, in that order:
+  "0" has "Bulbasaur" and "Charmander".
+  "1" has "Charmander" and "Squirtle".
+  "2" has "Squirtle" and "Bulbasaur".
+
 To speak a line (text):
   Set Journey's message to the line.
   Set Journey's mode to "dialogue".
 
+To engage:
+  Challenge Story's challenger.
+  Set Orders's phase to "commands".
+  Set Orders's cursor to 1.
+  Set Journey's mode to "battle".
+
 To finish:
-  If Story's scene is "mart parcel":
-    Set Story's scene to "".
-    Set Journey's column to 2.
-    Set Journey's row to 4.
-    Set Journey's facing to "north".
-    Set Journey's parcel to 1.
-    Sound "item".
-    Set Journey's objective to "Deliver OAK's PARCEL to his lab in PALLET TOWN.".
-    Speak "CLERK: You know PROF. OAK, right? His order came in. Will you take it to him? You got OAK's PARCEL!".
+  Let the transition be the dialogue transitions for Story's scene.
+  If the transition is not nothing:
+    Set Story's scene to the transition's next scene.
+    Speak the transition's dialogue.
     Stop.
-  If Story's scene is "oak warning":
-    Set Story's scene to "oak lab".
-    Speak "OAK: Come with me!".
-    Stop.
-  If Story's scene is "oak lab":
-    Set Story's scene to "".
-    Set Journey's place to "Oak's Lab".
-    Set Journey's column to 5.
-    Set Journey's row to 4.
-    Set Journey's facing to "north".
-    Set Journey's stage to "choose starter".
-    Set Journey's objective to "Choose a Pokemon from Oak's table.".
-    Speak "OAK: There are 3 POKEMON here! Choose one!".
-    Stop.
-  If Story's scene is "starter chosen":
-    Set Story's scene to "".
-    Speak "{Journey's rival}: I'll take this one, then! {Journey's rival} received {Journey's rival starter}!".
-    Stop.
-  If Story's scene is "rival challenge":
-    Set Story's scene to "".
-    Set Story's challenger to "rival".
-    Challenge "rival".
-    Set Orders's phase to "commands".
-    Set Orders's cursor to 1.
-    Set Journey's mode to "battle".
-    Stop.
-  If Story's scene is "brock cash":
-    Set Story's scene to "brock badge".
-    Speak "BROCK: I took you for granted. As proof of your victory, here's the BOULDERBADGE!".
-    Stop.
-  If Story's scene is "brock badge":
-    Set Story's scene to "brock advice".
-    Sound "badge".
-    Speak "{Journey's trainer} received the BOULDERBADGE!".
-    Stop.
-  If Story's scene is "brock advice":
-    Set Story's scene to "brock tm".
-    Speak "That's an official POKEMON LEAGUE BADGE! Its bearer's POKEMON become more powerful! The technique FLASH can now be used any time!".
-    Stop.
-  If Story's scene is "brock tm":
-    Set Story's scene to "brock tm received".
-    Speak "Wait! Take this with you!".
-    Stop.
-  If Story's scene is "brock tm received":
-    Set Journey's tm34 to 1.
-    Set Journey's objective to "Brock awarded you the Boulder Badge and TM34.".
-    Set Story's scene to "brock explanation".
-    Sound "item".
-    Speak "{Journey's trainer} received TM34!".
-    Stop.
-  If Story's scene is "brock explanation":
-    Set Story's scene to "".
-    Speak "A TM contains a technique that can be taught to POKEMON! A TM is good only once! TM34 contains BIDE! Your POKEMON will absorb damage in battle then pay it back double!".
-    Stop.
-  If Story's scene is "deliver parcel":
-    Set Story's scene to "".
-    Set Journey's parcel to 0.
-    Set Journey's dex to 1.
-    Set Journey's stage to "pokedex".
-    Set Journey's objective to "Travel through Viridian Forest to Pewter Gym.".
-    Speak "OAK: This is my invention, POKEDEX! It automatically records data on POKEMON you've seen or caught!".
-    Stop.
-  If Story's scene is "brock challenge":
-    Set Story's scene to "".
-    Set Story's challenger to "brock".
-    Challenge "brock".
-    Set Orders's phase to "commands".
-    Set Orders's cursor to 1.
-    Set Journey's mode to "battle".
-    Stop.
-  If Story's scene is "route rival challenge":
-    Set Story's scene to "".
-    Set Story's challenger to "route rival".
-    Challenge "route rival".
-    Set Orders's phase to "commands".
-    Set Orders's cursor to 1.
-    Set Journey's mode to "battle".
-    Stop.
-  If Story's scene is "trainer challenge":
-    Set Story's scene to "".
-    Challenge Story's challenger.
-    Set Orders's phase to "commands".
-    Set Orders's cursor to 1.
-    Set Journey's mode to "battle".
-    Stop.
-  Set Story's scene to "".
-  Set Journey's mode to "walk".
-  Set Journey's message to "".
+  Depending on Story's scene:
+    For "mart parcel":
+      Set Story's scene to "".
+      Set Journey's column to 2.
+      Set Journey's row to 4.
+      Set Journey's facing to "north".
+      Set Journey's parcel to 1.
+      Sound "item".
+      Set Journey's objective to "Deliver OAK's PARCEL to his lab in PALLET TOWN.".
+      Speak "CLERK: You know PROF. OAK, right? His order came in. Will you take it to him? You got OAK's PARCEL!".
+    For "oak lab":
+      Set Story's scene to "".
+      Set Journey's place to "Oak's Lab".
+      Set Journey's column to 5.
+      Set Journey's row to 4.
+      Set Journey's facing to "north".
+      Set Journey's stage to "choose starter".
+      Set Journey's objective to "Choose a Pokemon from Oak's table.".
+      Speak "OAK: There are 3 POKEMON here! Choose one!".
+    For "starter chosen":
+      Set Story's scene to "".
+      Speak "{Journey's rival}: I'll take this one, then! {Journey's rival} received {Journey's rival starter}!".
+    For "brock badge":
+      Set Story's scene to "brock advice".
+      Sound "badge".
+      Speak "{Journey's trainer} received the BOULDERBADGE!".
+    For "brock tm received":
+      Set Journey's tm34 to 1.
+      Set Journey's objective to "Brock awarded you the Boulder Badge and TM34.".
+      Set Story's scene to "brock explanation".
+      Sound "item".
+      Speak "{Journey's trainer} received TM34!".
+    For "deliver parcel":
+      Set Story's scene to "".
+      Set Journey's parcel to 0.
+      Set Journey's dex to 1.
+      Set Journey's stage to "pokedex".
+      Set Journey's objective to "Travel through Viridian Forest to Pewter Gym.".
+      Speak "OAK: This is my invention, POKEDEX! It automatically records data on POKEMON you've seen or caught!".
+    For "trainer challenge":
+      Set Story's scene to "".
+      Engage.
+    Otherwise:
+      Let the opponent be the challenge opponents for Story's scene.
+      If the opponent is not nothing:
+        Set Story's scene to "".
+        Set Story's challenger to the opponent's challenger.
+        Engage.
+      Otherwise:
+        Set Story's scene to "".
+        Set Journey's mode to "walk".
+        Set Journey's message to "".
 
 To choose:
-  If Journey's selection is 0:
-    Set Journey's starter to "Bulbasaur".
-    Set Journey's rival starter to "Charmander".
-  If Journey's selection is 1:
-    Set Journey's starter to "Charmander".
-    Set Journey's rival starter to "Squirtle".
-  If Journey's selection is 2:
-    Set Journey's starter to "Squirtle".
-    Set Journey's rival starter to "Bulbasaur".
+  If Journey's selection is divisible by 1:
+    Let the pair be the starter pairs for "{Journey's selection}".
+    If the pair is not nothing:
+      Set Journey's starter to the pair's chosen starter.
+      Set Journey's rival starter to the pair's chosen rival starter.
   Set Combat's starter to Journey's starter.
   Enlist.
   Record.
@@ -133,7 +111,7 @@ To resolve:
     Replace.
     If Combat's outcome is "":
       Stop.
-  If Combat's outcome is "escaped" or Combat's outcome is "caught":
+  If Combat's outcome is one of "escaped" or "caught":
     Set Combat's outcome to "".
     Set Story's challenger to "".
     Set Journey's mode to "walk".
@@ -212,7 +190,7 @@ To meet a visitor (text):
       Stop.
     Speak "OAK: How is my old POKEMON? Go to VIRIDIAN CITY for me.".
     Stop.
-  If the visitor is "Bulbasaur" or the visitor is "Charmander" or the visitor is "Squirtle":
+  If the visitor is one of "Bulbasaur", "Charmander" or "Squirtle":
     If Journey's stage is "choose starter":
       Set Journey's selection to 0.
       If the visitor is "Charmander":
@@ -418,22 +396,22 @@ To advance a key (text):
     Resolve.
     Stop.
   If Journey's mode is "opening":
-    If the key is "start" or the key is "a" or Journey's animation is at least 144:
+    If (the key is one of "start" or "a") or Journey's animation is at least 144:
       Set Journey's mode to "title".
       Set Journey's animation to 0.
     Stop.
   If Journey's mode is "title":
-    If the key is "start" or the key is "a":
+    If the key is one of "start" or "a":
       Set Journey's mode to "menu".
     Stop.
   If Journey's mode is "menu":
-    If the key is "start" or the key is "a":
+    If the key is one of "start" or "a":
       Set Journey's mode to "intro".
       Set Journey's selection to 0.
       Set Journey's message to "OAK: Hello there! Welcome to the world of POKEMON! My name is OAK! People call me the POKEMON PROF!".
     Stop.
   If Journey's mode is "intro":
-    If the key is "a" or the key is "start":
+    If the key is one of "a" or "start":
       Let the intro remainder be the caption remainder for Journey's message.
       If the intro remainder is not "":
         Set Journey's message to the intro remainder.
@@ -446,16 +424,16 @@ To advance a key (text):
         Set Journey's mode to "naming".
         Set Journey's message to "OAK: First, what is your name? Choose a name.".
     Stop.
-  If Journey's mode is "naming" or Journey's mode is "rival naming":
-    If the key is "up" or the key is "left":
+  If Journey's mode is one of "naming" or "rival naming":
+    If the key is one of "up" or "left":
       Subtract 1 from Journey's selection.
       If Journey's selection is less than 0:
         Set Journey's selection to 3.
-    If the key is "down" or the key is "right":
+    If the key is one of "down" or "right":
       Add 1 to Journey's selection.
       If Journey's selection is more than 3:
         Set Journey's selection to 0.
-    If the key is "a" or the key is "start":
+    If the key is one of "a" or "start":
       If Journey's mode is "naming":
         If Journey's selection is 0:
           Set Journey's trainer to "".
@@ -479,11 +457,11 @@ To advance a key (text):
           Set Journey's rival to "JOHN".
         Begin.
     Stop.
-  If Journey's mode is "custom naming" or Journey's mode is "custom rival naming":
+  If Journey's mode is one of "custom naming" or "custom rival naming":
     Enter the key.
     Stop.
   If Journey's mode is "dialogue":
-    If the key is "a" or the key is "b" or the key is "start":
+    If the key is one of "a", "b" or "start":
       Let the remainder be the caption remainder for Journey's message.
       If the remainder is not "":
         Set Journey's message to the remainder.
@@ -498,7 +476,7 @@ To advance a key (text):
       Set Journey's message to "".
     Stop.
   If Journey's mode is "walk":
-    If the key is "up" or the key is "down" or the key is "left" or the key is "right":
+    If the key is one of "up", "down", "left" or "right":
       Walk toward the key.
     If the key is "a":
       If Journey's place is "Bedroom" and Journey's row is 2 and Journey's column is 3 and Journey's facing is "north" and Stock's pc taken is 0:

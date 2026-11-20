@@ -237,88 +237,68 @@ To keyboard:
   Inscribe "A: SELECT  B: DELETE" at 8 by 130.
 
 To Opening:
-  If Journey's mode is "opening":
-    If Journey's animation is less than 64:
-      Studio.
-    Otherwise:
-      Clash.
-  If Journey's mode is "title":
-    Logo.
-    Trainer.
-    Let the choice be the remainder of Journey's animation divided by 96.
-    If the choice is less than 32:
-      Portrait "Charmander" at 40 by 78.
-    If the choice is at least 32 and the choice is less than 64:
-      Portrait "Bulbasaur" at 40 by 78.
-    If the choice is at least 64:
-      Portrait "Squirtle" at 40 by 78.
-    Inscribe "95 96 98 GAME FREAK" at 20 by 136.
-  If Journey's mode is "menu":
-    Fill Screen from 12 by 16 with 136 over 64 as 3.
-    Fill Screen from 15 by 19 with 130 over 58 as 0.
-    Fill Screen from 30 by 32 with 3 over 7 as 3.
-    Fill Screen from 33 by 34 with 3 over 3 as 3.
-    Inscribe "NEW GAME" at 42 by 31.
-  If Journey's mode is "intro":
-    Professor.
-    Caption Journey's message.
-  If Journey's mode is "naming":
-    Inscribe "YOUR NAME?" at 8 by 8.
-    Inscribe "NEW NAME" at 57 by 23.
-    Inscribe "RED" at 57 by 40.
-    Inscribe "ASH" at 57 by 57.
-    Inscribe "JACK" at 57 by 74.
-    If Journey's selection is 0:
-      Fill Screen from 42 by 23 with 3 over 7 as 3.
-      Fill Screen from 45 by 25 with 3 over 3 as 3.
-    If Journey's selection is 1:
-      Fill Screen from 42 by 40 with 3 over 7 as 3.
-      Fill Screen from 45 by 42 with 3 over 3 as 3.
-    If Journey's selection is 2:
-      Fill Screen from 42 by 57 with 3 over 7 as 3.
-      Fill Screen from 45 by 59 with 3 over 3 as 3.
-    If Journey's selection is 3:
-      Fill Screen from 42 by 74 with 3 over 7 as 3.
-      Fill Screen from 45 by 76 with 3 over 3 as 3.
-    Caption Journey's message.
-  If Journey's mode is "rival naming":
-    Inscribe "RIVAL NAME?" at 8 by 8.
-    Inscribe "NEW NAME" at 57 by 23.
-    Inscribe "BLUE" at 57 by 40.
-    Inscribe "GARY" at 57 by 57.
-    Inscribe "JOHN" at 57 by 74.
-    If Journey's selection is 0:
-      Fill Screen from 42 by 23 with 3 over 7 as 3.
-      Fill Screen from 45 by 25 with 3 over 3 as 3.
-    If Journey's selection is 1:
-      Fill Screen from 42 by 40 with 3 over 7 as 3.
-      Fill Screen from 45 by 42 with 3 over 3 as 3.
-    If Journey's selection is 2:
-      Fill Screen from 42 by 57 with 3 over 7 as 3.
-      Fill Screen from 45 by 59 with 3 over 3 as 3.
-    If Journey's selection is 3:
-      Fill Screen from 42 by 74 with 3 over 7 as 3.
-      Fill Screen from 45 by 76 with 3 over 3 as 3.
-    Caption Journey's message.
-  If Journey's mode is "custom naming":
-    Inscribe "YOUR NAME?" at 8 by 8.
-    Inscribe Journey's trainer at 16 by 25.
-    Keyboard.
-  If Journey's mode is "custom rival naming":
-    Inscribe "RIVAL NAME?" at 8 by 8.
-    Inscribe Journey's rival at 16 by 25.
-    Keyboard.
-  If Journey's mode is "starter":
-    Inscribe "CHOOSE A POKEMON" at 32 by 6.
-    If Journey's selection is 0:
-      Portrait "Bulbasaur" at 56 by 26.
-      Inscribe "BULBASAUR" at 53 by 79.
-    If Journey's selection is 1:
-      Portrait "Charmander" at 56 by 26.
-      Inscribe "CHARMANDER" at 50 by 79.
-    If Journey's selection is 2:
-      Portrait "Squirtle" at 56 by 26.
-      Inscribe "SQUIRTLE" at 56 by 79.
-    Caption Journey's message.
+  Depending on Journey's mode:
+    For "opening":
+      If Journey's animation is less than 64:
+        Studio.
+      Otherwise:
+        Clash.
+    For "title":
+      Logo.
+      Trainer.
+      Let the choice be the remainder of Journey's animation divided by 96.
+      If the choice is less than 32:
+        Portrait "Charmander" at 40 by 78.
+      If the choice is at least 32 and the choice is less than 64:
+        Portrait "Bulbasaur" at 40 by 78.
+      If the choice is at least 64:
+        Portrait "Squirtle" at 40 by 78.
+      Inscribe "95 96 98 GAME FREAK" at 20 by 136.
+    For "menu":
+      Fill Screen from 12 by 16 with 136 over 64 as 3.
+      Fill Screen from 15 by 19 with 130 over 58 as 0.
+      Fill Screen from 30 by 32 with 3 over 7 as 3.
+      Fill Screen from 33 by 34 with 3 over 3 as 3.
+      Inscribe "NEW GAME" at 42 by 31.
+    For "intro":
+      Professor.
+      Caption Journey's message.
+    For "naming":
+      Inscribe "YOUR NAME?" at 8 by 8.
+      Inscribe "NEW NAME" at 57 by 23.
+      Inscribe "RED" at 57 by 40.
+      Inscribe "ASH" at 57 by 57.
+      Inscribe "JACK" at 57 by 74.
+    For "rival naming":
+      Inscribe "RIVAL NAME?" at 8 by 8.
+      Inscribe "NEW NAME" at 57 by 23.
+      Inscribe "BLUE" at 57 by 40.
+      Inscribe "GARY" at 57 by 57.
+      Inscribe "JOHN" at 57 by 74.
+    For "custom naming":
+      Inscribe "YOUR NAME?" at 8 by 8.
+      Inscribe Journey's trainer at 16 by 25.
+      Keyboard.
+    For "custom rival naming":
+      Inscribe "RIVAL NAME?" at 8 by 8.
+      Inscribe Journey's rival at 16 by 25.
+      Keyboard.
+    For "starter":
+      Inscribe "CHOOSE A POKEMON" at 32 by 6.
+      If Journey's selection is 0:
+        Portrait "Bulbasaur" at 56 by 26.
+        Inscribe "BULBASAUR" at 53 by 79.
+      If Journey's selection is 1:
+        Portrait "Charmander" at 56 by 26.
+        Inscribe "CHARMANDER" at 50 by 79.
+      If Journey's selection is 2:
+        Portrait "Squirtle" at 56 by 26.
+        Inscribe "SQUIRTLE" at 56 by 79.
+      Caption Journey's message.
 
-
+  If Journey's mode is one of "naming" or "rival naming":
+    If Journey's selection is 0 or Journey's selection is 1 or Journey's selection is 2 or Journey's selection is 3:
+      Let the top be 23 + (17 * Journey's selection).
+      Fill Screen from 42 by the top with 3 over 7 as 3.
+      Fill Screen from 45 by (the top + 2) with 3 over 3 as 3.
+    Caption Journey's message.

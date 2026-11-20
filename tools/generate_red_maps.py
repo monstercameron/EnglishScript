@@ -3,7 +3,7 @@ import re
 import sys
 
 reference = Path(sys.argv[1])
-output_path = Path(__file__).resolve().parents[1] / "docs/red/maps.english"
+output_path = Path(sys.argv[2]) if len(sys.argv) > 2 else Path(__file__).resolve().parents[1] / "docs/red/maps.english"
 map_specs = [
     ("Bedroom", "RedsHouse2F", "reds_house", "RedsHouse2"),
     ("Home", "RedsHouse1F", "reds_house", "RedsHouse1"),
@@ -205,8 +205,25 @@ for place, map_id, blockset_name, collision_name in map_specs:
                 "MOON_STONE": "Moon Stone",
                 "HP_UP": "HP Up",
             }[match.group(3)]
+def english_list(values):
+    if len(values) == 1:
+        return values[0]
+    return ", ".join(values[:-1]) + " or " + values[-1]
+
+
+def choices(subject, entries):
+    groups = {}
+    for key, value in entries.items():
+        groups.setdefault(value, []).append(f'"{key}"')
+    result = [f"  Choose the answer by {subject}:"]
+    for value, names in groups.items():
+        result.append(f'    For {english_list(names)}, use "{value}".')
+    result.append('    Otherwise, use "".')
+    return result
+
+
 lines = [
-    "This chapter shares only terrain, map width, map height, person, person ahead, feature, feature ahead, counter and travel.",
+    "This chapter shares only terrain, map width, map height, person, person ahead, feature, feature ahead, counter, column ahead, row ahead, conversation column, conversation row and travel.",
     "",
     "Use the foundation chapter.",
     "",
@@ -251,10 +268,8 @@ lines += [
     "",
     "To work out the raw tiles (text):",
 ]
-for place, raw in raw_tiles.items():
-    lines += [f'  If Journey\'s place is "{place}":', f'    The answer is "{raw}".']
+lines += choices("Journey's place", raw_tiles)
 lines += [
-    '  The answer is "".',
     "",
     "To work out the tile mark (text) at a column (number) by a row (number):",
     "  If the column is less than 0 or the row is less than 0:",
@@ -268,11 +283,17 @@ lines += [
     "To work out the counter (yes or no) at a column (number) by a row (number):",
     "  Let the mark be the tile mark at the column by the row.",
 ]
+counter_groups = {}
 for place, map_id, blockset_name, collision_name in map_specs:
-    counters = sorted(counter_sets[collision_name])
+    counters = tuple(sorted(counter_sets[collision_name]))
     if counters:
-        condition = " or ".join(f'the mark is "{tile:02x}"' for tile in counters)
-        lines += [f'  If Journey\'s place is "{place}" and ({condition}):', "    The answer is yes."]
+        counter_groups.setdefault(counters, []).append(place)
+for counters, places in counter_groups.items():
+    names = [f'"{place}"' for place in places]
+    marks = [f'"{tile:02x}"' for tile in counters]
+    place_test = f"Journey's place is {english_list(names)}" if len(names) == 1 else f"Journey's place is one of {english_list(names)}"
+    mark_test = f"the mark is {english_list(marks)}" if len(marks) == 1 else f"the mark is one of {english_list(marks)}"
+    lines += [f"  If {place_test} and {mark_test}:", "    The answer is yes."]
 lines += [
     "  The answer is no.",
     "",
@@ -289,13 +310,8 @@ lines += [
     "",
     "To work out the map tiles (text):",
 ]
-for place, (width, height, encoded_tiles) in map_data.items():
-    lines += [
-        f'  If Journey\'s place is "{place}":',
-        f'    The answer is "{encoded_tiles}".',
-    ]
+lines += choices("Journey's place", {place: values[2] for place, values in map_data.items()})
 lines += [
-    '  The answer is "".',
     "",
     "To work out the terrain (text) at a column (number) by a row (number):",
     "  If the column is less than 0 or the row is less than 0:",
@@ -313,81 +329,90 @@ lines += [
     '    The answer is "door".',
     '  The answer is "floor".',
     "",
+    "To work out the position key (text) at a column (number) by a row (number):",
+    "  If the column is not (the column rounded to the nearest 1) or the row is not (the row rounded to the nearest 1):",
+    '    The answer is "".',
+    '  The answer is "{Journey\'s place}:{the column},{the row}".',
+    "",
     "To work out the person (text) at a column (number) by a row (number):",
 ]
 for (place, column, row), person in npcs.items():
-    condition = f'Journey\'s place is "{place}" and the column is {column} and the row is {row}'
-    if person == "Route 22 Rival":
-        condition += " and Journey's badge is 0 and Journey's route rival beaten is 0"
-    if place == "Blue's House" and person == "Daisy":
-        condition += f" and Journey's daisy walking is {int(column == 6)}"
-    lines += [f"  If {condition}:", f'    The answer is "{person}".']
+    if person == "Route 22 Rival" or (place == "Blue's House" and person == "Daisy"):
+        condition = f'Journey\'s place is "{place}" and the column is {column} and the row is {row}'
+        if person == "Route 22 Rival":
+            condition += " and Journey's badge is 0 and Journey's route rival beaten is 0"
+        else:
+            condition += f" and Journey's daisy walking is {int(column == 6)}"
+        lines += [f"  If {condition}:", f'    The answer is "{person}".']
+
+def position_choices(entries):
+    positions = {f"{place}:{column},{row}": value for (place, column, row), value in entries.items()}
+    return choices("the position key at the column by the row", positions)
+
+
+lines += position_choices({key: person for key, person in npcs.items() if person != "Route 22 Rival" and not (key[0] == "Blue's House" and person == "Daisy")})
+lines += ["", "To work out the feature (text) at a column (number) by a row (number):"]
+lines += position_choices(features)
+lines += [""]
+lines += """To work out the forward column (number) by a distance (number):
+  If Journey's facing is "west":
+    The answer is Journey's column - the distance.
+  If Journey's facing is "east":
+    The answer is Journey's column + the distance.
+  The answer is Journey's column.
+
+To work out the forward row (number) by a distance (number):
+  If Journey's facing is "north":
+    The answer is Journey's row - the distance.
+  If Journey's facing is "south":
+    The answer is Journey's row + the distance.
+  The answer is Journey's row.
+
+To work out the column ahead (number):
+  The answer is the forward column by 1.
+
+To work out the row ahead (number):
+  The answer is the forward row by 1.
+
+To work out the conversation distance (number):
+  Let the column be the column ahead.
+  Let the row be the row ahead.
+  If the person at the column by the row is "" and the counter at the column by the row is yes:
+    The answer is 2.
+  The answer is 1.
+
+To work out the conversation column (number):
+  The answer is the forward column by the conversation distance.
+
+To work out the conversation row (number):
+  The answer is the forward row by the conversation distance.
+
+To work out the feature ahead (text):
+  The answer is the feature at the column ahead by the row ahead.
+
+To work out the person ahead (text):
+  Let the column be the column ahead.
+  Let the row be the row ahead.
+  Let the nearby be the person at the column by the row.
+  If the nearby is not "":
+    The answer is the nearby.
+  If the counter at the column by the row is yes:
+    The answer is the person at (the forward column by 2) by (the forward row by 2).
+  The answer is "".""".splitlines()
+lines += ["", "The doorways are arrival place, arrival column and arrival row, in that order:"]
+for (place, column, row), (destination, destination_column, destination_row) in warps.items():
+    lines.append(f'  "{place}:{column},{row}" has "{destination}", {destination_column} and {destination_row}.')
 lines += [
-    '  The answer is "".',
-    "",
-    "To work out the feature (text) at a column (number) by a row (number):",
-]
-for (place, column, row), feature in features.items():
-    lines += [
-        f'  If Journey\'s place is "{place}" and the column is {column} and the row is {row}:',
-        f'    The answer is "{feature}".',
-    ]
-lines += [
-    '  The answer is "".',
-    "",
-    "To work out the feature ahead (text):",
-    "  Let the column be Journey's column.",
-    "  Let the row be Journey's row.",
-    '  If Journey\'s facing is "north":',
-    "    Subtract 1 from the row.",
-    '  If Journey\'s facing is "south":',
-    "    Add 1 to the row.",
-    '  If Journey\'s facing is "west":',
-    "    Subtract 1 from the column.",
-    '  If Journey\'s facing is "east":',
-    "    Add 1 to the column.",
-    "  The answer is the feature at the column by the row.",
-    "",
-    "To work out the person ahead (text):",
-    "  Let the column be Journey's column.",
-    "  Let the row be Journey's row.",
-    '  If Journey\'s facing is "north":',
-    "    Subtract 1 from the row.",
-    '  If Journey\'s facing is "south":',
-    "    Add 1 to the row.",
-    '  If Journey\'s facing is "west":',
-    "    Subtract 1 from the column.",
-    '  If Journey\'s facing is "east":',
-    "    Add 1 to the column.",
-    "  Let the nearby be the person at the column by the row.",
-    '  If the nearby is not "":',
-    "    The answer is the nearby.",
-    "  If the counter at the column by the row is yes:",
-    '    If Journey\'s facing is "north":',
-    "      Subtract 1 from the row.",
-    '    If Journey\'s facing is "south":',
-    "      Add 1 to the row.",
-    '    If Journey\'s facing is "west":',
-    "      Subtract 1 from the column.",
-    '    If Journey\'s facing is "east":',
-    "      Add 1 to the column.",
-    "    The answer is the person at the column by the row.",
-    '  The answer is "".',
     "",
     "To cross:",
+    "  Let the key be the position key at Journey's column by Journey's row.",
+    "  Let the doorway be the doorways for the key.",
+    "  If the doorway is nothing:",
+    "    Stop.",
+    "  Set Journey's place to the doorway's arrival place.",
+    "  Set Journey's column to the doorway's arrival column.",
+    "  Set Journey's row to the doorway's arrival row.",
 ]
-for (place, column, row), (
-    destination,
-    destination_column,
-    destination_row,
-) in warps.items():
-    lines += [
-        f"  If Journey's place is \"{place}\" and Journey's column is {column} and Journey's row is {row}:",
-        f'    Set Journey\'s place to "{destination}".',
-        f"    Set Journey's column to {destination_column}.",
-        f"    Set Journey's row to {destination_row}.",
-        "    Stop.",
-    ]
 lines += [
     "",
     "To travel a direction (text):",
@@ -444,7 +469,7 @@ for old, new, edge, offset in [
             groups[-1].append(coordinate)
         else:
             groups.append([coordinate])
-    for group in groups:
+    if groups:
         dimension = "column" if vertical else "row"
         boundary = {
             "north": "the row is less than 0",
@@ -452,7 +477,11 @@ for old, new, edge, offset in [
             "west": "the column is less than 0",
             "east": "the column is at least the map width",
         }[edge]
-        condition = f"{boundary} and the {dimension} is at least {group[0]} and the {dimension} is at most {group[-1]}"
+        ranges = [f"the {dimension} is at least {group[0]} and the {dimension} is at most {group[-1]}" for group in groups]
+        range_condition = ranges[0] if len(ranges) == 1 else " or ".join(f"({item})" for item in ranges)
+        if len(ranges) > 1:
+            range_condition = f"({range_condition})"
+        condition = f"{boundary} and {range_condition}"
         lines += [
             f'  If Journey\'s place is "{old}" and {condition}:',
             f'    Set Journey\'s place to "{new}".',

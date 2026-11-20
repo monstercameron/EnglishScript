@@ -34,11 +34,11 @@ To navigate a key (text):
   If the key is "b":
     Set Journey's mode to "bag".
     Stop.
-  If the key is "up" or the key is "left":
+  If the key is one of "up" or "left":
     Subtract 1 from Journey's selection.
     If Journey's selection is less than 0:
       Set Journey's selection to 14.
-  If the key is "down" or the key is "right":
+  If the key is one of "down" or "right":
     Add 1 to Journey's selection.
     If Journey's selection is more than 14:
       Set Journey's selection to 0.
@@ -47,15 +47,15 @@ To chart:
   Set Navigator's current to 0.
   If Journey's place is "Route 1":
     Set Navigator's current to 1.
-  If Journey's place is "Viridian City" or Journey's place is "Viridian Mart" or Journey's place is "Viridian Center" or Journey's place is "Viridian School":
+  If Journey's place is one of "Viridian City", "Viridian Mart", "Viridian Center" or "Viridian School":
     Set Navigator's current to 2.
-  If Journey's place is "Route 22" or Journey's place is "Route 22 Gate":
+  If Journey's place is one of "Route 22" or "Route 22 Gate":
     Set Navigator's current to 3.
-  If Journey's place is "Route 2" or Journey's place is "Forest South Gate" or Journey's place is "Forest North Gate":
+  If Journey's place is one of "Route 2", "Forest South Gate" or "Forest North Gate":
     Set Navigator's current to 4.
   If Journey's place is "Viridian Forest":
     Set Navigator's current to 5.
-  If Journey's place is "Pewter City" or Journey's place is "Pewter Gym" or Journey's place is "Pewter Mart" or Journey's place is "Pewter Center" or Journey's place is "Pewter Museum":
+  If Journey's place is one of "Pewter City", "Pewter Gym", "Pewter Mart", "Pewter Center" or "Pewter Museum":
     Set Navigator's current to 6.
   Fill Screen from 0 by 0 with 160 over 144 as 0.
   Inscribe "TOWN MAP" at 10 by 4.

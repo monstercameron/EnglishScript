@@ -37,6 +37,8 @@ class RedConversation(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result["person"], "Mom")
         self.assertTrue(result["identity"] and result["profile"] and result["voice"])
         self.bridge.talk_reply(session, 1, "A long reply has several words and continues across several pages for the trainer to read carefully.")
+        self.assertEqual(self.bridge.world.named["talk"].fields["phase"], "answering")
+        self.assertEqual(self.states[-1]["talkPhase"], "reply")
         first = self.frames[-1]
         self.assertTrue(self.states[-1]["talkHasMore"])
         self.bridge.talk_page(session)

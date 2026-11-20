@@ -6,7 +6,7 @@
   ];
   const validPath = path => typeof path === 'string' && /^[a-zA-Z0-9_/-]+\.english$/.test(path) && !path.includes('..');
   const label = path => path.replace(/\.english$/, '').replace(/[_/]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-  const token = /"(?:[^"\\]|\\.)*"|\b\d+(?:\.\d+)?\b|\b(?:Ask the model|The answer is|For each|work out|in that order|except|has|from|for|at|when|Choose|by|Use|the|chapters|chapter|libraries|library|To|Whenever|If|Otherwise|Let|Set|be|is|are|not|and|or|contains|Stop|Repeat|while|Return|Book|Judge|Ask|about|verdict|reply|means|one of|text|number|perception|choice|Say)\b/gi;
+  const token = /"(?:[^"\\]|\\.)*"|\b\d+(?:\.\d+)?\b|\b(?:Ask the model|The answer is|For each|Depending\s+on|work out|in that order|except|has|from|for|at|when|Choose|by|Use|the|chapters|chapter|libraries|library|To|Whenever|If|Otherwise|Let|Set|be|is|are|not|and|or|contains|Stop|Repeat|while|Return|Book|Judge|Ask|about|verdict|reply|means|one of|text|number|perception|choice|Say)\b/gi;
 
   function highlight(document, source, firstLine = 1) {
     const fragment = document.createDocumentFragment();
@@ -21,15 +21,18 @@
       const lookup = /\bthe\s+[a-z][a-z ]*\s+for\s+"(?:[^"\\]|\\.)*"\s+at\b/i.test(line);
       const choose = /^\s*Choose\s+the\s+answer\s+by\s+.+:\s*$/i.test(line);
       const choiceCase = /^\s*For\s+.+,\s*use\s+.+\.\s*$/i.test(line);
+      const actionDispatch = /^\s*Depending\s+on\s+.+:\s*$/i.test(line);
+      const actionCase = /^\s*For\s+.+:\s*$/i.test(line);
       const exception = /^\s*Set\s+.+,\s*except:\s*$/i.test(line);
       const alternative = /^\s*Use\s+.+\s+for\s+.+\.\s*$/i.test(line);
       token.lastIndex = 0;
       for (const match of line.matchAll(token)) {
-        const word = match[0].toLowerCase();
+        const word = match[0].toLowerCase().replace(/\s+/g, ' ');
         if ((word === 'in that order' && !table) || (word === 'has' && !tableRow) ||
             (word === 'from' && !tableRow) || (word === 'except' && !exception) || (word === 'choose' && !choose) || (word === 'by' && !choose) ||
             (word === 'one of' && !/\bis\s+(?:not\s+)?$/i.test(line.slice(0, match.index))) ||
-            (word === 'for' && !alternative && !lookup && !choiceCase) || (word === 'at' && !lookup) || (word === 'when' && !alternative)) continue;
+            (word === 'depending on' && (!actionDispatch || line.slice(0, match.index).trim())) ||
+            (word === 'for' && !alternative && !lookup && !choiceCase && !(actionCase && !line.slice(0, match.index).trim())) || (word === 'at' && !lookup) || (word === 'when' && !alternative)) continue;
         row.append(document.createTextNode(line.slice(position, match.index)));
         const part = document.createElement('span');
         part.className = match[0][0] === '"' ? 'source-string' : /^\d/.test(match[0]) ? 'source-number' : 'source-keyword';

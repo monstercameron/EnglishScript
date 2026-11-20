@@ -158,6 +158,24 @@ To prepare:
   Set Combat's enemy attack stage to 0.
   Set Combat's enemy defense stage to 0.
 
+The opening opponents are species, level and trainer, in that order:
+  "wild" has "Pidgey", 3 and "BUG CATCHER".
+  "forest" has "Weedle", 6 and "BUG CATCHER".
+  "forest one" has "Weedle", 6 and "BUG CATCHER".
+  "forest two" has "Weedle", 7 and "BUG CATCHER".
+  "forest three" has "Weedle", 9 and "BUG CATCHER".
+  "rival" has "Caterpie", 5 and "RIVAL".
+  "route rival" has "Pidgey", 9 and "RIVAL".
+  "gym trainer" has "Diglett", 11 and "JR.TRAINER".
+  "brock" has "Geodude", 12 and "BROCK".
+
+To work out the rival species (text) from an original (text) with a fallback (text):
+  Choose the answer by the original:
+    For "Bulbasaur", use "Charmander".
+    For "Charmander", use "Squirtle".
+    For "Squirtle", use "Bulbasaur".
+    Otherwise, use the fallback.
+
 To challenge a foe (text):
   Sound "encounter".
   Set Combat's foe to the foe.
@@ -172,37 +190,13 @@ To challenge a foe (text):
   Set Combat's opponent to "Caterpie".
   Set Combat's enemy level to 4.
   Let the trainer be "BUG CATCHER".
-  If the foe is "wild":
-    Set Combat's opponent to "Pidgey".
-    Set Combat's enemy level to 3.
-  If the foe is "forest" or the foe is "forest one" or the foe is "forest two" or the foe is "forest three" or the foe is "gym trainer":
-    Set Combat's opponent to "Weedle".
-    Set Combat's enemy level to 6.
+  Let the opening be the opening opponents for the foe.
+  If the opening is not nothing:
+    Set Combat's opponent to the opening's species.
+    Set Combat's enemy level to the opening's level.
+    Set the trainer to the opening's trainer.
   If the foe is "rival":
-    Set the trainer to "RIVAL".
-    Set Combat's enemy level to 5.
-    If Combat's original is "Bulbasaur":
-      Set Combat's opponent to "Charmander".
-    If Combat's original is "Charmander":
-      Set Combat's opponent to "Squirtle".
-    If Combat's original is "Squirtle":
-      Set Combat's opponent to "Bulbasaur".
-  If the foe is "route rival":
-    Set the trainer to "RIVAL".
-    Set Combat's opponent to "Pidgey".
-    Set Combat's enemy level to 9.
-  If the foe is "forest two":
-    Set Combat's enemy level to 7.
-  If the foe is "forest three":
-    Set Combat's enemy level to 9.
-  If the foe is "gym trainer":
-    Set the trainer to "JR.TRAINER".
-    Set Combat's opponent to "Diglett".
-    Set Combat's enemy level to 11.
-  If the foe is "brock":
-    Set the trainer to "BROCK".
-    Set Combat's opponent to "Geodude".
-    Set Combat's enemy level to 12.
+    Set Combat's opponent to the rival species from Combat's original with Combat's opponent.
   Prepare.
   If the foe is "wild":
     Set Combat's message to "A wild {Combat's opponent} appeared!".
@@ -245,7 +239,7 @@ To triumph:
   Let the next be Combat's level + 1.
   Let the threshold be (6 * the next * the next * the next / 5) rounded down to the nearest 1.
   Set the threshold to the threshold - 15 * the next * the next + 100 * the next - 140.
-  If Combat's starter is "Caterpie" or Combat's starter is "Metapod" or Combat's starter is "Weedle" or Combat's starter is "Kakuna" or Combat's starter is "Rattata" or Combat's starter is "Pikachu" or Combat's starter is "Spearow":
+  If Combat's starter is one of "Caterpie", "Metapod", "Weedle", "Kakuna", "Rattata", "Pikachu" or "Spearow":
     Set the threshold to the next * the next * the next.
   If Combat's experience is at least the threshold:
     Let the old maximum be Combat's maximum health.
@@ -261,52 +255,37 @@ To triumph:
     If Combat's move four is not the old fourth:
       Set Combat's pp four to the capacity of Combat's move four.
     Add Combat's maximum health - the old maximum to Combat's health.
+  Let the reinforcement be 0.
+  Let the trainer be "The trainer".
   If Combat's foe is "route rival" and Combat's second is 0:
+    Set the reinforcement to 1.
     Set Combat's second to 1.
     Set Combat's enemy level to 8.
-    If Combat's original is "Bulbasaur":
-      Set Combat's opponent to "Charmander".
-    If Combat's original is "Charmander":
-      Set Combat's opponent to "Squirtle".
-    If Combat's original is "Squirtle":
-      Set Combat's opponent to "Bulbasaur".
-    Prepare.
-    Set Combat's message to "The rival sent out {Combat's opponent}!".
-    Sound "faint".
-    Cry Combat's opponent.
-    Stop.
+    Set Combat's opponent to the rival species from Combat's original with Combat's opponent.
+    Set the trainer to "The rival".
   If Combat's foe is "brock" and Combat's second is 0:
+    Set the reinforcement to 1.
     Set Combat's second to 1.
     Set Combat's opponent to "Onix".
     Set Combat's enemy level to 14.
-    Prepare.
-    Set Combat's message to "Brock sent out Onix!".
-    Sound "faint".
-    Cry Combat's opponent.
-    Stop.
+    Set the trainer to "Brock".
   If Combat's foe is "forest one" and Combat's second is 0:
+    Set the reinforcement to 1.
     Set Combat's second to 1.
     Set Combat's opponent to "Caterpie".
-    Prepare.
-    Set Combat's message to "The trainer sent out Caterpie!".
-    Sound "faint".
-    Cry Combat's opponent.
-    Stop.
   If Combat's foe is "forest two" and Combat's second is less than 2:
+    Set the reinforcement to 1.
     Add 1 to Combat's second.
     Set Combat's opponent to "Kakuna".
     If Combat's second is 2:
       Set Combat's opponent to "Weedle".
-    Prepare.
-    Set Combat's message to "The trainer sent out {Combat's opponent}!".
-    Sound "faint".
-    Cry Combat's opponent.
-    Stop.
   If Combat's foe is "gym trainer" and Combat's second is 0:
+    Set the reinforcement to 1.
     Set Combat's second to 1.
     Set Combat's opponent to "Sandshrew".
+  If the reinforcement is 1:
     Prepare.
-    Set Combat's message to "The trainer sent out Sandshrew!".
+    Set Combat's message to "{the trainer} sent out {Combat's opponent}!".
     Sound "faint".
     Cry Combat's opponent.
     Stop.
@@ -344,45 +323,46 @@ To attack with a move (text):
   If the move is "Leech Seed" and Combat's seed is at least 230:
     Set Combat's message to "Leech Seed missed!".
     Stop.
-  If the move is "Harden":
-    If Combat's defense stage is less than 6:
-      Add 1 to Combat's defense stage.
-    Set Combat's message to "Defense rose!".
-    Stop.
-  If the move is "String Shot":
-    Set Combat's enemy speed to (Combat's enemy speed * 2 / 3) rounded down to the nearest 1.
-    If Combat's enemy speed is less than 1:
-      Set Combat's enemy speed to 1.
-    Set Combat's message to "The enemy's Speed fell!".
-    Stop.
-  If the move is "Sand Attack":
-    If Combat's accuracy stage is more than -6:
-      Subtract 1 from Combat's accuracy stage.
-    Set Combat's message to "The enemy's accuracy fell!".
-    Stop.
-  If the move is "Thunder Wave":
-    If Combat's enemy status is "":
-      If Combat's opponent is not "Geodude" and Combat's opponent is not "Onix" and Combat's opponent is not "Diglett" and Combat's opponent is not "Sandshrew":
-        Set Combat's enemy status to "paralyzed".
-        Set Combat's enemy speed to (Combat's enemy speed / 4) rounded down to the nearest 1.
-        If Combat's enemy speed is less than 1:
-          Set Combat's enemy speed to 1.
-    Set Combat's message to "Thunder Wave was used!".
-    Stop.
-  If the move is "Growl":
-    If Combat's enemy attack stage is more than -6:
-      Subtract 1 from Combat's enemy attack stage.
-    Set Combat's message to "Growl lowered the enemy's Attack!".
-    Stop.
-  If the move is "Tail Whip" or the move is "Leer":
-    If Combat's enemy defense stage is more than -6:
-      Subtract 1 from Combat's enemy defense stage.
-    Set Combat's message to "The enemy's Defense fell!".
-    Stop.
-  If the move is "Leech Seed":
-    Set Combat's seeded to 1.
-    Set Combat's message to "The enemy was seeded!".
-    Stop.
+  Depending on the move:
+    For "Harden":
+      If Combat's defense stage is less than 6:
+        Add 1 to Combat's defense stage.
+      Set Combat's message to "Defense rose!".
+      Stop.
+    For "String Shot":
+      Set Combat's enemy speed to (Combat's enemy speed * 2 / 3) rounded down to the nearest 1.
+      If Combat's enemy speed is less than 1:
+        Set Combat's enemy speed to 1.
+      Set Combat's message to "The enemy's Speed fell!".
+      Stop.
+    For "Sand Attack":
+      If Combat's accuracy stage is more than -6:
+        Subtract 1 from Combat's accuracy stage.
+      Set Combat's message to "The enemy's accuracy fell!".
+      Stop.
+    For "Thunder Wave":
+      If Combat's enemy status is "":
+        If Combat's opponent is not one of "Geodude", "Onix", "Diglett" or "Sandshrew":
+          Set Combat's enemy status to "paralyzed".
+          Set Combat's enemy speed to (Combat's enemy speed / 4) rounded down to the nearest 1.
+          If Combat's enemy speed is less than 1:
+            Set Combat's enemy speed to 1.
+      Set Combat's message to "Thunder Wave was used!".
+      Stop.
+    For "Growl":
+      If Combat's enemy attack stage is more than -6:
+        Subtract 1 from Combat's enemy attack stage.
+      Set Combat's message to "Growl lowered the enemy's Attack!".
+      Stop.
+    For "Tail Whip" or "Leer":
+      If Combat's enemy defense stage is more than -6:
+        Subtract 1 from Combat's enemy defense stage.
+      Set Combat's message to "The enemy's Defense fell!".
+      Stop.
+    For "Leech Seed":
+      Set Combat's seeded to 1.
+      Set Combat's message to "The enemy was seeded!".
+      Stop.
   Let the entry be the move powers for the move.
   Let the power be the entry's power or else 35.
   Let the category be the entry's category or else "physical".
@@ -398,26 +378,26 @@ To attack with a move (text):
     Set the strength to Combat's special.
     Set the guard to Combat's enemy special.
   Let the hit be the damage from the strike level with the power by the strength against the guard.
-  If the move is "Ember" or the move is "Bubble" or the move is "Water Gun" or the move is "Vine Whip" or the move is "Thundershock":
+  If the move is one of "Ember", "Bubble", "Water Gun", "Vine Whip" or "Thundershock":
     Set the hit to (the hit * 3 / 2) rounded down to the nearest 1.
   If the move is "Poison Sting" and Combat's starter is not "Caterpie":
     Set the hit to (the hit * 3 / 2) rounded down to the nearest 1.
-  If the move is "Peck" or the move is "Gust" or the move is "Quick Attack" or the move is "Hyper Fang":
-    If Combat's starter is "Pidgey" or Combat's starter is "Spearow" or Combat's starter is "Rattata":
+  If the move is one of "Peck", "Gust", "Quick Attack" or "Hyper Fang":
+    If Combat's starter is one of "Pidgey", "Spearow" or "Rattata":
       Set the hit to (the hit * 3 / 2) rounded down to the nearest 1.
   If the move is "Tackle" and Combat's starter is "Rattata":
     Set the hit to (the hit * 3 / 2) rounded down to the nearest 1.
-  If Combat's opponent is "Geodude" or Combat's opponent is "Onix":
-    If the move is "Tackle" or the move is "Scratch" or the move is "Ember" or the move is "Gust" or the move is "Peck" or the move is "Quick Attack" or the move is "Hyper Fang" or the move is "Horn Attack" or the move is "Fury Attack":
+  If Combat's opponent is one of "Geodude" or "Onix":
+    If the move is one of "Tackle", "Scratch", "Ember", "Gust", "Peck", "Quick Attack", "Hyper Fang", "Horn Attack" or "Fury Attack":
       Set the hit to (the hit / 2) rounded down to the nearest 1.
     If the move is "Poison Sting":
       Set the hit to (the hit / 4) rounded down to the nearest 1.
-    If the move is "Bubble" or the move is "Water Gun" or the move is "Vine Whip":
+    If the move is one of "Bubble", "Water Gun" or "Vine Whip":
       Set the hit to the hit * 4.
-  If Combat's opponent is "Diglett" or Combat's opponent is "Sandshrew":
-    If the move is "Bubble" or the move is "Water Gun" or the move is "Vine Whip":
+  If Combat's opponent is one of "Diglett" or "Sandshrew":
+    If the move is one of "Bubble", "Water Gun" or "Vine Whip":
       Set the hit to the hit * 2.
-  If Combat's opponent is "Caterpie" or Combat's opponent is "Weedle" or Combat's opponent is "Kakuna":
+  If Combat's opponent is one of "Caterpie", "Weedle" or "Kakuna":
     If the move is "Ember":
       Set the hit to the hit * 2.
     If the move is "Vine Whip":
@@ -425,36 +405,36 @@ To attack with a move (text):
   If Combat's opponent is "Bulbasaur":
     If the move is "Ember":
       Set the hit to the hit * 2.
-    If the move is "Bubble" or the move is "Water Gun":
+    If the move is one of "Bubble" or "Water Gun":
       Set the hit to (the hit / 2) rounded down to the nearest 1.
     If the move is "Vine Whip":
       Set the hit to (the hit / 4) rounded down to the nearest 1.
   If Combat's opponent is "Charmander":
-    If the move is "Bubble" or the move is "Water Gun":
+    If the move is one of "Bubble" or "Water Gun":
       Set the hit to the hit * 2.
-    If the move is "Ember" or the move is "Vine Whip":
+    If the move is one of "Ember" or "Vine Whip":
       Set the hit to (the hit / 2) rounded down to the nearest 1.
   If Combat's opponent is "Squirtle":
     If the move is "Vine Whip":
       Set the hit to the hit * 2.
-    If the move is "Ember" or the move is "Bubble" or the move is "Water Gun":
+    If the move is one of "Ember", "Bubble" or "Water Gun":
       Set the hit to (the hit / 2) rounded down to the nearest 1.
-  If Combat's opponent is "Weedle" or Combat's opponent is "Kakuna":
+  If Combat's opponent is one of "Weedle" or "Kakuna":
     If the move is "Vine Whip":
       Set the hit to (the hit / 2) rounded down to the nearest 1.
   If Combat's opponent is "Pidgey" and the move is "Vine Whip":
     Set the hit to (the hit / 2) rounded down to the nearest 1.
   If the move is "Thundershock":
-    If Combat's opponent is "Geodude" or Combat's opponent is "Onix" or Combat's opponent is "Diglett" or Combat's opponent is "Sandshrew":
+    If Combat's opponent is one of "Geodude", "Onix", "Diglett" or "Sandshrew":
       Set Combat's message to "It doesn't affect the enemy!".
       Stop.
     If Combat's opponent is "Pidgey":
       Set the hit to the hit * 2.
   If the move is "Confusion":
-    If Combat's opponent is "Bulbasaur" or Combat's opponent is "Weedle" or Combat's opponent is "Kakuna":
+    If Combat's opponent is one of "Bulbasaur", "Weedle" or "Kakuna":
       Set the hit to the hit * 2.
   If the move is "Peck":
-    If Combat's opponent is "Bulbasaur" or Combat's opponent is "Caterpie" or Combat's opponent is "Weedle":
+    If Combat's opponent is one of "Bulbasaur", "Caterpie" or "Weedle":
       Set the hit to the hit * 2.
   Set Combat's seed to the remainder of (Combat's seed * 109 + 89) divided by 256.
   Let the variation be 217 + the remainder of Combat's seed divided by 39.
@@ -471,7 +451,7 @@ To attack with a move (text):
     Add the hit to Combat's stored damage.
   Set Combat's message to "{Combat's species} used {the move}!".
   If Combat's enemy health is more than 0 and Combat's enemy status is "":
-    If the move is "Poison Sting" and Combat's opponent is not "Bulbasaur" and Combat's opponent is not "Weedle" and Combat's opponent is not "Kakuna" and Combat's opponent is not "Nidoran F" and Combat's opponent is not "Nidoran M":
+    If the move is "Poison Sting" and Combat's opponent is not one of "Bulbasaur", "Weedle", "Kakuna", "Nidoran F" or "Nidoran M":
       Set Combat's seed to the remainder of (Combat's seed * 109 + 89) divided by 256.
       If Combat's seed is less than 52:
         Set Combat's enemy status to "poisoned".
@@ -486,7 +466,7 @@ To attack with a move (text):
         Set Combat's message to "{Combat's opponent} was burned!".
 
 To suffer:
-  If Combat's enemy status is "poisoned" or Combat's enemy status is "burned":
+  If Combat's enemy status is one of "poisoned" or "burned":
     Let the harm be (Combat's enemy maximum health / 16) rounded down to the nearest 1.
     If the harm is less than 1:
       Set the harm to 1.
@@ -611,17 +591,17 @@ To respond:
 To fight a key (text):
   If Combat's active is 0:
     Stop.
-  If the key is "left" or the key is "up":
+  If the key is one of "left" or "up":
     Subtract 1 from Combat's choice.
     If Combat's choice is less than 1:
       Set Combat's choice to 4.
     Stop.
-  If the key is "right" or the key is "down":
+  If the key is one of "right" or "down":
     Add 1 to Combat's choice.
     If Combat's choice is more than 4:
       Set Combat's choice to 1.
     Stop.
-  If the key is not "a" and the key is not "enter" and the key is not "z":
+  If the key is not one of "a", "enter" or "z":
     Stop.
   Let the move be Combat's move one.
   If Combat's choice is 2:
