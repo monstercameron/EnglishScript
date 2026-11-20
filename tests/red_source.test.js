@@ -50,6 +50,17 @@ const response = value => ({ ok: true, json: async () => value, text: async () =
   assert.ok(expanded.children[3].children.some(node => node.className === 'source-string' && node.textContent === '"from chapters has"'));
   assert.ok(!expanded.children[4].children.some(node => node.className === 'source-keyword' && node.textContent === 'from'));
 
+  const choicesSource = 'ChOoSe the answer by the species:\n  For "A", "B" or "C", use "Choose by one of".\n  Otherwise, use "other".\nIf the species is not one of "A", "B":\n  Say "not one of".\nA mood is one of sleepy or happy.\nSay by.\n';
+  const choices = highlight(document, choicesSource);
+  assert.equal(choices.textContent, choicesSource);
+  for (const [line, words] of [[0, ['ChOoSe', 'by']], [1, ['For', 'or', 'use']],
+    [2, ['Otherwise', 'use']], [3, ['is', 'not', 'one of']], [5, ['is', 'one of']]]) {
+    for (const word of words) assert.ok(choices.children[line].children.some(node => node.className === 'source-keyword' && node.textContent === word), word);
+  }
+  assert.ok(choices.children[1].children.some(node => node.className === 'source-string' && node.textContent === '"Choose by one of"'));
+  assert.ok(choices.children[4].children.some(node => node.className === 'source-string' && node.textContent === '"not one of"'));
+  assert.ok(!choices.children[6].children.some(node => node.className === 'source-keyword' && node.textContent === 'by'));
+
   const pending = {};
   const calls = [];
   const fetch = path => {

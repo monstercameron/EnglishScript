@@ -925,6 +925,7 @@ A comparison starts with an expression and continues in one of these ways. `are`
 | `is divisible by <expression>` | Dividing leaves no remainder. Plain numbers only. |
 | `is <adjective>` | The adjective's definition holds. The left side must be a thing. |
 | `is nothing` | The value is missing (section 2). |
+| `is [not] one of <value>, <value> or <value>` | A text or choice value matches one of the listed values, or does not. |
 | `has a <property>`, `has no <property>` | The property is there, or is missing. Written without `is`. |
 | `=`, `<`, `>`, `<=`, `>=` | The same comparisons as symbols. |
 | `contains <text>` | The text on the left has the other inside it. Written without `is`. |
@@ -935,6 +936,7 @@ A comparison starts with an expression and continues in one of these ways. `are`
 - `is` between two texts is exact, capitals included, and so are `contains`, `starts with` and `ends with`. All five text tests need text on both sides.
 - `does not contain`, `does not start with` and `does not end with` are the opposites of the first three, as `not ... contains` is.
 - A `yes or no` value is tested with `is yes` or `is no` (section 2).
+- `is one of` compares text exactly, including capitals, or compares values of the same named set of choices. The listed values have the same type as the value being tested.
 - Lists cannot be compared yet.
 - Comparisons are joined with `and` or with `or`. `and` and `or` stop as soon as the answer is known: after a false part of `and`, or a true part of `or`, the rest is not worked out (so it may rely on what the earlier parts checked, section 2).
 - **`and` and `or` cannot be mixed** in one condition unless brackets show which belong together.
@@ -955,6 +957,8 @@ If 2 + 2 = 4 and 3 < 4 and 4 >= 4:
   Say "symbols"          #> symbols
 If "apple" comes before "Banana" and "Smaug" starts with "Sm":
   Say "text"             #> text
+If "Oak" is one of "Oak", "Misty" or "Brock":
+  Say "known"            #> known
 ```
 
 ```refused
@@ -1668,6 +1672,36 @@ the <name> [<preposition> <value>]...
 - A worked-out value cannot share its name with a property, a variable or a thing.
 - It may use itself, to a depth of 200.
 
+Several cases can share one answer in a worked-out value.
+
+```text
+Choose the answer by <subject>:
+  For <case>, <case> or <case>, use <expression>.
+  Otherwise, use <expression>.
+```
+
+Use quoted literals for text and named choices for a value such as a mood. Each case may appear only once across all rows. Text needs a final `Otherwise` row. For a named set of choices, you can omit `Otherwise` when the rows cover every choice.
+
+EnglishScript reads the subject once and evaluates the answer on the matching row. If no case matches, it evaluates the `Otherwise` answer. Each answer must fit the declared result type and returns immediately, just like `The answer is`.
+
+```englishscript
+A mood is one of sleepy, grumpy or cheerful.
+To work out the greeting (text) for a feeling (mood):
+  Choose the answer by the feeling:
+    For sleepy or grumpy, use "Good morning".
+    For cheerful, use "Hello!".
+Say the greeting for sleepy.             #> Good morning
+If cheerful is not one of sleepy or grumpy:
+  Say the greeting for cheerful.         #> Hello!
+
+To work out the town (text) for a visitor (text):
+  Choose the answer by the visitor:
+    For "Oak", "Red" or "Blue", use "Pallet Town".
+    Otherwise, use "unknown".
+Say the town for "Oak".                 #> Pallet Town
+Say the town for "Misty".               #> unknown
+```
+
 A worked-out property (section 4.4) remains the short form for one thing and one expression.
 
 ```englishscript
@@ -2320,6 +2354,12 @@ block-opener = "Set" target "to" expression "," "except" ":"
             | "Try" ":"                                                (followed by "If that fails:")
             | "If that fails" ":"                                      (perhaps followed by "Either way:")
             | "Either way" ":"
+            | "Choose the answer by" expression ":"                    (inside To work out)
+
+choose-case = "For" case-list ", use" expression "."
+            | "Otherwise, use" expression "."
+case-list   = CASE { ( "," | "or" | "," "or" ) CASE }
+CASE        = TEXT | CHOICE                               (literal text or a choice of the subject’s type)
 
 exception-case = "Use" expression "for" expression [ "when" condition ] "."  (inside Set ... except)
 
@@ -2334,7 +2374,7 @@ comparison  = ( "is" | "are" ) [ "not" ] tail
 tail        = "less than" expression | "more than" expression
             | "greater than" expression | "at least" expression
             | "at most" expression | "divisible by" expression
-            | "nothing" | ADJECTIVE | "in" value | expression
+            | "nothing" | ADJECTIVE | "in" value | "one of" case-list | expression
 
 expression  = sum { "or else" sum }
 sum         = term { ( "+" | "plus" | "-" | "minus" ) term }

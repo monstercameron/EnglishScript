@@ -826,6 +826,7 @@ Say the dragon called "Puff"                #&gt; nothing</pre>
 <tr><td><code>is divisible by &lt;expression&gt;</code></td><td>Dividing leaves no remainder. Plain numbers only.</td></tr>
 <tr><td><code>is &lt;adjective&gt;</code></td><td>The adjective's definition holds. The left side must be a thing.</td></tr>
 <tr><td><code>is nothing</code></td><td>The value is missing (section <a href="#s2">2</a>).</td></tr>
+<tr><td><code>is [not] one of &lt;value&gt;, &lt;value&gt; or &lt;value&gt;</code></td><td>A text or choice value matches one of the listed values, or does not.</td></tr>
 <tr><td><code>has a &lt;property&gt;</code>, <code>has no &lt;property&gt;</code></td><td>The property is there, or is missing. Written without <code>is</code>.</td></tr>
 <tr><td><code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code></td><td>The same comparisons as symbols.</td></tr>
 <tr><td><code>contains &lt;text&gt;</code></td><td>The text on the left has the other inside it. Written without <code>is</code>.</td></tr>
@@ -837,6 +838,7 @@ Say the dragon called "Puff"                #&gt; nothing</pre>
 <li><code>is</code> between two texts is exact, capitals included, and so are <code>contains</code>, <code>starts with</code> and <code>ends with</code>. All five text tests need text on both sides.</li>
 <li><code>does not contain</code>, <code>does not start with</code> and <code>does not end with</code> are the opposites of the first three, as <code>not ... contains</code> is.</li>
 <li>A <code>yes or no</code> value is tested with <code>is yes</code> or <code>is no</code> (section <a href="#s2">2</a>).</li>
+<li><code>is one of</code> compares text exactly, including capitals, or compares values of the same named set of choices. The listed values have the same type as the value being tested.</li>
 <li>Lists cannot be compared yet.</li>
 <li>Comparisons are joined with <code>and</code> or with <code>or</code>. <code>and</code> and <code>or</code> stop as soon as the answer is known: after a false part of <code>and</code>, or a true part of <code>or</code>, the rest is not worked out (so it may rely on what the earlier parts checked, section <a href="#s2">2</a>).</li>
 <li><strong><code>and</code> and <code>or</code> cannot be mixed</strong> in one condition unless brackets show which belong together.</li>
@@ -856,7 +858,9 @@ If not Robin is brave:
 If 2 + 2 = 4 and 3 &lt; 4 and 4 &gt;= 4:
   Say "symbols"          #&gt; symbols
 If "apple" comes before "Banana" and "Smaug" starts with "Sm":
-  Say "text"             #&gt; text</pre>
+  Say "text"             #&gt; text
+If "Oak" is one of "Oak", "Misty" or "Brock":
+  Say "known"            #&gt; known</pre>
 </figure>
 <figure class="snippet" data-with-world>
 <pre class="program" data-expect="refused">If Smaug is ancient and Robin is brave or Gawain is brave:
@@ -1419,6 +1423,29 @@ The answer is &lt;expression&gt;.</pre>
 <li>A worked-out value cannot share its name with a property, a variable or a thing.</li>
 <li>It may use itself, to a depth of 200.</li>
 </ul>
+<p>Several cases can share one answer in a worked-out value.</p>
+<pre class="form">Choose the answer by &lt;subject&gt;:
+  For &lt;case&gt;, &lt;case&gt; or &lt;case&gt;, use &lt;expression&gt;.
+  Otherwise, use &lt;expression&gt;.</pre>
+<p>Use quoted literals for text and named choices for a value such as a mood. Each case may appear only once across all rows. Text needs a final <code>Otherwise</code> row. For a named set of choices, you can omit <code>Otherwise</code> when the rows cover every choice.</p>
+<p>EnglishScript reads the subject once and evaluates the answer on the matching row. If no case matches, it evaluates the <code>Otherwise</code> answer. Each answer must fit the declared result type and returns immediately, just like <code>The answer is</code>.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">A mood is one of sleepy, grumpy or cheerful.
+To work out the greeting (text) for a feeling (mood):
+  Choose the answer by the feeling:
+    For sleepy or grumpy, use "Good morning".
+    For cheerful, use "Hello!".
+Say the greeting for sleepy.             #&gt; Good morning
+If cheerful is not one of sleepy or grumpy:
+  Say the greeting for cheerful.         #&gt; Hello!
+
+To work out the town (text) for a visitor (text):
+  Choose the answer by the visitor:
+    For "Oak", "Red" or "Blue", use "Pallet Town".
+    Otherwise, use "unknown".
+Say the town for "Oak".                 #&gt; Pallet Town
+Say the town for "Misty".               #&gt; unknown</pre>
+</figure>
 <p>A worked-out property (section <a href="#s4-4">4.4</a>) remains the short form for one thing and one expression.</p>
 <figure class="snippet" data-with-world>
 <pre class="program" data-expect="ok">To work out the bounty (money) for a dragon:
@@ -1964,6 +1991,12 @@ block-opener = "Set" target "to" expression "," "except" ":"
             | "Try" ":"                                                (followed by "If that fails:")
             | "If that fails" ":"                                      (perhaps followed by "Either way:")
             | "Either way" ":"
+            | "Choose the answer by" expression ":"                    (inside To work out)
+
+choose-case = "For" case-list ", use" expression "."
+            | "Otherwise, use" expression "."
+case-list   = CASE { ( "," | "or" | "," "or" ) CASE }
+CASE        = TEXT | CHOICE                               (literal text or a choice of the subject’s type)
 
 exception-case = "Use" expression "for" expression [ "when" condition ] "."  (inside Set ... except)
 
@@ -1978,7 +2011,7 @@ comparison  = ( "is" | "are" ) [ "not" ] tail
 tail        = "less than" expression | "more than" expression
             | "greater than" expression | "at least" expression
             | "at most" expression | "divisible by" expression
-            | "nothing" | ADJECTIVE | "in" value | expression
+            | "nothing" | ADJECTIVE | "in" value | "one of" case-list | expression
 
 expression  = sum { "or else" sum }
 sum         = term { ( "+" | "plus" | "-" | "minus" ) term }

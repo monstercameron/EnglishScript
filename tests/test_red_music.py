@@ -38,15 +38,23 @@ class RedMusic(unittest.IsolatedAsyncioTestCase):
 
         check("intro duel")
         cases = (
-            ("title", "", "opening"), ("menu", "", "opening"),
-            ("intro", "", "oak speech"), ("walk", "Bedroom", "pallet"),
-            ("walk", "Pallet Town", "pallet"), ("walk", "Oak's Lab", "lab"),
+            ("opening", "Pewter Gym", "intro duel"),
+            ("title", "", "opening"), ("title", "Pewter Gym", "opening"),
+            ("menu", "Route 1", "opening"), ("intro", "", "oak speech"),
+            ("walk", "", "oak speech"), ("walk", "Bedroom", "pallet"),
+            ("walk", "Pallet Town", "pallet"), ("walk", "Home", "pallet"),
+            ("walk", "Blue's House", "pallet"), ("walk", "Oak's Lab", "lab"),
             ("walk", "Route 1", "route"), ("walk", "Route 2", "route"),
             ("walk", "Route 22", "route west"), ("walk", "Viridian Forest", "forest"),
             ("walk", "Route 22 Gate", "forest"), ("walk", "Viridian Center", "center"),
             ("walk", "Pewter Center", "center"), ("walk", "Viridian Mart", "center"),
             ("walk", "Pewter Mart", "center"), ("walk", "Viridian City", "city"),
             ("walk", "Pewter City", "city"), ("walk", "Pewter Gym", "gym"),
+            ("walk", "unknown place", "city"),
+            ("dialogue", "Route 1", "route"), ("field menu", "Route 1", "route"),
+            ("party", "Route 1", "route"), ("bag", "Route 1", "route"),
+            ("card", "Route 1", "route"), ("shop", "Route 1", "route"),
+            ("town map", "Route 1", "route"),
         )
         for mode, place, expected in cases:
             with self.subTest(mode=mode, place=place):
@@ -55,7 +63,8 @@ class RedMusic(unittest.IsolatedAsyncioTestCase):
                 tick()
                 check(expected)
 
-        for foe, expected in (("wild", "wild"), ("rival", "trainer"), ("brock", "leader")):
+        for foe, expected in (("wild", "wild"), ("rival", "trainer"),
+                              ("brock", "leader"), ("unknown foe", "trainer"), ("", "trainer")):
             with self.subTest(foe=foe):
                 journey["mode"], journey["place"] = "walk", "Pewter Gym"
                 combat["active"], combat["foe"] = 1, foe
@@ -64,7 +73,24 @@ class RedMusic(unittest.IsolatedAsyncioTestCase):
                 journey["mode"] = "battle bag"
                 tick()
                 check(expected)
+                journey["mode"] = "battle party"
+                tick()
+                check(expected)
+                journey["mode"], journey["place"] = "title", ""
+                tick()
+                check(expected)
                 combat["active"] = 0
-                journey["mode"] = "walk"
+                journey["mode"], journey["place"] = "walk", "Pewter Gym"
                 tick()
                 check("gym")
+
+        journey["mode"], journey["place"] = "walk", "Route 1"
+        tick()
+        check("route")
+        world.named["talk"].fields["phase"] = "composing"
+        journey["place"] = "Pewter Gym"
+        tick()
+        check("route")
+        world.named["talk"].fields["phase"] = "closed"
+        tick()
+        check("gym")

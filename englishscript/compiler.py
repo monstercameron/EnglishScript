@@ -3274,6 +3274,103 @@ class Compiler:
             cond.nt = keys
         return cond
 
+    def grouped_option_ahead(self, s, offset=0):
+        tok = s.peek(offset)
+        if tok.kind == "STRING":
+            return 1
+        match = self.match_words(s, self.choice_words, offset)
+        return match[1] if match else 0
+
+    def grouped_options(self, s, type_, row=False):
+        if type_ != "text" and type_ not in self.choice_sets:
+            s.fail("Grouped choices need text or a set of choices.")
+        values = []
+        while True:
+            tok = s.peek()
+            count = self.grouped_option_ahead(s)
+            if not count:
+                s.fail("Expected quoted text or a choice here.", tok)
+            if tok.kind == "STRING":
+                s.next()
+                value, option_type = self.literal_text(s, tok, "A grouped choice"), "text"
+            else:
+                match = self.match_words(s, self.choice_words)
+                entry = self.choice_words[match[0]]
+                value, option_type = entry[0], entry[1]
+                for _ in range(count):
+                    s.next()
+            if option_type != type_:
+                s.fail(f"This choice is {self.describe(option_type)}, but the subject is {self.describe(type_)}.", tok,
+                       teach="compare_kinds")
+            if value in values:
+                s.fail(f'"{value}" is listed twice.', tok)
+            values.append(value)
+            if s.peek().is_punct(",") and not (row and s.peek(1).is_word("use")):
+                s.next()
+                s.eat_word("or")
+                continue
+            if s.at_word("or"):
+                count = self.grouped_option_ahead(s, 1)
+                following = s.peek(1 + count)
+                if count and (following.kind == "END" or following.is_punct(",", ")") or
+                              following.is_word("or", "and")):
+                    s.next()
+                    continue
+            break
+        return tuple(values)
+
+    def choose_answer(self, s):
+        if self.workout is None:
+            s.fail('"Choose the answer" belongs inside a "To work out ...:" block.')
+        for _ in range(4):
+            s.next()
+        subject = self.whole_value(s)
+        self.need(s, subject)
+        if subject.type != "text" and subject.type not in self.choice_sets:
+            s.fail_span("Grouped choices need text or a set of choices.", subject.span)
+        self.end(s)
+        self.needs_block(s, True)
+        branches, otherwise = {}, None
+        for line in s.line.children:
+            self.line = line
+            child = Sentence(line)
+            self.needs_block(child, False)
+            if child.eat_word("otherwise"):
+                if otherwise is not None:
+                    child.fail('Only one "Otherwise" is allowed.')
+                child.expect_punct(",")
+                child.expect_word("use")
+                value = self.answer_value(child)
+                otherwise = value.fn
+                continue
+            if otherwise is not None:
+                child.fail('"Otherwise" must be the last row.')
+            child.expect_word("for")
+            values = self.grouped_options(child, subject.type, row=True)
+            for choice in values:
+                if choice in branches:
+                    child.fail(f'"{choice}" is listed twice.')
+            child.expect_punct(",")
+            child.expect_word("use")
+            value = self.answer_value(child)
+            for choice in values:
+                branches[choice] = value.fn
+        if otherwise is None:
+            if subject.type == "text":
+                s.fail('A choice over text needs a final "Otherwise, use ..." row.')
+            missing = [v for v in self.choice_sets[subject.type].displays if v not in branches]
+            if missing:
+                s.fail("These choices are missing: " + join_words(missing) + ".")
+        sf = subject.fn
+        def step(env):
+            result = branches.get(sf(env), otherwise)
+            if result is None:
+                raise EnglishError("No choice matched.", stage="run")
+            raise _Answer(result(env))
+        step.answers = step.leaves = True
+        self.line = s.line
+        return step
+
     def tail(self, s, left):
         """What follows "is": nothing, a comparison, an adjective, or a value."""
         if left.key == ("var", PROBLEM) and (s.at_word("a", "an") or s.at_words("no", "model")):
@@ -3289,6 +3386,12 @@ class Compiler:
                 cond.nf = frozenset([left.key])
             return cond
         self.need(s, left)
+        if s.at_words("one", "of"):
+            s.next()
+            s.next()
+            values = self.grouped_options(s, left.type)
+            lf = left.fn
+            return Expr("truth", lambda env: lf(env) in values)
         if s.at_word("in"):  # "<value> is in <list>"
             s.next()
             items = self.primary(s)
@@ -4073,6 +4176,9 @@ class Compiler:
         word = first.low
         top = self.scope is self.globals
 
+        if s.line.terminator == ":" and s.at_words("choose", "the", "answer", "by"):
+            return self.choose_answer(s)
+
         if word == "the" and s.peek(1).is_word("answer"):
             self.needs_block(s, False)
             return self.answer(s)
@@ -4559,15 +4665,19 @@ class Compiler:
                 and any(t.is_word("are") for t in toks[1:])
                 and [t.low for t in toks[-4:-1]] == ["in", "that", "order"])
 
+    @staticmethod
+    def literal_text(s, tok, subject):
+        if "{" in tok.text or "}" in tok.text:
+            s.fail(f"{subject} must be literal text without fill-ins.", tok)
+        return tok.text[1:-1].replace('""', '"')
+
     def fact_literal(self, s):
         minus = bool(s.eat_punct("-"))
         tok = s.next()
         if tok.kind not in ("NUMBER", "MONEY", "PERCENT", "STRING") or (minus and tok.kind == "STRING"):
             s.fail("A fact table value must be a literal number, money, percent or quoted text.", tok)
         if tok.kind == "STRING":
-            if "{" in tok.text or "}" in tok.text:
-                s.fail("A fact table value must be literal text without fill-ins.", tok)
-            return tok.text[1:-1].replace('""', '"'), "text"
+            return self.literal_text(s, tok, "A fact table value"), "text"
         return (-tok.value if minus else tok.value), tok.kind.lower()
 
     def define_fact_table(self, s):
@@ -6848,6 +6958,15 @@ class Compiler:
             s.fail('"The answer is" belongs inside a "To work out ...:" block.', s.toks[0],
                    hint='To show a value, write "Say ..." instead.', teach="answer_place")
         s.expect_word("is", teach="answer_place")
+        value = self.answer_value(s)
+        fn = value.fn
+
+        def step(env):
+            raise _Answer(fn(env))
+        step.answers = step.leaves = True
+        return step
+
+    def answer_value(self, s):
         value = self.whole_value(s, self.workout.type)
         self.end(s)
         w = self.workout
@@ -6858,12 +6977,7 @@ class Compiler:
                 f"The {w.name} is {self.describe(w.type)}, but {value.text} is {self.describe(value.type)}.",
                 value.span, teach="fit",
             )
-        fn = value.fn
-
-        def step(env):
-            raise _Answer(fn(env))
-        step.answers = step.leaves = True
-        return step
+        return value
 
     def one_loop(self, s, phrase):
         if not self.loops:

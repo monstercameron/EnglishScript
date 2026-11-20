@@ -4,66 +4,56 @@ Use the maps, pack, people and conversation chapters.
 Use the overworld, lettering, opening and arena chapters.
 Use the sound and town map chapters.
 
-An adventure is equipping when its mode is "battle bag" or its mode is "battle party".
-An adventure is browsing when its mode is "battle bag" or its mode is "battle party" or its mode is "field menu" or its mode is "party" or its mode is "bag" or its mode is "card" or its mode is "shop".
+An adventure is equipping when its mode is one of "battle bag" or "battle party".
+An adventure is browsing when it is equipping or its mode is one of "field menu", "party", "bag", "card" or "shop".
 
 To illustrate:
   If Talk's phase is not "closed":
     Landscape.
     Portray.
-    Stop.
-  If Journey's mode is "town map":
+  Otherwise if Journey's mode is "town map":
     Chart.
-    Stop.
-  If Journey is browsing:
+  Otherwise if Journey is browsing:
     Catalogue.
-    Stop.
-  If Journey's mode is "battle":
+  Otherwise if Journey's mode is "battle":
     Arena.
-    Stop.
-  If Journey's mode is "walk" or Journey's mode is "dialogue":
+  Otherwise if Journey's mode is one of "walk" or "dialogue":
     Landscape.
     If Journey's mode is "dialogue":
       Caption Journey's message.
-    Stop.
-  Fill Screen from 0 by 0 with 160 over 144 as 0.
-  Opening.
+  Otherwise:
+    Fill Screen from 0 by 0 with 160 over 144 as 0.
+    Opening.
+
+To work out the place music (text):
+  Choose the answer by Journey's place:
+    For "", use "oak speech".
+    For "Pallet Town", "Bedroom", "Home" or "Blue's House", use "pallet".
+    For "Oak's Lab", use "lab".
+    For "Viridian Center", "Pewter Center", "Viridian Mart" or "Pewter Mart", use "center".
+    For "Route 1" or "Route 2", use "route".
+    For "Route 22", use "route west".
+    For "Viridian Forest" or "Route 22 Gate", use "forest".
+    For "Pewter Gym", use "gym".
+    Otherwise, use "city".
 
 To work out the local music (text):
   If Combat's active is 1:
-    If Combat's foe is "brock":
-      The answer is "leader".
-    If Combat's foe is "wild":
-      The answer is "wild".
-    The answer is "trainer".
-  If Journey's mode is "opening":
-    The answer is "intro duel".
-  If Journey's mode is "title" or Journey's mode is "menu":
-    The answer is "opening".
-  If Journey's place is "":
-    The answer is "oak speech".
-  If Journey's place is "Pallet Town" or Journey's place is "Bedroom" or Journey's place is "Home" or Journey's place is "Blue's House":
-    The answer is "pallet".
-  If Journey's place is "Oak's Lab":
-    The answer is "lab".
-  If Journey's place is "Viridian Center" or Journey's place is "Pewter Center" or Journey's place is "Viridian Mart" or Journey's place is "Pewter Mart":
-    The answer is "center".
-  If Journey's place is "Route 1" or Journey's place is "Route 2":
-    The answer is "route".
-  If Journey's place is "Route 22":
-    The answer is "route west".
-  If Journey's place is "Viridian Forest" or Journey's place is "Route 22 Gate":
-    The answer is "forest".
-  If Journey's place is "Pewter Gym":
-    The answer is "gym".
-  The answer is "city".
+    Choose the answer by Combat's foe:
+      For "brock", use "leader".
+      For "wild", use "wild".
+      Otherwise, use "trainer".
+  Choose the answer by Journey's mode:
+    For "opening", use "intro duel".
+    For "title" or "menu", use "opening".
+    Otherwise, use the place music.
 
 To work out the menu position (text):
   If Journey's mode is "battle":
     The answer is "{Orders's phase} {Orders's cursor} {Combat's choice}".
   If Journey is browsing:
     The answer is "{Journey's mode} {Stock's cursor}".
-  If Journey's mode is "menu" or Journey's mode is "starter" or Journey's mode contains "naming":
+  If (Journey's mode is one of "menu" or "starter") or Journey's mode contains "naming":
     The answer is "{Journey's mode} {Journey's selection}".
   The answer is "".
 
@@ -81,9 +71,7 @@ Whenever Controls becomes ready:
   Otherwise if Journey is equipping:
     Inventory the key.
     Resolve.
-  Otherwise if Journey is browsing:
-    Inventory the key.
-  Otherwise if Journey's mode is "walk" and the key is "start":
+  Otherwise if Journey is browsing or (Journey's mode is "walk" and the key is "start"):
     Inventory the key.
   Otherwise:
     Advance the key.
