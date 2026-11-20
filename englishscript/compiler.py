@@ -13,9 +13,15 @@ this sentence" error is reported before the first line executes.
 Along the way the compiler keeps notes on how it resolved anything the writer
 left implicit ("its" -> the dragon). `--explain` prints those notes.
 
-Types are plain strings: "number", "money", "text", "percent", the name of a
-kind, or any of those followed by "?" for a value that may be nothing. The
-word `nothing` on its own has the type "nothing".
+Types are plain strings: "number", "money", "text", "percent", "yes or no",
+the name of a kind, "list of <one of those>", or any of those followed by "?"
+for a value that may be nothing. The word `nothing` on its own has the type
+"nothing", and a condition has the type "truth", which cannot be stored.
+
+A `Try:` block undoes what it changed when a problem arises. Problems that may
+be recovered from are raised as `EnglishError(..., recoverable=True)`; faults in
+the program itself (an example that does not hold, a loop that runs away) are
+not, and always end the program.
 """
 from __future__ import annotations
 
@@ -26,7 +32,9 @@ from dataclasses import dataclass, field
 from fractions import Fraction
 
 from .lexer import EnglishError, Token, read_source, tokenize
-from .runtime import Env, Thing, World, fmt
+from .runtime import (
+    Env, Thing, World, alive, fmt, no_digit_limit, read_file, read_number, read_reply, split_lines, write_file,
+)
 
 BASE_TYPES = ("number", "money", "text", "percent")
 POSSESSIVES = ("its", "their")
@@ -45,7 +53,15 @@ KEYWORDS = PREPOSITIONS | set(BUILTIN_VERBS) | set(BASE_TYPES) | set(POSSESSIVES
     "be", "called", "whose", "when", "has", "never", "always", "than", "less",
     "more", "greater", "least", "most", "plus", "minus", "times", "divided",
     "divisible", "all", "example", "name", "nothing", "any", "else", "answer",
+    "yes", "no", "now", "whether", "can", "in", "new", "remove", "ask", "write",
+    "try", "fail", "reply", "problem", "list", "items",
 }
+YES_NO = "yes or no"
+LIST = "list of "
+# What may follow "list of": the plural of a plain type.
+LIST_PLURALS = {"numbers": "number", "money": "money", "text": "text", "percentages": "percent"}
+ASKABLE = ("text", "number", "money", "percent", YES_NO)
+PROBLEM = "\0problem"  # the hidden variable that holds "the problem"
 LOOP_LIMIT = 10_000
 CALL_LIMIT = 200
 NONE = frozenset()
@@ -80,6 +96,14 @@ def base(type_):
 
 def opt(type_):
     return type_ if type_.endswith("?") or type_ == "nothing" else type_ + "?"
+
+
+def is_list(type_):
+    return base(type_).startswith(LIST)
+
+
+def item_type(type_):
+    return base(type_)[len(LIST):]
 
 
 def cap(text):
@@ -144,6 +168,7 @@ class Adj:
     name: str
     fn: object  # (world, thing) -> bool
     source: str
+    stored: bool = False  # made with "can be", and changed with "Now"
 
 
 @dataclass
@@ -340,11 +365,20 @@ class Compiler:
             return "nothing"
         if is_opt(type_):
             return self.describe(base(type_)) + ", if any"
+        if is_list(type_):
+            return "a list of " + self.plural_type(item_type(type_))
         plain = {
             "number": "a plain number", "money": "money", "text": "text",
-            "percent": "a percentage", "truth": "a yes-or-no answer",
+            "percent": "a percentage", "truth": "a yes-or-no answer", YES_NO: "a yes-or-no value",
         }
         return plain.get(type_) or article(type_)
+
+    def plural_type(self, type_):
+        """How the items of a list are written after "list of"."""
+        for plural, singular in LIST_PLURALS.items():
+            if singular == type_:
+                return plural
+        return self.kinds[type_].plural
 
     def stamp(self, s, expr, start, end=None):
         end = s.prev_end(start) if end is None else end
@@ -395,8 +429,29 @@ class Compiler:
         s.fail(f'"{tok.text}" isn\'t a type I know.', tok, hint="Types: " + ", ".join(known) + ".")
 
     def bracket_type(self, s, also=None):
-        """The inside of "(money)" or "(dragon, if any)". The "(" is already read."""
-        type_ = self.type_name(s, s.next(), also)
+        """The inside of "(money)", "(dragon, if any)", "(yes or no)" or "(list of text)".
+
+        The "(" is already read.
+        """
+        if s.at_words("yes", "or", "no"):
+            for _ in range(3):
+                s.next()
+            type_ = YES_NO
+        elif s.at_words("list", "of"):
+            s.next()
+            s.next()
+            tok = s.next()
+            if tok.is_word(*LIST_PLURALS):
+                type_ = LIST + LIST_PLURALS[tok.low]
+            elif tok.kind == "WORD" and self.nouns.get(tok.low, (None, False))[1]:
+                type_ = LIST + self.nouns[tok.low][0]
+            else:
+                s.fail(
+                    f'I don\'t know what a list of "{tok.text}" is.', tok,
+                    hint="Write the plural: numbers, money, text, percentages, or the plural of a kind.",
+                )
+        else:
+            type_ = self.type_name(s, s.next(), also)
         if s.eat_punct(","):
             if not (s.eat_word("if") and s.eat_word("any")):
                 s.fail('After the comma I expected "if any".')
@@ -479,11 +534,12 @@ class Compiler:
         """(type, fn(world, thing)) for a field, a defined property, or the name."""
         K = self.kinds[kind]
         if name in K.fields:
-            return K.fields[name], (lambda world, thing: thing.fields[name])
+            return K.fields[name], (lambda world, thing: alive(thing).fields[name])
         if name in K.props:
-            return K.props[name].type, K.props[name].fn
+            worked_out = K.props[name].fn
+            return K.props[name].type, (lambda world, thing: worked_out(world, alive(thing)))
         if name == "name":
-            return "text", (lambda world, thing: thing.name)
+            return "text", (lambda world, thing: alive(thing).name)
         return None
 
     def member_list(self, kind):
@@ -607,7 +663,7 @@ class Compiler:
                 s.fail_span(f"I can't make {self.describe(inner.type)} negative.", inner.span)
             fn = inner.fn
             return self.stamp(s, Expr(inner.type, lambda env: -fn(env)), tok.col)
-        expr = self.primary(s)
+        expr = self.postfix(s, self.primary(s))
         if expr.type == "percent" and s.at_word("of"):
             s.next()
             amount = self.unary(s)
@@ -617,6 +673,40 @@ class Compiler:
             pf, bf = expr.fn, amount.fn
             expr = self.stamp(s, Expr(amount.type, lambda env: pf(env) * bf(env)), expr.span[0])
         return expr
+
+    def need_text(self, s, expr, doing):
+        self.need(s, expr)
+        if expr.type != "text":
+            s.fail_span(f"I can only {doing} text, but {expr.text} is {self.describe(expr.type)}.", expr.span)
+
+    def postfix(self, s, expr):
+        """'<text> in upper case', '<text> in lower case' and '<text> as a number'.
+
+        They apply to the whole value before them, so "the length of the title
+        in upper case" asks to upper-case a number, and is refused.
+        """
+        while True:
+            if s.at_words("in", "upper", "case") or s.at_words("in", "lower", "case"):
+                upper = s.peek(1).is_word("upper")
+                self.need_text(s, expr, "change the case of")
+                for _ in range(3):
+                    s.next()
+                new = Expr("text", self.case_fn(expr.fn, upper))
+            elif s.at_words("as", "a", "number"):
+                self.need_text(s, expr, "read a number from")
+                for _ in range(3):
+                    s.next()
+                fn = expr.fn
+                new = Expr("number?", lambda env, fn=fn: read_number(fn(env)))
+            else:
+                return expr
+            expr = self.stamp(s, new, expr.span[0])
+
+    @staticmethod
+    def case_fn(fn, upper):
+        if upper:
+            return lambda env: fn(env).upper()
+        return lambda env: fn(env).lower()
 
     def arith(self, s, op, left, right):
         self.need(s, left)
@@ -661,7 +751,7 @@ class Compiler:
             def fn(env):
                 divisor = rf(env)
                 if divisor == 0:
-                    raise EnglishError("I can't divide by zero.", stage="run")
+                    raise EnglishError("I can't divide by zero.", stage="run", recoverable=True)
                 return lf(env) / divisor
         return self.stamp(s, Expr(result, fn), span[0], span[1])
 
@@ -695,6 +785,19 @@ class Compiler:
             elif tok.low == "nothing":
                 s.next()
                 expr = Expr("nothing", lambda env: None, literal=True)
+            elif tok.low in ("yes", "no"):
+                s.next()
+                truth = tok.low == "yes"
+                expr = Expr(YES_NO, lambda env: truth, literal=True)
+            elif tok.low == "whether":
+                s.next()
+                cond = self.condition(s).fn
+                expr = Expr(YES_NO, lambda env: bool(cond(env)))
+            elif tok.low in ("a", "an") and s.peek(1).is_word("new"):
+                s.fail(
+                    'A new thing can only be made as the whole value of "Let", or with "There is a new ...".', tok,
+                    hint='For example: "Let the chick be a new dragon whose age is 0."',
+                )
             else:
                 expr = self.bare_name(s)
         else:
@@ -785,6 +888,15 @@ class Compiler:
 
     def the_phrase(self, s):
         the = s.next()
+        if s.at_words("number", "of", "items", "in"):
+            for _ in range(4):
+                s.next()
+            items = self.primary(s)
+            self.need(s, items)
+            if not is_list(items.type):
+                s.fail_span(f"{cap(items.text)} is {self.describe(items.type)}, not a list.", items.span)
+            lf = items.fn
+            return Expr("number", lambda env: Fraction(len(lf(env))))
         if s.at_words("number", "of"):
             s.next()
             s.next()
@@ -794,6 +906,18 @@ class Compiler:
         match = self.match_words(s, self.workouts)
         if match:
             return self.use_workout(s, match)
+        found = self.file_phrase(s) or self.letters_phrase(s) or self.text_of_phrase(s)
+        if found:
+            return found
+        if s.at_word("problem"):
+            problem = s.next()
+            if not self.scope.find(PROBLEM):
+                s.fail('"The problem" only means something inside an "If that fails:" block.', problem)
+            return Expr("text", lambda env: env.get(PROBLEM))
+        tok = s.peek()
+        singular_kind = tok.kind == "WORD" and tok.low in self.nouns and not self.nouns[tok.low][1]
+        if singular_kind and s.peek(1).is_word("called"):
+            return self.find_by_name(s)
         # "the <member> of <owner>"  and  "the total <member> of <group>"
         total = s.at_word("total")
         j = s.i + (1 if total else 0)
@@ -852,6 +976,7 @@ class Compiler:
             param = by_prep[ptok.low]
             if s.at_end():
                 s.fail(f"I expected {article(param.name)} here.", hint=usage)
+            self.no_group_for_list(s, param.type, f'"The {w.name}" wants')
             value = self.primary(s)  # one value; arithmetic in a role needs brackets
             if not self.fits(value.type, param.type):
                 if base(value.type) == base(param.type):
@@ -890,32 +1015,176 @@ class Compiler:
             raise EnglishError(f'"The {w.name}" finished without an answer.', stage="run")
         return Expr(w.type, fn)
 
+    # Text, files and finding things ---------------------------------------
+
+    def no_group_for_list(self, s, want, lead):
+        """Refuse 'all horses', 'tired horses' or 'horses' where a list is wanted: not built yet."""
+        if is_list(want) and (s.at_word("all") or self.noun_ahead(s)):
+            s.fail(
+                f"{lead} {self.describe(want)}, but a group of things can't be given where a list is expected yet.",
+                hint='Lists come from "the words of", "the lines of" and files. To work on a group, '
+                     'go through it with "For each" instead.',
+            )
+
+    def file_name(self, s):
+        path = self.primary(s)
+        self.need(s, path)
+        if path.type != "text":
+            s.fail_span(f"The name of a file is text, but {path.text} is {self.describe(path.type)}.", path.span)
+        return path
+
+    def file_phrase(self, s):
+        """'the text of the file <text>' and 'the lines of the file <text>'."""
+        for word in ("text", "lines"):
+            if s.at_words(word, "of", "the", "file") and s.peek(4).kind != "END":
+                for _ in range(4):
+                    s.next()
+                pf = self.file_name(s).fn
+                if word == "text":
+                    return Expr("text", lambda env: read_file(pf(env)))
+                return Expr(LIST + "text", lambda env: split_lines(read_file(pf(env))))
+        return None
+
+    def letters_phrase(self, s):
+        """'the first <number> letters of <text>', and the same with "last"."""
+        if not s.at_word("first", "last"):
+            return None
+        mark = (s.i, len(self.notes))
+        first = s.next().is_word("first")
+        try:
+            count = self.unary(s)  # one value, or a minus sign and one value
+        except EnglishError:
+            count = None
+        if count is None or not s.at_words("letters", "of"):
+            s.i = mark[0]
+            del self.notes[mark[1]:]
+            return None
+        s.next()
+        s.next()
+        text = self.primary(s)
+        self.need(s, count)
+        if count.type != "number":
+            s.fail_span(f"I need a plain number of letters, but {count.text} is {self.describe(count.type)}.", count.span)
+        self.need_text(s, text, "take letters from")
+        cf, tf = count.fn, text.fn
+
+        def fn(env):
+            n, value = cf(env), tf(env)
+            if n < 0 or n.denominator != 1:
+                raise EnglishError(f"I can't take {fmt(n, 'number')} letters of a text.", stage="run", recoverable=True)
+            n = int(n)
+            if first:
+                return value[:n]
+            return value if n >= len(value) else value[len(value) - n:]
+        return Expr("text", fn)
+
+    def text_of_phrase(self, s):
+        """'the length of <text>', 'the words of <text>', 'the lines of <text>'.
+
+        These words are free for names, so the phrase is only taken when what
+        follows is text: "the length of the bridge" may still be a property.
+        """
+        word = s.peek()
+        if not (word.is_word("length", "words", "lines") and s.peek(1).is_word("of")):
+            return None
+        mark = (s.i, len(self.notes))
+        s.next()
+        s.next()
+        value, error = None, None
+        try:
+            value = self.primary(s)
+        except EnglishError as caught:
+            error = caught
+        if value is not None and base(value.type) == "text":
+            self.need(s, value)
+            vf = value.fn
+            if word.low == "length":
+                return Expr("number", lambda env: Fraction(len(vf(env))))
+            if word.low == "words":
+                return Expr(LIST + "text", lambda env: tuple(vf(env).split()))
+            return Expr(LIST + "text", lambda env: split_lines(vf(env)))
+        s.i = mark[0]
+        del self.notes[mark[1]:]
+        if word.low in self.member_names or self.match_words(s, self.scope.visible()):
+            return None  # a property or a variable of that name
+        if error is not None:
+            raise error
+        s.fail_span(f'"The {word.low} of" needs text, but {value.text} is {self.describe(value.type)}.', value.span)
+
+    def find_by_name(self, s):
+        """'the dragon called "Smaug"': the first such thing with that name, ignoring capitals."""
+        kind = self.nouns[s.next().low][0]
+        s.next()  # called
+        name = self.primary(s)
+        self.need(s, name)
+        if name.type != "text":
+            s.fail_span(f"A name is text, but {name.text} is {self.describe(name.type)}.", name.span)
+        nf = name.fn
+
+        def fn(env):
+            wanted = nf(env).lower()
+            for thing in env.world.things.get(kind, []):
+                if thing.name.lower() == wanted:
+                    return thing
+            return None
+        return Expr(opt(kind), fn)
+
     def template(self, s, tok):
-        """A quoted text, with {expressions} filled in when it is said."""
-        raw, start = tok.value, tok.col + 1
-        parts, i = [], 0
-        while True:
-            j = raw.find("{", i)
-            if j < 0:
-                parts.append(raw[i:])
-                break
-            parts.append(raw[i:j])
-            k = raw.find("}", j)
+        """A quoted text, with {expressions} filled in when it is said.
+
+        Inside the quotes, "" is one quote, {{ and }} are braces, and
+        {new line} is a line break.
+        """
+        raw, start = tok.text[1:-1], tok.col + 1  # the text as written, so columns line up
+        parts, plain, i = [], [], 0
+        escapes = {'""': '"', "{{": "{", "}}": "}"}
+        while i < len(raw):
+            pair = raw[i:i + 2]
+            if pair in escapes:
+                plain.append(escapes[pair])
+                i += 2
+                continue
+            if raw[i] != "{":
+                plain.append(raw[i])
+                i += 1
+                continue
+            k = raw.find("}", i)
             if k < 0:
-                raise EnglishError('This "{" is never closed.', s.line, start + j, 1)
-            toks = tokenize(s.line.text, s.line, start + j + 1, start + k)
+                if "}" in s.line.text[tok.end:]:
+                    # The brace is closed after a quote: the quote inside the fill-in ended the text.
+                    raise EnglishError(
+                        "A fill-in can't contain quotes: the quote inside these braces ends the text.",
+                        s.line, start + i, 1,
+                        hint='Put the text in a variable first ("Let the word be ...") and fill in {the length of the word}.',
+                    )
+                raise EnglishError('This "{" is never closed.', s.line, start + i, 1)
+            toks = tokenize(s.line.text, s.line, start + i + 1, start + k)
             toks.append(Token("END", "", start + k))
             sub = Sentence(s.line, toks)
             if sub.at_end():
                 sub.fail("There is nothing between these braces.")
-            inner = self.expr(sub)
-            self.end(sub)
-            parts.append(inner)
+            if sub.at_words("new", "line") and sub.peek(2).kind == "END":
+                plain.append("\n")
+            else:
+                inner = self.expr(sub)
+                self.end(sub)
+                self.sayable(sub, inner)
+                parts.append("".join(plain))
+                plain = []
+                parts.append(inner)
             i = k + 1
+        parts.append("".join(plain))
 
         def fn(env):
             return "".join(p if isinstance(p, str) else fmt(p.fn(env), p.type) for p in parts)
         return Expr("text", fn)
+
+    def sayable(self, s, expr):
+        if is_list(expr.type):
+            s.fail_span(
+                f"{cap(expr.text)} is a list, and a list can't be said directly yet.", expr.span,
+                hint='Go through it with "For each ... in ...:" and say each item.',
+            )
 
     # --------------------------------------------------------- collections
 
@@ -1005,7 +1274,7 @@ class Compiler:
             world = env.world
             items = world.things.get(kind, [])
             if link:
-                mine = owner_fn(env)
+                mine = alive(owner_fn(env))
                 items = [x for x in items if x.fields[link] is mine]
             for test in tests:
                 items = [x for x in items if test(world, x)]
@@ -1123,7 +1392,31 @@ class Compiler:
         if tok.is_punct("<", ">", "<=", ">=", "="):
             s.next()
             return self.compare(s, tok.text, left, self.expr(s))
+        for words in (("contains",), ("starts", "with"), ("ends", "with"), ("comes", "before"), ("comes", "after")):
+            if s.at_words(*words):
+                for _ in words:
+                    s.next()
+                return self.text_test(s, " ".join(words), left, self.expr(s))
         s.fail('I expected a comparison here, such as "is", "is less than" or "is at least".')
+
+    def text_test(self, s, phrase, left, right):
+        """'contains', 'starts with', 'ends with', 'comes before', 'comes after'."""
+        for side in (left, right):
+            self.need(s, side)
+            if side.type != "text":
+                s.fail_span(f'"{cap(phrase)}" is about text, but {side.text} is {self.describe(side.type)}.', side.span)
+        lf, rf = left.fn, right.fn
+        tests = {
+            "contains": lambda a, b: b in a,
+            "starts with": lambda a, b: a.startswith(b),
+            "ends with": lambda a, b: a.endswith(b),
+            "comes before": lambda a, b: a.casefold() < b.casefold(),
+            "comes after": lambda a, b: a.casefold() > b.casefold(),
+        }
+        test = tests[phrase]
+        cond = Expr("truth", lambda env: test(lf(env), rf(env)))
+        cond.subject = left
+        return cond
 
     def has_test(self, s, left):
         """'Robin has a mount' / 'Robin has no mount': is a property there?"""
@@ -1188,7 +1481,7 @@ class Compiler:
                 s.next()
                 self.note(f'"{tok.text}" → {adj.source}')
                 test, lf = adj.fn, left.fn
-                return Expr("truth", lambda env: test(env.world, lf(env)))
+                return Expr("truth", lambda env: test(env.world, alive(lf(env))))
             starts_value = (
                 tok.low in ("the",) + POSSESSIVES + PRONOUNS
                 or self.match_words(s, self.names)
@@ -1211,7 +1504,7 @@ class Compiler:
         def fn(env):
             divisor = rf(env)
             if divisor == 0:
-                raise EnglishError("Nothing is divisible by zero.", stage="run")
+                raise EnglishError("Nothing is divisible by zero.", stage="run", recoverable=True)
             return (lf(env) / divisor).denominator == 1
         cond = Expr("truth", fn)
         cond.subject = left
@@ -1221,6 +1514,9 @@ class Compiler:
         self.need(s, left)
         self.need(s, right)
         lt, rt = left.type, right.type
+        if is_list(lt) or is_list(rt):
+            s.fail_span("Lists can't be compared yet.", (left.span[0], right.span[1]),
+                        hint='Go through a list with "For each ... in ...:".')
         ordered = ("number", "money", "percent")
         if lt != rt or (op != "=" and lt not in ordered):
             span = (left.span[0], right.span[1])
@@ -1254,7 +1550,13 @@ class Compiler:
             steps, i = [], 0
             while i < len(lines):
                 line = lines[i]
-                if line.tokens[0].is_word("if"):
+                if self.is_if_fails(line):
+                    self.line = line
+                    Sentence(line).fail('"If that fails" has to come straight after a "Try:" block.')
+                if line.tokens[0].is_word("try"):
+                    i, step = self.try_chain(lines, i)
+                    steps.append(self.located(line, step))
+                elif line.tokens[0].is_word("if"):
                     i, step = self.if_chain(lines, i)
                     steps.append(self.located(line, step))
                 else:
@@ -1306,7 +1608,7 @@ class Compiler:
             raise EnglishError(
                 "This sentence doesn't open a block, so it should end with a period.",
                 s.line, len(s.line.text) - 1, 1,
-                hint="Only If, Otherwise, For each, Repeat, While and To take a colon.",
+                hint="Only If, Otherwise, For each, Repeat, While, Try and To take a colon.",
             )
 
     def if_chain(self, lines, i):
@@ -1395,18 +1697,81 @@ class Compiler:
         try:
             for _ in range(3):
                 start = self.present
+                # What is known at each "Skip" and "Stop repeating" aimed at this
+                # loop: a round can also end there, part way through the block.
+                loop["skips"], loop["stops"] = [], []
                 scope = Scope(self.scope)
                 if binding is not None:
                     scope.names[binding.name] = binding
                 steps = self.block(lines, scope)
-                if start <= self.present:
+                end = self.present
+                for known in loop["skips"]:
+                    end = end & known
+                if start <= end:
                     break
-                self.present = start & self.present
+                self.present = start & end
                 del self.notes[mark:]
         finally:
             self.loops.pop()
-        self.present = before & self.present
+        for known in loop["stops"]:
+            end = end & known
+        self.present = before & end
         return loop["id"], steps
+
+    @staticmethod
+    def is_if_fails(line):
+        toks = line.tokens
+        return len(toks) >= 3 and toks[0].is_word("if") and toks[1].is_word("that") and toks[2].is_word("fails")
+
+    def try_chain(self, lines, i):
+        """Try: ... If that fails: ...
+
+        A failed Try puts the world back as it was, so the "If that fails"
+        block starts from what was known before the Try. Afterwards, nothing
+        that either block may have changed is relied on.
+        """
+        line = lines[i]
+        self.line = line
+        s = Sentence(line)
+        s.next()  # try
+        self.needs_block(s, True)
+        self.end(s)
+        if i + 1 >= len(lines) or not self.is_if_fails(lines[i + 1]):
+            s.fail(
+                'A "Try:" block needs an "If that fails:" block straight after it.', s.toks[0],
+                hint="Say what to do when it goes wrong, at the same indent as the Try.",
+            )
+        before = self.present
+        tried = self.block(line.children)
+        after_try = self.present
+        fails_line = lines[i + 1]
+        self.line = fails_line
+        s = Sentence(fails_line)
+        s.i = 3
+        self.needs_block(s, True)
+        self.end(s)
+        self.present = before
+        scope = Scope(self.scope)
+        scope.names[PROBLEM] = Binding(PROBLEM, "text")
+        fallback = self.block(fails_line.children, scope)
+        self.present = before & after_try & self.present
+        run = self.run_block
+
+        def step(env):
+            restore = env.world.snapshot(env)
+            try:
+                run(tried, env)
+            except EnglishError as error:
+                if not error.recoverable:
+                    raise
+                restore()
+                inner = Env(env)
+                inner.vars[PROBLEM] = error.message
+                for inner_step in fallback:
+                    inner_step(inner)
+        step.answers = self.answers(tried) and self.answers(fallback)
+        step.leaves = self.leaves(tried) and self.leaves(fallback)
+        return i + 2, step
 
     # ---------------------------------------------------------- statements
 
@@ -1430,6 +1795,8 @@ class Compiler:
                 definition = self.define_kind
             elif nxt.is_word("is"):
                 definition = self.define_adjective
+            elif nxt.is_word("can"):
+                definition = self.define_stored_adjective
             elif nxt.kind == "POS":
                 definition = self.define_rule
             else:
@@ -1441,7 +1808,7 @@ class Compiler:
             definition = self.define_property
         elif word == "to":
             definition = self.define_procedure
-        elif word == "there":
+        elif word == "there" and not s.peek(3).is_word("new"):
             definition = self.create_thing
         if definition:
             if not top:
@@ -1459,6 +1826,8 @@ class Compiler:
             "let": self.let, "set": self.assign, "add": self.assign, "subtract": self.assign,
             "multiply": self.assign, "divide": self.assign, "say": self.say,
             "stop": self.stop, "skip": self.skip, "end": self.end_program,
+            "there": self.create_new, "now": self.now, "remove": self.remove, "ask": self.ask,
+            "write": self.write, "fail": self.fail_because,
         }
         if word in blocks:
             self.needs_block(s, True)
@@ -1469,7 +1838,7 @@ class Compiler:
         if word in self.procs:
             self.needs_block(s, False)
             return self.call(s)
-        known = list(simple) + ["if", "for", "repeat", "while"] + list(self.procs)
+        known = list(simple) + ["if", "for", "repeat", "while", "try"] + list(self.procs)
         close = difflib.get_close_matches(word, known, n=1)
         hint = f'Did you mean "{close[0].capitalize()}"?' if close else (
             f'Teach it to me first: "To {word} ...:" followed by an indented block.'
@@ -1508,6 +1877,14 @@ class Compiler:
                     "Types: number, money, text, percent, or a kind you have described.",
                 )
             K.fields[fname] = self.bracket_type(s, also=name)
+            if base(K.fields[fname]) == YES_NO:
+                s.fail(
+                    f'A property can\'t be yes or no. A yes-or-no fact about {article(name)} is an adjective.', toks[0],
+                    hint=f'Write it as its own sentence: "{article(name).capitalize()} can be {fname}."',
+                )
+            if is_list(K.fields[fname]):
+                s.fail("A property can't hold a list yet.", toks[0],
+                       hint="Lists can be held by variables, roles and worked-out values.")
             if s.at_end():
                 break
             comma, conj = s.eat_punct(","), s.eat_word("and")
@@ -1538,6 +1915,22 @@ class Compiler:
         source = s.line.text[start:].rstrip(".").strip()
         K.adjectives[atok.low] = Adj(atok.low, self.subject_fn(K.name, cond.fn), source)
         self.adjective_names.add(atok.low)
+
+    def define_stored_adjective(self, s):
+        """A | An <kind> can be <adjective>.  A yes-or-no fact, changed with "Now"."""
+        s.next()
+        K = self.need_kind(s, s.next())
+        s.next()  # can
+        s.expect_word("be", hint=f'For example: "{article(K.name).capitalize()} can be done."')
+        atok = s.next()
+        self.check_new_name(s, [atok], "an adjective")
+        if atok.low in K.adjectives:
+            s.fail(f'"{atok.text}" is already defined for {article(K.name)}.', atok)
+        self.end(s)
+        name = atok.low
+        source = f'stored for each {K.name}, set with "Now"'
+        K.adjectives[name] = Adj(name, lambda world, thing: name in thing.marks, source, stored=True)
+        self.adjective_names.add(name)
 
     def define_rule(self, s):
         s.next()
@@ -1710,11 +2103,12 @@ class Compiler:
             )
 
     def create_thing(self, s):
+        """There is a | an [<adjective>]... <kind> called <Name> [whose ...]... .   (top level)"""
         s.next()  # there
         s.expect_word("is", hint='For example: "There is a dragon called Smaug whose age is 771."')
         if not s.eat_word("a", "an"):
             s.fail('I expected "a" or "an" here.')
-        K = self.need_kind(s, s.next())
+        K, marks = self.thing_head(s)
         s.expect_word("called", f"Every {K.name} needs a name: \"There is {article(K.name)} called ...\".")
         ntoks = []
         while s.peek().kind == "WORD" and not s.at_word("whose"):
@@ -1726,6 +2120,78 @@ class Compiler:
         key = display.lower()
         if key in self.names or key in self.nouns or key in self.workouts or self.globals.find(key):
             s.fail(f'"{display}" already means something.', ntoks[0])
+        values = self.whose_parts(s, K, ntoks[0])
+        self.names[key] = (display, K.name)
+        make = self.maker(K, marks, values, lambda env, count: display)
+
+        def step(env):
+            env.world.named[key] = make(env)
+        return step
+
+    def create_new(self, s):
+        """There is a new <kind> [called <text>] [whose ...]... .   (anywhere)"""
+        s.next()  # there
+        s.next()  # is
+        if not s.eat_word("a", "an"):
+            s.fail('I expected "a" or "an" here.')
+        _, make = self.new_thing(s)
+        return lambda env: make(env)
+
+    def new_thing(self, s):
+        """'new [<adjective>]... <kind> [called <text>] [whose ...]...' to the end of the sentence.
+
+        Returns (the kind, fn(env) -> the new Thing).
+        """
+        new = s.next()
+        if self.workout is not None:
+            s.fail("Working something out can't make new things.", new,
+                   hint="Make it in a verb, or where the worked-out value is used.")
+        K, marks = self.thing_head(s)
+        kind = K.name
+        if s.eat_word("called"):
+            name = self.expr(s)
+            self.need(s, name)
+            if name.type != "text":
+                s.fail_span(f"A name is text, but {name.text} is {self.describe(name.type)}.", name.span,
+                            hint='Put a name in quotes: called "Puff".')
+            name_fn = name.fn
+            name_of = lambda env, count: name_fn(env)
+        else:
+            name_of = lambda env, count: f"{kind} {count}"
+        values = self.whose_parts(s, K, new)
+        return kind, self.maker(K, marks, values, name_of)
+
+    def thing_head(self, s):
+        """'[<adjective>]... <kind>' when a thing is made. Returns (Kind, stored adjectives)."""
+        k = 0
+        while True:
+            tok = s.peek(k)
+            if tok.kind != "WORD" or tok.is_word("called", "whose"):
+                k = 0  # no kind ahead: let need_kind explain
+                break
+            if tok.low in self.nouns and not self.nouns[tok.low][1]:
+                break
+            k += 1
+        adjectives = [s.next() for _ in range(k)]
+        K = self.need_kind(s, s.next())
+        marks = []
+        for tok in adjectives:
+            adj = K.adjectives.get(tok.low)
+            if adj is None:
+                s.fail(
+                    f'I don\'t know what "{tok.text}" means for {article(K.name)}.', tok,
+                    hint=f'Say first: "{article(K.name).capitalize()} can be {tok.text}."',
+                )
+            if not adj.stored:
+                s.fail(
+                    f'"{tok.text}" is worked out from "{adj.source}", so it can\'t be given when {article(K.name)} is made.',
+                    tok,
+                )
+            marks.append(adj.name)
+        return K, marks
+
+    def whose_parts(self, s, K, at):
+        """'whose <property> is <value>', joined by commas or "and", to the end of the sentence."""
         values = {}
         first = True
         while not s.at_end():
@@ -1758,24 +2224,33 @@ class Compiler:
         missing = [f for f, t in K.fields.items() if f not in values and not is_opt(t)]
         if missing:
             s.fail(
-                f"{article(K.name).capitalize()} also needs {join_words(article(m) for m in missing)}.", ntoks[0],
+                f"{article(K.name).capitalize()} also needs {join_words(article(m) for m in missing)}.", at,
                 hint=f'Add: "whose {missing[0]} is ...".',
             )
-        self.names[key] = (display, K.name)
+        return values
+
+    @staticmethod
+    def maker(K, marks, values, name_of):
+        """fn(env) -> a new thing of kind K, checked against the kind's rules."""
         kind = K.name
         absent = [f for f in K.fields if f not in values]
 
-        def step(env):
+        def make(env):
             world = env.world
+            count = world.made[kind] = world.made.get(kind, 0) + 1
+            name = name_of(env, count)
             fields = {f: fn(env) for f, fn in values.items()}
+            for value in fields.values():
+                if isinstance(value, Thing):
+                    alive(value)
             fields.update((f, None) for f in absent)
-            thing = Thing(kind, display, fields)
+            thing = Thing(kind, name, fields, marks)
             for rule in K.rules:
                 if not rule.fn(world, thing):
-                    raise EnglishError(f'{display} would break a rule: "{rule.text}"', stage="run")
+                    raise EnglishError(f'{name} would break a rule: "{rule.text}"', stage="run", recoverable=True)
             world.things.setdefault(kind, []).append(thing)
-            world.named[key] = thing
-        return step
+            return thing
+        return make
 
     # actions ------------------------------------------------------------
 
@@ -1797,7 +2272,14 @@ class Compiler:
                 f'"{name}" already means something here.', toks[0],
                 hint=f'To change it, write "Set {name} to ...".',
             )
-        value = self.expr(s)
+        if s.at_word("a", "an") and s.peek(1).is_word("new"):
+            start = s.next().col
+            kind, make = self.new_thing(s)
+            value = self.stamp(s, Expr(kind, make), start)
+        else:
+            if declared is not None:
+                self.no_group_for_list(s, declared, f'"{name}" is to hold')
+            value = self.expr(s)
         self.end(s)
         if declared is None:
             if value.type == "nothing":
@@ -1854,14 +2336,16 @@ class Compiler:
         owner_fn, ftype = owner.fn, expr.declared
 
         def put(env, value):
-            thing = owner_fn(env)
+            thing = alive(owner_fn(env))
+            if isinstance(value, Thing):
+                alive(value)  # a property may not point at a removed thing
             old = thing.fields[fname]
             thing.fields[fname] = value
             for rule in K.rules:
                 if not rule.fn(env.world, thing):
                     thing.fields[fname] = old
                     raise EnglishError(
-                        f'That would break a rule: "{rule.text}"', stage="run",
+                        f'That would break a rule: "{rule.text}"', stage="run", recoverable=True,
                         hint=f"({thing.name}'s {fname} is {fmt(old, ftype)} and would become {fmt(value, ftype)}.)",
                     )
         return put
@@ -1874,6 +2358,15 @@ class Compiler:
             new = value = self.expr(s)
         elif verb in ("add", "subtract"):
             value = self.expr(s)
+            to_file = s.at_words("to", "the", "file") and (
+                base(value.type) == "text" or not self.match_words(s, self.scope.visible(), 2)
+            )
+            if verb == "add" and to_file:
+                # Text can't be added up, and no variable is called "file ...", so this is
+                # "Add <text> to the file <text>." (file_write refuses anything but text).
+                for _ in range(3):
+                    s.next()
+                return self.file_write(s, value, append=True)
             link = "to" if verb == "add" else "from"
             s.expect_word(link, hint=f'For example: "{verb.capitalize()} 1 {link} the total."')
             target = self.target(s)
@@ -1909,6 +2402,7 @@ class Compiler:
         s.next()
         value = self.expr(s)
         self.end(s)
+        self.sayable(s, value)
         fn, type_ = value.fn, value.type
         return lambda env: env.world.out(fmt(fn(env), type_))
 
@@ -1950,7 +2444,9 @@ class Compiler:
         s.next()
         if s.eat_word("repeating"):
             self.end(s)
-            loop = self.one_loop(s, "Stop repeating")["id"]
+            found = self.one_loop(s, "Stop repeating")
+            found["stops"].append(self.present)
+            loop = found["id"]
 
             def step(env):
                 raise _StopLoop(loop)
@@ -1973,19 +2469,27 @@ class Compiler:
     def skip(self, s):
         s.next()
         s.expect_word("this", hint='Write "Skip this round." or, in a For each, "Skip this dragon."')
-        tok = s.next()
+        tok = s.peek()
         if tok.kind != "WORD":
             s.fail('I expected "round", or the noun of a For each.', tok)
-        self.end(s)
         if tok.low == "round":
+            s.next()
+            self.end(s)
             found = self.one_loop(s, "Skip this round")
             if found["noun"]:
                 s.fail('A "For each" has no rounds.', tok, hint=f'Write "Skip this {found["noun"]}."')
         else:
-            matches = [loop for loop in self.loops if loop["noun"] == tok.low]
-            if not matches:
+            # A loop's noun may be several words: "For each old task in ...".
+            match = self.match_words(s, [loop["noun"] for loop in self.loops if loop["noun"]])
+            if not match:
+                s.next()
+                self.end(s)
                 s.fail(f'There is no "For each {tok.text}" around this sentence.', tok)
-            found = matches[-1]
+            for _ in range(match[1]):
+                s.next()
+            self.end(s)
+            found = [loop for loop in self.loops if loop["noun"] == match[0]][-1]
+        found["skips"].append(self.present)
         loop = found["id"]
 
         def step(env):
@@ -2004,6 +2508,194 @@ class Compiler:
         def step(env):
             raise _EndProgram()
         step.leaves = True
+        return step
+
+    def no_change_here(self, s, what):
+        """Refuse a sentence that changes the world inside "To work out"."""
+        if self.workout is not None:
+            s.fail(f"Working something out can't {what}.", s.toks[0],
+                   hint="Do it in a verb, or where the worked-out value is used.")
+
+    def fail_because(self, s):
+        """Fail because <text>.  A problem of the program's own, which "Try:" can recover from."""
+        s.next()
+        s.expect_word("because", hint='For example: "Fail because "the gate is shut"."')
+        reason = self.expr(s)
+        self.end(s)
+        self.need(s, reason)
+        if reason.type != "text":
+            s.fail_span(f"The reason is text, but {reason.text} is {self.describe(reason.type)}.", reason.span)
+        rf = reason.fn
+
+        def step(env):
+            raise EnglishError(rf(env), stage="run", recoverable=True)
+        step.leaves = True
+        return step
+
+    def now(self, s):
+        """Now <thing> is [not] <stored adjective>."""
+        s.next()
+        self.no_change_here(s, "change anything")
+        thing = self.expr(s)
+        self.need(s, thing)
+        if thing.type not in self.kinds:
+            s.fail_span(f"{cap(thing.text)} is {self.describe(thing.type)}, so it has no adjectives.", thing.span)
+        K = self.kinds[thing.type]
+        s.expect_word("is", hint='For example: "Now Robin is sworn."')
+        negated = bool(s.eat_word("not"))
+        atok = s.next()
+        adj = K.adjectives.get(atok.low) if atok.kind == "WORD" else None
+        if adj is None:
+            s.fail(
+                f'I don\'t know what "{atok.text}" means for {article(K.name)}.', atok,
+                hint=f'To store it, say first: "{article(K.name).capitalize()} can be {atok.text}."',
+            )
+        if not adj.stored:
+            s.fail(
+                f'"{atok.text}" is worked out from "{adj.source}", so "Now" can\'t change it.', atok,
+                hint='Change what it is worked out from, or describe it with "can be" instead.',
+            )
+        self.end(s)
+        self.note(f'"{atok.text}" → {adj.source}')
+        tf, name = thing.fn, adj.name
+
+        def step(env):
+            target = alive(tf(env))
+            if negated:
+                target.marks.discard(name)
+            else:
+                target.marks.add(name)
+        return step
+
+    def remove(self, s):
+        """Remove <thing>.  It leaves every group; "if any" properties that pointed at it become nothing."""
+        s.next()
+        self.no_change_here(s, "remove anything")
+        thing = self.expr(s)
+        self.end(s)
+        self.need(s, thing)
+        if thing.type not in self.kinds:
+            s.fail_span(f"Only a thing can be removed, but {thing.text} is {self.describe(thing.type)}.", thing.span)
+        # Properties that pointed at it become nothing, so checks no longer hold.
+        self.forget_after_verb()
+        tf, kinds = thing.fn, self.kinds
+        return lambda env: self.remove_thing(env.world, alive(tf(env)), kinds)
+
+    @staticmethod
+    def remove_thing(world, thing, kinds):
+        blockers, cleared = [], []
+        for kind, items in world.things.items():
+            fields = kinds[kind].fields
+            for other in items:
+                if other is thing:
+                    continue
+                for fname, value in other.fields.items():
+                    if value is thing:
+                        (cleared if is_opt(fields[fname]) else blockers).append((other, fname))
+        if blockers:
+            which = join_words(f"{other.name}'s {fname}" for other, fname in blockers)
+            raise EnglishError(
+                f"I can't remove {thing.name} while {which} still {'points' if len(blockers) == 1 else 'point'} at it.",
+                stage="run", recoverable=True,
+                hint='Change or remove those first, or describe the property with "if any".',
+            )
+        for other, fname in cleared:
+            other.fields[fname] = None
+        for other, fname in cleared:
+            for rule in kinds[other.kind].rules:
+                if not rule.fn(world, other):
+                    for back, bname in cleared:
+                        back.fields[bname] = thing
+                    raise EnglishError(
+                        f'Removing {thing.name} would break a rule: "{rule.text}"', stage="run", recoverable=True,
+                        hint=f"({other.name}'s {fname} would become nothing.)",
+                    )
+        world.things[thing.kind].remove(thing)
+        thing.removed = True
+
+    def ask(self, s):
+        """Ask <text> and let [the] <name> (<type>) be the reply."""
+        s.next()
+        self.no_change_here(s, "ask anything")
+        usage = 'For example: "Ask "How old?" and let the age (number) be the reply."'
+        question = self.expr(s)
+        self.need(s, question)
+        if question.type != "text":
+            s.fail_span(f"The question is text, but {question.text} is {self.describe(question.type)}.",
+                        question.span)
+        s.expect_word("and", hint=usage)
+        s.expect_word("let", hint=usage)
+        s.eat_word("the")
+        toks = []
+        while s.peek().kind == "WORD" and not s.at_word("be"):
+            toks.append(s.next())
+        if not toks:
+            s.fail("I expected a name here, for the reply.", hint=usage)
+        self.check_new_name(s, toks, "a name")
+        name = " ".join(t.low for t in toks)
+        if self.scope.find(name) or name in self.names or name in self.workouts:
+            s.fail(f'"{name}" already means something here.', toks[0],
+                   hint="Choose a new name for the reply.")
+        if not s.eat_punct("("):
+            s.fail(f'What sort of reply is "{name}"?', hint=usage)
+        type_tok = s.peek()
+        type_ = self.bracket_type(s)
+        if type_ not in ASKABLE:
+            s.fail(f"I can't ask for {self.describe(type_)}.", type_tok,
+                   hint="A reply can be text, a number, money, a percentage, or yes or no.")
+        for word in ("be", "the", "reply"):
+            s.expect_word(word, hint=usage)
+        self.end(s)
+        self.scope.names[name] = Binding(name, type_, let=True)
+        self.note(f'"{name}" is {self.describe(type_)}, from the reply')
+        qf = question.fn
+        again = {
+            "number": "Please answer with a number, such as 7 or 2.5.",
+            "money": "Please answer with an amount of money, such as $5 or $2.50.",
+            "percent": "Please answer with a percentage, such as 10%.",
+            YES_NO: "Please answer yes or no.",
+        }
+
+        def step(env):
+            world = env.world
+            prompt = qf(env)
+            while True:
+                try:
+                    reply = world.ask(prompt)
+                except EOFError:
+                    reply = None
+                if reply is None:  # input has ended: finish quietly, as "End the program." does
+                    raise _EndProgram()
+                value = read_reply(reply, type_)
+                if value is not None:
+                    break
+                world.out(again[type_])
+            env.vars[name] = value
+        return step
+
+    def write(self, s):
+        """Write <text> to the file <text>."""
+        s.next()
+        value = self.expr(s)
+        usage = 'For example: "Write "Hello" to the file "notes.txt"."'
+        for word in ("to", "the", "file"):
+            s.expect_word(word, hint=usage)
+        return self.file_write(s, value, append=False)
+
+    def file_write(self, s, value, append):
+        """The rest of "Write ... to the file <text>." or "Add ... to the file <text>."."""
+        self.no_change_here(s, "write to a file")
+        self.need(s, value)
+        if value.type != "text":
+            s.fail_span(f"Only text can be written to a file, but {value.text} is {self.describe(value.type)}.",
+                        value.span)
+        path = self.file_name(s)
+        self.end(s)
+        vf, pf = value.fn, path.fn
+
+        def step(env):
+            text = vf(env)
+            write_file(pf(env), text, append)
         return step
 
     def example(self, s):
@@ -2026,19 +2718,69 @@ class Compiler:
     def for_each(self, s):
         s.next()
         s.expect_word("each", hint='For example: "For each dragon:"')
+        j = s.i
+        while s.toks[j].kind == "WORD" and s.toks[j].low not in KEYWORDS:
+            j += 1
+        if j > s.i and s.toks[j].is_word("in"):
+            return self.for_each_named(s, j)
         coll = self.collection(s, plural=False)
         self.end(s)
         name = coll.kind
         if self.scope.find(name):
             s.fail(
                 f'There is already a "{name}" in view here, so "the {name}" would mean two things.', s.toks[2],
-                hint="Move this loop into its own \"To ...:\" block, where the names can differ.",
+                hint=f'Give the loop\'s thing its own name: "For each other in {self.kinds[name].plural}:".',
             )
         loop, body = self.loop_body(s.line.children, noun=name, binding=Binding(name, name, focus=True))
-        items, run = coll.fn, self.run_block
+        return self.each_step(name, coll.fn, loop, body)
+
+    def for_each_named(self, s, j):
+        """For each <name> in <group, in the plural>:   or   For each <name> in <list>:"""
+        toks = s.toks[s.i:j]
+        s.i = j + 1  # past "in"
+        name = " ".join(t.low for t in toks)
+        if self.scope.find(name) or name in self.names or name in self.workouts:
+            s.fail(
+                f'"{name}" already means something here, so "the {name}" would mean two things.', toks[0],
+                hint="Choose another name for the loop's thing.",
+            )
+        items = None
+        if not (s.at_word("all") or s.peek().is_word(*POSSESSIVES) or self.noun_ahead(s)):
+            mark = (s.i, len(self.notes))
+            try:
+                items = self.expr(s)
+            except EnglishError:
+                items = None
+            if items is not None and s.at_end():
+                if not is_list(items.type):
+                    s.fail_span(f"{cap(items.text)} is {self.describe(items.type)}, not a group of things or a list.",
+                                items.span)
+            else:
+                items = None
+                s.i = mark[0]
+                del self.notes[mark[1]:]
+        if items is not None:
+            self.need(s, items)
+            item = item_type(items.type)
+            binding = Binding(name, item, focus=item in self.kinds)
+            get = items.fn
+        else:
+            coll = self.collection(s, plural=True)
+            self.end(s)
+            binding = Binding(name, coll.kind, focus=True)
+            get = coll.fn
+        loop, body = self.loop_body(s.line.children, noun=name, binding=binding)
+        return self.each_step(name, get, loop, body, group=items is None)
+
+    def each_step(self, name, items, loop, body, group=True):
+        """The loop itself. A group is settled when the loop starts, but a thing
+        removed before its turn comes is not visited."""
+        run = self.run_block
 
         def step(env):
             for thing in items(env):
+                if group and thing.removed:
+                    continue
                 inner = Env(env)
                 inner.vars[name] = thing
                 try:
@@ -2066,7 +2808,7 @@ class Compiler:
         def step(env):
             n = fn(env)
             if n.denominator != 1 or n < 0:
-                raise EnglishError(f"I can't repeat something {fmt(n, 'number')} times.", stage="run")
+                raise EnglishError(f"I can't repeat something {fmt(n, 'number')} times.", stage="run", recoverable=True)
             for _ in range(int(n)):
                 try:
                     run(body, env)
@@ -2120,6 +2862,7 @@ class Compiler:
         def take(param):
             if s.at_end():
                 s.fail(f'I expected {article(param.name)} here.', hint=usage)
+            self.no_group_for_list(s, param.type, f'"{proc.verb.capitalize()}" wants')
             value = self.expr(s)
             if not self.fits(value.type, param.type):
                 if base(value.type) == base(param.type):
@@ -2186,13 +2929,17 @@ class Program:
         self.notes = notes
         self.compiler = compiler
 
-    def run(self, out=print):
-        world = World(out)
+    def run(self, out=print, ask=None):
+        """Carry out the program. `ask` takes a question and returns the reply,
+        or None (or raises EOFError) when input has ended; by default it reads
+        a line from standard input."""
+        world = World(out, ask)
         limit = sys.getrecursionlimit()
         sys.setrecursionlimit(max(limit, 20_000))  # each English call costs several Python frames
         try:
-            for step in self.steps:
-                step(world.globals)
+            with no_digit_limit():
+                for step in self.steps:
+                    step(world.globals)
         except _EndProgram:
             pass
         except RecursionError:
@@ -2204,7 +2951,8 @@ class Program:
 
 def compile_source(source):
     """Compile a whole program. Raises EnglishError; runs nothing."""
-    lines = read_source(source)
-    compiler = Compiler()
-    steps = compiler.block(lines, compiler.globals)
+    with no_digit_limit():  # a long number written in the program is read in full
+        lines = read_source(source)
+        compiler = Compiler()
+        steps = compiler.block(lines, compiler.globals)
     return Program(steps, compiler.notes, compiler)

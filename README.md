@@ -21,6 +21,18 @@ python -m englishscript examples/invoices.english
 
 Add `--explain` to see how each sentence was read without running it, or `--check` to compile only.
 
+For something interactive, try the to-do list. It asks for commands (`add Buy milk`, `done 1`, `list`, `quit`, and a few more) and keeps the list in `todo.txt`, in the folder you run it from:
+
+```bash
+python -m englishscript examples/todo.english
+```
+
+There is also a shaded triangle, drawn in characters. It follows the steps of a Vulkan "hello triangle" but does the graphics card's work itself; it does not use the real Vulkan API:
+
+```bash
+python -m englishscript examples/triangle.english
+```
+
 ### What a program looks like
 
 ```
@@ -69,9 +81,11 @@ The full reference is [docs/SYNTAX.md](docs/SYNTAX.md). Its examples are run by 
 |---|---|
 | Describe a kind | `A dragon has an age (number) and a lair (text).` |
 | Define an adjective | `A dragon is ancient when its age is at least 500.` |
+| Store an adjective | `A task can be done.` then `Now the task is done.` |
 | Define a worked-out property | `The tax of a dragon is 10% of its hoard.` |
 | State a rule | `A knight's purse is never less than $0.` |
 | Create a thing | `There is a dragon called Smaug whose age is 771.` |
+| Make, find and remove things while running | `There is a new task called the title whose position is 1.`, `Let the chick be a new dragon whose age is 0.`, `the dragon called "Smaug"`, `Remove the task.` |
 | Teach a verb | `To send a knight against a dragon:` |
 | Use a verb | `Send Gawain against Smaug.` |
 | Variables | `Let the total be 0.` then `Set`, `Add ... to`, `Subtract ... from`, `Multiply ... by`, `Divide ... by` |
@@ -80,13 +94,18 @@ The full reference is [docs/SYNTAX.md](docs/SYNTAX.md). Its examples are run by 
 | Work out a value | `To work out the bounty (money) for a dragon:` with `The answer is ...`, used as `the bounty for Smaug` |
 | Leave early | `Stop.`, `Stop repeating.`, `Skip this treasure.`, `End the program.` |
 | Output | `Say "{its name} is {its age}."` |
+| Input | `Ask "Age?" and let the age (number) be the reply.` |
+| Files | `the text of the file "notes.txt"`, `the lines of the file ...`, `Write ... to the file ...`, `Add ... to the file ...` |
+| Text | `the length of`, `in upper case`, `the first 3 letters of`, `the words of`, `as a number`, `contains`, `starts with`, `comes before`; `""` and `{new line}` inside quotes |
+| Yes or no | `Let done (yes or no) be no.`, `whether Smaug is ancient`, `If done is yes:` |
 | Branch | `If ...:`, `Otherwise if ...:`, `Otherwise:` |
 | Compare | `is`, `is not`, `is less than`, `is more than`, `is at least`, `is at most`, `is divisible by` |
-| Loop | `For each poor dragon:`, `Repeat 3 times:`, `While ...:` |
-| Count and add up | `the number of ancient dragons`, `the total worth of Smaug's treasures` |
+| Loop | `For each poor dragon:`, `For each rival in dragons:`, `For each word in the words of the line:`, `Repeat 3 times:`, `While ...:` |
+| Count and add up | `the number of ancient dragons`, `the total worth of Smaug's treasures`, `the number of items in the words` |
+| Recover from a problem | `Try:` then `If that fails:` with `the problem`; `Fail because "..."` |
 | Test | `For example, the hoard of Smaug is $12,000.` |
 
-Types are `number`, `money`, `text`, `percent`, and any kind you describe. Comments start with `#`.
+Types are `number`, `money`, `text`, `percent`, `yes or no`, any kind you describe, and lists such as `list of text`. Comments start with `#`.
 
 ### Layout of the code
 
@@ -94,7 +113,7 @@ Types are `number`, `money`, `text`, `percent`, and any kind you describe. Comme
 - `englishscript/compiler.py` parses, checks and compiles each sentence into a Python closure in one pass.
 - `englishscript/runtime.py` holds what exists while a program runs.
 - `englishscript/tour.py` is the guided tour.
-- `examples/` has six programs; `tests/` has the test suite.
+- `examples/` has the example programs, including the to-do list; `tests/` has the test suite.
 
 ```bash
 python -m unittest discover tests
@@ -102,7 +121,8 @@ python -m unittest discover tests
 
 ### What it does not do
 
-- It has no lists, dates, text operations, input or concurrency yet. Sections 12 and 13 of [docs/SYNTAX.md](docs/SYNTAX.md) give each of these a designed syntax that is not built.
+- Lists are only partly there: they come from splitting text or reading a file, and can be counted and looped over, but not written out, changed, sorted or said.
+- It has no dates or clock, no fixed sets of choices, units, remainders or rounding, no picking or ordering within a group, and no concurrency yet. Sections 12 and 13 of [docs/SYNTAX.md](docs/SYNTAX.md) give each of these a designed syntax that is not built.
 - Plurals are formed by rule ("dragons", "ponies", "foxes"), so irregular ones such as "people" are not recognised.
 - It does not accept loose English. The natural next step is the original experiment turned around: use a language model only to rewrite loose English into this strict form, and let this compiler be the judge of whether the result is unambiguous.
 

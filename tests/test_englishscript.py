@@ -1,6 +1,8 @@
 """Run with:  python -m unittest discover tests"""
+import os
 import re
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -33,6 +35,28 @@ def run(source):
     out = []
     compile_source(source).run(out.append)
     return out
+
+
+def run_asking(source, replies):
+    """Run with scripted replies. When they run out, input has ended."""
+    out, waiting = [], list(replies)
+
+    def ask(question):
+        out.append(question)
+        return waiting.pop(0) if waiting else None
+    compile_source(source).run(out.append, ask)
+    return out
+
+
+class InTemporaryFolder(unittest.TestCase):
+    """Runs each test in an empty folder, so files a program writes are thrown away."""
+
+    def setUp(self):
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        self.addCleanup(os.chdir, os.getcwd())
+        os.chdir(folder.name)
+        self.folder = Path(folder.name)
 
 
 class Base(unittest.TestCase):
@@ -282,6 +306,17 @@ class Examples(Base):
                 source = (ROOT / "examples" / name).read_text(encoding="utf-8")
                 self.assertEqual(run(source)[-1], last_line)
                 self.assertIn(source.splitlines()[0], explain(source))
+
+    def test_the_triangle_example_draws_a_shaded_triangle(self):
+        source = (ROOT / "examples" / "triangle.english").read_text(encoding="utf-8")
+        said = run(source)
+        self.assertEqual(said[0], "Hello Triangle, drawn on Card:")
+        rows = said[1:]
+        self.assertEqual(len(rows), 30)
+        self.assertTrue(all(len(row) == 60 for row in rows))
+        self.assertEqual(rows[8].strip(), "--")  # just under the apex
+        self.assertEqual(rows[22].strip(), "..:::----===++++****####%%%@@@")  # dark blue to bright green
+        self.assertTrue(all(not row.strip() for row in rows[:8] + rows[23:]))
 
     def test_every_refusal_in_the_tour_is_refused(self):
         prelude = (ROOT / "examples" / "dragons.english").read_text(encoding="utf-8").split(STORY_MARKER)[0]
@@ -551,6 +586,439 @@ class WorkingOut(Base):
 
     def test_endless_working_out_is_stopped(self):
         self.refuses("To work out the loop (number):\n  The answer is the loop.\nSay the loop.", "keeps using itself", stage="run")
+
+
+class StoredAdjectives(Base):
+    SWORN = WORLD + (
+        "A knight can be sworn.\n"
+        "There is a sworn knight called Lancelot whose purse is $5 and whose courage is 9.\n"
+    )
+
+    def test_a_stored_adjective_starts_as_no_and_is_changed_with_now(self):
+        source = self.SWORN + (
+            "Say the number of sworn knights.\n"
+            "Now Robin is sworn.\nNow Lancelot is not sworn.\n"
+            "For each sworn knight:\n  Say it.\n"
+            "If Gawain is not sworn and Robin is sworn:\n  Say \"ok\"\n"
+        )
+        self.assertEqual(run(source), ["1", "Robin", "ok"])
+
+    def test_adjectives_can_be_given_when_a_thing_is_made(self):
+        source = self.SWORN + "Let the page be a new sworn knight whose purse is $1 and whose courage is 1.\nSay the number of sworn knights."
+        self.assertEqual(run(source), ["2"])
+        self.refuses(self.SWORN + "There is an ancient dragon called Puff whose age is 3.", "can't be given")
+        self.refuses(self.SWORN + "There is a sleepy dragon called Puff whose age is 3.", 'A dragon can be sleepy')
+
+    def test_now_is_refused_where_it_could_not_work(self):
+        self.refuses(self.SWORN + "Now Smaug is ancient.", '"Now" can\'t change it')
+        self.refuses(self.SWORN + "Now Smaug is sworn.", 'A dragon can be sworn')
+        self.refuses(STABLE + "A horse can be tired.\nNow Tom's mount is tired.", "may be nothing")
+        self.refuses(self.SWORN + "To work out the x (number):\n  Now Robin is sworn.\n  The answer is 1.", "can't change anything")
+        self.refuses(self.SWORN + "A knight can be sworn.", "already defined")
+
+    def test_yes_or_no_values(self):
+        source = self.SWORN + (
+            "Let the gate open be whether Gawain is sworn or Lancelot is sworn.\n"
+            "Say the gate open.\n"
+            "Let shut (yes or no) be no.\nSay shut.\n"
+            "If the gate open is yes and shut is no:\n  Say \"Enter.\"\n"
+            "Set shut to yes.\nIf shut is not no:\n  Say \"Shut.\"\n"
+            "To work out the open (yes or no) for a knight:\n  The answer is whether the knight is sworn.\n"
+            "Say the open for Robin.\n"
+        )
+        self.assertEqual(run(source), ["yes", "no", "Enter.", "Shut.", "no"])
+
+    def test_a_yes_or_no_property_points_at_can_be(self):
+        self.refuses("A cat has a happy (yes or no).", 'A cat can be happy')
+        self.refuses("Let x be yes.\nSay x + 1.", "can't add")
+        self.refuses("Let x be yes.\nIf x is more than no:\n  Say 1.", "more or less")
+        self.refuses("Let yes be 1.", "already has a meaning")
+
+
+class NamedLoops(Base):
+    def test_a_loop_can_name_its_thing(self):
+        source = WORLD + (
+            "To greet a dragon:\n"
+            "  For each rival in dragons whose age is more than 0:\n"
+            "    If the rival is the dragon:\n      Skip this rival.\n"
+            "    Say \"{the dragon} glares at {the rival}, aged {the rival's age}.\"\n"
+            "Greet Smaug.\n"
+            "For each prize in Smaug's treasures:\n  Say the prize.\n"
+            "For each prize in all treasures of Smaug whose worth is more than $600:\n  Say the prize.\n"
+        )
+        self.assertEqual(run(source), ["Smaug glares at Norbert, aged 1.", "Goblet", "Cup", "Goblet"])
+
+    def test_the_name_must_be_new(self):
+        self.refuses(WORLD + "To greet a dragon:\n  For each dragon in dragons:\n    Say 1.", "mean two things")
+        self.refuses(WORLD + "For each Smaug in dragons:\n  Say 1.", "mean two things")
+        self.refuses(WORLD + "For each x in 5:\n  Say 1.", "not a group of things or a list")
+        self.refuses(WORLD + "For each x in dragon:\n  Say 1.", 'write "dragons"')
+
+    def test_a_loop_can_go_through_a_list(self):
+        source = (
+            "Let the words (list of text) be the words of \"a bb ccc\".\n"
+            "Say the number of items in the words.\n"
+            "For each word in the words:\n  If the word is \"bb\":\n    Skip this word.\n  Say the length of the word.\n"
+            "To shout a batch (list of text):\n  For each word in the batch:\n    Say the word in upper case.\n"
+            "Shout the lines of \"x{new line}y\".\n"
+        )
+        self.assertEqual(run(source), ["3", "1", "3", "X", "Y"])
+
+    def test_lists_are_not_said_or_compared_or_stored_in_properties(self):
+        self.refuses('Say the words of "a b".', "can't be said")
+        self.refuses('Say "{the words of "a b"}".', "")
+        self.refuses('If the words of "a" is the words of "a":\n  Say 1.', "can't be compared")
+        self.refuses("A cat has a toy box (list of text).", "can't hold a list")
+        self.refuses("Let x (list of dogs) be nothing.", 'a list of "dogs"')
+        self.refuses("Say the number of items in 5.", "not a list")
+
+
+class CreatingAndRemoving(Base):
+    def test_things_can_be_made_anywhere(self):
+        source = STABLE + (
+            "To hatch for a dragon:\n"
+            "  Let the chick be a new dragon called \"{the dragon}'s chick\" whose age is 0 and whose parent is the dragon.\n"
+            "  Say \"{the chick} hatches, child of {the chick's parent}.\"\n"
+            "Hatch for Smaug.\n"
+            "Repeat 2 times:\n  There is a new horse whose speed is 1.\n"
+            "For each horse:\n  Say it.\n"
+        )
+        self.assertEqual(run(source), ["Smaug's chick hatches, child of Smaug.", "Shadowfax", "Bill", "horse 3", "horse 4"])
+
+    def test_a_thing_can_be_found_by_name(self):
+        source = STABLE + (
+            'Let the found be the dragon called "NORBERT".\nSay the found.\n'
+            'Say the dragon called "Nobody".\n'
+            'If the found is not nothing:\n  Say the found\'s age.\n'
+        )
+        self.assertEqual(run(source), ["Norbert", "nothing", "1"])
+        self.refuses(STABLE + 'Say the dragon called "Smaug"\'s age + 1.', "")
+        self.refuses(STABLE + 'Let x be the dragon called "Smaug".\nSay x\'s age + 1.', "may be nothing")
+
+    def test_making_things_is_refused_where_it_cannot_work(self):
+        self.refuses(STABLE + "Say a new horse whose speed is 1.", "whole value")
+        self.refuses(STABLE + "There is a new horse.", "also needs a speed")
+        self.refuses(STABLE + 'There is a new horse called 5 whose speed is 1.', "A name is text")
+        self.refuses(STABLE + "To work out the x (number):\n  There is a new horse whose speed is 1.\n  The answer is 1.", "can't make new things")
+        self.refuses(STABLE + "A horse's speed is never more than 50.\nThere is a new horse whose speed is 99.", "break a rule", stage="run")
+
+    def test_remove_takes_a_thing_out_of_the_world(self):
+        source = STABLE + (
+            "Remove Shadowfax.\n"
+            "Say Wat's mount.\n"
+            "Say the number of horses.\n"
+            "Say the horse called \"shadowfax\".\n"
+        )
+        self.assertEqual(run(source), ["nothing", "1", "nothing"])
+        error = self.refuses(STABLE + "Remove Smaug.", "Goblet's owner and Cup's owner", stage="run")
+        self.assertTrue(error.recoverable)
+        error = self.refuses(STABLE + "Remove Bill.\nSay Bill's speed.", "has been removed", stage="run")
+        self.assertTrue(error.recoverable)
+        self.refuses(STABLE + "A horse can be tired.\nLet b be Bill.\nRemove Bill.\nNow b is tired.", "has been removed", stage="run")
+        self.refuses(STABLE + "Let b be Bill.\nRemove Bill.\nSet Tom's mount to b.", "has been removed", stage="run")
+        self.refuses(STABLE + "Remove 5.", "Only a thing")
+        self.refuses(STABLE + "Remove Tom's mount.", "may be nothing")
+        self.refuses(STABLE + "To work out the x (number):\n  Remove Bill.\n  The answer is 1.", "can't remove anything")
+        self.refuses(STABLE + "A squire's mount is never nothing.\nRemove Shadowfax.", "would break a rule", stage="run")
+
+    def test_remove_cancels_checks_for_nothing(self):
+        self.refuses(STABLE + "If Wat has a mount:\n  Remove Bill.\n  Say Wat's mount's speed + 1.", "may be nothing")
+
+
+class TextOperations(Base):
+    def test_text_forms(self):
+        source = (
+            'Let the title be "The ""Lonely"" Mountain".\n'
+            "Say the title.\nSay the length of the title.\n"
+            "Say the title in upper case.\nSay the title in lower case.\n"
+            "Say the first 3 letters of the title.\nSay the last 8 letters of the title.\n"
+            'Say the last 100 letters of "abc".\nLet the none be the last 0 letters of "abc".\nSay "[{the none}]".\n'
+            "Say the number of items in the words of the title.\n"
+            'Say ("12" as a number or else 0) + 1.\nSay "1,234.5" as a number or else 0.\nSay "x" as a number.\n'
+            'Say "{{braces}} and{new line}a line break".\n'
+        )
+        self.assertEqual(run(source), [
+            'The "Lonely" Mountain', "21", 'THE "LONELY" MOUNTAIN', 'the "lonely" mountain', "The", "Mountain",
+            "abc", "[]", "3", "13", "1,234.5", "nothing", "{braces} and\na line break",
+        ])
+
+    def test_text_conditions(self):
+        source = (
+            'If "apple" comes before "Banana" and "Cherry" comes after "banana":\n  Say "order"\n'
+            'If "haystack" contains "st" and "haystack" starts with "hay" and "haystack" ends with "ack":\n  Say "parts"\n'
+            'If not "Hay" starts with "hay":\n  Say "capitals count"\n'
+        )
+        self.assertEqual(run(source), ["order", "parts", "capitals count"])
+        self.refuses('If 5 contains "a":\n  Say 1.', "about text")
+
+    def test_text_forms_are_checked(self):
+        self.refuses('Say the first -1 letters of "abc".', "-1 letters", stage="run")
+        self.refuses('Say the first 1.5 letters of "abc".', "1.5 letters", stage="run")
+        self.refuses('Say the first $1 letters of "abc".', "plain number of letters")
+        self.refuses("Say the length of 5.", "needs text")
+        self.refuses("Say 5 in upper case.", "only change the case of text")
+        self.refuses('Say "5" as a number + 1.', "may be nothing")
+        self.refuses('Say the length of the title in upper case.', "")
+
+    def test_length_may_still_be_a_property(self):
+        source = "A bridge has a length (number).\nThere is a bridge called Tower whose length is 244.\nSay the length of Tower.\nSay the length of \"Tower\"."
+        self.assertEqual(run(source), ["244", "5"])
+
+
+class InputAndFiles(InTemporaryFolder, Base):
+    def test_ask_reads_each_type_and_asks_again(self):
+        source = (
+            'Ask "Age?" and let the age (number) be the reply.\n'
+            'Ask "Pay?" and let the pay (money) be the reply.\n'
+            'Ask "Rate?" and let the rate (percent) be the reply.\n'
+            'Ask "Ready?" and let ready (yes or no) be the reply.\n'
+            'Ask "Name?" and let the caller (text) be the reply.\n'
+            'Say "{the age + 1} {the pay} {the rate} {ready} [{the caller}]".\n'
+        )
+        said = run_asking(source, ["old", "1,000", "-", "$2.50", "10", "12.5%", "maybe", "N", " Ada "])
+        self.assertEqual(said, [
+            "Age?", "Please answer with a number, such as 7 or 2.5.", "Age?",
+            "Pay?", "Please answer with an amount of money, such as $5 or $2.50.", "Pay?",
+            "Rate?", "Please answer with a percentage, such as 10%.", "Rate?",
+            "Ready?", "Please answer yes or no.", "Ready?", "Name?",
+            "1,001 $2.50 12.5% no [ Ada ]",
+        ])
+        self.assertEqual(run_asking('Ask "Pay?" and let p (money) be the reply.\nSay p.', ["7"]), ["Pay?", "$7"])
+
+    def test_the_end_of_input_ends_the_program_quietly(self):
+        source = 'Say "a"\nAsk "?" and let x (text) be the reply.\nSay "b"'
+        self.assertEqual(run_asking(source, []), ["a", "?"])
+
+    def test_ask_is_checked(self):
+        self.refuses('Let x be 1.\nAsk "?" and let x (number) be the reply.', "already means something")
+        self.refuses('Ask "?" and let x (dragon) be the reply.', "isn't a type I know")
+        self.refuses('Ask "?" and let x (text, if any) be the reply.', "can't ask for")
+        self.refuses('Ask "?" and let x be the reply.', "What sort of reply")
+        self.refuses('Ask 5 and let x (text) be the reply.', "The question is text")
+        self.refuses('To work out the x (number):\n  Ask "?" and let y (number) be the reply.\n  The answer is y.', "can't ask")
+
+    def test_files_are_written_added_to_and_read(self):
+        source = (
+            'Write "one{new line}" to the file "notes.txt".\n'
+            'Add "two{new line}" to the file "notes.txt".\n'
+            'Add "three" to the file "notes.txt".\n'
+            'Say the length of the text of the file "notes.txt".\n'
+            'For each line in the lines of the file "notes.txt":\n  Say the line.\n'
+            'Let n be 1.\nAdd 2 to n.\nSay n.\n'
+        )
+        self.assertEqual(run(source), ["13", "one", "two", "three", "3"])
+        self.assertEqual((self.folder / "notes.txt").read_bytes(), b"one\ntwo\nthree")
+
+    def test_file_problems_and_where_files_may_be_touched(self):
+        error = self.refuses('Say the text of the file "missing.txt".', "couldn't read the file missing.txt", stage="run")
+        self.assertTrue(error.recoverable)
+        self.refuses('Write 5 to the file "a.txt".', "Only text")
+        self.refuses('Write "a" to the file 5.', "name of a file is text")
+        self.refuses('Add 5 to the file "a.txt".', "")
+        self.refuses('To work out the x (number):\n  Write "a" to the file "a.txt".\n  The answer is 1.', "can't write to a file")
+        self.refuses('To work out the x (number):\n  Add "a" to the file "a.txt".\n  The answer is 1.', "can't write to a file")
+        (self.folder / "a.txt").write_text("x y z", encoding="utf-8")
+        source = 'To work out the size (number):\n  The answer is the number of items in the words of the text of the file "a.txt".\nSay the size.'
+        self.assertEqual(run(source), ["3"])
+
+
+class Recovering(InTemporaryFolder, Base):
+    PAY = WORLD + (
+        "A knight can be sworn.\n"
+        "To move an amount (money) from a giver (knight) to a taker (knight):\n"
+        "  If the giver is the taker:\n"
+        "    Fail because \"a knight cannot pay himself\".\n"
+        "  Add the amount to the taker's purse.\n"
+        "  Subtract the amount from the giver's purse.\n"
+    )
+
+    def test_a_failed_try_leaves_the_world_as_it_was(self):
+        source = self.PAY + (
+            "Let the tally be 0.\n"
+            "Try:\n"
+            "  Add 1 to the tally.\n"
+            "  Now Robin is sworn.\n"
+            "  There is a new dragon whose age is 3.\n"
+            "  Remove Norbert.\n"
+            "  Say \"said\"\n"
+            "  Write \"kept\" to the file \"log.txt\".\n"
+            "  Move $500 from Robin to Gawain.\n"
+            "  Say \"not reached\"\n"
+            "If that fails:\n"
+            "  Say \"No payment: {the problem}\"\n"
+            "Say \"{Gawain's purse} {the tally} {the number of sworn knights} {the number of dragons} {Norbert's age}\"\n"
+            "Try:\n  Move $5 from Robin to Robin.\nIf that fails:\n  Say the problem.\n"
+        )
+        self.assertEqual(run(source), [
+            "said", 'No payment: That would break a rule: "A knight\'s purse is never less than $0."',
+            "$300 0 0 2 1", "a knight cannot pay himself",
+        ])
+        self.assertEqual((self.folder / "log.txt").read_text(encoding="utf-8"), "kept")
+
+    def test_a_try_that_succeeds_keeps_its_changes(self):
+        source = self.PAY + "Try:\n  Move $5 from Gawain to Robin.\nIf that fails:\n  Say the problem.\nSay Robin's purse."
+        self.assertEqual(run(source), ["$25"])
+
+    def test_what_can_be_recovered_from(self):
+        cases = {
+            "Say 1 / 0.": "divide by zero",
+            "If 1 is divisible by 0:\n    Say 1.": "divisible by zero",
+            "Repeat -1 times:\n    Say 1.": "-1 times",
+            'Say the first -1 letters of "a".': "-1 letters",
+            'Say the text of the file "nope.txt".': "couldn't read",
+            "Remove Smaug.": "can't remove Smaug",
+            'Fail because "my own reason".': "my own reason",
+        }
+        for sentence, problem in cases.items():
+            with self.subTest(sentence):
+                said = run(STABLE + f"Try:\n  {sentence}\nIf that fails:\n  Say the problem.")
+                self.assertEqual(len(said), 1)
+                self.assertIn(problem, said[0])
+
+    def test_faults_in_the_program_are_not_recovered_from(self):
+        self.refuses("Try:\n  For example, 1 is 2.\nIf that fails:\n  Say 1.", "doesn't hold", stage="run")
+        self.refuses("Try:\n  While 1 is 1:\n    Say 1.\nIf that fails:\n  Say 2.", "gone round", stage="run")
+        self.refuses("To spin:\n  Spin.\nTry:\n  Spin.\nIf that fails:\n  Say 1.", "keeps calling", stage="run")
+
+    def test_leaving_a_try_early_is_not_a_failure(self):
+        source = (
+            "Let n be 0.\n"
+            "Repeat 3 times:\n  Try:\n    Add 1 to n.\n    Stop repeating.\n  If that fails:\n    Say 0.\n"
+            "Say n.\n"
+            "To work out the x (number):\n  Try:\n    The answer is 7.\n  If that fails:\n    The answer is 0.\n"
+            "Say the x.\n"
+            "Try:\n  End the program.\nIf that fails:\n  Say 0.\nSay \"not reached\"\n"
+        )
+        self.assertEqual(run(source), ["1", "7"])
+
+    def test_try_is_written_correctly(self):
+        self.refuses("Try:\n  Say 1.\nSay 2.", '"If that fails:" block straight after')
+        self.refuses("If that fails:\n  Say 1.", 'straight after a "Try:"')
+        self.refuses("Say the problem.", "only means something inside")
+        self.refuses("Try.", "needs a block")
+        self.refuses('Fail because 5.', "The reason is text")
+
+    def test_checks_for_nothing_after_a_try(self):
+        for source in (
+            "If Wat has a mount:\n  Try:\n    Set Wat's mount to nothing.\n  If that fails:\n    Say 1.\n  Say Wat's mount's speed + 1.",
+            "If Wat has a mount:\n  Try:\n    Say 1.\n  If that fails:\n    Set Wat's mount to nothing.\n  Say Wat's mount's speed + 1.",
+        ):
+            with self.subTest(source):
+                self.refuses(STABLE + source, "may be nothing")
+        source = "If Wat has a mount:\n  Try:\n    Say 1.\n  If that fails:\n    Say 2.\n  Say Wat's mount's speed + 1."
+        self.assertEqual(run(STABLE + source), ["1", "41"])
+
+
+class LeavingALoopPartWay(Base):
+    """A round can end at a Skip, and a loop at a Stop repeating, before the end of the block."""
+
+    def test_checks_that_a_skipped_or_stopped_round_lost_are_not_relied_on(self):
+        for source in (
+            "If Wat has a mount:\n  Repeat 2 times:\n    Say Wat's mount's speed + 1.\n    Set Wat's mount to nothing.\n"
+            "    If 1 is 1:\n      Skip this round.\n    Set Wat's mount to Bill.",
+            "If Wat has a mount:\n  Repeat 2 times:\n    Set Wat's mount to nothing.\n"
+            "    If 1 is 1:\n      Stop repeating.\n    Set Wat's mount to Bill.\n  Say Wat's mount's speed + 1.",
+        ):
+            with self.subTest(source):
+                self.refuses(STABLE + source, "may be nothing")
+
+
+class ReviewFixes(InTemporaryFolder, Base):
+    def test_very_long_numbers_are_said_in_full(self):
+        source = "Let n be 10.\nRepeat 13 times:\n  Multiply n by n.\nSay n.\nSay \"{n}\".\nSay $1 * n.\nSay n / 3.\n"
+        said = run(source)
+        digits = "1" + "0" * 8192
+        self.assertEqual(said[0].replace(",", ""), digits)
+        self.assertEqual(said[1], said[0])
+        self.assertEqual(said[2], "$" + said[0])
+        self.assertTrue(said[3].replace(",", "").startswith("3333") and said[3].endswith(".3333"))
+        self.assertEqual(run("Say 1" + "0" * 5000 + ".")[0].replace(",", ""), "1" + "0" * 5000)
+        # A rule's hint quotes the values, and must manage long ones too.
+        error = self.refuses(
+            "A cat has an age (number).\nA cat's age is never more than 5.\n"
+            "There is a cat called Tom whose age is 1.\nLet n be 10.\nRepeat 13 times:\n  Multiply n by n.\n"
+            "Set Tom's age to n.", "break a rule", stage="run")
+        self.assertIn("would become 100,000,000,", error.hint)
+        # The usual limit is back once the program has finished.
+        if hasattr(sys, "get_int_max_str_digits"):
+            self.assertNotEqual(sys.get_int_max_str_digits(), 0)
+        said = run_asking('Ask "?" and let n (number) be the reply.\nSay n + 1.', ["9" * 5000])
+        self.assertEqual(said[1].replace(",", ""), "1" + "0" * 5000)
+
+    def test_for_each_does_not_visit_things_removed_after_it_began(self):
+        horses = "A horse has a speed (number).\nThere is a horse called Shadowfax whose speed is 40.\nThere is a horse called Bill whose speed is 5.\n"
+        for loop in ("For each horse:\n", "For each steed in horses:\n"):
+            noun = "horse" if "horse:" in loop else "steed"
+            source = horses + loop + f"  If the {noun} is Shadowfax:\n    Remove Bill.\n  Say \"{{the {noun}}} {{the {noun}'s speed}}\""
+            with self.subTest(loop):
+                self.assertEqual(run(source), ["Shadowfax 40"])
+
+    def test_adding_a_number_to_a_file_is_explained(self):
+        self.refuses('Add 5 to the file "f.txt".', "Only text can be written to a file")
+        self.assertEqual(run("Let file count be 1.\nAdd 5 to the file count.\nSay the file count."), ["6"])
+
+    def test_a_fill_in_with_quotes_is_explained(self):
+        error = self.refuses('Say "{the length of "abc"}"', "can't contain quotes")
+        self.assertIn("variable first", error.hint)
+        self.refuses('Say "oops {1 + ".', "never closed")
+
+    def test_a_group_where_a_list_is_wanted_is_explained(self):
+        head = (
+            "A horse has a speed (number).\nA horse can be tired.\n"
+            "To count a batch (list of horses):\n  Say the number of items in the batch.\n"
+            "To work out the size (number) of a batch (list of horses):\n  The answer is 1.\n"
+        )
+        for sentence in ("Count all horses.", "Count tired horses.", "Count horses.",
+                         "Say the size of horses.", "Let b (list of horses) be all horses."):
+            with self.subTest(sentence):
+                self.refuses(head + sentence, "a group of things can't be given where a list is expected yet")
+
+    def test_a_removed_thing_cannot_own_a_group(self):
+        source = (
+            "A horse has a speed (number).\nA saddle has a wearer (horse, if any).\n"
+            "There is a horse called Bill whose speed is 5.\nThere is a saddle called Old whose wearer is Bill.\n"
+            "Let h be Bill.\nRemove Bill.\nSay the number of saddles of h."
+        )
+        error = self.refuses(source, "has been removed", stage="run")
+        self.assertTrue(error.recoverable)
+
+
+class TodoExample(InTemporaryFolder, Base):
+    SOURCE = (ROOT / "examples" / "todo.english").read_text(encoding="utf-8")
+
+    def test_tasks_are_added_marked_listed_and_kept_in_a_file(self):
+        said = run_asking(self.SOURCE, ["add Buy milk", "add Walk dog", "done 1", "list", "quit"])
+        self.assertEqual(said, [
+            "No saved list yet. Starting a new one.",
+            "To-do list. Commands: list, add <title>, done <number>, undo <number>, remove <number>, clear, quit.",
+            "Nothing to do.",
+            ">", "Added: Buy milk",
+            ">", "Added: Walk dog",
+            ">", "Done: Buy milk",
+            ">", "  1. [x] Buy milk", "  2. [ ] Walk dog", "1 of 2 done.",
+            ">", "Goodbye.",
+        ])
+        self.assertEqual((self.folder / "todo.txt").read_text(encoding="utf-8"), "x Buy milk\n- Walk dog\n")
+
+        # A second run finds the list in the file.
+        said = run_asking(self.SOURCE, ["undo 1", "add ", "remove 2", "done 9", "clear", "quit"])
+        self.assertEqual(said, [
+            "To-do list. Commands: list, add <title>, done <number>, undo <number>, remove <number>, clear, quit.",
+            "  1. [x] Buy milk", "  2. [ ] Walk dog", "1 of 2 done.",
+            ">", "Not done: Buy milk",
+            ">", "Add what?",
+            ">", "Removed: Walk dog",
+            ">", "There is no task with that number.",
+            ">", "  1. [ ] Buy milk", "0 of 1 done.",
+            ">", "Goodbye.",
+        ])
+        self.assertEqual((self.folder / "todo.txt").read_text(encoding="utf-8"), "- Buy milk\n")
+
+    def test_the_program_ends_quietly_when_input_runs_out(self):
+        said = run_asking(self.SOURCE, ["add Feed cat"])
+        self.assertEqual(said[-2:], ["Added: Feed cat", ">"])
+        self.assertNotIn("Goodbye.", said)
+        self.assertEqual((self.folder / "todo.txt").read_text(encoding="utf-8"), "- Feed cat\n")
 
 
 class SyntaxDocument(Base):

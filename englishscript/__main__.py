@@ -48,6 +48,9 @@ def main(argv=None):
         sys.stdout.flush()
         print("\n" + error.render(args.file), file=sys.stderr)
         return 1
+    except KeyboardInterrupt:  # Ctrl+C while the program waits for a reply
+        print()
+        return 130
 
 
 if __name__ == "__main__":

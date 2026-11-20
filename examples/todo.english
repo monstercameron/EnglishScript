@@ -1,0 +1,143 @@
+# A to-do list that remembers itself between runs.
+#
+#   python -m englishscript examples/todo.english
+#
+# Commands: list, add <title>, done <number>, undo <number>, remove <number>, clear, quit.
+# The list is kept in todo.txt, in the folder the program is run from.
+
+A task has a position (number).
+A task can be done.
+
+Let the save file always be "todo.txt".
+Let the next position be 1.
+
+# --- Working things out ---------------------------------------------------------
+
+# "add Buy milk" from 4 is "Buy milk".
+To work out the rest (text) of a line (text) from a start (number):
+  The answer is the last (the length of the line - the start) letters of the line.
+
+To work out the match (task, if any) for a pick (number):
+  For each task whose position is the pick:
+    The answer is the task.
+  The answer is nothing.
+
+# "2" is the task in position 2. Anything that is not a number is no task.
+To work out the choice (task, if any) from a phrase (text):
+  Let the pick be the phrase as a number.
+  If the pick is nothing:
+    The answer is nothing.
+  The answer is the match for the pick.
+
+# --- Verbs -----------------------------------------------------------------------
+
+To renumber:
+  Set the next position to 1.
+  For each task:
+    Set the task's position to the next position.
+    Add 1 to the next position.
+
+# Each line of the file is "x " or "- " followed by the title. Anything else,
+# such as a line someone typed in by hand with no title, is passed over.
+To load:
+  Try:
+    For each line in the lines of the file the save file:
+      If the length of the line is less than 3:
+        Skip this line.
+      If the line starts with "x ":
+        Let the entry be a new task called the rest of the line from 2 whose position is the next position.
+        Now the entry is done.
+        Add 1 to the next position.
+      Otherwise if the line starts with "- ":
+        There is a new task called the rest of the line from 2 whose position is the next position.
+        Add 1 to the next position.
+  If that fails:
+    Say "No saved list yet. Starting a new one."
+
+To save:
+  Write "" to the file the save file.
+  For each task:
+    If the task is done:
+      Add "x {the task}{new line}" to the file the save file.
+    Otherwise:
+      Add "- {the task}{new line}" to the file the save file.
+
+To show:
+  If the number of tasks is 0:
+    Say "Nothing to do."
+    Stop.
+  For each task:
+    If the task is done:
+      Say "  {the task's position}. [x] {the task}"
+    Otherwise:
+      Say "  {the task's position}. [ ] {the task}"
+  Say "{the number of done tasks} of {the number of tasks} done."
+
+# --- The program -----------------------------------------------------------------
+
+Load.
+Say "To-do list. Commands: list, add <title>, done <number>, undo <number>, remove <number>, clear, quit."
+Show.
+
+Let finished (yes or no) be no.
+While finished is no:
+  Ask ">" and let the command (text) be the reply.
+
+  If the command is "quit":
+    Set finished to yes.
+
+  Otherwise if the command is "list":
+    Show.
+
+  Otherwise if the command starts with "add ":
+    Let the title be the rest of the command from 4.
+    If the title is "":
+      Say "Add what?"
+    Otherwise:
+      There is a new task called the title whose position is the next position.
+      Add 1 to the next position.
+      Save.
+      Say "Added: {the title}"
+
+  Otherwise if the command starts with "done ":
+    Let the words be the rest of the command from 5.
+    Let the chosen be the choice from the words.
+    If the chosen is nothing:
+      Say "There is no task with that number."
+    Otherwise:
+      Now the chosen is done.
+      Save.
+      Say "Done: {the chosen}"
+
+  Otherwise if the command starts with "undo ":
+    Let the words be the rest of the command from 5.
+    Let the chosen be the choice from the words.
+    If the chosen is nothing:
+      Say "There is no task with that number."
+    Otherwise:
+      Now the chosen is not done.
+      Save.
+      Say "Not done: {the chosen}"
+
+  Otherwise if the command starts with "remove ":
+    Let the words be the rest of the command from 7.
+    Let the chosen be the choice from the words.
+    If the chosen is nothing:
+      Say "There is no task with that number."
+    Otherwise:
+      Say "Removed: {the chosen}"
+      Remove the chosen.
+      Renumber.
+      Save.
+
+  Otherwise if the command is "clear":
+    For each done task:
+      Remove the task.
+    Renumber.
+    Save.
+    Show.
+
+  Otherwise:
+    Say "I don't know that. Try: list, add <title>, done <number>, undo <number>, remove <number>, clear, quit."
+
+Say "Goodbye."

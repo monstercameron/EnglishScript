@@ -15,7 +15,7 @@ from fractions import Fraction
 class EnglishError(Exception):
     """A problem with a program, phrased for the person who wrote it."""
 
-    def __init__(self, message, line=None, col=None, width=1, hint=None, stage="compile"):
+    def __init__(self, message, line=None, col=None, width=1, hint=None, stage="compile", recoverable=False):
         super().__init__(message)
         self.message = message
         self.line = line
@@ -23,6 +23,9 @@ class EnglishError(Exception):
         self.width = width
         self.hint = hint
         self.stage = stage  # "compile" or "run"
+        # A problem in the world (a broken rule, a missing file) that "Try:" may
+        # recover from, as opposed to a fault in the program itself.
+        self.recoverable = recoverable
         self.trace = []
 
     def render(self, filename=None, location=True):
@@ -84,7 +87,7 @@ class Line:
 
 TOKEN_RE = re.compile(
     r"""
-    (?P<STRING>"[^"]*")
+    (?P<STRING>"(?:[^"]|"")*")
   | (?P<MONEY>\$\d{1,3}(?:,\d{3})+(?:\.\d+)?|\$\d+(?:\.\d+)?)
   | (?P<PERCENT>\d+(?:\.\d+)?%)
   | (?P<NUMBER>\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)
@@ -117,7 +120,7 @@ def tokenize(text, line, start, end):
             elif kind == "PERCENT":
                 value = Fraction(raw[:-1]) / 100
             elif kind == "STRING":
-                value = raw[1:-1]
+                value = raw[1:-1].replace('""', '"')  # "" inside quotes is one quote
             tokens.append(Token(kind, raw, pos, value))
         pos = m.end()
     return tokens

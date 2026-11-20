@@ -5,9 +5,13 @@ from .lexer import EnglishError
 __all__ = ["compile_source", "Program", "EnglishError", "run_source", "explain"]
 
 
-def run_source(source, out=print):
-    """Compile and run a program. Returns the finished World."""
-    return compile_source(source).run(out)
+def run_source(source, out=print, ask=None):
+    """Compile and run a program. Returns the finished World.
+
+    `ask` answers the program's questions (see Program.run); by default the
+    replies are read from standard input.
+    """
+    return compile_source(source).run(out, ask)
 
 
 def explain(source):
