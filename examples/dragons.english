@@ -1,0 +1,92 @@
+# A small tale of dragons, treasure and tax.
+
+# --- The glossary: what the words mean --------------------------------------
+
+A dragon has an age (number).
+A treasure has a worth (money) and an owner (dragon).
+A knight has a purse (money) and a courage (number).
+
+The hoard of a dragon is the total worth of its treasures.
+The tax of a dragon is 10% of its hoard.
+
+A dragon is ancient when its age is at least 500.
+A dragon is poor when its hoard is less than $1,000.
+A knight is brave when its courage is more than 5.
+
+A knight's purse is never less than $0.
+A treasure's worth is never less than $0.
+
+# --- The cast ----------------------------------------------------------------
+
+There is a dragon called Smaug whose age is 771.
+There is a dragon called Norbert whose age is 1.
+
+There is a treasure called Arkenstone whose worth is $9,000 and whose owner is Smaug.
+There is a treasure called Goblet whose worth is $3,000 and whose owner is Smaug.
+There is a treasure called Teaspoon whose worth is $40 and whose owner is Norbert.
+
+There is a knight called Gawain whose purse is $300 and whose courage is 8.
+There is a knight called Robin whose purse is $20 and whose courage is 2.
+
+# --- Examples double as tests ------------------------------------------------
+
+For example, the hoard of Smaug is $12,000.
+For example, the tax of Smaug is $1,200.
+For example, Smaug is ancient and Norbert is poor.
+
+# --- Verbs -------------------------------------------------------------------
+
+To send a knight against a dragon:
+  If the knight is not brave:
+    Say "{the knight's name} takes one look at {the dragon's name} and goes home."
+  Otherwise if the dragon is poor:
+    Say "{the knight's name} feels sorry for {the dragon's name} and leaves a coin."
+    Subtract $1 from the knight's purse.
+  Otherwise:
+    Let the loot be the tax of the dragon.
+    For each treasure of the dragon:
+      Subtract 10% of the treasure's worth from the treasure's worth.
+    Add the loot to the knight's purse.
+    Say "{the knight's name} collects {the loot} in tax from {the dragon's name}."
+
+To give a treasure to a dragon:
+  Say "{the treasure's name} changes claws: {the treasure's owner's name} to {the dragon's name}."
+  Set the treasure's owner to the dragon.
+
+# --- The story ---------------------------------------------------------------
+
+Say "-- Roll call --"
+For each dragon:
+  Say "{its name}, aged {its age}, sits on {its hoard}."
+
+Say ""
+Say "-- Tax season --"
+Send Robin against Smaug.
+Send Gawain against Norbert.
+Send Gawain against Smaug.
+Say "Gawain rides home with {Gawain's purse}."
+
+For example, the hoard of Smaug is $10,800.
+For example, Gawain's purse is $1,499.
+
+Say ""
+Say "-- A gift --"
+Give Goblet to Norbert.
+For example, Norbert is not poor.
+
+Say ""
+Say "-- Four hundred years pass --"
+Repeat 400 times:
+  For each dragon:
+    Add 1 to its age.
+
+For each dragon:
+  If it is ancient:
+    Say "{its name} is now {its age} and ancient. Treasures: {the number of its treasures}, worth {its hoard}."
+  Otherwise:
+    Say "{its name} is {its age}: still a youngster. Treasures: {the number of its treasures}, worth {its hoard}."
+
+Say ""
+Say "Ancient dragons: {the number of ancient dragons} of {the number of dragons}."
+Say "Treasures worth more than $1,000: {the number of treasures whose worth is more than $1,000}."
+Say "All the treasure in the world: {the total worth of all treasures}."

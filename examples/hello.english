@@ -1,0 +1,15 @@
+# The sample program from the original EnglishScript notebook was:
+#
+#   "I have a fixed number b that is 107, I have a number a that is 1
+#    then I add a and b then multiply by 2, show my number a"
+#
+# In strict EnglishScript, each step is its own sentence. The variable can't be
+# called "a" any more: in English that word is already taken.
+
+Let bonus be 107.
+Let score be 1.
+Add bonus to score.
+Multiply score by 2.
+Say "The score is {score}."
+
+For example, score is (1 + 107) * 2.

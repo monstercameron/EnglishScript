@@ -1,0 +1,31 @@
+# Late fees: the same structures, in a less fanciful setting.
+
+A customer has an email (text) and a balance (money).
+An invoice has an amount (money), a due day (number), and a payer (customer).
+
+Let today be 20.
+
+An invoice is overdue when its due day is less than today.
+The late fee of an invoice is 5% of its amount.
+A customer is late when the number of overdue invoices of the customer is more than 0.
+
+A customer's balance is never less than $0.
+
+There is a customer called Ada whose email is "ada@example.com" and whose balance is $0.
+There is a customer called Grace whose email is "grace@example.com" and whose balance is $0.
+
+There is an invoice called Hosting whose amount is $200, whose due day is 5, and whose payer is Ada.
+There is an invoice called Design whose amount is $1,500, whose due day is 18, and whose payer is Ada.
+There is an invoice called Coffee whose amount is $40, whose due day is 25, and whose payer is Grace.
+
+To remind a customer:
+  For each overdue invoice of the customer:
+    Add the late fee of the invoice to the customer's balance.
+    Say "  {the invoice's name}: {the invoice's amount} was due on day {the invoice's due day}."
+  Say "To {the customer's email}: you now owe {the customer's balance} in late fees."
+
+For each late customer:
+  Remind the customer.
+
+For example, Ada's balance is $85.
+For example, Grace is not late.

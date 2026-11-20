@@ -1,0 +1,16 @@
+# FizzBuzz, from 1 to 100.
+
+Let the count be 1.
+
+Repeat 100 times:
+  If the count is divisible by 15:
+    Say "FizzBuzz"
+  Otherwise if the count is divisible by 3:
+    Say "Fizz"
+  Otherwise if the count is divisible by 5:
+    Say "Buzz"
+  Otherwise:
+    Say the count.
+  Add 1 to the count.
+
+For example, the count is 101.

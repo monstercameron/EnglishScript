@@ -1,4 +1,107 @@
-# English Script Programming Language Compiler
+# EnglishScript
+
+There are two experiments in this repository:
+
+1. **A strict-English compiler** (`englishscript/`, 2026): a plain Python parser, with no AI involved, for a subset of English in which every sentence has exactly one meaning.
+2. **The original LLM translator** (`run.ipynb`, 2023): GPT-3.5 turning loose English into JavaScript. Its README is kept [below](#the-original-experiment-english-to-javascript-with-gpt-35).
+
+## The strict-English compiler
+
+It needs Python 3 and nothing else (tested on Python 3.12).
+
+```bash
+python -m englishscript
+```
+
+That runs a guided tour: a program about dragons, its output, how the compiler read it, and eleven sentences it refuses to compile. To run a program of your own:
+
+```bash
+python -m englishscript examples/invoices.english
+```
+
+Add `--explain` to see how each sentence was read without running it, or `--check` to compile only.
+
+### What a program looks like
+
+```
+A dragon has an age (number).
+A treasure has a worth (money) and an owner (dragon).
+
+The hoard of a dragon is the total worth of its treasures.
+A dragon is poor when its hoard is less than $1,000.
+
+There is a dragon called Smaug whose age is 771.
+There is a treasure called Goblet whose worth is $3,000 and whose owner is Smaug.
+
+To tax a dragon:
+  For each treasure of the dragon:
+    Subtract 10% of the treasure's worth from the treasure's worth.
+
+Tax Smaug.
+Say "{Smaug's name} now sits on {Smaug's hoard}."
+For example, the hoard of Smaug is $2,700.
+```
+
+### The idea
+
+English is easy to read because it leaves things unsaid. The compiler allows that only where the unsaid part has exactly one possible reading; anywhere else it stops and says what is unclear.
+
+| English habit | Rule that makes it strict |
+|---|---|
+| Shared vocabulary | Every noun, adjective and verb must be defined before it is used. |
+| "its", "it" | Allowed only when exactly one thing is in view. |
+| "the dragon" | Must point at one dragon in the current sentence's context. |
+| "treasures of the dragon" | Works only if a treasure is tied to a dragon by exactly one property. |
+| "send X against Y" | Prepositions name the verb's roles; each role is typed and required. |
+| "A and B or C" | Refused until brackets say which reading is meant. |
+| "$5", "10%" | Money, numbers and percentages are different types and do not mix. |
+| "never", "always" | A rule checked every time the property changes. |
+| "For example, ..." | A test that runs with the program. |
+
+Layout carries the nesting: one sentence per line, a colon and an indent for a block.
+
+### Sentence forms
+
+| Purpose | Form |
+|---|---|
+| Describe a kind | `A dragon has an age (number) and a lair (text).` |
+| Define an adjective | `A dragon is ancient when its age is at least 500.` |
+| Define a worked-out property | `The tax of a dragon is 10% of its hoard.` |
+| State a rule | `A knight's purse is never less than $0.` |
+| Create a thing | `There is a dragon called Smaug whose age is 771.` |
+| Teach a verb | `To send a knight against a dragon:` |
+| Use a verb | `Send Gawain against Smaug.` |
+| Variables | `Let the total be 0.` then `Set`, `Add ... to`, `Subtract ... from`, `Multiply ... by`, `Divide ... by` |
+| Output | `Say "{its name} is {its age}."` |
+| Branch | `If ...:`, `Otherwise if ...:`, `Otherwise:` |
+| Compare | `is`, `is not`, `is less than`, `is more than`, `is at least`, `is at most`, `is divisible by` |
+| Loop | `For each poor dragon:`, `Repeat 3 times:`, `While ...:` |
+| Count and add up | `the number of ancient dragons`, `the total worth of Smaug's treasures` |
+| Test | `For example, the hoard of Smaug is $12,000.` |
+
+Types are `number`, `money`, `text`, `percent`, and any kind you describe. Comments start with `#`.
+
+### Layout of the code
+
+- `englishscript/lexer.py` splits the source into sentences and tokens.
+- `englishscript/compiler.py` parses, checks and compiles each sentence into a Python closure in one pass.
+- `englishscript/runtime.py` holds what exists while a program runs.
+- `englishscript/tour.py` is the guided tour.
+- `examples/` has three programs; `tests/` has the test suite.
+
+```bash
+python -m unittest discover tests
+```
+
+### What it does not do
+
+- It has no lists, dates, text operations, or verbs that return a value.
+- Plurals are formed by rule ("dragons", "ponies", "foxes"), so irregular ones such as "people" are not recognised.
+- It does not accept loose English. The natural next step is the original experiment turned around: use a language model only to rewrite loose English into this strict form, and let this compiler be the judge of whether the result is unambiguous.
+
+---
+
+# The original experiment: English to JavaScript with GPT-3.5
 
 The English Script Programming Language Compiler is a python application that uses OpenAI's GPT-3.5 model to translate English scripts into JavaScript. The application follows certain rules and uses an alias system to understand and transcribe the English scripts. It creates an output JavaScript file and also has the capability to execute this file.
 
