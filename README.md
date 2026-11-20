@@ -62,6 +62,8 @@ Layout carries the nesting: one sentence per line, a colon and an indent for a b
 
 ### Sentence forms
 
+The full reference is [docs/SYNTAX.md](docs/SYNTAX.md). Its examples are run by the test suite. In brief:
+
 | Purpose | Form |
 |---|---|
 | Describe a kind | `A dragon has an age (number) and a lair (text).` |

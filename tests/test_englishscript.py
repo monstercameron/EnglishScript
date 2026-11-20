@@ -1,4 +1,5 @@
 """Run with:  python -m unittest discover tests"""
+import re
 import sys
 import unittest
 from pathlib import Path
@@ -7,6 +8,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from englishscript import EnglishError, compile_source, explain  # noqa: E402
+from englishscript.compiler import KEYWORDS  # noqa: E402
+from englishscript.lexer import _strip_comment  # noqa: E402
 from englishscript.tour import REFUSALS, STORY_MARKER  # noqa: E402
 
 WORLD = """
@@ -296,6 +299,53 @@ class Examples(Base):
         text = caught.exception.render()
         self.assertIn("Say $5 + 5.", text)
         self.assertIn("^^^^^^", text)
+
+
+class SyntaxDocument(Base):
+    """docs/SYNTAX.md is executable: its examples must behave as written."""
+
+    FENCE = re.compile(r"^```(\w+)\n(.*?)^```", re.M | re.S)
+
+    def blocks(self, kind):
+        text = (ROOT / "docs" / "SYNTAX.md").read_text(encoding="utf-8")
+        return [body for marker, body in self.FENCE.findall(text) if marker == kind]
+
+    @staticmethod
+    def stated_output(body):
+        said = []
+        for line in body.splitlines():
+            comment = line[len(_strip_comment(line)):]
+            if comment.startswith("#>"):
+                said.append(comment[2:].strip())
+        return said
+
+    def test_examples_run_and_say_what_the_document_claims(self):
+        world, *examples = self.blocks("englishscript")
+        self.assertGreater(len(examples), 15)
+        for body in examples:
+            with self.subTest(body.strip().splitlines()[0]):
+                try:
+                    said = run(world + body)
+                except EnglishError as error:
+                    self.fail(error.render())
+                self.assertEqual(said, self.stated_output(body))
+
+    def test_refused_examples_are_refused(self):
+        world = self.blocks("englishscript")[0]
+        refused = self.blocks("refused")
+        self.assertGreater(len(refused), 8)
+        for body in refused:
+            with self.subTest(body.strip().splitlines()[-1]):
+                with self.assertRaises(EnglishError):
+                    run(world + body)
+
+    def test_reserved_words_match_the_compiler(self):
+        text = (ROOT / "docs" / "SYNTAX.md").read_text(encoding="utf-8")
+        table = text.split("| Group | Reserved words |")[1].split("\n\n")[0]
+        listed = set()
+        for row in table.splitlines()[2:]:
+            listed.update(re.findall(r"`(\w+)`", row.split("|")[2]))
+        self.assertEqual(listed, set(KEYWORDS))
 
 
 if __name__ == "__main__":
