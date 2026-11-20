@@ -40,9 +40,8 @@ class WhatTheSiteServes(unittest.TestCase):
                 self.assertIn("assets/english.css", page)
                 nav = re.search(r'<nav class="sitenav".*?</nav>', page, re.S).group(0)
                 links = re.findall(r'<a class="page" href="([^"]+)"', nav)
-                self.assertIn("red/index.html", links)
-                self.assertEqual(links[:8], ["./", "playground.html", "todo.html", "compare.html", "opposition.html",
-                                             "systems.html", "reference.html", "how.html"])
+                self.assertEqual(links[:9], ["red/index.html", "./", "playground.html", "todo.html", "compare.html",
+                                             "opposition.html", "systems.html", "reference.html", "how.html"])
                 for target in re.findall(r'(?:href|src)="([^"#]+)(?:#[^"]*)?"', page):
                     if target.startswith(("http://", "https://", "data:")):
                         continue

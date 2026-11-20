@@ -22,8 +22,9 @@ FONTS = (
     '<link rel="stylesheet" href="assets/english.css">\n'
 )
 PAGES = [
-    ("./", "The treatise"), ("playground.html", "The playground"), ("todo.html", "A page"), ("compare.html", "Compared"), ("opposition.html", "The opposition"), ("systems.html", "Three systems"),
-    ("reference.html", "The grammar"), ("how.html", "The machinery"), ("red/index.html", "Pokémon Red"),
+    ("red/index.html", "Play Pokémon Red"), ("./", "The treatise"), ("playground.html", "The playground"),
+    ("todo.html", "A page"), ("compare.html", "Compared"), ("opposition.html", "The opposition"),
+    ("systems.html", "Three systems"), ("reference.html", "The grammar"), ("how.html", "The machinery"),
     (SOURCE, "The source"),
 ]
 # Where a link to another document of the repository goes on the site.

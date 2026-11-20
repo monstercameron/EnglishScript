@@ -111,6 +111,10 @@ form.reply input {
 .sitenav .home { font: 1.75rem/1.1 var(--black); color: var(--ink); text-decoration: none; margin-right: auto; }
 .sitenav .page { font: 1.05rem var(--caps); letter-spacing: 0.1em; text-transform: lowercase; text-decoration: none; color: var(--ink); border-bottom: 1px solid transparent; }
 .sitenav .page:hover, .sitenav .page[aria-current="page"] { color: var(--accent); }
+@media (max-width: 24rem) {
+  .sitenav .inner { padding-inline: 0.6rem; column-gap: 0.5rem; }
+  .sitenav .home { font-size: 1.3rem; }
+}
 
 /* A program printed in the text, with what the compiler says under it. */
 figure.snippet { margin: 1.5rem 0 2rem; border: 1px solid var(--ink); background: var(--bg); box-shadow: 4px 4px 0 var(--rule); }
