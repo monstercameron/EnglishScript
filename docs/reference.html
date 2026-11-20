@@ -19,6 +19,7 @@
     <a class="page" href="playground.html">The playground</a>
     <a class="page" href="todo.html">A page</a>
     <a class="page" href="compare.html">Compared</a>
+    <a class="page" href="opposition.html">The opposition</a>
     <a class="page" href="reference.html" aria-current="page">The grammar</a>
     <a class="page" href="how.html">The machinery</a>
     <a class="page" href="https://github.com/monstercameron/EnglishScript">The source</a>
@@ -77,7 +78,7 @@ There is a knight called Robin whose purse is $20 and whose courage is 2.</pre>
 <ul>
 <li><strong>One sentence per line.</strong> A sentence ends with a period.</li>
 <li><strong>A colon opens a block.</strong> The sentences that belong to it are indented further, with spaces. Tabs are refused. Any depth of indent works, but sentences in the same block must line up.</li>
-<li><strong>A closing quote may end a sentence</strong>, so <code>Say "Hello."</code> needs no second period.</li>
+<li><strong>A closing quote may end a sentence</strong>, so <code>Say "Hello."</code> needs no second period. That is the one exception to the period, and it stays: a sentence whose last word is a text ends at its closing quotation mark, and the examples in this document write no period after it.</li>
 <li><strong><code>#</code> starts a comment</strong> that runs to the end of the line. Blank lines are ignored.</li>
 <li><strong>Capitals don't matter.</strong> <code>Say</code>, <code>say</code> and <code>SAY</code> are the same word, and so are <code>Smaug</code> and <code>smaug</code>. A name is shown the way it was first written.</li>
 <li>Curly quotes (“ ” ’) are read as straight ones.</li>
@@ -91,7 +92,7 @@ If Smaug is ancient:
 Say “Curly quotes work.”         #&gt; Curly quotes work.</pre>
 </figure>
 <h2 id="s2">2. Values and types</h2>
-<p>Every value has one of these types. The compiler works out each type before the program runs.</p>
+<p>Every value has one of these types. The compiler works out each type before the program runs. The words used in this document: a <strong>type</strong> is what sort of value something is; a <strong>kind</strong> is a type described by the program (<code>dragon</code>), whose values are <strong>things</strong>; a <strong>property</strong> belongs to a thing, and is stored or worked out (a <strong>worked-out property</strong>); an <strong>adjective</strong> is said of a thing, stored or worked out; a <strong>worked-out value</strong> is defined with <code>To work out</code>. The type of <code>10%</code> is written <code>percent</code>, and such a value is called a <strong>percentage</strong>.</p>
 <div class="scroll"><table>
 <thead><tr><th>Type</th><th>Written</th><th>Said as</th></tr></thead>
 <tbody>
@@ -209,7 +210,7 @@ an empty list of &lt;plural type&gt;             a list with no items</pre>
 Add 10 to the scores.
 Say the number of items in the scores.         #&gt; 4
 Say the total of the scores.                   #&gt; 26
-Say the scores joined with ", ".               #&gt; 3, 8, 5, 10
+Say the scores joined with ", "                #&gt; 3, 8, 5, 10
 Say item 2 of the scores.                      #&gt; 8
 Say item 9 of the scores.                      #&gt; nothing
 Set item 2 of the scores to 7.
@@ -217,7 +218,7 @@ Remove 3 from the scores.
 Say the first of the scores or else 0.         #&gt; 7
 If 10 is in the scores and 3 is not in the scores:
   Say "ten, and no three"                      #&gt; ten, and no three
-Let the parts (list of text) be the words of "fire and smoke".
+Let the parts (list of text) be the words of "fire and smoke"
 For each part in the parts:
   Say the length of the part.
 #&gt; 4
@@ -239,7 +240,7 @@ If that fails:
   Say the problem.                                       #&gt; There is no item 5 of the none: it has 0 items.</pre>
 </figure>
 <figure class="snippet" data-with-world>
-<pre class="program" data-expect="refused">Say the words of "fire and smoke".</pre>
+<pre class="program" data-expect="refused">Say the words of "fire and smoke"</pre>
 </figure>
 <figure class="snippet" data-with-world>
 <pre class="program" data-expect="refused">Say the number of items in a list of 1 and 2.</pre>
@@ -276,7 +277,7 @@ nothing                                the missing value
 <p>A loop's block is carried out again after its own last sentence, so what was known before a loop counts inside it only if no sentence of the block can change it (by the rules just given). After a <code>Try</code> and its <code>If that fails</code>, only what was known before the <code>Try</code> and still holds after both blocks counts.</p>
 <figure class="snippet" data-with-world>
 <pre class="program" data-expect="ok">A link has a label (text) and a next (link, if any).
-There is a link called Tail whose label is "tail".
+There is a link called Tail whose label is "tail"
 There is a link called Head whose label is "head" and whose next is Tail.
 Let the spot (link, if any) be Head.
 While the spot is not nothing:
@@ -316,7 +317,7 @@ There is a squire called Tom whose wage is $2.
 Say Tom's mount's speed + 1.</pre>
 </figure>
 <h2 id="s3">3. Names</h2>
-<p>A word is letters, digits and underscores, starting with a letter.</p>
+<p>A word is letters, digits and underscores, starting with a letter. A <strong>letter</strong> is a letter of any alphabet, accented or not (<code>Fáfnir</code>, <code>Größe</code>); a <strong>digit</strong> in a word is any digit, but a number is written only with the digits 0 to 9. Capitals are folded as Python folds them (<code>str.lower</code>). The plural rule, and <code>a</code> or <code>an</code> (section <a href="#s4-1">4.1</a>), look only at the unaccented English letters, so a kind spelt otherwise may need its plural stated, and <code>comes before</code> (section <a href="#s6">6</a>) orders letters by their character codes.</p>
 <div class="scroll"><table>
 <thead><tr><th>What is named</th><th>Length</th></tr></thead>
 <tbody>
@@ -332,7 +333,7 @@ Say Tom's mount's speed + 1.</pre>
 <p>A name of several words is found by its words, up to twelve of them: a name of more than twelve words can be made, but never found again, so it is of no use.</p>
 <p>A name of several words is read <strong>longest first, with no going back</strong>: where the words of a sentence could start a longer name or a shorter one, the longer one is taken, and if the sentence then cannot go on, it is refused rather than read again with the shorter name. So with variables <code>the word</code> and <code>the word starts</code>, <code>If the word starts with "a":</code> reads <code>the word starts</code>, and is refused because <code>with</code> cannot follow it.</p>
 <figure class="snippet" data-with-world>
-<pre class="program" data-expect="refused">Let the word be "apple".
+<pre class="program" data-expect="refused">Let the word be "apple"
 Let the word starts be 1.
 If the word starts with "a":
   Say 1.</pre>
@@ -341,13 +342,14 @@ If the word starts with "a":
 <thead><tr><th>Group</th><th>Reserved words</th></tr></thead>
 <tbody>
 <tr><td>Articles and pronouns</td><td><code>a</code> <code>an</code> <code>the</code> <code>it</code> <code>its</code> <code>they</code> <code>them</code> <code>their</code></td></tr>
-<tr><td>Built-in verbs</td><td><code>let</code> <code>set</code> <code>add</code> <code>subtract</code> <code>multiply</code> <code>divide</code> <code>say</code> <code>if</code> <code>for</code> <code>repeat</code> <code>while</code> <code>there</code> <code>stop</code> <code>skip</code> <code>end</code> <code>now</code> <code>remove</code> <code>ask</code> <code>write</code> <code>try</code> <code>fail</code> <code>use</code> <code>whenever</code></td></tr>
+<tr><td>Built-in verbs</td><td><code>let</code> <code>set</code> <code>add</code> <code>subtract</code> <code>multiply</code> <code>divide</code> <code>say</code> <code>if</code> <code>repeat</code> <code>while</code> <code>there</code> <code>stop</code> <code>skip</code> <code>end</code> <code>now</code> <code>remove</code> <code>ask</code> <code>write</code> <code>try</code> <code>fail</code> <code>use</code> <code>whenever</code> (and <code>for</code>, listed with the prepositions)</td></tr>
 <tr><td>Types</td><td><code>number</code> <code>money</code> <code>text</code> <code>percent</code> <code>yes</code> <code>no</code> <code>list</code></td></tr>
 <tr><td>Linking words</td><td><code>of</code> <code>is</code> <code>are</code> <code>be</code> <code>has</code> <code>called</code> <code>whose</code> <code>when</code> <code>each</code> <code>all</code> <code>otherwise</code> <code>example</code> <code>name</code> <code>nothing</code> <code>any</code> <code>else</code> <code>answer</code> <code>whether</code> <code>can</code> <code>in</code> <code>new</code> <code>reply</code> <code>problem</code> <code>items</code> <code>becomes</code></td></tr>
 <tr><td>Logic and comparison</td><td><code>not</code> <code>and</code> <code>or</code> <code>never</code> <code>always</code> <code>than</code> <code>less</code> <code>more</code> <code>greater</code> <code>least</code> <code>most</code> <code>divisible</code></td></tr>
 <tr><td>Arithmetic</td><td><code>plus</code> <code>minus</code> <code>times</code> <code>divided</code></td></tr>
 <tr><td>Prepositions</td><td><code>with</code> <code>to</code> <code>from</code> <code>against</code> <code>for</code> <code>by</code> <code>on</code> <code>at</code> <code>into</code> <code>onto</code> <code>about</code> <code>over</code> <code>under</code> <code>as</code> <code>through</code> <code>toward</code> <code>towards</code> <code>upon</code></td></tr>
 </tbody></table></div>
+<p><strong>This list is frozen.</strong> A new word in it would break every program that already uses that word in a name, so a new sentence form is recognised by where its words stand instead, wherever that can be done. Many words of the built forms are already free in this way, and may be part of names: <code>that</code>, <code>this</code>, <code>round</code>, <code>program</code>, <code>file</code>, <code>total</code>, <code>first</code>, <code>last</code>, <code>item</code>, <code>letter</code>, <code>letters</code>, <code>length</code>, <code>words</code>, <code>lines</code>, <code>upper</code>, <code>lower</code>, <code>case</code>, <code>chapter</code>, <code>book</code>, <code>library</code>, <code>shares</code>, <code>only</code>, <code>everything</code>, <code>settled</code>, <code>keep</code>, <code>either</code>, <code>way</code>, <code>again</code>, <code>because</code>, <code>joined</code>, <code>empty</code>, <code>remainder</code>, <code>rounded</code>, <code>nearest</code>, <code>raised</code>, <code>power</code>, <code>square</code>, <code>root</code>, <code>larger</code>, <code>smaller</code>, <code>absolute</code>, <code>value</code>, <code>does</code>, <code>contain</code>, <code>contains</code>, <code>starts</code>, <code>ends</code>, <code>comes</code>, <code>before</code>, <code>after</code>, <code>one</code>, <code>plural</code>, <code>done</code> and <code>fails</code>. Each is read as part of its form only where the form's other words stand around it (<code>the total of</code> a list, <code>Skip this round</code>, <code>the text of the file</code>), and as a name everywhere else.</p>
 <p><strong>Plurals</strong> are formed by rule: add <code>s</code>; add <code>es</code> after <code>s</code>, <code>x</code>, <code>z</code>, <code>ch</code> or <code>sh</code>; change a consonant plus <code>y</code> to <code>ies</code>. So <code>dragon</code> gives <code>dragons</code>, <code>fox</code> gives <code>foxes</code> and <code>pony</code> gives <code>ponies</code>. Another plural can be stated where the kind is described: <code>A child (plural children) has ...</code> (section <a href="#s4-1">4.1</a>). Every kind has its own name and its own plural: a kind whose name or plural is already another kind's name or plural is refused (<code>bus</code> and <code>buse</code> would both be <code>buses</code>; <code>ax</code> and <code>axe</code> both <code>axes</code>; a kind <code>dragons</code> beside <code>dragon</code>).</p>
 <p><strong>Which names may share a word.</strong> There are four sets of words:</p>
 <div class="scroll"><table>
@@ -408,7 +410,7 @@ Say the number of children.</pre>
 </ul>
 <figure class="snippet" data-with-world>
 <pre class="program" data-expect="ok">A wizard has a hat size (number) and a motto (text).
-There is a wizard called Merlin Ambrosius whose hat size is 7 and whose motto is "Never late".
+There is a wizard called Merlin Ambrosius whose hat size is 7 and whose motto is "Never late"
 Say Merlin Ambrosius's motto.         #&gt; Never late
 Say the name of merlin ambrosius.     #&gt; Merlin Ambrosius</pre>
 </figure>
@@ -725,7 +727,7 @@ There is a squire called Sum whose wage is the total wage of squires whose wage 
 <tr><td><code>the words of &lt;text&gt;</code></td><td>a list of text, split at any run of spaces, tabs or line breaks, with none empty</td></tr>
 <tr><td><code>letter &lt;number&gt; of &lt;text&gt;</code></td><td>text, if any: that letter, numbered from 1; nothing when there is no such letter</td></tr>
 <tr><td><code>the lines of &lt;text&gt;</code></td><td>a list of text, split at line breaks, with no empty last line</td></tr>
-<tr><td><code>&lt;text&gt; as a number</code></td><td>a number, if any: nothing when the text is not a number written the usual way</td></tr>
+<tr><td><code>&lt;text&gt; as a number</code></td><td>a number, if any: nothing when the text is not a number written the usual way (below)</td></tr>
 </tbody></table></div>
 <ul>
 <li>Each <code>&lt;text&gt;</code> and <code>&lt;number&gt;</code> after <code>of</code> is a single value or a bracketed expression.</li>
@@ -735,11 +737,11 @@ There is a squire called Sum whose wage is the total wage of squires whose wage 
 </ul>
 <p>Text conditions are in section <a href="#s6">6</a>.</p>
 <figure class="snippet" data-with-world>
-<pre class="program" data-expect="ok">Let the title be "The ""Lonely"" Mountain".
+<pre class="program" data-expect="ok">Let the title be "The ""Lonely"" Mountain"
 Say the length of the title.                         #&gt; 21
 Say the title in upper case.                         #&gt; THE "LONELY" MOUNTAIN
 Say the first 3 letters of the title.                #&gt; The
-Say the last 100 letters of "Smaug".                 #&gt; Smaug
+Say the last 100 letters of "Smaug"                  #&gt; Smaug
 Say the number of items in the words of the title.   #&gt; 3
 Say ("12" as a number or else 0) + 1.                #&gt; 13
 Say "twelve" as a number.                            #&gt; nothing</pre>
@@ -747,14 +749,24 @@ Say "twelve" as a number.                            #&gt; nothing</pre>
 <figure class="snippet" data-with-world>
 <pre class="program" data-expect="refused">Say "12" as a number + 1.</pre>
 </figure>
+<p><code>as a number</code> accepts, after taking away spaces, tabs and line breaks at either end: an optional minus sign (<code>"-5"</code>); then the digits 0 to 9, either all together (<code>"007"</code> is 7) or in groups of three after commas, the first group not starting with 0 (<code>"1,000"</code>, but not <code>"0,123"</code> or <code>"1,00"</code>); then, if there is one, a point and digits (<code>"2.5"</code>). Nothing else is a number: not <code>"+5"</code>, <code>"5."</code>, <code>".5"</code>, <code>"1e3"</code>, <code>"$5"</code>, <code>"5%"</code>, nor digits of another script such as <code>"٥"</code>.</p>
+<h4 id="regular-forms-and-the-exceptions">Regular forms, and the exceptions</h4>
+<p>The language tries to say one thing one way. Where it does not, it is on purpose, and these are the places:</p>
+<ul>
+<li><strong>A verb's roles take expressions; a worked-out value's roles take single values.</strong> <code>Move $10 + $5 from Gawain to Robin.</code> is fine, but <code>the change from ($10 + $10) for $12.50</code> needs its brackets, because a worked-out value is itself part of an expression, and <code>the bounty for Smaug + $5</code> must not be read as <code>the bounty for (Smaug + $5)</code>. A verb stands at the start of its own sentence, so nothing follows its last role.</li>
+<li><strong><code>called</code> takes a bare name when a thing is described, and a text when one is made while running.</strong> <code>There is a dragon called Smaug ...</code> gives a name the program can say; <code>There is a new dragon called "{the dragon}'s chick" ...</code> makes a name while running, which is text and can be built with fill-ins, and so <code>the dragon called "Smaug"</code> finds a thing by a text.</li>
+<li><strong><code>the</code> is optional before a variable, and not used before a thing's name.</strong> <code>the total</code> and <code>total</code> are the same variable; <code>Smaug</code> is never <code>the Smaug</code>, as in English, where a name takes no article. Inside a definition or a loop, <code>the &lt;kind&gt;</code> means the thing in view.</li>
+<li><strong>The text tests are written without <code>is</code></strong>: <code>contains</code>, <code>starts with</code>, <code>ends with</code>, <code>comes before</code>, and their opposites <code>does not contain</code>, <code>does not start with</code>, <code>does not end with</code>, alongside <code>not ... contains</code>.</li>
+<li><strong>A sentence that ends in a closing quotation mark needs no period</strong> (section <a href="#s1">1</a>).</li>
+</ul>
 <h3 id="s5-7">5.7 Finding a thing by name</h3>
 <pre class="form">the &lt;kind&gt; called &lt;text&gt;</pre>
 <p>This finds the first thing of that kind with that name, ignoring capitals. It is <code>if any</code>, because there may be none. Removed things are not found.</p>
 <figure class="snippet" data-with-world>
-<pre class="program" data-expect="ok">Let the found be the dragon called "SMAUG".
+<pre class="program" data-expect="ok">Let the found be the dragon called "SMAUG"
 If the found is not nothing:
   Say the found's age.                      #&gt; 771
-Say the dragon called "Puff".               #&gt; nothing</pre>
+Say the dragon called "Puff"                #&gt; nothing</pre>
 </figure>
 <h2 id="s6">6. Conditions</h2>
 <p>A comparison starts with an expression and continues in one of these ways. <code>are</code> may be used in place of <code>is</code>, and <code>not</code> may follow either.</p>
@@ -865,6 +877,14 @@ Let the total be 2.</pre>
 <h3 id="s7-4">7.4 Examples</h3>
 <pre class="form">For example[,] &lt;condition&gt;.</pre>
 <p>An example is a test. If the condition is false when the sentence is reached, the program stops. For a single comparison, the message also gives the actual value of the left side.</p>
+<p>To check a file's examples apart from its other work:</p>
+<pre class="form">python -m englishscript my_program.english --test</pre>
+<ul>
+<li>The program is carried out with nothing said, nothing asked (an <code>Ask</code> finds that input has ended, so the program ends quietly there, section <a href="#s7-6">7.6</a>), and no file written (<code>Write</code> and <code>Add ... to the file</code> do nothing; files are still read). A library is not left running afterwards.</li>
+<li>Every <code>For example</code> that is reached is reported with its line and whether it held. One that does not hold shows its "In fact" line, and the run goes on to the next, instead of stopping.</li>
+<li>It ends with a count, and with status 1 if any example did not hold, or if a problem stopped the program; otherwise 0.</li>
+<li>A program, a page or a tool can do the same with <code>Program.test()</code> (<code>englishscript.compile_source(...).test()</code>), which gives back the examples reached, in order, each with <code>file</code>, <code>line</code>, <code>sentence</code>, <code>held</code> and <code>fact</code>.</li>
+</ul>
 <figure class="snippet" data-with-world>
 <pre class="program" data-expect="ok">For example, the hoard of Smaug is $3,500.
 For example Norbert is not ancient.</pre>
@@ -885,6 +905,7 @@ Remove &lt;thing&gt;.</pre>
 <li><code>Remove &lt;value&gt; from &lt;list&gt;.</code> is another sentence, told apart by its <code>from</code>: it takes an item out of a list (section <a href="#s2">2</a>).</li>
 <li><strong><code>Remove</code> is refused while a required property of another thing points at the thing.</strong> This is a problem (section <a href="#s8-5">8.5</a>) that names what still depends on it.</li>
 <li>A removed thing can still be said and compared, but using its properties or adjectives, changing it, making something point at it, or using it as the owner of a group (<code>the saddles of h</code>) is a problem.</li>
+<li>A variable, a role or a list may go on holding a thing that has been removed: it does not become <code>nothing</code> as an <code>if any</code> property does. Using it is then found only while running, as the problem <code>a removed thing</code> (section <a href="#s8-5">8.5</a>).</li>
 <li>A <code>For each</code> that has already started does not visit a thing removed before its turn (section <a href="#s8-2">8.2</a>).</li>
 <li>Like using a verb, <code>Remove</code> cancels every check for nothing that relied on a property (section <a href="#s2">2</a>), because it may have made one nothing.</li>
 </ul>
@@ -896,7 +917,7 @@ Remove &lt;thing&gt;.</pre>
 Hatch for Smaug.                              #&gt; Smaug's chick hatches.
 There is a new dragon whose age is 5.
 Say the number of dragons.                    #&gt; 4
-Let the found be the dragon called "dragon 4".
+Let the found be the dragon called "dragon 4"
 If the found is not nothing:
   Remove the found.
 Remove Norbert.
@@ -928,10 +949,118 @@ Add &lt;text&gt; to the file &lt;text&gt;.       puts exactly that text at the e
 <li>A file that cannot be read or written is a problem (section <a href="#s8-5">8.5</a>).</li>
 <li><code>Write</code> and <code>Add</code> are refused inside <code>To work out</code>; reading is allowed there.</li>
 </ul>
-<pre class="form">Write "eggs{new line}" to the file "shopping.txt".
-Add "milk{new line}" to the file "shopping.txt".
+<pre class="form">Write "eggs{new line}" to the file "shopping.txt"
+Add "milk{new line}" to the file "shopping.txt"
 For each item in the lines of the file "shopping.txt":
   Say "- {the item}"</pre>
+<h3 id="s7-8">7.8 Asking a model, and judging</h3>
+<pre class="form">Ask the model &lt;text&gt; [about &lt;value&gt;] and let [the] &lt;name&gt; (&lt;type&gt;) be the reply.
+Judge &lt;text&gt; about &lt;value&gt; and let [the] &lt;name&gt; (percent) be the chance.
+Judge &lt;text&gt; about &lt;value&gt; and let [the] &lt;name&gt; (&lt;set of choices&gt;) be the verdict.
+Judge &lt;text&gt; about &lt;value&gt; and let [the] &lt;name&gt; (&lt;set of choices&gt;) be the verdict
+      and [the] &lt;name&gt; (percent) be the likelihood.
+For a | an &lt;set of choices&gt;, &lt;choice&gt; means &lt;text&gt;.</pre>
+<p>A running program may ask a model, as it may ask a person with <code>Ask</code> (section <a href="#s7-6">7.6</a>). There are two sorts of model, and a sentence for each:</p>
+<ul>
+<li><strong>A model that writes</strong> answers <code>Ask the model</code>. What it writes is read as the type in brackets, by the same reader that reads a person's reply.</li>
+<li><strong>A model that judges</strong> answers <code>Judge</code>. It writes nothing: it gives how likely something is, or how likely each of a set of choices is, and the program decides what to do with that in ordinary sentences, with <code>If</code>.</li>
+</ul>
+<p><strong>What this changes, and what it does not.</strong> The compiler is as deterministic as before, and has no model in it: every sentence still has exactly one meaning, and the same program is compiled the same way every time. A model is something the program asks while it runs, and what comes back is checked against the type asked for, or is a problem a <code>Try</code> can recover from. A program that asks a model is as repeatable as the model, exactly as a program that asks a person is as repeatable as the person.</p>
+<p>Who answers is decided by whoever runs the program, never by the program: <code>python -m englishscript program.english --model SPEC</code> (the listeners that come with EnglishScript are described in <code>englishscript/models.py</code>), or <code>Program.run(..., model=..., judge=...)</code> from Python. When nothing is listening, which is the case by default and always with <code>--test</code> (section <a href="#s7-4">7.4</a>), every question to a model is the problem <code>no model</code>, whose text is <code>No model is listening.</code>; a program can catch it and ask a person instead.</p>
+<p><strong>Asking a model</strong></p>
+<ul>
+<li><code>the model</code> is recognised by its place, straight after <code>Ask</code>; <code>model</code> is not reserved. While a name in view starts with the word <code>model</code> (a variable, a role, a thing, a worked-out value or a kind), <code>Ask the model ...</code> is refused, because it could also ask a person about what that name holds. Rename it.</li>
+<li>The question is text, with fill-ins as in any text.</li>
+<li><code>about &lt;value&gt;</code> hands over what the question is about: a text, or a thing. A thing is handed over written out, in this layout: a first line <code>&lt;kind&gt; called &lt;name&gt;</code>, then one line <code>&lt;property&gt;: &lt;value&gt;</code> for each stored property, in the order the kind lists them. Each value is said as <code>Say</code> says it; a property that is a thing is given by its name; a missing value is <code>nothing</code>; a list is written as a list is written in a program, <code>a list of 3, 8 and 5</code>, or <code>an empty list</code>. Its adjectives and worked-out properties are not handed over: to hand one over, fill it into the question.</li>
+<li>The type may be <code>text</code>, <code>number</code>, <code>money</code>, <code>percent</code>, <code>yes or no</code>, a set of choices (section <a href="#s4-6">4.6</a>), or a list of text, numbers, money or percentages. It may not be a kind: ask for a name as text, and find the thing with <code>the &lt;kind&gt; called</code> (section <a href="#s5-7">5.7</a>). With <code>, if any</code>, the model may answer <code>nothing</code>, and the variable is then nothing.</li>
+<li>The reply is read as a person's reply is (section <a href="#s7-6">7.6</a>): a number as section <a href="#s2">2</a> writes them, money with or without <code>$</code>, a percentage with <code>%</code>, <code>yes</code>, <code>no</code>, <code>y</code> or <code>n</code>. A choice is one of the choices as they were written, whatever its capitals. A list is one item to a line; blank lines are passed over. Text is kept as it came.</li>
+<li>If the reply cannot be read as the type, the model is asked again, and told what was wrong, up to two more times. After that it is the problem <code>a bad reply</code>, whose text says what was wanted and quotes the reply: <code>The model's reply could not be read as a number, such as 7 or 2.5: "about seven"</code>.</li>
+<li>A model that refuses to answer, or whose answer is cut short, gives no reply. That is <code>a bad reply</code> too: <code>The model gave no reply: it refused to answer, or its answer was cut short.</code></li>
+<li>Like <code>Ask</code>, it makes a variable, so the name must be new, and it is refused inside <code>To work out</code>: asking is not working out.</li>
+</ul>
+<p><strong>Judging</strong></p>
+<ul>
+<li><code>about</code> is required: a judgement is always about something, a text or a thing, handed over as above.</li>
+<li>With <code>the chance</code>, the question is a statement or a yes-or-no question, and the value is how likely it is to be so, from 0% to 100%.</li>
+<li>With <code>the verdict</code>, the question is one whose answer is one of the choices of the set in brackets, and the value is the likeliest choice. If two are equally likely, the one written first in the set wins. <code>the likelihood</code>, if it is asked for, is how likely that choice is: the judge's own figure for it, not a second opinion. A likelihood goes only with a verdict.</li>
+<li>What comes back is checked. A chance must be a number from 0 to 1. A verdict must give a chance from 0 to 1 to every choice of the set and to nothing else; the chances need not add up to exactly 1. Anything else is <code>a bad reply</code>. A judgement is not asked for again.</li>
+<li><code>Judge</code>, <code>the chance</code>, <code>the verdict</code> and <code>the likelihood</code> are recognised by their places; none of them is reserved. If the program has taught a verb <code>judge</code>, a sentence that starts with <code>Judge</code> and ends with <code>be the chance</code>, <code>be the verdict</code> or <code>be the likelihood</code> could be either, and is refused. Rename the verb.</li>
+<li>A choice may be given a meaning for the judge, at the top level, after its set is described: <code>For a team, returns means "the customer wants to send something back".</code> Each choice may have one meaning, in plain text without braces; each is optional. The meanings are handed to whoever judges, with the choices. They change nothing else.</li>
+</ul>
+<p>One question per judgement, and ordinary code around it: that is the whole design. A judgement gives a figure; the program decides, in sentences anyone can read, what is likely enough to act on, what a person should look at, and what to hand over. With nothing listening, as when this document is checked, each of these takes its <code>If that fails:</code> way:</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">A team is one of sales, support or returns.
+For a team, returns means "the customer wants to send something back".
+A letter has a wording (text) and a sender (text).
+There is a letter called Ticket whose wording is "The jug came broken. I want my money back." and whose sender is "Ann".
+
+To route a letter:
+  Try:
+    Judge "Which team should handle this?" about the letter and let the team (team) be the verdict and the certainty (percent) be the likelihood.
+    If the certainty is at least 90%:
+      Say "{the letter} goes to {the team}."
+    Otherwise if the certainty is at least 60%:
+      Ask "Send {the letter} to {the team}?" and let the agreed (yes or no) be the reply.
+      If the agreed is yes:
+        Say "{the letter} goes to {the team}."
+      Otherwise:
+        Say "{the letter} goes to a person to sort."
+    Otherwise:
+      Say "{the letter} goes to a person to sort."
+  If that fails:
+    Say "{the letter} goes to a person to sort, because: {the problem}"
+
+To screen a letter:
+  Try:
+    Judge "The writer is angry." about the letter and let the anger (percent) be the chance.
+    Judge "Does the writer want money back?" about the letter and let the refund (percent) be the chance.
+    Let the urgency be (the anger + the refund) / 2.
+    If the urgency is at least 75%:
+      Say "Call {the letter's sender} today."
+  If that fails:
+    If the problem is no model:
+      Say "No one to judge {the letter}; it waits its turn."
+    Otherwise:
+      Fail again.
+
+Route Ticket.      #&gt; Ticket goes to a person to sort, because: No model is listening.
+Screen Ticket.     #&gt; No one to judge Ticket; it waits its turn.</pre>
+</figure>
+<p>Asking a model, with a person as the fallback:</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">A letter has a wording (text) and a sender (text).
+There is a letter called Ticket whose wording is "Where is my order?" and whose sender is "Ann".
+Try:
+  Ask the model "Write one line of thanks to the sender." about Ticket and let the thanks (text) be the reply.
+  Say the thanks.
+If that fails:
+  Say "Thank you, {Ticket's sender}."     #&gt; Thank you, Ann.</pre>
+</figure>
+<pre class="form">Ask the model "How many items does this order have?" about the order and let the count (number) be the reply.
+Ask the model "Which mood is this letter in?" about the letter and let the feeling (mood) be the reply.
+Ask the model "List the dates in this text." about the letter and let the dates (list of text, if any) be the reply.</pre>
+<p>Refused: a reply can't be a kind.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">Ask the model "Which dragon is oldest?" and let the eldest (dragon) be the reply.</pre>
+</figure>
+<p>Refused: a judgement is always about something.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">Judge "Is it raining?" and let the rain (percent) be the chance.</pre>
+</figure>
+<p>Refused: a likelihood goes with a verdict.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">Judge "Is Smaug angry?" about Smaug and let the anger (percent) be the chance and the sureness (percent) be the likelihood.</pre>
+</figure>
+<p>Refused: <code>calm</code> is not one of the choices.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">A team is one of sales, support or returns.
+For a team, calm means "nothing to do".</pre>
+</figure>
+<p>Refused: a variable called <code>model</code> is in view, so the sentence could ask a person the question it holds.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">Let the model be "Which colour?"
+Ask the model "Which colour?" and let the colour (text) be the reply.</pre>
+</figure>
 <h2 id="s8">8. Blocks</h2>
 <h3 id="s8-1">8.1 If</h3>
 <pre class="form">If &lt;condition&gt;:
@@ -1051,22 +1180,44 @@ Say "This is never said."</pre>
 <h3 id="s8-5">8.5 Recovering from a problem</h3>
 <pre class="form">Try:
 If that fails:
+Either way:
 Fail because &lt;text&gt;.
-the problem</pre>
+Fail again.
+the problem
+the problem is [not] a | an &lt;kind of problem&gt;</pre>
 <ul>
 <li><code>Try:</code> carries out its block. If a problem arises, the rest of the block is abandoned and the <code>If that fails:</code> block is carried out. <code>If that fails:</code> must follow directly, and is required.</li>
+<li><code>Either way:</code> may follow the <code>If that fails:</code> block, at the same indent. Its block is carried out after the <code>Try</code> and its <code>If that fails:</code>, whether the <code>Try</code> failed or not, and however they end: normally, by a problem that goes on out of <code>If that fails:</code>, or by <code>Stop.</code>, <code>Skip</code>, <code>Stop repeating.</code> or <code>The answer is</code> leaving them. It is not carried out when the program is ending (<code>End the program.</code>, or a problem that always ends the program). A problem inside <code>Either way:</code> is an ordinary problem at that point. <code>either</code> is not reserved: it is read this way only at the start of a sentence followed by <code>way</code>.</li>
 <li><strong>A failed <code>Try</code> leaves the world as it was.</strong> Every change its block made is undone: to properties, to stored adjectives, to variables that existed before the <code>Try</code>, and to which things exist, including changes made by verbs it used and by reactions it set off (section <a href="#s9-5">9.5</a>). What was said, asked or written to a file stays. Putting things back does not set off reactions.</li>
 <li>Inside <code>If that fails:</code>, <code>the problem</code> is text saying what went wrong. It means nothing anywhere else.</li>
-<li><code>Fail because &lt;text&gt;.</code> raises a problem of the program's own.</li>
+<li>A problem also has a <strong>kind</strong>, which <code>the problem is a broken rule</code> (or <code>is not</code>) tests, inside <code>If that fails:</code>. The kinds are in the table below.</li>
+<li><code>Fail because &lt;text&gt;.</code> raises a problem of the program's own, of the kind <code>a failure</code>.</li>
+<li><code>Fail again.</code>, inside <code>If that fails:</code>, passes the same problem on, with its kind and its text unchanged, to the <code>Try</code> around this one, or ends the program if there is none.</li>
 <li><code>Stop.</code>, <code>Skip</code>, <code>Stop repeating.</code>, <code>The answer is</code> and <code>End the program.</code> leaving a <code>Try</code> are not failures. They leave as usual, and the changes stay.</li>
 <li>For checks for nothing, the two blocks count like the branches of an <code>If</code>: after the <code>Try</code>, nothing that either block may have changed is relied on.</li>
 </ul>
-<p>These problems can be recovered from: a broken <code>never</code> or <code>always</code> rule; a division by zero, or a test for being divisible by zero; a file that cannot be read or written; a <code>Remove</code> that is refused; using a removed thing; <code>Repeat</code> with a fraction or a negative number; asking for a negative or fractional number of letters; <code>Set item</code> of an item that isn't there; the square root of a negative number, a negative number raised to a power that isn't whole, a remainder of a division by zero, and rounding to a step that is not more than nothing; and <code>Fail because</code>.</p>
+<p>These problems can be recovered from. The text is what <code>the problem</code> holds, with <code>...</code> where a name, a number or a rule is filled in:</p>
+<div class="scroll"><table>
+<thead><tr><th>Kind</th><th>When</th><th><code>the problem</code></th></tr></thead>
+<tbody>
+<tr><td><code>a broken rule</code></td><td>a change, a new thing or a removal would break a <code>never</code> or <code>always</code> rule</td><td><code>That would break a rule: "..."</code>, <code>... would break a rule: "..."</code> (a new thing), <code>Removing ... would break a rule: "..."</code></td></tr>
+<tr><td><code>a division by zero</code></td><td>dividing by zero; testing for being divisible by zero; a remainder of a division by zero; zero raised to a negative power</td><td><code>I can't divide by zero.</code>, <code>Nothing is divisible by zero.</code>, <code>I can't divide by zero, so there is no remainder.</code>, <code>Nothing raised to a negative power: that would divide by zero.</code></td></tr>
+<tr><td><code>a missing file</code></td><td>a file that cannot be read or written</td><td><code>I couldn't read the file ...: ...</code>, <code>I couldn't write to the file ...: ...</code></td></tr>
+<tr><td><code>a refused removal</code></td><td><code>Remove</code> of a thing that a property that is not <code>if any</code> points at</td><td><code>I can't remove ... while ...'s ... still points at it.</code></td></tr>
+<tr><td><code>a removed thing</code></td><td>using a removed thing's properties or adjectives, changing it, or making something point at it</td><td><code>... has been removed, so it can't be used any more.</code></td></tr>
+<tr><td><code>a bad count</code></td><td><code>Repeat</code> with a fraction or a negative number; a negative or fractional number of letters</td><td><code>I can't repeat something ... times.</code>, <code>I can't take ... letters of a text.</code></td></tr>
+<tr><td><code>a missing item</code></td><td><code>Set item</code> of an item that isn't there</td><td><code>There is no item ... of ...: it has ... items.</code></td></tr>
+<tr><td><code>a bad number</code></td><td>the square root of a negative number; a negative number raised to a power that isn't whole; rounding to a step that is not more than nothing</td><td><code>A negative number, ..., has no square root.</code>, <code>A negative number, ..., can't be raised to a power that is not whole.</code>, <code>A value is rounded to the nearest step of more than nothing, not ....</code></td></tr>
+<tr><td><code>a bad reply</code></td><td>a model's reply that can't be read as the type asked for, after three tries; no reply; a judgement that is not well-formed; a problem the listener reports (section <a href="#s7-8">7.8</a>)</td><td><code>The model's reply could not be read as ...: "..."</code>, <code>The model gave no reply: it refused to answer, or its answer was cut short.</code>, <code>The model's judgement could not be used: ...</code></td></tr>
+<tr><td><code>no model</code> (written without <code>a</code>: <code>the problem is no model</code>)</td><td><code>Ask the model</code> or <code>Judge</code> with nothing listening (section <a href="#s7-8">7.8</a>)</td><td><code>No model is listening.</code></td></tr>
+<tr><td><code>a library problem</code></td><td>a problem a library reports (section <a href="#s9-4">9.4</a>), unless it is one of the kinds above</td><td>the library's own words</td></tr>
+<tr><td><code>a failure</code></td><td><code>Fail because &lt;text&gt;.</code></td><td>the text</td></tr>
+</tbody></table></div>
 <p>These always end the program, because they are faults in the program rather than events in the world: a <code>For example</code> that does not hold, a <code>While</code> passing 1,000,000 rounds, a verb or worked-out value using itself more than 200 levels deep, and reactions setting off reactions more than 200 levels deep.</p>
 <figure class="snippet" data-with-world>
 <pre class="program" data-expect="ok">To move an amount (money) from a giver (knight) to a taker (knight):
   If the giver is the taker:
-    Fail because "a knight cannot pay himself".
+    Fail because "a knight cannot pay himself"
   Add the amount to the taker's purse.
   Subtract the amount from the giver's purse.
 
@@ -1083,6 +1234,30 @@ If that fails:
 #&gt; No payment: a knight cannot pay himself</pre>
 </figure>
 <p>Gawain's purse was raised to $800 before the rule on Robin's purse was broken, and the failed <code>Try</code> put it back.</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">To pay a fee (money) for a knight:
+  Try:
+    Subtract the fee from the knight's purse.
+  If that fails:
+    If the problem is a broken rule:
+      Say "{the knight} can't pay."
+    Otherwise:
+      Fail again.
+  Either way:
+    Say "The clerk closes the book."
+
+Pay $50 for Robin.
+#&gt; Robin can't pay.
+#&gt; The clerk closes the book.
+Try:
+  Say $1 / (Robin's purse - $20).
+If that fails:
+  Say whether (the problem is a division by zero).    #&gt; yes</pre>
+</figure>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">Either way:
+  Say "Too soon."</pre>
+</figure>
 <figure class="snippet" data-with-world>
 <pre class="program" data-expect="refused">Try:
   Say "Nothing can go wrong."
@@ -1101,6 +1276,8 @@ Say "Done."</pre>
 <li>Inside the block, a role is referred to as <code>the &lt;role&gt;</code>. Roles that are things are in view for pronouns.</li>
 <li>The block can also use named things and top-level variables defined before the verb. It cannot see the variables of whoever uses the verb.</li>
 <li>A verb does not produce a value. It may use itself, to a depth of 200.</li>
+<li><strong>A verb may have several shapes.</strong> The same verb may be taught again with other linking words: <code>To send a knight against a dragon:</code> and <code>To send a treasure to a knight:</code> are two shapes of <code>send</code>. Having a direct object or not counts as a difference, so <code>To send:</code> is a third. Two shapes with the same linking words are refused, whatever their kinds (<code>To greet a knight:</code> and <code>To greet a dragon:</code>): which verb a sentence uses must never depend on looking at its values. All the shapes of a verb are taught in one file.</li>
+<li>A verb, like a worked-out value, must be taught before it is used, so two verbs cannot use each other. The way round it is one verb with a role that says which work to do, or a worked-out value that both use.</li>
 </ul>
 <h3 id="s9-2">9.2 Using a verb</h3>
 <pre class="form">&lt;Verb&gt; [&lt;expression&gt;] [&lt;preposition&gt; &lt;expression&gt;]... .</pre>
@@ -1155,6 +1332,8 @@ The answer is &lt;expression&gt;.</pre>
 <li>Roles are written as for verbs (section <a href="#s9-1">9.1</a>), except that every role has a preposition, and <code>of</code> may be one of them. When it is used, the roles may come in any order.</li>
 <li><code>The answer is ...</code> ends the work and gives the value. Every path through the block must reach one, or end with <code>Fail because</code> (section <a href="#s8-5">8.5</a>).</li>
 <li><strong>Working out changes nothing.</strong> The block may make and change its own variables, loop, use other worked-out values, read files, and use <code>Try</code> and <code>Fail because</code>. It may not change a thing or an outside variable, use <code>Now</code>, make or remove a thing, say or ask anything, write to a file, or use a verb.</li>
+<li>It may, however, read what can change outside it: a file, or what a library remembers. So the same worked-out value, asked for twice with the same roles, may give two answers. "Changes nothing" is promised; "gives the same answer each time" is not.</li>
+<li>Like a verb, a worked-out value must be defined before it is used, so two cannot use each other. The way round it is one worked-out value with a role that says which answer is wanted.</li>
 <li>Because of that, a worked-out value may be used anywhere a value may, including in the definition of an adjective.</li>
 <li>Each role takes a single value. Arithmetic in a role needs brackets: <code>the change from ($10 + $10) for $12.50</code>.</li>
 <li>A worked-out value takes every role written after it. Brackets end it early: <code>(the bounty for Smaug) + $5</code>.</li>
@@ -1193,7 +1372,7 @@ Say the number of costly dragons.       #&gt; 1</pre>
 <figure class="snippet" data-with-world>
 <pre class="program" data-expect="refused">To work out the grade (text) for a score (number):
   If the score is at least 50:
-    The answer is "pass".</pre>
+    The answer is "pass"</pre>
 </figure>
 <p>Refused, because working out cannot say anything:</p>
 <figure class="snippet" data-with-world>
@@ -1360,6 +1539,38 @@ Repeat 3 times:
   Whenever everything has settled:
     Say "Strange."</pre>
 </figure>
+<h4 id="kept-values">Kept values</h4>
+<pre class="form">Keep each &lt;kind&gt;'s &lt;property&gt; as &lt;expression&gt;.
+Keep &lt;thing&gt;'s &lt;property&gt; as &lt;expression&gt;.
+Keep each &lt;kind&gt; &lt;stored adjective&gt; when &lt;condition&gt;.</pre>
+<p>A stored property or a stored adjective that is kept in step with something else, rather than changed by hand.</p>
+<ul>
+<li>This is a definition, allowed only at the top level, and it applies from its sentence on. In the <code>each</code> forms the thing is in view as <code>the &lt;kind&gt;</code> and <code>its</code>. In the form with a named thing, nothing is in view.</li>
+<li><strong>At the end of every turn in which something changed</strong>, before the settled blocks, each kept property is worked out and set if it differs, and each kept adjective is stored or cleared to match its condition. If that changed anything, they are all worked out again, up to ten rounds; if they are still changing after that, the program stops with a problem that names the ones that would not settle. The sentence that says <code>Keep</code> is a turn of its own, so the value is kept from then.</li>
+<li>A change made this way sets off reactions as any change does, and the kind's rules still hold for it.</li>
+<li>A kept property or adjective can't be changed any other way: <code>Set</code>, <code>Add</code> and the rest, and <code>Now</code>, are refused when the program is compiled, with the <code>Keep</code> sentence named. For the form with a named thing, that is a change written with the thing's name; a change made through a variable that holds the thing is put right at the end of the turn.</li>
+<li>A kept property may still be given when a thing is made, which it must be if it is not <code>if any</code>; it is put right at the end of the turn.</li>
+<li><code>keep</code> is not reserved: a sentence is read as a kept value only when it is <code>Keep each ...</code>, or <code>Keep &lt;thing&gt;'s ... as ...</code>. If the program has a verb <code>keep</code> and the sentence could be either, it is refused.</li>
+</ul>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">A card has a wording (text) and a line (text).
+A card can be open.
+A card can be done.
+There is a card called Milk whose wording is "milk" and whose line is ""
+Keep each card's line as "- {its wording}"
+Keep each card open when the card is not done.
+Say Milk's line.                          #&gt; - milk
+Set Milk's wording to "eggs"
+Say Milk's line.                          #&gt; - eggs
+Now Milk is done.
+Say whether (Milk is open).               #&gt; no</pre>
+</figure>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">A card has a line (text).
+There is a card called Milk whose line is ""
+Keep each card's line as "- milk"
+Set Milk's line to "- eggs"</pre>
+</figure>
 <h3 id="s9-6">9.6 Chapters and books</h3>
 <p>A program can be split over several files. A <strong>chapter</strong> is a file <code>&lt;name&gt;.english</code>, and a <strong>book</strong> is a folder of chapters.</p>
 <pre class="form">Use the &lt;name&gt; chapter.
@@ -1369,8 +1580,8 @@ This chapter shares nothing.</pre>
 <p><strong>Finding the file.</strong></p>
 <ul>
 <li><code>Use the calendar chapter.</code> reads <code>calendar.english</code> in the same folder as the file that says it.</li>
-<li><code>Use the calendar chapter of the almanac book.</code> reads <code>almanac/calendar.english</code>, where the folder <code>almanac</code> is in the same folder as the file that says it.</li>
-<li>Nothing else is searched. A chapter in a book uses the other chapters of its book with the first form. It cannot reach another book, nor a chapter outside its own folder.</li>
+<li><code>Use the calendar chapter of the almanac book.</code> reads <code>almanac/calendar.english</code>, where the folder <code>almanac</code> is in the same folder as the file that says it, or, if there is none there, in the same folder as the program that was run. So a chapter in one book can use another book that sits beside the program. If there is a folder of that name in both places, the sentence is refused, naming both.</li>
+<li>Nothing else is searched. A chapter in a book uses the other chapters of its book with the first form.</li>
 <li>A name is one or more words of letters only. In the file's name the words are written in lower case and joined by underscores: <code>Use the roman numerals chapter.</code> reads <code>roman_numerals.english</code>. A path, a dot or a slash can't be written.</li>
 <li>Files are read as UTF-8. A chapter that is not there is refused at the <code>Use</code> sentence, and the message gives the file that was looked for and the chapters that are there.</li>
 </ul>
@@ -1397,7 +1608,7 @@ Say the month title of 3.                      #&gt; March</pre>
 </figure>
 <figure class="snippet" data-with-world>
 <pre class="program" data-expect="refused">Use the numerals chapter of the almanac book.
-Let the roman be "MMXXVI".</pre>
+Let the roman be "MMXXVI"</pre>
 </figure>
 <p><strong>What a file may say.</strong> In a file, a name may be used if it was defined in that file, or in a chapter that this file itself uses, and that chapter shares it. What a chapter uses is not passed on: a file that wants a chapter's words uses that chapter itself.</p>
 <ul>
@@ -1418,7 +1629,7 @@ Let the roman be "MMXXVI".</pre>
 Use the feasts chapter of the almanac book.
 
 Say the roman of 1666.                         #&gt; MDCLXVI
-Say the reading of "MMXXVI".                   #&gt; 2,026
+Say the reading of "MMXXVI"                    #&gt; 2,026
 Say the number of wintry feasts.               #&gt; 3
 Say the falling of Michaelmas for 2027.        #&gt; Wednesday
 For example, Michaelmas's month is 9.</pre>
@@ -1444,7 +1655,7 @@ Say the number of numerals.</pre>
 <p>Each problem is marked the way a teacher marks a paper:</p>
 <pre class="form">Spelling (line 14):
 
-    Say "{the number of dragns}".
+    Say "{the number of dragns}"
                         ^^^^^^
                         dragons
 
@@ -1476,20 +1687,25 @@ Say the number of numerals.</pre>
 <h3 id="sentences-from-other-languages">Sentences from other languages</h3>
 <p>A sentence that starts the way another programming language would, or that uses one of its symbols, is refused with a note on how EnglishScript says it. A suggested sentence repeats the writer's own words only where it is certain to be accepted: a quoted text, a number or money, or a new name where any name will do. Anywhere else it leaves a gap, <code>...</code>, to fill in. A few of them:</p>
 <div class="scroll"><table>
-<thead><tr><th>Written</th><th>Advice</th></tr></thead>
+<thead><tr><th>Written</th><th>What the mark says</th><th>What it offers</th></tr></thead>
 <tbody>
-<tr><td><code>print("Hello")</code>, <code>show x</code>, <code>display x</code></td><td><code>Say "Hello".</code></td></tr>
-<tr><td><code>x = 5</code>, <code>var x = 5</code></td><td><code>Let x be 5.</code>, or <code>Set x to 5.</code> if <code>x</code> already exists</td></tr>
-<tr><td><code>Smaug is 771 years old.</code></td><td>a sentence starts with a verb: <code>Let the age be 771.</code> makes a variable, <code>Set Smaug's age to 771.</code> changes a property</td></tr>
-<tr><td><code>else:</code>, <code>else if ...:</code>, <code>elif ...:</code></td><td><code>Otherwise:</code>, <code>Otherwise if ...:</code></td></tr>
-<tr><td><code>return x</code></td><td><code>The answer is x.</code> inside <code>To work out</code></td></tr>
-<tr><td><code>If ... then</code></td><td>end the condition with a colon</td></tr>
-<tr><td><code>for x in ...:</code>, <code>for i = 1 to 10:</code></td><td><code>For each x in ...:</code>, <code>Repeat 10 times:</code></td></tr>
-<tr><td><code>end if</code>, <code>endif</code>, <code>}</code></td><td>nothing: a block ends where the indentation ends</td></tr>
-<tr><td><code>break</code>, <code>continue</code>, <code>exit</code></td><td><code>Stop repeating.</code>, <code>Skip this round.</code>, <code>End the program.</code></td></tr>
-<tr><td><code>==</code>, <code>!=</code>, <code>&amp;&amp;</code>, <code>||</code>, <code>!</code></td><td><code>is</code>, <code>is not</code>, <code>and</code>, <code>or</code>, <code>not</code></td></tr>
-<tr><td><code>true</code>, <code>false</code>, <code>null</code></td><td><code>yes</code>, <code>no</code>, <code>nothing</code></td></tr>
-<tr><td><code>'single quotes'</code>, <code>;</code></td><td><code>"double quotes"</code>, one sentence per line</td></tr>
+<tr><td><code>print("Hello")</code>, <code>show x</code>, <code>display x</code></td><td>EnglishScript shows things with "Say", not "print".</td><td><code>Write: Say "Hello".</code></td></tr>
+<tr><td><code>x = 5</code></td><td>A sentence starts with a verb, so a variable is made with "Let".</td><td><code>Write: Let x be 5.</code>, and <code>Set x to ...</code> to change it later</td></tr>
+<tr><td><code>var x = 5</code>, <code>int x = 5</code></td><td>A variable is made with "Let", and needs no type word.</td><td><code>Write: Let x be 5.</code></td></tr>
+<tr><td><code>Smaug is 771 years old.</code></td><td>A sentence starts with a verb, so a fact can't be stated on its own.</td><td><code>Let the age be 771.</code> for a variable, <code>Set Smaug's age to 771.</code> for a property, <code>Now Smaug is sleepy.</code> for a stored adjective</td></tr>
+<tr><td><code>else:</code></td><td>EnglishScript writes "else" as "Otherwise".</td><td><code>Otherwise:</code>, straight after the If block</td></tr>
+<tr><td><code>else if ...:</code>, <code>elif ...:</code></td><td>EnglishScript writes "else if" as "Otherwise if".</td><td><code>Otherwise if ...:</code></td></tr>
+<tr><td><code>return x</code></td><td>"return" isn't part of EnglishScript.</td><td><code>The answer is ...</code> inside <code>To work out</code>, or <code>Stop.</code> to leave a verb</td></tr>
+<tr><td><code>If ... then</code></td><td>EnglishScript doesn't use "then".</td><td>end the condition with a colon</td></tr>
+<tr><td><code>for x in ...:</code></td><td>A loop over things is written "For each".</td><td><code>For each x in ...:</code></td></tr>
+<tr><td><code>for i = 1 to 10:</code></td><td>EnglishScript has no counting loop of this kind.</td><td><code>Repeat 10 times:</code>, with a variable to count</td></tr>
+<tr><td><code>end if</code>, <code>endif</code></td><td>"end if" isn't needed in EnglishScript.</td><td>nothing: a block ends where the indentation ends</td></tr>
+<tr><td><code>}</code></td><td>EnglishScript doesn't use "}" outside quotes.</td><td>nothing: a block ends where the indentation ends</td></tr>
+<tr><td><code>break</code>, <code>continue</code>, <code>exit</code></td><td>"break" isn't part of EnglishScript.</td><td><code>Stop repeating.</code>, <code>Skip this round.</code>, <code>End the program.</code></td></tr>
+<tr><td><code>==</code>, <code>!=</code>, <code>&amp;&amp;</code>, <code>||</code>, <code>!</code></td><td>EnglishScript doesn't use "==".</td><td><code>is</code>, <code>is not</code>, <code>and</code>, <code>or</code>, <code>not</code></td></tr>
+<tr><td><code>true</code>, <code>false</code>, <code>null</code></td><td>EnglishScript has no "true".</td><td><code>yes</code>, <code>no</code>, <code>nothing</code></td></tr>
+<tr><td><code>'single quotes'</code></td><td>Text goes between double quotes, not single ones.</td><td><code>"double quotes"</code></td></tr>
+<tr><td><code>;</code></td><td>EnglishScript doesn't use ";".</td><td>one sentence per line</td></tr>
 </tbody></table></div>
 <p>These are only advice: such sentences are still refused. A word the program has given a meaning of its own is never treated this way.</p>
 <figure class="snippet" data-with-world>
@@ -1499,6 +1715,14 @@ Say the number of numerals.</pre>
 <pre class="program" data-expect="refused">Let the total be 1.
 the total = 2.</pre>
 </figure>
+<h3 id="following-a-run">Following a run</h3>
+<pre class="form">python -m englishscript my_program.english --trace</pre>
+<ul>
+<li>Says each sentence as it is carried out, on the error stream, with its file (for a chapter or a library) and line, indented by how deep it is: the blocks it is in, and the verbs, worked-out values and reactions being carried out.</li>
+<li>The <code>Whenever</code> sentence of a reaction is said when the reaction is set off, with what set it off: <code>(because Robin became broke)</code>. A settled block is said with <code>(because everything settled after line 12)</code>.</li>
+<li>What happens in an event that a library brings in (section <a href="#s9-4">9.4</a>), such as a click, is traced in the same way.</li>
+<li><code>Program.run(out, ask, trace=fn)</code> gives a library, a page or a tool the same thing as data: <code>fn(depth, file, line, sentence, cause)</code> before each sentence, where <code>file</code> is <code>None</code> for the program's own file and <code>cause</code> is <code>None</code> except as above. Without a trace, a run does nothing extra.</li>
+</ul>
 <h3 id="the-linter">The linter</h3>
 <p>The compiler stops at the first sentence it can't read. The linter reads on, and reports every problem in the program at once:</p>
 <pre class="form">python -m englishscript my_program.english --lint
@@ -1519,12 +1743,28 @@ python -m englishscript my_program.english --lint --json</pre>
 <li>With <code>--json</code>, the problems are printed as a list of objects with the fields <code>line</code>, <code>col</code>, <code>width</code>, <code>kind</code> (<code>"error"</code> or <code>"warning"</code>), <code>message</code>, <code>hint</code>, <code>sentence</code>, <code>file</code> (the file of a chapter, or <code>null</code> for the file being linted), <code>category</code> (<code>"spelling"</code>, <code>"punctuation"</code>, <code>"capitals"</code>, <code>"grammar"</code>, <code>"vocabulary"</code>, <code>"meaning"</code>, <code>"kinds"</code>, <code>"layout"</code>, <code>"borrowed"</code>, <code>"style"</code> or <code>"running"</code>), <code>rule</code> (the rule to remember), <code>see</code> (the section of this document, such as <code>"4.1"</code>) and <code>fix</code>. <code>fix</code> is <code>null</code>, or, when the correction is certain, <code>{"line": &lt;number&gt;, "text": &lt;the whole line as it should be&gt;}</code>; the line may be another one than the problem's, as when the sentence under an empty block should be indented. A fix is only ever offered, never applied.</li>
 <li>It ends with a tally, such as <code>2 things to mend: 1 of vocabulary, 1 of kinds of value. 1 suggestion.</code>, or <code>Nothing to mend: every sentence reads one way.</code>, and with status 1 if there is an error, and 0 otherwise, warnings included.</li>
 </ul>
+<h3 id="for-tools">For tools</h3>
+<p>An editor, a language server or a page can use the compiler from Python:</p>
+<div class="scroll"><table>
+<thead><tr><th>Call</th><th>Gives</th></tr></thead>
+<tbody>
+<tr><td><code>englishscript.lint(source, folder=None, name=None)</code></td><td>the list of problems, as above</td></tr>
+<tr><td><code>lint(..., notes=True)</code></td><td><code>(problems, notes)</code>: the notes are <code>(line, text)</code>, how each sentence was read (as <code>--explain</code> shows it), for every line of the file that has no error, so one mistake does not hide the explanations of the good lines</td></tr>
+<tr><td><code>englishscript.names(source, folder=None, name=None)</code></td><td>the table of names: <code>{"names": [...], "chapters": [...]}</code>. Each name has <code>name</code>, <code>what</code> (<code>kind</code>, <code>plural of a kind</code>, <code>property</code>, <code>worked-out property</code>, <code>thing</code>, <code>adjective</code>, <code>verb</code>, <code>worked-out value</code>, <code>variable</code>, <code>role</code>, <code>reaction</code>, <code>set of choices</code> or <code>choice</code>), <code>of</code> (the kind it belongs to, or the set of a choice), <code>file</code> (<code>None</code> for the file itself), <code>line</code>, <code>col</code> and <code>width</code> of where it is defined. Each chapter has <code>file</code>, <code>name</code> and <code>shares</code> (a list, or <code>None</code> for everything). A program with errors gives what its readable sentences define.</td></tr>
+<tr><td><code>read=fn</code> (to <code>lint</code>, <code>names</code> and <code>compile_source</code>)</td><td><code>fn(path)</code> gives the text of a chapter that is open and unsaved, or <code>None</code> to read the file from the disk</td></tr>
+<tr><td><code>englishscript.KEYWORDS</code></td><td>the reserved words of section <a href="#s3">3</a></td></tr>
+<tr><td><code>englishscript.CATEGORIES</code>, <code>CATEGORY_HEADINGS</code>, <code>RULES</code></td><td>the categories of mistake, their headings (<code>"Spelling"</code>), and the rules with their sections</td></tr>
+<tr><td><code>englishscript.__version__</code></td><td>the version of the compiler</td></tr>
+</tbody></table></div>
+<p>A <code>fix</code> is always the line as it was written, curly quotes and comment included, with only what the correction is about changed.</p>
 <h2 id="s11">11. Grammar summary</h2>
 <p>Words in capitals are names from the program's own vocabulary. Quoted words are written as shown, in any capitalisation.</p>
 <pre class="form">sentence    = definition | action | block-opener
 
 definition  = kind | thing | adjective | stored-adj | property | rule | verb | work-out
-            | reaction | settled | library | chapter | shares | choices   (top level only)
+            | reaction | settled | library | chapter | shares | choices | keep   (top level only)
+keep        = "Keep each" KIND "'s" PROPERTY "as" whole "." | "Keep" THING "'s" PROPERTY "as" whole "."
+            | "Keep each" KIND ADJECTIVE "when" condition "."
 choices     = article NAME "is one of" CHOICE { "," CHOICE } [ "," ] "or" CHOICE "."
 kind        = article KIND [ "(" "plural" WORD ")" ] "has" field { sep field } "."
 field       = article NAME "(" type ")"
@@ -1578,7 +1818,7 @@ new-thing   = article "new" { ADJECTIVE } KIND [ "called" expression ] [ whose {
 remove      = "Remove" expression "."
 ask         = "Ask" expression "and let" [ "the" ] NAME "(" type ")" "be the reply" "."
 write       = ( "Write" | "Add" ) expression "to the file" value "."
-fail        = "Fail because" expression "."
+fail        = "Fail because" expression "." | "Fail again."           (Fail again: inside If that fails)
 
 block-opener = "If" condition ":"
             | "Otherwise if" condition ":"
@@ -1588,10 +1828,12 @@ block-opener = "If" condition ":"
             | "Repeat" expression "times" ":"
             | "While" condition ":"
             | "Try" ":"                                                (followed by "If that fails:")
-            | "If that fails" ":"
+            | "If that fails" ":"                                      (perhaps followed by "Either way:")
+            | "Either way" ":"
 
 condition   = test { "and" test } | test { "or" test }
 test        = "not" test | "(" condition ")" | expression comparison
+            | "the problem is" [ "not" ] article PROBLEM-KIND             (inside If that fails)
 comparison  = ( "is" | "are" ) [ "not" ] tail
             | "has" article PROPERTY | "has no" PROPERTY
             | ( "=" | "&lt;" | "&gt;" | "&lt;=" | "&gt;=" ) expression
@@ -1648,6 +1890,7 @@ filter      = "whose" PROPERTY comparison</pre>
 <p>This adds a type, <code>time</code>, which can be used in brackets like any other type.</p>
 <ul>
 <li>The number is written out: <code>3 seconds</code>, <code>0.5 seconds</code>, <code>1 minute</code>. To get a time from a value, multiply: <code>the count * 1 second</code>.</li>
+<li>The unit words are recognised only straight after a number written out, so <code>second</code>, <code>minute</code> and the rest stay free for names (<code>the second guess</code>).</li>
 <li>A time is said in seconds: <code>1 second</code>, <code>90 seconds</code>.</li>
 </ul>
 <div class="scroll"><table>
@@ -1706,7 +1949,7 @@ Every 10 seconds until the rounds is 3:
 <p>What remains belongs to the rest of this section: with strands, a reaction is carried out at once, before any other strand continues, and a <code>Wait</code> inside a reaction is not yet designed.</p>
 <h3 id="s12-7">12.7 The rules that keep it strict</h3>
 <p><strong>1. Work changes hands only at a wait.</strong> Between one <code>Wait</code> and the next, a strand's sentences are carried out without interruption. No strand ever sees a change half made, and a <code>never</code> or <code>always</code> rule cannot be caught in between.</p>
-<p><strong>2. "At the same time" is a promise that order doesn't matter, and the compiler checks it.</strong> For each strand, the compiler works out what it reads and what it changes, following the verbs it uses. Two strands conflict when one changes something the other reads or changes. A conflict is refused before the program runs.</p>
+<p><strong>2. "At the same time" is a promise that order doesn't matter, and the compiler checks it.</strong> For each strand, the compiler works out what it reads and what it changes, following the verbs it uses. Two strands conflict when one changes something the other reads or changes. A strand's changes include everything they set off: the reactions to them (section <a href="#s9-5">9.5</a>), with what those change in turn, and the kept values (section <a href="#s9-5">9.5</a>) that are worked out again because of them. A conflict is refused before the program runs.</p>
 <pre class="form">At the same time:
   Add $5 to Gawain's purse.
   Multiply Gawain's purse by 2.</pre>
@@ -1721,7 +1964,7 @@ Every 10 seconds until the rounds is 3:
 <p><strong>4. Each strand has its own view.</strong> <code>the &lt;noun&gt;</code> and pronouns work as they do elsewhere. A variable made inside a strand belongs to it.</p>
 <p><strong>5. The order of events is fixed.</strong> Strands begin in the order written. When several are ready to continue at the same moment, the one that has waited longest goes first, and if they have waited equally, the one written first. A program therefore says the same lines in the same order every time it runs.</p>
 <h3 id="s12-8">12.8 New words and grammar</h3>
-<p>These words would become reserved: <code>wait</code> <code>until</code> <code>every</code> <code>same</code> <code>time</code> <code>second</code> <code>seconds</code> <code>minute</code> <code>minutes</code> <code>hour</code> <code>hours</code>. (<code>whenever</code> and <code>becomes</code> already are.)</p>
+<p>No word would become reserved (section <a href="#s3">3</a>: the list is frozen). <code>Wait</code>, <code>Wait until</code>, <code>Every ... until</code> and <code>At the same time</code> are recognised at the start of a sentence, <code>at the same time</code> at the end of a <code>For each</code> heading, <code>time</code> only in brackets as a type, and the unit words only straight after a number written out.</p>
 <pre class="form">type         = ... | "time"
 value        = ... | NUMBER unit
 unit         = "second" | "seconds" | "minute" | "minutes" | "hour" | "hours"
@@ -1808,7 +2051,7 @@ block-opener = ...
 </ul>
 <pre class="form">Let the scores be a list of 3, 8 and 5.
 Say the largest of the scores or else 0.       #&gt; 8
-Say the scores in order joined with ", ".      #&gt; 3, 5, 8</pre>
+Say the scores in order joined with ", "       #&gt; 3, 5, 8</pre>
 <h3 id="s13-8">13.8 Naming a loop's thing</h3>
 <p><strong>Built.</strong> See section <a href="#s8-2">8.2</a>, which also covers <code>For each &lt;name&gt; in &lt;list&gt;:</code>.</p>
 <h3 id="s13-9">13.9 Picking from a group, and ordering</h3>
@@ -1820,12 +2063,13 @@ the first | last &lt;number&gt; &lt;group&gt;
 <ul>
 <li>A pick of one thing is <code>if any</code>, because the group may be empty (section <a href="#s13-1">13.1</a>).</li>
 <li><code>first</code> and <code>last</code> go by the order things were created, unless the group is put <code>in order of</code> a property.</li>
+<li><code>first</code>, <code>last</code>, <code>largest</code> and <code>smallest</code> are recognised only in these phrases (after <code>the</code>, before a group or <code>of</code>), as <code>the first of &lt;list&gt;</code> already is (section <a href="#s2">2</a>), so they stay free for names.</li>
 <li><code>in order of</code> puts the smallest first, or the alphabetically first for text. Things that tie stay in the order they were created.</li>
 <li><strong>When two things tie for largest or smallest, the one created first is picked.</strong></li>
 <li><code>the first &lt;number&gt; &lt;group&gt;</code> gives a list, which may be shorter than asked.</li>
 <li>An ordered group may be used in <code>For each</code>.</li>
 </ul>
-<p>A superlative can be given a name in the glossary:</p>
+<p>A superlative can be given a name of its own:</p>
 <pre class="form">The &lt;word&gt; &lt;kind&gt; is the one with the largest | smallest &lt;property&gt;.</pre>
 <p>After that, <code>the &lt;word&gt; &lt;group, in the singular&gt;</code> is a pick.</p>
 <pre class="form">The richest dragon is the one with the largest hoard.
@@ -1930,7 +2174,7 @@ If now comes before the deadline:
 <ul>
 <li>The new kind has every property, adjective, worked-out property and rule of the kind it extends. It may add its own with further sentences, but may not redefine any.</li>
 <li>It can be used wherever the wider kind is expected: as a role, in a property, and in the wider kind's groups.</li>
-<li>There is a built-in kind, <code>thing</code>, that every kind extends. <code>A ghost is a kind of thing.</code> describes a kind with no properties.</li>
+<li>There is a built-in kind, <code>thing</code>, that every kind extends. <code>A ghost is a kind of thing.</code> describes a kind with no properties. <code>thing</code> and <code>kind</code> would be recognised only in <code>is a kind of</code>, in brackets as a type and in <code>is a &lt;kind&gt;</code>, so they stay free for names.</li>
 <li>Inside an <code>If</code> whose condition is <code>&lt;thing&gt; is a &lt;kind&gt;</code>, the thing counts as that kind.</li>
 </ul>
 <pre class="form">A person (plural people) has an age (number).
@@ -1961,12 +2205,11 @@ Pick up Cup for Norbert.</pre>
 <li><code>Stop repeating.</code> and <code>Skip this round.</code> apply to <code>Every</code> as they do to <code>Repeat</code> and <code>While</code>.</li>
 <li>For the conflict rule (12.7), creating or removing a thing counts as changing every group of its kind, and <code>Add</code> to or <code>Remove</code> from a list counts as changing the list.</li>
 <li>A <code>Try</code> inside a strand undoes only that strand's changes. The conflict rule already guarantees that no other strand touched them.</li>
-<li><code>time</code> is a measure (section <a href="#s13-14">13.14</a>), and <code>Now &lt;thing&gt; is &lt;adjective&gt;.</code> can set off a <code>Whenever</code>.</li>
+<li><code>time</code> is a measure (section <a href="#s13-14">13.14</a>).</li>
+<li>For the conflict rule, a strand's changes include the reactions they set off and the kept values worked out again because of them (section <a href="#s12-7">12.7</a>).</li>
 </ul>
 <h3 id="s13-19">13.19 New words and grammar</h3>
-<p>The words reserved by the parts already built are in section <a href="#s3">3</a>. These would become reserved as well, in addition to those in section <a href="#s12-8">12.8</a>:</p>
-<p><code>item</code> <code>first</code> <code>last</code> <code>largest</code> <code>smallest</code> <code>average</code> <code>larger</code> <code>smaller</code> <code>thing</code> <code>kind</code> <code>unit</code></p>
-<p>Until then, <code>first</code> and <code>last</code> are recognised only in <code>the first &lt;number&gt; letters of</code> and <code>the last &lt;number&gt; letters of</code>. The other words in the new forms, such as <code>rounded</code>, <code>nearest</code>, <code>remainder</code>, <code>order</code>, and those of section <a href="#s5-6">5.6</a>, are recognised only inside their phrases. They stay free for use in names.</p>
+<p>No word would become reserved: the list in section <a href="#s3">3</a> is frozen. Every word of these forms is recognised by where it stands, as <code>item</code>, <code>first</code>, <code>last</code>, <code>larger</code>, <code>smaller</code>, <code>rounded</code> and the rest already are in the forms that have been built: <code>unit</code> only in <code>is a unit of</code>, <code>moment</code> only in brackets as a type, <code>average</code>, <code>largest</code> and <code>smallest</code> only after <code>the</code> and before <code>of</code> or a group, a month's name only between a day and a year (<code>19 November 2026</code>), and <code>order</code> only in <code>in order</code> and <code>in reverse order</code>. Each stays free for names elsewhere.</p>
 <p>The grammar still to be built, beyond section <a href="#s11">11</a>:</p>
 <pre class="form">base-type    = ... | MEASURE | "moment"
 PLURAL-TYPE  = ... | the plural of a CHOICE-SET
@@ -1977,7 +2220,6 @@ unit         = article UNIT { "(" unit-note ")" } "is a unit of" MEASURE "."
              | article UNIT { "(" unit-note ")" } "is" NUMBER UNITS "."
 unit-note    = "plural" WORD | "written" SYMBOL
 kind-of      = article KIND [ "(" "plural" WORD ")" ] "is a kind of" KIND "."
-kind         = article KIND [ "(" "plural" WORD ")" ] "has" field { sep field } "."
 verb         = "To" VERB-WORD { VERB-WORD } [ role ] { PREPOSITION role } ":"
 
 test         = ... | "there is" ( article | "no" ) singular-group
@@ -1996,7 +2238,7 @@ group        = ... | group "in order of" PROPERTY | group "in reverse order of" 
 <p>Sections 12 and 13 settle most of what used to be listed here. These remain open.</p>
 <p><strong>Programs</strong></p>
 <ul>
-<li>Chapters and books (section <a href="#s9-6">9.6</a>) leave one limit: a file can reach only the chapters beside it and the books in its own folder, so a chapter in one book cannot use another book.</li>
+<li>Chapters and books (section <a href="#s9-6">9.6</a>) reach only the chapters beside a file, and the books beside it or beside the program: there is no shelf of books shared by programs.</li>
 <li>Chance: a number or a thing picked at random.</li>
 <li>Rules that span several things, rules about worked-out properties or adjectives, and rules that read a variable that can change. Today a rule may read only values written out, variables made with <code>always</code>, and its own thing's stored properties (section <a href="#s4-5">4.5</a>), because it is checked only when that thing's stored properties change; a rule that read anything else could be broken without anyone noticing. Checking such rules would mean finding, after every change, every rule whose answer that change could alter.</li>
 <li>Lookup tables from one value to another. Today the nearest thing is finding a thing by its name.</li>

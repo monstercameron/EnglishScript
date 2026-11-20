@@ -22,12 +22,12 @@ FONTS = (
     '<link rel="stylesheet" href="assets/english.css">\n'
 )
 PAGES = [
-    ("./", "The treatise"), ("playground.html", "The playground"), ("todo.html", "A page"), ("compare.html", "Compared"),
+    ("./", "The treatise"), ("playground.html", "The playground"), ("todo.html", "A page"), ("compare.html", "Compared"), ("opposition.html", "The opposition"),
     ("reference.html", "The grammar"), ("how.html", "The machinery"), (SOURCE, "The source"),
 ]
 # Where a link to another document of the repository goes on the site.
-LINKS = {"SYNTAX.md": "reference.html", "VULKAN.md": "vulkan.html", "PAGE.md": "page.html", "CONCERNS.md": "concerns.html", "EDITORS.md": "editors.html",
-         "docs/SYNTAX.md": "reference.html", "docs/VULKAN.md": "vulkan.html", "docs/PAGE.md": "page.html", "docs/CONCERNS.md": "concerns.html", "docs/EDITORS.md": "editors.html"}
+LINKS = {"SYNTAX.md": "reference.html", "VULKAN.md": "vulkan.html", "PAGE.md": "page.html", "CONCERNS.md": "concerns.html", "EDITORS.md": "editors.html", "OPPOSITION.md": "opposition.html",
+         "docs/SYNTAX.md": "reference.html", "docs/VULKAN.md": "vulkan.html", "docs/PAGE.md": "page.html", "docs/CONCERNS.md": "concerns.html", "docs/EDITORS.md": "editors.html", "docs/OPPOSITION.md": "opposition.html"}
 
 
 def nav(current):

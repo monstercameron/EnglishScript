@@ -29,7 +29,7 @@ const RUNTIME = [
 // stock: write the chapters of the example books into the folder programs run
 // in. A book is a folder, and _restore only clears loose files, so they stay.
 const BRIDGE = `
-import json, os, sys
+import inspect, json, os, sys
 sys.path.insert(0, "/site")
 os.chdir("/work")
 import englishscript
@@ -105,7 +105,15 @@ def play(source, mode, replies, late=None):
             events.append(["reply", reply])
             return reply
 
-        world = program.run(out, ask)
+        # There is no model in a browser, and no key to reach one. When a
+        # program asks a model, or asks for a judgement, the reader answers as
+        # the model would, through the same questions as "Ask".
+        listeners = {}
+        if "model" in inspect.signature(program.run).parameters:
+            from englishscript.models import Person
+            reader = Person(ask=ask, say=lambda text: events.append(["note", text]))
+            listeners = {"model": reader.model, "judge": reader.judge}
+        world = program.run(out, ask, **listeners)
         _keep()
         if world.examples:
             noun = "example" if world.examples == 1 else "examples"

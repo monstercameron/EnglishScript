@@ -67,8 +67,8 @@ class Algorithms(unittest.TestCase):
     def test_sorting_and_searching(self):
         lines, _ = said("sorting")
         row = [42, 7, 93, 18, 61, 3, 77, 25]
-        self.assertEqual(lines[0], "Before: " + " ".join(map(str, row)) + " ")
-        self.assertEqual(lines[1], "After:  " + " ".join(map(str, sorted(row))) + " ")
+        self.assertEqual(lines[0], "Before: " + " ".join(map(str, row)))
+        self.assertEqual(lines[1], "After:  " + " ".join(map(str, sorted(row))))
         # A sort that only swaps neighbours makes one swap for each pair out of order.
         pairs = sum(1 for i in range(len(row)) for j in range(i + 1, len(row)) if row[i] > row[j])
         self.assertEqual(lines[2], f"That took {pairs} swaps.")

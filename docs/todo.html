@@ -81,6 +81,7 @@
     <a class="page" href="playground.html">The playground</a>
     <a class="page" href="todo.html" aria-current="page">A page</a>
     <a class="page" href="compare.html">Compared</a>
+    <a class="page" href="opposition.html">The opposition</a>
     <a class="page" href="reference.html">The grammar</a>
     <a class="page" href="how.html">The machinery</a>
     <a class="page" href="https://github.com/monstercameron/EnglishScript">The source</a>
@@ -135,20 +136,22 @@
     <tr><td>A line appears in the list</td><td><code>There is a new card whose wording is the line and whose panel is Roll.</code></td></tr>
     <tr><td>Someone types in the box</td><td><code>Entry's wording</code> is what they have typed</td></tr>
     <tr><td>Someone presses Add</td><td><code>Whenever Adder becomes pressed:</code></td></tr>
-    <tr><td>Someone ticks a box</td><td>The card is <code>ticked</code>. No sentence answers the tick itself: the page is tidied when everything has settled</td></tr>
-    <tr><td>Someone presses a card's star</td><td>The card is <code>starred</code>, and <code>Set the card's order to 0.</code> moves it to the head of the list</td></tr>
+    <tr><td>Someone ticks a box</td><td>The card is <code>ticked</code>. No sentence answers the tick itself: what is kept follows it</td></tr>
+    <tr><td>Someone presses a card's star</td><td>The card is <code>starred</code>, and <code>Keep each card's order as the standing of the card.</code> moves it to the head of the list</td></tr>
     <tr><td>Someone edits a card's words where they stand</td><td><code>Whenever a card becomes reworded:</code></td></tr>
-    <tr><td>Someone types in the Find box</td><td><code>Finder's wording</code> is what they have typed, and the tidying hides what does not match</td></tr>
-    <tr><td>Anything at all has changed</td><td><code>Whenever everything has settled:</code> is carried out, once</td></tr>
-    <tr><td>The count at the foot changes</td><td><code>Set Tally's wording to "{the remaining} of {the whole} still to do."</code></td></tr>
+    <tr><td>Someone types in the Find box</td><td><code>Finder's wording</code> is what they have typed, and <code>Keep each card hidden when ...</code> hides what does not match</td></tr>
+    <tr><td>Anything at all has changed</td><td>Every kept value is worked out again, and then <code>Whenever everything has settled:</code> is carried out, once</td></tr>
+    <tr><td>The count at the foot changes</td><td><code>Keep Tally's wording as the verdict.</code></td></tr>
     <tr><td>A task is not added, and the page says why</td><td><code>Fail because "there is nothing to write down".</code> inside a <code>Try</code></td></tr>
     <tr><td>A line leaves the list</td><td><code>Remove the card.</code></td></tr>
-    <tr><td>A line is out of sight</td><td><code>Now the card is hidden.</code></td></tr>
+    <tr><td>A line is out of sight</td><td>The card is <code>hidden</code>, which the program keeps true or false by a condition</td></tr>
     <tr><td>The list is still there tomorrow</td><td><code>Remember the record under "tasks".</code></td></tr>
   </tbody>
 </table>
 
-<p>However much one click changes, the program tidies the page once, in one place: the sentence <code>Whenever everything has settled:</code>. “Tick them all” ticks every card, and then the cards are put in order, the counts are worked out and the list is saved a single time. Before that sentence existed, the same press on two hundred cards took thirteen seconds and saved the list two hundred and one times. It now takes eight thousandths of a second. <a href="concerns.html">The measurements</a> are written up.</p>
+<p>Nothing on the page is brought up to date by hand. The chapters say what each thing is always to be, in sentences beginning <code>Keep</code>: which cards are hidden, what order they stand in, what the counts and the note say. After every change the language works those out again. Then, however much one click changed, the list is saved once, by the sentence <code>Whenever everything has settled:</code>.</p>
+
+<p>An earlier version did all of this in a verb called <code>Tidy</code>, run after every single change. Pressing “Tick them all” on two hundred cards took thirteen seconds and saved the list two hundred and one times. It now takes nine thousandths of a second and saves it once. <a href="concerns.html">The measurements</a> are written up.</p>
 
 <p>The binding goes both ways and is kept by the library, which is a few hundred lines of Python. After every sentence that a click sets off, it compares the things with the elements and changes only what differs, so the box you are typing in is never rebuilt under you. The sentences beginning <code>Whenever</code> are part of the language, not of the library: <a href="reference.html">the grammar</a> describes them, and any program may use them.</p>
 
@@ -160,9 +163,9 @@
   <thead><tr><th>Chapter</th><th>What it does, and what it shares</th></tr></thead>
   <tbody>
     <tr><td><code>layout</code></td><td>Makes what is on the page. It shares the things the others change by name, such as <code>Entry</code> and <code>Tally</code>, and keeps the panels that only hold things in place to itself.</td></tr>
-    <tr><td><code>cards</code></td><td>Says what a task is. It shares the adjective <code>open</code> and the verbs <code>jot</code> and <code>arrange</code>.</td></tr>
-    <tr><td><code>showing</code></td><td>Decides which cards are in sight, and counts them. Which view is in force is its own business: no other file can read it or change it, except by asking it to <code>favour</code> a view.</td></tr>
-    <tr><td><code>keeping</code></td><td>Remembers the list between visits, and the last card removed. How a card is kept as a line of text is known only here.</td></tr>
+    <tr><td><code>cards</code></td><td>Says what a task is, and keeps each card in its place in the list. It shares the adjective <code>open</code> and the verb <code>jot</code>.</td></tr>
+    <tr><td><code>keeping</code></td><td>Remembers the list between visits, and the last card removed. How a card is written as a line of text is known only here.</td></tr>
+    <tr><td><code>showing</code></td><td>Keeps the right cards in sight and the counts true. Which view is in force is its own business: no other file can read it or change it, except by asking it to <code>favour</code> a view. It shares that one verb and nothing else.</td></tr>
   </tbody>
 </table>
 
@@ -241,10 +244,10 @@ const ABOUT = {
   [MAIN]: "The program: which chapters it uses, and what happens whenever a person does something.",
   "tasks/layout.english": "A chapter: what is on the page, from top to bottom.",
   "tasks/cards.english": "A chapter: what a task is, how one is written down, and the order cards stand in.",
-  "tasks/showing.english": "A chapter: which cards are in sight, and the counts.",
   "tasks/keeping.english": "A chapter: what is remembered between visits, and the last card removed.",
+  "tasks/showing.english": "A chapter: which cards are kept in sight, and the counts. Every sentence that matters begins with Keep.",
 };
-const ORDER = [MAIN, "tasks/layout.english", "tasks/cards.english", "tasks/showing.english", "tasks/keeping.english"];
+const ORDER = [MAIN, "tasks/layout.english", "tasks/cards.english", "tasks/keeping.english", "tasks/showing.english"];
 const files = new Map();     // name -> { original, text }
 let chosen = MAIN;
 

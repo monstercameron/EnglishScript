@@ -8,32 +8,26 @@
 # The work is in four chapters of the book "tasks", a folder beside this file:
 #
 #   layout    what is on the page
-#   cards     what a task is, and how one is written down
-#   showing   which cards are in sight, and the counts
+#   cards     what a task is, how one is written down, and its place in the list
 #   keeping   what is remembered between visits
+#   showing   which cards are in sight, and the counts
 #
 # This file is what is left: what happens whenever a person does something,
-# and one sentence that tidies the page once everything has settled.
+# and one sentence that saves the list once everything has settled.
 # Open docs/todo.html to use it. Run from the command line, it sketches the page.
 
 Use the page library.
 Use the layout chapter of the tasks book.
 Use the cards chapter of the tasks book.
-Use the showing chapter of the tasks book.
 Use the keeping chapter of the tasks book.
+Use the showing chapter of the tasks book.
 
-# Bring everything up to date. Each step is one chapter's work.
-To tidy:
-  Arrange.
-  Sift.
-  Reckon.
-  Keep.
-
-# However much one click changes, the page is tidied once, when everything it
-# set off has finished. Ticking every card at once is one tidying, not one for
-# each card.
+# Nothing on the page is brought up to date by hand. The chapters say, with
+# sentences beginning "Keep", what each count, label and card is always to be.
+# All that is left to do when a turn is over is to save the list, once,
+# however much the turn changed.
 Whenever everything has settled:
-  Tidy.
+  Save.
 
 # Write down what was typed. If it cannot be written down, say why, and leave
 # what was typed where it is: a failed Try puts everything back.
@@ -53,7 +47,7 @@ Favour Everything for "all".
 # ------------------------------------------------ what happens from here on
 #
 # A tick, a star and a letter typed in the Find box need no sentence here.
-# The page library changes the thing, and the tidying above does the rest.
+# The page library changes the thing, and what is kept follows.
 
 Whenever Adder becomes pressed:
   Take Entry's wording.

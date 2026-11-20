@@ -37,4 +37,3 @@ There is a panel called Shelf.
 There is a button called Finisher whose label is "Tick them all" and whose panel is Shelf.
 There is a button called Sweeper whose label is "Clear what is done" and whose panel is Shelf.
 There is a button called Restorer whose label is "Put the last one back" and whose panel is Shelf.
-Now Restorer is hidden.

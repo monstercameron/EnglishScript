@@ -33,7 +33,7 @@ There is a knight called Robin whose purse is $20 and whose courage is 2.
 
 - **One sentence per line.** A sentence ends with a period.
 - **A colon opens a block.** The sentences that belong to it are indented further, with spaces. Tabs are refused. Any depth of indent works, but sentences in the same block must line up.
-- **A closing quote may end a sentence**, so `Say "Hello."` needs no second period.
+- **A closing quote may end a sentence**, so `Say "Hello."` needs no second period. That is the one exception to the period, and it stays: a sentence whose last word is a text ends at its closing quotation mark, and the examples in this document write no period after it.
 - **`#` starts a comment** that runs to the end of the line. Blank lines are ignored.
 - **Capitals don't matter.** `Say`, `say` and `SAY` are the same word, and so are `Smaug` and `smaug`. A name is shown the way it was first written.
 - Curly quotes (“ ” ’) are read as straight ones.
@@ -49,7 +49,7 @@ Say “Curly quotes work.”         #> Curly quotes work.
 
 ## 2. Values and types
 
-Every value has one of these types. The compiler works out each type before the program runs.
+Every value has one of these types. The compiler works out each type before the program runs. The words used in this document: a **type** is what sort of value something is; a **kind** is a type described by the program (`dragon`), whose values are **things**; a **property** belongs to a thing, and is stored or worked out (a **worked-out property**); an **adjective** is said of a thing, stored or worked out; a **worked-out value** is defined with `To work out`. The type of `10%` is written `percent`, and such a value is called a **percentage**.
 
 | Type | Written | Said as |
 |---|---|---|
@@ -183,7 +183,7 @@ Let the scores be a list of 3, 8 and 5.
 Add 10 to the scores.
 Say the number of items in the scores.         #> 4
 Say the total of the scores.                   #> 26
-Say the scores joined with ", ".               #> 3, 8, 5, 10
+Say the scores joined with ", "                #> 3, 8, 5, 10
 Say item 2 of the scores.                      #> 8
 Say item 9 of the scores.                      #> nothing
 Set item 2 of the scores to 7.
@@ -191,7 +191,7 @@ Remove 3 from the scores.
 Say the first of the scores or else 0.         #> 7
 If 10 is in the scores and 3 is not in the scores:
   Say "ten, and no three"                      #> ten, and no three
-Let the parts (list of text) be the words of "fire and smoke".
+Let the parts (list of text) be the words of "fire and smoke"
 For each part in the parts:
   Say the length of the part.
 #> 4
@@ -215,7 +215,7 @@ If that fails:
 ```
 
 ```refused
-Say the words of "fire and smoke".
+Say the words of "fire and smoke"
 ```
 
 ```refused
@@ -261,7 +261,7 @@ A loop's block is carried out again after its own last sentence, so what was kno
 
 ```englishscript
 A link has a label (text) and a next (link, if any).
-There is a link called Tail whose label is "tail".
+There is a link called Tail whose label is "tail"
 There is a link called Head whose label is "head" and whose next is Tail.
 Let the spot (link, if any) be Head.
 While the spot is not nothing:
@@ -306,7 +306,7 @@ Say Tom's mount's speed + 1.
 
 ## 3. Names
 
-A word is letters, digits and underscores, starting with a letter.
+A word is letters, digits and underscores, starting with a letter. A **letter** is a letter of any alphabet, accented or not (`Fáfnir`, `Größe`); a **digit** in a word is any digit, but a number is written only with the digits 0 to 9. Capitals are folded as Python folds them (`str.lower`). The plural rule, and `a` or `an` (section 4.1), look only at the unaccented English letters, so a kind spelt otherwise may need its plural stated, and `comes before` (section 6) orders letters by their character codes.
 
 | What is named | Length |
 |---|---|
@@ -324,7 +324,7 @@ A name of several words is found by its words, up to twelve of them: a name of m
 A name of several words is read **longest first, with no going back**: where the words of a sentence could start a longer name or a shorter one, the longer one is taken, and if the sentence then cannot go on, it is refused rather than read again with the shorter name. So with variables `the word` and `the word starts`, `If the word starts with "a":` reads `the word starts`, and is refused because `with` cannot follow it.
 
 ```refused
-Let the word be "apple".
+Let the word be "apple"
 Let the word starts be 1.
 If the word starts with "a":
   Say 1.
@@ -333,12 +333,14 @@ If the word starts with "a":
 | Group | Reserved words |
 |---|---|
 | Articles and pronouns | `a` `an` `the` `it` `its` `they` `them` `their` |
-| Built-in verbs | `let` `set` `add` `subtract` `multiply` `divide` `say` `if` `for` `repeat` `while` `there` `stop` `skip` `end` `now` `remove` `ask` `write` `try` `fail` `use` `whenever` |
+| Built-in verbs | `let` `set` `add` `subtract` `multiply` `divide` `say` `if` `repeat` `while` `there` `stop` `skip` `end` `now` `remove` `ask` `write` `try` `fail` `use` `whenever` (and `for`, listed with the prepositions) |
 | Types | `number` `money` `text` `percent` `yes` `no` `list` |
 | Linking words | `of` `is` `are` `be` `has` `called` `whose` `when` `each` `all` `otherwise` `example` `name` `nothing` `any` `else` `answer` `whether` `can` `in` `new` `reply` `problem` `items` `becomes` |
 | Logic and comparison | `not` `and` `or` `never` `always` `than` `less` `more` `greater` `least` `most` `divisible` |
 | Arithmetic | `plus` `minus` `times` `divided` |
 | Prepositions | `with` `to` `from` `against` `for` `by` `on` `at` `into` `onto` `about` `over` `under` `as` `through` `toward` `towards` `upon` |
+
+**This list is frozen.** A new word in it would break every program that already uses that word in a name, so a new sentence form is recognised by where its words stand instead, wherever that can be done. Many words of the built forms are already free in this way, and may be part of names: `that`, `this`, `round`, `program`, `file`, `total`, `first`, `last`, `item`, `letter`, `letters`, `length`, `words`, `lines`, `upper`, `lower`, `case`, `chapter`, `book`, `library`, `shares`, `only`, `everything`, `settled`, `keep`, `either`, `way`, `again`, `because`, `joined`, `empty`, `remainder`, `rounded`, `nearest`, `raised`, `power`, `square`, `root`, `larger`, `smaller`, `absolute`, `value`, `does`, `contain`, `contains`, `starts`, `ends`, `comes`, `before`, `after`, `one`, `plural`, `done` and `fails`. Each is read as part of its form only where the form's other words stand around it (`the total of` a list, `Skip this round`, `the text of the file`), and as a name everywhere else.
 
 **Plurals** are formed by rule: add `s`; add `es` after `s`, `x`, `z`, `ch` or `sh`; change a consonant plus `y` to `ies`. So `dragon` gives `dragons`, `fox` gives `foxes` and `pony` gives `ponies`. Another plural can be stated where the kind is described: `A child (plural children) has ...` (section 4.1). Every kind has its own name and its own plural: a kind whose name or plural is already another kind's name or plural is refused (`bus` and `buse` would both be `buses`; `ax` and `axe` both `axes`; a kind `dragons` beside `dragon`).
 
@@ -415,7 +417,7 @@ There is a | an [<adjective>]... <kind> called <name> [whose <property> is <expr
 
 ```englishscript
 A wizard has a hat size (number) and a motto (text).
-There is a wizard called Merlin Ambrosius whose hat size is 7 and whose motto is "Never late".
+There is a wizard called Merlin Ambrosius whose hat size is 7 and whose motto is "Never late"
 Say Merlin Ambrosius's motto.         #> Never late
 Say the name of merlin ambrosius.     #> Merlin Ambrosius
 ```
@@ -803,7 +805,7 @@ Joining text is done with fill-ins: `"{the first name} {the last name}"`.
 | `the words of <text>` | a list of text, split at any run of spaces, tabs or line breaks, with none empty |
 | `letter <number> of <text>` | text, if any: that letter, numbered from 1; nothing when there is no such letter |
 | `the lines of <text>` | a list of text, split at line breaks, with no empty last line |
-| `<text> as a number` | a number, if any: nothing when the text is not a number written the usual way |
+| `<text> as a number` | a number, if any: nothing when the text is not a number written the usual way (below) |
 
 - Each `<text>` and `<number>` after `of` is a single value or a bracketed expression.
 - `in upper case`, `in lower case` and `as a number` apply to the whole value before them, so `the length of the title in upper case` is refused: it asks to upper-case a number. Write `the length of (the title in upper case)`.
@@ -813,11 +815,11 @@ Joining text is done with fill-ins: `"{the first name} {the last name}"`.
 Text conditions are in section 6.
 
 ```englishscript
-Let the title be "The ""Lonely"" Mountain".
+Let the title be "The ""Lonely"" Mountain"
 Say the length of the title.                         #> 21
 Say the title in upper case.                         #> THE "LONELY" MOUNTAIN
 Say the first 3 letters of the title.                #> The
-Say the last 100 letters of "Smaug".                 #> Smaug
+Say the last 100 letters of "Smaug"                  #> Smaug
 Say the number of items in the words of the title.   #> 3
 Say ("12" as a number or else 0) + 1.                #> 13
 Say "twelve" as a number.                            #> nothing
@@ -826,6 +828,18 @@ Say "twelve" as a number.                            #> nothing
 ```refused
 Say "12" as a number + 1.
 ```
+
+`as a number` accepts, after taking away spaces, tabs and line breaks at either end: an optional minus sign (`"-5"`); then the digits 0 to 9, either all together (`"007"` is 7) or in groups of three after commas, the first group not starting with 0 (`"1,000"`, but not `"0,123"` or `"1,00"`); then, if there is one, a point and digits (`"2.5"`). Nothing else is a number: not `"+5"`, `"5."`, `".5"`, `"1e3"`, `"$5"`, `"5%"`, nor digits of another script such as `"٥"`.
+
+#### Regular forms, and the exceptions
+
+The language tries to say one thing one way. Where it does not, it is on purpose, and these are the places:
+
+- **A verb's roles take expressions; a worked-out value's roles take single values.** `Move $10 + $5 from Gawain to Robin.` is fine, but `the change from ($10 + $10) for $12.50` needs its brackets, because a worked-out value is itself part of an expression, and `the bounty for Smaug + $5` must not be read as `the bounty for (Smaug + $5)`. A verb stands at the start of its own sentence, so nothing follows its last role.
+- **`called` takes a bare name when a thing is described, and a text when one is made while running.** `There is a dragon called Smaug ...` gives a name the program can say; `There is a new dragon called "{the dragon}'s chick" ...` makes a name while running, which is text and can be built with fill-ins, and so `the dragon called "Smaug"` finds a thing by a text.
+- **`the` is optional before a variable, and not used before a thing's name.** `the total` and `total` are the same variable; `Smaug` is never `the Smaug`, as in English, where a name takes no article. Inside a definition or a loop, `the <kind>` means the thing in view.
+- **The text tests are written without `is`**: `contains`, `starts with`, `ends with`, `comes before`, and their opposites `does not contain`, `does not start with`, `does not end with`, alongside `not ... contains`.
+- **A sentence that ends in a closing quotation mark needs no period** (section 1).
 
 ### 5.7 Finding a thing by name
 
@@ -836,10 +850,10 @@ the <kind> called <text>
 This finds the first thing of that kind with that name, ignoring capitals. It is `if any`, because there may be none. Removed things are not found.
 
 ```englishscript
-Let the found be the dragon called "SMAUG".
+Let the found be the dragon called "SMAUG"
 If the found is not nothing:
   Say the found's age.                      #> 771
-Say the dragon called "Puff".               #> nothing
+Say the dragon called "Puff"                #> nothing
 ```
 
 ## 6. Conditions
@@ -979,6 +993,17 @@ For example[,] <condition>.
 
 An example is a test. If the condition is false when the sentence is reached, the program stops. For a single comparison, the message also gives the actual value of the left side.
 
+To check a file's examples apart from its other work:
+
+```text
+python -m englishscript my_program.english --test
+```
+
+- The program is carried out with nothing said, nothing asked (an `Ask` finds that input has ended, so the program ends quietly there, section 7.6), and no file written (`Write` and `Add ... to the file` do nothing; files are still read). A library is not left running afterwards.
+- Every `For example` that is reached is reported with its line and whether it held. One that does not hold shows its "In fact" line, and the run goes on to the next, instead of stopping.
+- It ends with a count, and with status 1 if any example did not hold, or if a problem stopped the program; otherwise 0.
+- A program, a page or a tool can do the same with `Program.test()` (`englishscript.compile_source(...).test()`), which gives back the examples reached, in order, each with `file`, `line`, `sentence`, `held` and `fact`.
+
 ```englishscript
 For example, the hoard of Smaug is $3,500.
 For example Norbert is not ancient.
@@ -1004,6 +1029,7 @@ Remove <thing>.
 - `Remove <value> from <list>.` is another sentence, told apart by its `from`: it takes an item out of a list (section 2).
 - **`Remove` is refused while a required property of another thing points at the thing.** This is a problem (section 8.5) that names what still depends on it.
 - A removed thing can still be said and compared, but using its properties or adjectives, changing it, making something point at it, or using it as the owner of a group (`the saddles of h`) is a problem.
+- A variable, a role or a list may go on holding a thing that has been removed: it does not become `nothing` as an `if any` property does. Using it is then found only while running, as the problem `a removed thing` (section 8.5).
 - A `For each` that has already started does not visit a thing removed before its turn (section 8.2).
 - Like using a verb, `Remove` cancels every check for nothing that relied on a property (section 2), because it may have made one nothing.
 
@@ -1015,7 +1041,7 @@ To hatch for a dragon:
 Hatch for Smaug.                              #> Smaug's chick hatches.
 There is a new dragon whose age is 5.
 Say the number of dragons.                    #> 4
-Let the found be the dragon called "dragon 4".
+Let the found be the dragon called "dragon 4"
 If the found is not nothing:
   Remove the found.
 Remove Norbert.
@@ -1060,10 +1086,141 @@ Add <text> to the file <text>.       puts exactly that text at the end; write {n
 - `Write` and `Add` are refused inside `To work out`; reading is allowed there.
 
 ```text
-Write "eggs{new line}" to the file "shopping.txt".
-Add "milk{new line}" to the file "shopping.txt".
+Write "eggs{new line}" to the file "shopping.txt"
+Add "milk{new line}" to the file "shopping.txt"
 For each item in the lines of the file "shopping.txt":
   Say "- {the item}"
+```
+
+### 7.8 Asking a model, and judging
+
+```text
+Ask the model <text> [about <value>] and let [the] <name> (<type>) be the reply.
+Judge <text> about <value> and let [the] <name> (percent) be the chance.
+Judge <text> about <value> and let [the] <name> (<set of choices>) be the verdict.
+Judge <text> about <value> and let [the] <name> (<set of choices>) be the verdict
+      and [the] <name> (percent) be the likelihood.
+For a | an <set of choices>, <choice> means <text>.
+```
+
+A running program may ask a model, as it may ask a person with `Ask` (section 7.6). There are two sorts of model, and a sentence for each:
+
+- **A model that writes** answers `Ask the model`. What it writes is read as the type in brackets, by the same reader that reads a person's reply.
+- **A model that judges** answers `Judge`. It writes nothing: it gives how likely something is, or how likely each of a set of choices is, and the program decides what to do with that in ordinary sentences, with `If`.
+
+**What this changes, and what it does not.** The compiler is as deterministic as before, and has no model in it: every sentence still has exactly one meaning, and the same program is compiled the same way every time. A model is something the program asks while it runs, and what comes back is checked against the type asked for, or is a problem a `Try` can recover from. A program that asks a model is as repeatable as the model, exactly as a program that asks a person is as repeatable as the person.
+
+Who answers is decided by whoever runs the program, never by the program: `python -m englishscript program.english --model SPEC` (the listeners that come with EnglishScript are described in `englishscript/models.py`), or `Program.run(..., model=..., judge=...)` from Python. When nothing is listening, which is the case by default and always with `--test` (section 7.4), every question to a model is the problem `no model`, whose text is `No model is listening.`; a program can catch it and ask a person instead.
+
+**Asking a model**
+
+- `the model` is recognised by its place, straight after `Ask`; `model` is not reserved. While a name in view starts with the word `model` (a variable, a role, a thing, a worked-out value or a kind), `Ask the model ...` is refused, because it could also ask a person about what that name holds. Rename it.
+- The question is text, with fill-ins as in any text.
+- `about <value>` hands over what the question is about: a text, or a thing. A thing is handed over written out, in this layout: a first line `<kind> called <name>`, then one line `<property>: <value>` for each stored property, in the order the kind lists them. Each value is said as `Say` says it; a property that is a thing is given by its name; a missing value is `nothing`; a list is written as a list is written in a program, `a list of 3, 8 and 5`, or `an empty list`. Its adjectives and worked-out properties are not handed over: to hand one over, fill it into the question.
+- The type may be `text`, `number`, `money`, `percent`, `yes or no`, a set of choices (section 4.6), or a list of text, numbers, money or percentages. It may not be a kind: ask for a name as text, and find the thing with `the <kind> called` (section 5.7). With `, if any`, the model may answer `nothing`, and the variable is then nothing.
+- The reply is read as a person's reply is (section 7.6): a number as section 2 writes them, money with or without `$`, a percentage with `%`, `yes`, `no`, `y` or `n`. A choice is one of the choices as they were written, whatever its capitals. A list is one item to a line; blank lines are passed over. Text is kept as it came.
+- If the reply cannot be read as the type, the model is asked again, and told what was wrong, up to two more times. After that it is the problem `a bad reply`, whose text says what was wanted and quotes the reply: `The model's reply could not be read as a number, such as 7 or 2.5: "about seven"`.
+- A model that refuses to answer, or whose answer is cut short, gives no reply. That is `a bad reply` too: `The model gave no reply: it refused to answer, or its answer was cut short.`
+- Like `Ask`, it makes a variable, so the name must be new, and it is refused inside `To work out`: asking is not working out.
+
+**Judging**
+
+- `about` is required: a judgement is always about something, a text or a thing, handed over as above.
+- With `the chance`, the question is a statement or a yes-or-no question, and the value is how likely it is to be so, from 0% to 100%.
+- With `the verdict`, the question is one whose answer is one of the choices of the set in brackets, and the value is the likeliest choice. If two are equally likely, the one written first in the set wins. `the likelihood`, if it is asked for, is how likely that choice is: the judge's own figure for it, not a second opinion. A likelihood goes only with a verdict.
+- What comes back is checked. A chance must be a number from 0 to 1. A verdict must give a chance from 0 to 1 to every choice of the set and to nothing else; the chances need not add up to exactly 1. Anything else is `a bad reply`. A judgement is not asked for again.
+- `Judge`, `the chance`, `the verdict` and `the likelihood` are recognised by their places; none of them is reserved. If the program has taught a verb `judge`, a sentence that starts with `Judge` and ends with `be the chance`, `be the verdict` or `be the likelihood` could be either, and is refused. Rename the verb.
+- A choice may be given a meaning for the judge, at the top level, after its set is described: `For a team, returns means "the customer wants to send something back".` Each choice may have one meaning, in plain text without braces; each is optional. The meanings are handed to whoever judges, with the choices. They change nothing else.
+
+One question per judgement, and ordinary code around it: that is the whole design. A judgement gives a figure; the program decides, in sentences anyone can read, what is likely enough to act on, what a person should look at, and what to hand over. With nothing listening, as when this document is checked, each of these takes its `If that fails:` way:
+
+```englishscript
+A team is one of sales, support or returns.
+For a team, returns means "the customer wants to send something back".
+A letter has a wording (text) and a sender (text).
+There is a letter called Ticket whose wording is "The jug came broken. I want my money back." and whose sender is "Ann".
+
+To route a letter:
+  Try:
+    Judge "Which team should handle this?" about the letter and let the team (team) be the verdict and the certainty (percent) be the likelihood.
+    If the certainty is at least 90%:
+      Say "{the letter} goes to {the team}."
+    Otherwise if the certainty is at least 60%:
+      Ask "Send {the letter} to {the team}?" and let the agreed (yes or no) be the reply.
+      If the agreed is yes:
+        Say "{the letter} goes to {the team}."
+      Otherwise:
+        Say "{the letter} goes to a person to sort."
+    Otherwise:
+      Say "{the letter} goes to a person to sort."
+  If that fails:
+    Say "{the letter} goes to a person to sort, because: {the problem}"
+
+To screen a letter:
+  Try:
+    Judge "The writer is angry." about the letter and let the anger (percent) be the chance.
+    Judge "Does the writer want money back?" about the letter and let the refund (percent) be the chance.
+    Let the urgency be (the anger + the refund) / 2.
+    If the urgency is at least 75%:
+      Say "Call {the letter's sender} today."
+  If that fails:
+    If the problem is no model:
+      Say "No one to judge {the letter}; it waits its turn."
+    Otherwise:
+      Fail again.
+
+Route Ticket.      #> Ticket goes to a person to sort, because: No model is listening.
+Screen Ticket.     #> No one to judge Ticket; it waits its turn.
+```
+
+Asking a model, with a person as the fallback:
+
+```englishscript
+A letter has a wording (text) and a sender (text).
+There is a letter called Ticket whose wording is "Where is my order?" and whose sender is "Ann".
+Try:
+  Ask the model "Write one line of thanks to the sender." about Ticket and let the thanks (text) be the reply.
+  Say the thanks.
+If that fails:
+  Say "Thank you, {Ticket's sender}."     #> Thank you, Ann.
+```
+
+```text
+Ask the model "How many items does this order have?" about the order and let the count (number) be the reply.
+Ask the model "Which mood is this letter in?" about the letter and let the feeling (mood) be the reply.
+Ask the model "List the dates in this text." about the letter and let the dates (list of text, if any) be the reply.
+```
+
+Refused: a reply can't be a kind.
+
+```refused
+Ask the model "Which dragon is oldest?" and let the eldest (dragon) be the reply.
+```
+
+Refused: a judgement is always about something.
+
+```refused
+Judge "Is it raining?" and let the rain (percent) be the chance.
+```
+
+Refused: a likelihood goes with a verdict.
+
+```refused
+Judge "Is Smaug angry?" about Smaug and let the anger (percent) be the chance and the sureness (percent) be the likelihood.
+```
+
+Refused: `calm` is not one of the choices.
+
+```refused
+A team is one of sales, support or returns.
+For a team, calm means "nothing to do".
+```
+
+Refused: a variable called `model` is in view, so the sentence could ask a person the question it holds.
+
+```refused
+Let the model be "Which colour?"
+Ask the model "Which colour?" and let the colour (text) be the reply.
 ```
 
 ## 8. Blocks
@@ -1220,25 +1377,46 @@ Stop.
 ```text
 Try:
 If that fails:
+Either way:
 Fail because <text>.
+Fail again.
 the problem
+the problem is [not] a | an <kind of problem>
 ```
 
 - `Try:` carries out its block. If a problem arises, the rest of the block is abandoned and the `If that fails:` block is carried out. `If that fails:` must follow directly, and is required.
+- `Either way:` may follow the `If that fails:` block, at the same indent. Its block is carried out after the `Try` and its `If that fails:`, whether the `Try` failed or not, and however they end: normally, by a problem that goes on out of `If that fails:`, or by `Stop.`, `Skip`, `Stop repeating.` or `The answer is` leaving them. It is not carried out when the program is ending (`End the program.`, or a problem that always ends the program). A problem inside `Either way:` is an ordinary problem at that point. `either` is not reserved: it is read this way only at the start of a sentence followed by `way`.
 - **A failed `Try` leaves the world as it was.** Every change its block made is undone: to properties, to stored adjectives, to variables that existed before the `Try`, and to which things exist, including changes made by verbs it used and by reactions it set off (section 9.5). What was said, asked or written to a file stays. Putting things back does not set off reactions.
 - Inside `If that fails:`, `the problem` is text saying what went wrong. It means nothing anywhere else.
-- `Fail because <text>.` raises a problem of the program's own.
+- A problem also has a **kind**, which `the problem is a broken rule` (or `is not`) tests, inside `If that fails:`. The kinds are in the table below.
+- `Fail because <text>.` raises a problem of the program's own, of the kind `a failure`.
+- `Fail again.`, inside `If that fails:`, passes the same problem on, with its kind and its text unchanged, to the `Try` around this one, or ends the program if there is none.
 - `Stop.`, `Skip`, `Stop repeating.`, `The answer is` and `End the program.` leaving a `Try` are not failures. They leave as usual, and the changes stay.
 - For checks for nothing, the two blocks count like the branches of an `If`: after the `Try`, nothing that either block may have changed is relied on.
 
-These problems can be recovered from: a broken `never` or `always` rule; a division by zero, or a test for being divisible by zero; a file that cannot be read or written; a `Remove` that is refused; using a removed thing; `Repeat` with a fraction or a negative number; asking for a negative or fractional number of letters; `Set item` of an item that isn't there; the square root of a negative number, a negative number raised to a power that isn't whole, a remainder of a division by zero, and rounding to a step that is not more than nothing; and `Fail because`.
+These problems can be recovered from. The text is what `the problem` holds, with `...` where a name, a number or a rule is filled in:
+
+| Kind | When | `the problem` |
+|---|---|---|
+| `a broken rule` | a change, a new thing or a removal would break a `never` or `always` rule | `That would break a rule: "..."`, `... would break a rule: "..."` (a new thing), `Removing ... would break a rule: "..."` |
+| `a division by zero` | dividing by zero; testing for being divisible by zero; a remainder of a division by zero; zero raised to a negative power | `I can't divide by zero.`, `Nothing is divisible by zero.`, `I can't divide by zero, so there is no remainder.`, `Nothing raised to a negative power: that would divide by zero.` |
+| `a missing file` | a file that cannot be read or written | `I couldn't read the file ...: ...`, `I couldn't write to the file ...: ...` |
+| `a refused removal` | `Remove` of a thing that a property that is not `if any` points at | `I can't remove ... while ...'s ... still points at it.` |
+| `a removed thing` | using a removed thing's properties or adjectives, changing it, or making something point at it | `... has been removed, so it can't be used any more.` |
+| `a bad count` | `Repeat` with a fraction or a negative number; a negative or fractional number of letters | `I can't repeat something ... times.`, `I can't take ... letters of a text.` |
+| `a missing item` | `Set item` of an item that isn't there | `There is no item ... of ...: it has ... items.` |
+| `a bad number` | the square root of a negative number; a negative number raised to a power that isn't whole; rounding to a step that is not more than nothing | `A negative number, ..., has no square root.`, `A negative number, ..., can't be raised to a power that is not whole.`, `A value is rounded to the nearest step of more than nothing, not ....` |
+| `a bad reply` | a model's reply that can't be read as the type asked for, after three tries; no reply; a judgement that is not well-formed; a problem the listener reports (section 7.8) | `The model's reply could not be read as ...: "..."`, `The model gave no reply: it refused to answer, or its answer was cut short.`, `The model's judgement could not be used: ...` |
+| `no model` (written without `a`: `the problem is no model`) | `Ask the model` or `Judge` with nothing listening (section 7.8) | `No model is listening.` |
+| `a library problem` | a problem a library reports (section 9.4), unless it is one of the kinds above | the library's own words |
+| `a failure` | `Fail because <text>.` | the text |
 
 These always end the program, because they are faults in the program rather than events in the world: a `For example` that does not hold, a `While` passing 1,000,000 rounds, a verb or worked-out value using itself more than 200 levels deep, and reactions setting off reactions more than 200 levels deep.
 
 ```englishscript
 To move an amount (money) from a giver (knight) to a taker (knight):
   If the giver is the taker:
-    Fail because "a knight cannot pay himself".
+    Fail because "a knight cannot pay himself"
   Add the amount to the taker's purse.
   Subtract the amount from the giver's purse.
 
@@ -1256,6 +1434,32 @@ If that fails:
 ```
 
 Gawain's purse was raised to $800 before the rule on Robin's purse was broken, and the failed `Try` put it back.
+
+```englishscript
+To pay a fee (money) for a knight:
+  Try:
+    Subtract the fee from the knight's purse.
+  If that fails:
+    If the problem is a broken rule:
+      Say "{the knight} can't pay."
+    Otherwise:
+      Fail again.
+  Either way:
+    Say "The clerk closes the book."
+
+Pay $50 for Robin.
+#> Robin can't pay.
+#> The clerk closes the book.
+Try:
+  Say $1 / (Robin's purse - $20).
+If that fails:
+  Say whether (the problem is a division by zero).    #> yes
+```
+
+```refused
+Either way:
+  Say "Too soon."
+```
 
 ```refused
 Try:
@@ -1284,6 +1488,8 @@ A role is written in one of two ways:
 - Inside the block, a role is referred to as `the <role>`. Roles that are things are in view for pronouns.
 - The block can also use named things and top-level variables defined before the verb. It cannot see the variables of whoever uses the verb.
 - A verb does not produce a value. It may use itself, to a depth of 200.
+- **A verb may have several shapes.** The same verb may be taught again with other linking words: `To send a knight against a dragon:` and `To send a treasure to a knight:` are two shapes of `send`. Having a direct object or not counts as a difference, so `To send:` is a third. Two shapes with the same linking words are refused, whatever their kinds (`To greet a knight:` and `To greet a dragon:`): which verb a sentence uses must never depend on looking at its values. All the shapes of a verb are taught in one file.
+- A verb, like a worked-out value, must be taught before it is used, so two verbs cannot use each other. The way round it is one verb with a role that says which work to do, or a worked-out value that both use.
 
 ### 9.2 Using a verb
 
@@ -1354,6 +1560,8 @@ the <name> [<preposition> <value>]...
 - Roles are written as for verbs (section 9.1), except that every role has a preposition, and `of` may be one of them. When it is used, the roles may come in any order.
 - `The answer is ...` ends the work and gives the value. Every path through the block must reach one, or end with `Fail because` (section 8.5).
 - **Working out changes nothing.** The block may make and change its own variables, loop, use other worked-out values, read files, and use `Try` and `Fail because`. It may not change a thing or an outside variable, use `Now`, make or remove a thing, say or ask anything, write to a file, or use a verb.
+- It may, however, read what can change outside it: a file, or what a library remembers. So the same worked-out value, asked for twice with the same roles, may give two answers. "Changes nothing" is promised; "gives the same answer each time" is not.
+- Like a verb, a worked-out value must be defined before it is used, so two cannot use each other. The way round it is one worked-out value with a role that says which answer is wanted.
 - Because of that, a worked-out value may be used anywhere a value may, including in the definition of an adjective.
 - Each role takes a single value. Arithmetic in a role needs brackets: `the change from ($10 + $10) for $12.50`.
 - A worked-out value takes every role written after it. Brackets end it early: `(the bounty for Smaug) + $5`.
@@ -1395,7 +1603,7 @@ Refused, because a score under 50 reaches no answer:
 ```refused
 To work out the grade (text) for a score (number):
   If the score is at least 50:
-    The answer is "pass".
+    The answer is "pass"
 ```
 
 Refused, because working out cannot say anything:
@@ -1604,6 +1812,44 @@ If 1 is 1:
     Say "Strange."
 ```
 
+#### Kept values
+
+```text
+Keep each <kind>'s <property> as <expression>.
+Keep <thing>'s <property> as <expression>.
+Keep each <kind> <stored adjective> when <condition>.
+```
+
+A stored property or a stored adjective that is kept in step with something else, rather than changed by hand.
+
+- This is a definition, allowed only at the top level, and it applies from its sentence on. In the `each` forms the thing is in view as `the <kind>` and `its`. In the form with a named thing, nothing is in view.
+- **At the end of every turn in which something changed**, before the settled blocks, each kept property is worked out and set if it differs, and each kept adjective is stored or cleared to match its condition. If that changed anything, they are all worked out again, up to ten rounds; if they are still changing after that, the program stops with a problem that names the ones that would not settle. The sentence that says `Keep` is a turn of its own, so the value is kept from then.
+- A change made this way sets off reactions as any change does, and the kind's rules still hold for it.
+- A kept property or adjective can't be changed any other way: `Set`, `Add` and the rest, and `Now`, are refused when the program is compiled, with the `Keep` sentence named. For the form with a named thing, that is a change written with the thing's name; a change made through a variable that holds the thing is put right at the end of the turn.
+- A kept property may still be given when a thing is made, which it must be if it is not `if any`; it is put right at the end of the turn.
+- `keep` is not reserved: a sentence is read as a kept value only when it is `Keep each ...`, or `Keep <thing>'s ... as ...`. If the program has a verb `keep` and the sentence could be either, it is refused.
+
+```englishscript
+A card has a wording (text) and a line (text).
+A card can be open.
+A card can be done.
+There is a card called Milk whose wording is "milk" and whose line is ""
+Keep each card's line as "- {its wording}"
+Keep each card open when the card is not done.
+Say Milk's line.                          #> - milk
+Set Milk's wording to "eggs"
+Say Milk's line.                          #> - eggs
+Now Milk is done.
+Say whether (Milk is open).               #> no
+```
+
+```refused
+A card has a line (text).
+There is a card called Milk whose line is ""
+Keep each card's line as "- milk"
+Set Milk's line to "- eggs"
+```
+
 ### 9.6 Chapters and books
 
 A program can be split over several files. A **chapter** is a file `<name>.english`, and a **book** is a folder of chapters.
@@ -1618,8 +1864,8 @@ This chapter shares nothing.
 **Finding the file.**
 
 - `Use the calendar chapter.` reads `calendar.english` in the same folder as the file that says it.
-- `Use the calendar chapter of the almanac book.` reads `almanac/calendar.english`, where the folder `almanac` is in the same folder as the file that says it.
-- Nothing else is searched. A chapter in a book uses the other chapters of its book with the first form. It cannot reach another book, nor a chapter outside its own folder.
+- `Use the calendar chapter of the almanac book.` reads `almanac/calendar.english`, where the folder `almanac` is in the same folder as the file that says it, or, if there is none there, in the same folder as the program that was run. So a chapter in one book can use another book that sits beside the program. If there is a folder of that name in both places, the sentence is refused, naming both.
+- Nothing else is searched. A chapter in a book uses the other chapters of its book with the first form.
 - A name is one or more words of letters only. In the file's name the words are written in lower case and joined by underscores: `Use the roman numerals chapter.` reads `roman_numerals.english`. A path, a dot or a slash can't be written.
 - Files are read as UTF-8. A chapter that is not there is refused at the `Use` sentence, and the message gives the file that was looked for and the chapters that are there.
 
@@ -1649,7 +1895,7 @@ Say the month title of 3.                      #> March
 
 ```refused
 Use the numerals chapter of the almanac book.
-Let the roman be "MMXXVI".
+Let the roman be "MMXXVI"
 ```
 
 **What a file may say.** In a file, a name may be used if it was defined in that file, or in a chapter that this file itself uses, and that chapter shares it. What a chapter uses is not passed on: a file that wants a chapter's words uses that chapter itself.
@@ -1674,7 +1920,7 @@ Use the numerals chapter of the almanac book.
 Use the feasts chapter of the almanac book.
 
 Say the roman of 1666.                         #> MDCLXVI
-Say the reading of "MMXXVI".                   #> 2,026
+Say the reading of "MMXXVI"                    #> 2,026
 Say the number of wintry feasts.               #> 3
 Say the falling of Michaelmas for 2027.        #> Wednesday
 For example, Michaelmas's month is 9.
@@ -1713,7 +1959,7 @@ Each problem is marked the way a teacher marks a paper:
 ```text
 Spelling (line 14):
 
-    Say "{the number of dragns}".
+    Say "{the number of dragns}"
                         ^^^^^^
                         dragons
 
@@ -1750,20 +1996,25 @@ A sentence of a library that can't be read is reported at the program's `Use` se
 
 A sentence that starts the way another programming language would, or that uses one of its symbols, is refused with a note on how EnglishScript says it. A suggested sentence repeats the writer's own words only where it is certain to be accepted: a quoted text, a number or money, or a new name where any name will do. Anywhere else it leaves a gap, `...`, to fill in. A few of them:
 
-| Written | Advice |
-|---|---|
-| `print("Hello")`, `show x`, `display x` | `Say "Hello".` |
-| `x = 5`, `var x = 5` | `Let x be 5.`, or `Set x to 5.` if `x` already exists |
-| `Smaug is 771 years old.` | a sentence starts with a verb: `Let the age be 771.` makes a variable, `Set Smaug's age to 771.` changes a property |
-| `else:`, `else if ...:`, `elif ...:` | `Otherwise:`, `Otherwise if ...:` |
-| `return x` | `The answer is x.` inside `To work out` |
-| `If ... then` | end the condition with a colon |
-| `for x in ...:`, `for i = 1 to 10:` | `For each x in ...:`, `Repeat 10 times:` |
-| `end if`, `endif`, `}` | nothing: a block ends where the indentation ends |
-| `break`, `continue`, `exit` | `Stop repeating.`, `Skip this round.`, `End the program.` |
-| `==`, `!=`, `&&`, `\|\|`, `!` | `is`, `is not`, `and`, `or`, `not` |
-| `true`, `false`, `null` | `yes`, `no`, `nothing` |
-| `'single quotes'`, `;` | `"double quotes"`, one sentence per line |
+| Written | What the mark says | What it offers |
+|---|---|---|
+| `print("Hello")`, `show x`, `display x` | EnglishScript shows things with "Say", not "print". | `Write: Say "Hello".` |
+| `x = 5` | A sentence starts with a verb, so a variable is made with "Let". | `Write: Let x be 5.`, and `Set x to ...` to change it later |
+| `var x = 5`, `int x = 5` | A variable is made with "Let", and needs no type word. | `Write: Let x be 5.` |
+| `Smaug is 771 years old.` | A sentence starts with a verb, so a fact can't be stated on its own. | `Let the age be 771.` for a variable, `Set Smaug's age to 771.` for a property, `Now Smaug is sleepy.` for a stored adjective |
+| `else:` | EnglishScript writes "else" as "Otherwise". | `Otherwise:`, straight after the If block |
+| `else if ...:`, `elif ...:` | EnglishScript writes "else if" as "Otherwise if". | `Otherwise if ...:` |
+| `return x` | "return" isn't part of EnglishScript. | `The answer is ...` inside `To work out`, or `Stop.` to leave a verb |
+| `If ... then` | EnglishScript doesn't use "then". | end the condition with a colon |
+| `for x in ...:` | A loop over things is written "For each". | `For each x in ...:` |
+| `for i = 1 to 10:` | EnglishScript has no counting loop of this kind. | `Repeat 10 times:`, with a variable to count |
+| `end if`, `endif` | "end if" isn't needed in EnglishScript. | nothing: a block ends where the indentation ends |
+| `}` | EnglishScript doesn't use "}" outside quotes. | nothing: a block ends where the indentation ends |
+| `break`, `continue`, `exit` | "break" isn't part of EnglishScript. | `Stop repeating.`, `Skip this round.`, `End the program.` |
+| `==`, `!=`, `&&`, `\|\|`, `!` | EnglishScript doesn't use "==". | `is`, `is not`, `and`, `or`, `not` |
+| `true`, `false`, `null` | EnglishScript has no "true". | `yes`, `no`, `nothing` |
+| `'single quotes'` | Text goes between double quotes, not single ones. | `"double quotes"` |
+| `;` | EnglishScript doesn't use ";". | one sentence per line |
 
 These are only advice: such sentences are still refused. A word the program has given a meaning of its own is never treated this way.
 
@@ -1775,6 +2026,17 @@ print("Hello")
 Let the total be 1.
 the total = 2.
 ```
+
+### Following a run
+
+```text
+python -m englishscript my_program.english --trace
+```
+
+- Says each sentence as it is carried out, on the error stream, with its file (for a chapter or a library) and line, indented by how deep it is: the blocks it is in, and the verbs, worked-out values and reactions being carried out.
+- The `Whenever` sentence of a reaction is said when the reaction is set off, with what set it off: `(because Robin became broke)`. A settled block is said with `(because everything settled after line 12)`.
+- What happens in an event that a library brings in (section 9.4), such as a click, is traced in the same way.
+- `Program.run(out, ask, trace=fn)` gives a library, a page or a tool the same thing as data: `fn(depth, file, line, sentence, cause)` before each sentence, where `file` is `None` for the program's own file and `cause` is `None` except as above. Without a trace, a run does nothing extra.
 
 ### The linter
 
@@ -1799,6 +2061,22 @@ python -m englishscript my_program.english --lint --json
 - With `--json`, the problems are printed as a list of objects with the fields `line`, `col`, `width`, `kind` (`"error"` or `"warning"`), `message`, `hint`, `sentence`, `file` (the file of a chapter, or `null` for the file being linted), `category` (`"spelling"`, `"punctuation"`, `"capitals"`, `"grammar"`, `"vocabulary"`, `"meaning"`, `"kinds"`, `"layout"`, `"borrowed"`, `"style"` or `"running"`), `rule` (the rule to remember), `see` (the section of this document, such as `"4.1"`) and `fix`. `fix` is `null`, or, when the correction is certain, `{"line": <number>, "text": <the whole line as it should be>}`; the line may be another one than the problem's, as when the sentence under an empty block should be indented. A fix is only ever offered, never applied.
 - It ends with a tally, such as `2 things to mend: 1 of vocabulary, 1 of kinds of value. 1 suggestion.`, or `Nothing to mend: every sentence reads one way.`, and with status 1 if there is an error, and 0 otherwise, warnings included.
 
+### For tools
+
+An editor, a language server or a page can use the compiler from Python:
+
+| Call | Gives |
+|---|---|
+| `englishscript.lint(source, folder=None, name=None)` | the list of problems, as above |
+| `lint(..., notes=True)` | `(problems, notes)`: the notes are `(line, text)`, how each sentence was read (as `--explain` shows it), for every line of the file that has no error, so one mistake does not hide the explanations of the good lines |
+| `englishscript.names(source, folder=None, name=None)` | the table of names: `{"names": [...], "chapters": [...]}`. Each name has `name`, `what` (`kind`, `plural of a kind`, `property`, `worked-out property`, `thing`, `adjective`, `verb`, `worked-out value`, `variable`, `role`, `reaction`, `set of choices` or `choice`), `of` (the kind it belongs to, or the set of a choice), `file` (`None` for the file itself), `line`, `col` and `width` of where it is defined. Each chapter has `file`, `name` and `shares` (a list, or `None` for everything). A program with errors gives what its readable sentences define. |
+| `read=fn` (to `lint`, `names` and `compile_source`) | `fn(path)` gives the text of a chapter that is open and unsaved, or `None` to read the file from the disk |
+| `englishscript.KEYWORDS` | the reserved words of section 3 |
+| `englishscript.CATEGORIES`, `CATEGORY_HEADINGS`, `RULES` | the categories of mistake, their headings (`"Spelling"`), and the rules with their sections |
+| `englishscript.__version__` | the version of the compiler |
+
+A `fix` is always the line as it was written, curly quotes and comment included, with only what the correction is about changed.
+
 ## 11. Grammar summary
 
 Words in capitals are names from the program's own vocabulary. Quoted words are written as shown, in any capitalisation.
@@ -1807,7 +2085,9 @@ Words in capitals are names from the program's own vocabulary. Quoted words are 
 sentence    = definition | action | block-opener
 
 definition  = kind | thing | adjective | stored-adj | property | rule | verb | work-out
-            | reaction | settled | library | chapter | shares | choices   (top level only)
+            | reaction | settled | library | chapter | shares | choices | keep   (top level only)
+keep        = "Keep each" KIND "'s" PROPERTY "as" whole "." | "Keep" THING "'s" PROPERTY "as" whole "."
+            | "Keep each" KIND ADJECTIVE "when" condition "."
 choices     = article NAME "is one of" CHOICE { "," CHOICE } [ "," ] "or" CHOICE "."
 kind        = article KIND [ "(" "plural" WORD ")" ] "has" field { sep field } "."
 field       = article NAME "(" type ")"
@@ -1861,7 +2141,7 @@ new-thing   = article "new" { ADJECTIVE } KIND [ "called" expression ] [ whose {
 remove      = "Remove" expression "."
 ask         = "Ask" expression "and let" [ "the" ] NAME "(" type ")" "be the reply" "."
 write       = ( "Write" | "Add" ) expression "to the file" value "."
-fail        = "Fail because" expression "."
+fail        = "Fail because" expression "." | "Fail again."           (Fail again: inside If that fails)
 
 block-opener = "If" condition ":"
             | "Otherwise if" condition ":"
@@ -1871,10 +2151,12 @@ block-opener = "If" condition ":"
             | "Repeat" expression "times" ":"
             | "While" condition ":"
             | "Try" ":"                                                (followed by "If that fails:")
-            | "If that fails" ":"
+            | "If that fails" ":"                                      (perhaps followed by "Either way:")
+            | "Either way" ":"
 
 condition   = test { "and" test } | test { "or" test }
 test        = "not" test | "(" condition ")" | expression comparison
+            | "the problem is" [ "not" ] article PROBLEM-KIND             (inside If that fails)
 comparison  = ( "is" | "are" ) [ "not" ] tail
             | "has" article PROPERTY | "has no" PROPERTY
             | ( "=" | "<" | ">" | "<=" | ">=" ) expression
@@ -1940,6 +2222,7 @@ Sentences still happen one after another unless the program says otherwise. Ther
 This adds a type, `time`, which can be used in brackets like any other type.
 
 - The number is written out: `3 seconds`, `0.5 seconds`, `1 minute`. To get a time from a value, multiply: `the count * 1 second`.
+- The unit words are recognised only straight after a number written out, so `second`, `minute` and the rest stay free for names (`the second guess`).
 - A time is said in seconds: `1 second`, `90 seconds`.
 
 | Operation | Allowed | Result |
@@ -2040,7 +2323,7 @@ What remains belongs to the rest of this section: with strands, a reaction is ca
 
 **1. Work changes hands only at a wait.** Between one `Wait` and the next, a strand's sentences are carried out without interruption. No strand ever sees a change half made, and a `never` or `always` rule cannot be caught in between.
 
-**2. "At the same time" is a promise that order doesn't matter, and the compiler checks it.** For each strand, the compiler works out what it reads and what it changes, following the verbs it uses. Two strands conflict when one changes something the other reads or changes. A conflict is refused before the program runs.
+**2. "At the same time" is a promise that order doesn't matter, and the compiler checks it.** For each strand, the compiler works out what it reads and what it changes, following the verbs it uses. Two strands conflict when one changes something the other reads or changes. A strand's changes include everything they set off: the reactions to them (section 9.5), with what those change in turn, and the kept values (section 9.5) that are worked out again because of them. A conflict is refused before the program runs.
 
 ```text
 At the same time:
@@ -2070,7 +2353,7 @@ Saying is not a conflict. Lines are said in the order they happen, which rule 5 
 
 ### 12.8 New words and grammar
 
-These words would become reserved: `wait` `until` `every` `same` `time` `second` `seconds` `minute` `minutes` `hour` `hours`. (`whenever` and `becomes` already are.)
+No word would become reserved (section 3: the list is frozen). `Wait`, `Wait until`, `Every ... until` and `At the same time` are recognised at the start of a sentence, `at the same time` at the end of a `For each` heading, `time` only in brackets as a type, and the unit words only straight after a number written out.
 
 ```text
 type         = ... | "time"
@@ -2178,7 +2461,7 @@ A stored adjective works in `Whenever` (section 9.5). One part waits for another
 ```text
 Let the scores be a list of 3, 8 and 5.
 Say the largest of the scores or else 0.       #> 8
-Say the scores in order joined with ", ".      #> 3, 5, 8
+Say the scores in order joined with ", "       #> 3, 5, 8
 ```
 
 ### 13.8 Naming a loop's thing
@@ -2197,12 +2480,13 @@ the first | last <number> <group>
 
 - A pick of one thing is `if any`, because the group may be empty (section 13.1).
 - `first` and `last` go by the order things were created, unless the group is put `in order of` a property.
+- `first`, `last`, `largest` and `smallest` are recognised only in these phrases (after `the`, before a group or `of`), as `the first of <list>` already is (section 2), so they stay free for names.
 - `in order of` puts the smallest first, or the alphabetically first for text. Things that tie stay in the order they were created.
 - **When two things tie for largest or smallest, the one created first is picked.**
 - `the first <number> <group>` gives a list, which may be shorter than asked.
 - An ordered group may be used in `For each`.
 
-A superlative can be given a name in the glossary:
+A superlative can be given a name of its own:
 
 ```text
 The <word> <kind> is the one with the largest | smallest <property>.
@@ -2368,7 +2652,7 @@ A | An <kind> [(plural <word>)] is a kind of <kind>.
 
 - The new kind has every property, adjective, worked-out property and rule of the kind it extends. It may add its own with further sentences, but may not redefine any.
 - It can be used wherever the wider kind is expected: as a role, in a property, and in the wider kind's groups.
-- There is a built-in kind, `thing`, that every kind extends. `A ghost is a kind of thing.` describes a kind with no properties.
+- There is a built-in kind, `thing`, that every kind extends. `A ghost is a kind of thing.` describes a kind with no properties. `thing` and `kind` would be recognised only in `is a kind of`, in brackets as a type and in `is a <kind>`, so they stay free for names.
 - Inside an `If` whose condition is `<thing> is a <kind>`, the thing counts as that kind.
 
 ```text
@@ -2408,15 +2692,12 @@ Section 12 stands as written. These points join the two:
 - `Stop repeating.` and `Skip this round.` apply to `Every` as they do to `Repeat` and `While`.
 - For the conflict rule (12.7), creating or removing a thing counts as changing every group of its kind, and `Add` to or `Remove` from a list counts as changing the list.
 - A `Try` inside a strand undoes only that strand's changes. The conflict rule already guarantees that no other strand touched them.
-- `time` is a measure (section 13.14), and `Now <thing> is <adjective>.` can set off a `Whenever`.
+- `time` is a measure (section 13.14).
+- For the conflict rule, a strand's changes include the reactions they set off and the kept values worked out again because of them (section 12.7).
 
 ### 13.19 New words and grammar
 
-The words reserved by the parts already built are in section 3. These would become reserved as well, in addition to those in section 12.8:
-
-`item` `first` `last` `largest` `smallest` `average` `larger` `smaller` `thing` `kind` `unit`
-
-Until then, `first` and `last` are recognised only in `the first <number> letters of` and `the last <number> letters of`. The other words in the new forms, such as `rounded`, `nearest`, `remainder`, `order`, and those of section 5.6, are recognised only inside their phrases. They stay free for use in names.
+No word would become reserved: the list in section 3 is frozen. Every word of these forms is recognised by where it stands, as `item`, `first`, `last`, `larger`, `smaller`, `rounded` and the rest already are in the forms that have been built: `unit` only in `is a unit of`, `moment` only in brackets as a type, `average`, `largest` and `smallest` only after `the` and before `of` or a group, a month's name only between a day and a year (`19 November 2026`), and `order` only in `in order` and `in reverse order`. Each stays free for names elsewhere.
 
 The grammar still to be built, beyond section 11:
 
@@ -2430,7 +2711,6 @@ unit         = article UNIT { "(" unit-note ")" } "is a unit of" MEASURE "."
              | article UNIT { "(" unit-note ")" } "is" NUMBER UNITS "."
 unit-note    = "plural" WORD | "written" SYMBOL
 kind-of      = article KIND [ "(" "plural" WORD ")" ] "is a kind of" KIND "."
-kind         = article KIND [ "(" "plural" WORD ")" ] "has" field { sep field } "."
 verb         = "To" VERB-WORD { VERB-WORD } [ role ] { PREPOSITION role } ":"
 
 test         = ... | "there is" ( article | "no" ) singular-group
@@ -2453,7 +2733,7 @@ group        = ... | group "in order of" PROPERTY | group "in reverse order of" 
 Sections 12 and 13 settle most of what used to be listed here. These remain open.
 
 **Programs**
-- Chapters and books (section 9.6) leave one limit: a file can reach only the chapters beside it and the books in its own folder, so a chapter in one book cannot use another book.
+- Chapters and books (section 9.6) reach only the chapters beside a file, and the books beside it or beside the program: there is no shelf of books shared by programs.
 - Chance: a number or a thing picked at random.
 - Rules that span several things, rules about worked-out properties or adjectives, and rules that read a variable that can change. Today a rule may read only values written out, variables made with `always`, and its own thing's stored properties (section 4.5), because it is checked only when that thing's stored properties change; a rule that read anything else could be broken without anyone noticing. Checking such rules would mean finding, after every change, every rule whose answer that change could alter.
 - Lookup tables from one value to another. Today the nearest thing is finding a thing by its name.

@@ -70,6 +70,7 @@ The argument at length is **[the treatise](https://monstercameron.github.io/Engl
 | **[The treatise](https://monstercameron.github.io/EnglishScript/)** | The argument for the language, with examples that run where they stand, and a chapter on agents and what a program means. |
 | **[The playground](https://monstercameron.github.io/EnglishScript/playground.html)** | An editor that marks your program as a teacher would, with corrections you can accept, twenty-three examples and a list of how to say things. |
 | **[A page](https://monstercameron.github.io/EnglishScript/todo.html)** | A to-do list for the web written in EnglishScript, as a book of four chapters, with its files and the things behind the page shown beside it. |
+| **[The opposition](https://monstercameron.github.io/EnglishScript/opposition.html)** | Seventy years of programming in English, from FLOW-MATIC to Inform 7, and the new languages that ask a model: what each did with a sentence that could mean two things, and what EnglishScript should borrow or fear. |
 | **[Compared](https://monstercameron.github.io/EnglishScript/compare.html)** | The same programs in JavaScript and in Java, and where the three part company. |
 | **[The grammar](https://monstercameron.github.io/EnglishScript/reference.html)** | Every sentence the compiler accepts. Its examples run in the page, and the test suite runs them too. |
 | **[The machinery](https://monstercameron.github.io/EnglishScript/how.html)** | How a compiler written in Python runs in a browser, and what that costs. |
@@ -97,6 +98,8 @@ python -m englishscript examples/invoices.english
 | `--check` | Compiles only. |
 | `--lint` | Lists every problem at once, with advice and warnings, and runs nothing. The exit status is 1 if there is an error. |
 | `--lint --json` | The same, as data, for an editor or an agent. |
+| `--test` | Carries the program out with nothing said, asked or written, and reports every `For example`, going on past one that does not hold. |
+| `--trace` | Says each sentence as it is carried out, indented by depth, and what set off each reaction. |
 
 From Python, `englishscript.compile_file(path).run()` runs a program and `englishscript.lint(source)` gives its problems as a list.
 
@@ -118,7 +121,7 @@ The full reference is [docs/SYNTAX.md](docs/SYNTAX.md). In brief:
 | State a rule | `A knight's purse is never less than $0.` |
 | Make a thing | `There is a dragon called Smaug whose age is 771.` |
 | Make, find and remove things while running | `There is a new task called the title whose position is 1.`, `Let the chick be a new dragon whose age is 0.`, `the dragon called "Smaug"`, `Remove the task.` |
-| Teach a verb | `To send a knight against a dragon:` |
+| Teach a verb | `To send a knight against a dragon:`, and the same word in another shape, `To send a sum (money) to a knight:` |
 | Use a verb | `Send Gawain against Smaug.` |
 | Variables | `Let the total be 0.` then `Set`, `Add ... to`, `Subtract ... from`, `Multiply ... by`, `Divide ... by` |
 | Fixed variables | `Let the tax rate always be 10%.` |
@@ -137,8 +140,9 @@ The full reference is [docs/SYNTAX.md](docs/SYNTAX.md). In brief:
 | Lists | `Let the scores be a list of 3, 8 and 5.`, `an empty list of numbers`, `Add 10 to the scores.`, `item 2 of the scores`, `Set item 2 of the scores to 9.`, `the total of the scores`, `the names joined with ", "`, `If 10 is in the scores:`, and as a property, `a shelf (list of treasures)` |
 | Arithmetic | `the remainder of 17 divided by 5`, `17 rounded up to the nearest 5`, `2 raised to the power of 10`, `the square root of 81`, `the larger of $5 and $8`, `the absolute value of -4` |
 | A fixed set of choices | `A mood is one of sleepy, grumpy or content.` then `a mood (mood)` |
-| Recover from a problem | `Try:` then `If that fails:` with `the problem`; `Fail because "..."` |
+| Recover from a problem | `Try:` then `If that fails:` with `the problem`, and `Either way:` for what must be done in any case; `Fail because "..."`, `Fail again.`; `If the problem is a broken rule:` |
 | React to a change | `Whenever a knight becomes broke:`, `Whenever Adder becomes pressed:`, `Whenever a card becomes not ticked:`, and once when a turn is over, `Whenever everything has settled:` |
+| Keep something true | `Keep Tally's wording as "{the number of open cards} left".`, `Keep each card's order as the standing of the card.`, `Keep each card hidden when the card is ticked.` |
 | Use a library | `Use the vulkan library.`, `Use the page library.` |
 | Use another file | `Use the calendar chapter.`, `Use the calendar chapter of the almanac book.`, and in the chapter, `This chapter shares only leapness and weekday.` |
 | Test | `For example, the hoard of Smaug is $12,000.` |
@@ -164,7 +168,7 @@ Types are `number`, `money`, `text`, `percent`, `yes or no`, any kind you descri
 | `examples/invoices.english` | The same structures in a business setting. |
 | `examples/tournament.english` | Values that may be missing, worked-out values, and leaving early. |
 | `examples/todo.english` | A to-do list at the command line that saves to a file: asking, files, `Try`, making and removing things. |
-| `examples/web_todo.english` | A to-do list for the web, with tags, stars, editing in place, finding, and putting back what was removed. Its work is divided among four chapters of the book in `examples/tasks/`. |
+| `examples/web_todo.english` | A to-do list for the web, with tags, stars, editing in place, finding, and putting back what was removed. Its work is divided among four chapters of the book in `examples/tasks/`, and what the page shows is kept true by sentences beginning `Keep`. |
 | `examples/almanac.english` | A program put together from the chapters of a book: `examples/almanac/` holds a calendar, Roman numerals and the feasts of the year. |
 | `examples/web_almanac.english` | The same chapters set out as a web page: a menu of years, a table of feasts and a link. |
 | `examples/web_counters.english` | Three counters on one page, built by one verb: how to make several of something, and keep what a program is about apart from how it is shown. |
@@ -200,7 +204,6 @@ Types are `number`, `money`, `text`, `percent`, `yes or no`, any kind you descri
 - **Lists cannot yet be put in order.** They can be written out, added to, indexed and changed, but not sorted, said whole or compared.
 - **Several features are designed but not built:** dates and the clock, units, picking and ordering within a group, a kind that is a kind of another, and doing things at the same time. Sections 12 and 13 of [docs/SYNTAX.md](docs/SYNTAX.md) give each a syntax.
 - **Plurals are formed by rule** ("dragons", "ponies", "foxes"). An irregular one is not guessed: it has to be stated where the kind is described, as in `A child (plural children) has ...`.
-- **A book is found only beside the file that uses it.** A chapter can use the other chapters of its own book, and not yet a book that sits beside its own.
 - **The libraries are small.** `page` has thirteen kinds of element, among them tables, menus, pictures and links, and stops there. `vulkan` has run on one computer and draws off screen to a file.
 
 Where the design will strain has been looked at properly. Forty-two concerns were measured against the compiler one by one, and an adversarial review of the reference found twenty-four more things to settle. The verdicts, the figures and what matters most are in **[docs/CONCERNS.md](docs/CONCERNS.md)**.

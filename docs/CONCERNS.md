@@ -48,7 +48,22 @@ Two more things were built on the way, because the measurements asked for them.
 
 Adding the new kinds of element brought one of the other concerns to life at once. The library now has a kind called `row`, and a chapter written long before had a role called `row`. A program that used both was refused, though the chapter cannot even say the library's word. The check was wrong and has been put right: a name is judged only against what its own file may say. It is the clearest case so far for why names need to be private.
 
-**Still to do**, in the order it will be done: kinds of problem and a block that always runs after a `Try`; a way to run a program's examples on their own, and a trace of what set off what; properties kept equal to an expression; a verb with more than one shape; a book found beside the program; and the places where the reference is silent or says the wrong thing. Not planned: doing things at the same time, anything that waits, writing things out whole, and loading libraries from outside the compiler.
+**Then the rest.** After the ten, everything else in the three reviews that the compiler or the reference could answer was done. `tools/research/last_fixes.py` checks each.
+
+| What was asked for | What there is now |
+|---|---|
+| Kinds of problem, and something that always runs | `If the problem is a broken rule:` and nine other kinds; `Fail again.` passes a problem on unchanged; `Either way:` after a `Try` is carried out whether it failed or not. |
+| Running a program's examples on their own | `--test` carries the program out with nothing said, asked or written, reports every `For example`, and goes on past one that does not hold. |
+| Seeing what set off what | `--trace` says each sentence as it is carried out, and names what a reaction was set off by. A library or a page can have the same thing as data. |
+| Reactive dependencies | `Keep Tally's wording as ...`, `Keep each card's order as ...` and `Keep each card hidden when ...`. The to-do list now has no tidying verb at all: `examples/tasks/showing.english` is a list of things kept. |
+| A verb with more than one shape | `To send a knight against a dragon:` and `To send a sum (money) to a knight:` may both be taught. Two shapes with the same linking words are still refused. |
+| A book beside the program | A book is looked for beside the file that uses it and then beside the program, and refused if it is in both places. |
+| The reference silent or wrong | The reserved words are frozen and stated; what `as a number` accepts, how names are matched, how text is ordered, and what a worked-out value may read are all stated; the terms are defined once. A name may use any alphabet. A number with a misplaced comma, a lone `}` and a quotation mark inside a fill-in are refused. |
+| What tools needed from the compiler | `lint(..., notes=True)`, `englishscript.names(...)`, the reserved words and the version number are public, and a chapter that is open and unsaved in an editor can be handed over. |
+
+**Not done, and why.** Whole numbers are still kept as exact fractions inside the compiler. Keeping them as integers would make arithmetic several times faster, but every place that divides would have to be checked, and libraries are promised fractions. It was judged not safe to do in passing. The SHA-256 and sorting examples still work round lists and remainders that the language now has.
+
+**Not planned.** Doing things at the same time, anything that waits, writing things out whole, a kind that is a kind of another, and loading libraries from outside the compiler. Each is a decision recorded in the tables below, not an oversight.
 
 The tables below are the reviews as they were first written, before any of this. They are kept as the record of what was found.
 
@@ -242,6 +257,7 @@ python tools/research/probes.py .             small programs, one for each claim
 python tools/research/more_probes.py .        a few more, and the compile time of each example
 python tools/research/review_blockers.py .    the four blockers of the adversarial review
 python tools/research/later_fixes.py .        private names, lists, the index, arithmetic and choices
+python tools/research/last_fixes.py .         kinds of problem, kept values, verb shapes, test and trace
 python tools/research/page_events.py .        what one click costs on the to-do page, and what a failure leaves
 python tools/research/page_where_time_goes.py .   which functions one tick spends its time in
 ```

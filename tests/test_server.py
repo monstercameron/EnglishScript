@@ -551,9 +551,30 @@ class Symbols(unittest.TestCase):
             ("dragon", 5), ("ancient", 17), ("Smaug", 19), ("Norbert", 19), ("greet", 6), ("total", 13),
             ("asleep", 17), ("Whenever a dragon becomes asleep", 24)])
         more = self.symbols("Let the tax rate always be 10%.\n"
-                            "To work out the bounty (money) for a dragon:\n  The answer is $5.\n"
-                            'Ask "Age?" and let the age (number) be the reply.\n')
-        self.assertEqual([(s["name"], s["kind"]) for s in more], [("tax rate", 14), ("bounty", 12), ("age", 13)])
+                            "To work out the bounty (money) for a size (number):\n  The answer is $5.\n"
+                            'Ask "Age?" and let the age (number) be the reply.\n'
+                            "A mood is one of sleepy, grumpy or very cross.\n"
+                            "Whenever everything has settled:\n  Say the age.\n")
+        self.assertEqual([(s["name"], s["kind"], [c["name"] for c in s.get("children", [])]) for s in more],
+                         [("tax rate", 14, []), ("bounty", 12, []), ("age", 13, []),
+                          ("mood", 10, ["sleepy", "grumpy", "very cross"]),
+                          ("Whenever everything has settled", 24, [])])
+
+    def test_the_outline_is_the_compilers_own_table_of_names(self):
+        """Where the compiler has a table of names, the outline is that table, not a guess from the text."""
+        text = ("A dragon has an age (number).\n"
+                "To work out the bounty (money) for a dragn:\n  The answer is $5.\n"  # refused: no kind "dragn"
+                "There is a dragon called Smaug whose age is 771.\n")
+        table = englishscript.names(text)
+        self.assertEqual([n["name"] for n in table["names"]], ["dragon", "age", "Smaug"])
+        self.assertEqual([s["name"] for s in self.symbols(text)], ["dragon", "Smaug"])
+        # Without the table, the sentence forms are read instead, and they take the refused sentence at its word.
+        with mock.patch.object(englishscript, "names", side_effect=RuntimeError("no table today")):
+            self.assertEqual([s["name"] for s in self.symbols(text)], ["dragon", "bounty", "Smaug"])
+        with mock.patch.object(englishscript, "names", None):
+            self.assertEqual([s["name"] for s in self.symbols(text)], ["dragon", "bounty", "Smaug"])
+        with mock.patch.object(englishscript, "names", lambda *args, **more: {"names": [], "chapters": []}):
+            self.assertEqual([s["name"] for s in self.symbols(text)], ["dragon", "bounty", "Smaug"])
 
     def test_a_text_that_is_not_a_program(self):
         self.assertEqual(self.symbols(""), [])
@@ -664,21 +685,28 @@ class Completion(unittest.TestCase):
         """Each form, filled in with its own examples, in a world that has the words they use."""
         world = ("A dragon has an age (number).\nThe hoard of a dragon is $5.\nA knight has a purse (money).\n"
                  "A task has a size (number).\nA task can be done.\nA knight is broke when its purse is $0.\n"
-                 "There is a task called Chore whose size is 1.\nLet the total be 0.\n")
-        if [p for p in lint(world) if p["kind"] == "error"]:
-            self.skipTest("the compiler does not read this test's own program at the moment")
+                 "There is a task called Chore whose size is 1.\nLet the total be 0.\n"
+                 "A card has a wording (text) and a line (text).\nA card can be open.\nA card can be done.\n"
+                 'There is a card called Milk whose wording is "milk" and whose line is "".\n'
+                 'Let the heading be "- milk".\nLet the scores be a list of 1 and 2.\n')
+        self.assertEqual([p for p in lint(world) if p["kind"] == "error"], [])
+        after_a_try = "Try:\n  Say 1.\nIf that fails:\n  Say 2.\n" + serving.plain_snippet(
+            next(snippet for label, snippet, _, _ in serving.OPENERS if label == "Either way:")) + "Say 3.\n"
+        self.assertEqual([p for p in lint(after_a_try) if p["kind"] == "error"], [])
         refused = []
         for label, snippet, where, _ in serving.OPENERS:
             sentence = serving.plain_snippet(snippet)
             self.assertNotIn("$", sentence.replace("$0", "").replace("$5", ""), label)
             if where == "block" or sentence.startswith(("Otherwise", "Use the", "This chapter", "Try:", "Ask ", "Write ",
                                                         "Add the total to the file", "There is a dragon called",
-                                                        "A dragon has")):
+                                                        "A dragon has", "Either way")):
                 continue  # needs a sentence before it, a file, or words this world has already
             if sentence.endswith(":\n  "):
                 sentence += "Say 1."
             sentence = {"Remove the task.": "Remove Chore.", "Now the task is done.": "Now Chore is done.",
                         "Let the total be 0.": "Let the tally be 0.", "A task can be done.": "A task can be late.",
+                        "Let the scores be a list of 3, 8 and 5.": "Let the marks be a list of 3, 8 and 5.",
+                        "Let the scores be an empty list of numbers.": "Let the blanks be an empty list of numbers.",
                         "For each rival in dragons:\n  Say 1.": "For each rival in dragons:\n  Say the rival.",
                         "A dragon is ancient when its age is at least 500.": "A dragon is old when its age is at least 500.",
                         "The tax of a dragon is 10% of its hoard.": "The levy of a dragon is 10% of its hoard.",
@@ -858,6 +886,170 @@ class StatedPlurals(unittest.TestCase):
         # A kind whose plural is formed by rule is still renamed from its plural.
         ruled = self.editor.place(self.uri, "of dragons", 5)
         self.assertEqual(self.editor.request("textDocument/prepareRename", ruled)["placeholder"], "dragon")
+
+
+class AnyAlphabet(unittest.TestCase):
+    """Names in any alphabet (section 3), and columns in UTF-16 around them."""
+
+    SAGA = ("A drağon has a länge (number).\n"
+            "An élan is one of été, hiver or très froid.\n"
+            "There is a drağon called Fáfnir whose länge is 771.\n"
+            "There is a drağon called 𝒜lpha Ωmega whose länge is 1.\n"
+            "Let the Überzahl be 2.\n"
+            "To grüß a drağon:\n"
+            '  Say "Grüß {the drağon}: {𝒜LPHA ΩMEGA\'s LÄNGE}, {the überzahl}."\n'
+            "Grüß fáfnir.\n"
+            "Say ÜBERZAHL + 𝒜lpha Ωmega's Länge.\n")
+
+    def setUp(self):
+        self.assertEqual([p for p in lint(self.SAGA) if p["kind"] == "error"], [])
+        self.editor = Editor(SNIPPETS)
+        self.uri = self.editor.open(self.SAGA)
+
+    def test_the_outline(self):
+        symbols = self.editor.request("textDocument/documentSymbol", {"textDocument": {"uri": self.uri}})
+        self.assertEqual([(s["name"], s["kind"], [c["name"] for c in s.get("children", [])]) for s in symbols], [
+            ("drağon", 5, ["länge"]), ("élan", 10, ["été", "hiver", "très froid"]), ("Fáfnir", 19, []),
+            ("𝒜lpha Ωmega", 19, []), ("Überzahl", 13, []), ("grüß", 6, [])])
+        for symbol in symbols:
+            self.assertEqual(cut(self.SAGA, symbol["selectionRange"]), symbol["name"])
+        beyond = symbols[3]["selectionRange"]
+        self.assertEqual(beyond["end"]["character"] - beyond["start"]["character"], len("𝒜lpha Ωmega") + 1)
+
+    def test_definitions_whatever_the_capitals(self):
+        for needle, inside, written, start in (
+                ("{𝒜LPHA ΩMEGA's", 9, "𝒜lpha Ωmega", "There is a drağon called 𝒜lpha"),
+                ("ΩMEGA's LÄNGE", 9, "länge", "A drağon has"), ("{the überzahl}", 6, "Überzahl", "Let the Überzahl"),
+                ("Grüß fáfnir", 1, "grüß", "To grüß"), ("Grüß fáfnir", 7, "Fáfnir", "There is a drağon called Fáfnir"),
+                ("Say ÜBERZAHL", 5, "Überzahl", "Let the Überzahl"), ("{the drağon}", 6, "drağon", "A drağon has")):
+            with self.subTest(needle):
+                found = self.editor.request("textDocument/definition", self.editor.place(self.uri, needle, inside))
+                self.assertEqual(cut(self.SAGA, found["range"]), written)
+                self.assertTrue(self.SAGA.splitlines()[found["range"]["start"]["line"]].startswith(start))
+
+    def test_a_problem_after_a_letter_beyond_the_first_plane(self):
+        text = self.SAGA + "Say 𝒜lpha Ωmega's längee + 𝒜lpha Ωmega's länge.\n"
+        self.editor.change(self.uri, text)
+        problem = next(p for p in lint(text) if p["kind"] == "error")
+        self.assertEqual((problem["line"], problem["col"]), (10, 18))
+        diagnostic = next(d for d in self.editor.published[self.uri] if d["severity"] == 1)
+        self.assertEqual(diagnostic["range"]["start"], {"line": 9, "character": 19})  # the 𝒜 counts twice
+        self.assertEqual(cut(text, diagnostic["range"]), "längee")
+
+    def test_a_rename(self):
+        where = self.editor.place(self.uri, "{𝒜LPHA ΩMEGA's", 9)
+        prepared = self.editor.request("textDocument/prepareRename", where)
+        self.assertEqual(cut(self.SAGA, prepared["range"]), "𝒜LPHA ΩMEGA")
+        edits = self.editor.request("textDocument/rename", {**where, "newName": "Sköll"})["changes"][self.uri]
+        self.assertEqual([cut(self.SAGA, e["range"]) for e in edits], ["𝒜lpha Ωmega", "𝒜LPHA ΩMEGA", "𝒜lpha Ωmega"])
+        self.assertEqual(apply(self.SAGA, edits), renaming.rename(self.SAGA, "𝒜lpha Ωmega", "Sköll"))
+        self.assertIn("{SKÖLL's LÄNGE}", apply(self.SAGA, edits))
+
+    def test_suggestions(self):
+        text = self.SAGA + "grü"
+        self.editor.change(self.uri, text)
+        items = self.editor.request("textDocument/completion", self.editor.end_of(self.uri, "\ngrü"))
+        self.assertEqual({cut(text, item["textEdit"]["range"]) for item in items}, {"grü"})
+        self.assertIn("Grüß ${1:drağon}.", [item["textEdit"]["newText"] for item in items])
+        text = self.SAGA + "Say Fáfnir's \nSay the "
+        self.editor.change(self.uri, text)
+        after = [i["label"] for i in self.editor.request("textDocument/completion", self.editor.end_of(self.uri, "Say Fáfnir's "))]
+        self.assertIn("länge", after)
+        names = [i["label"] for i in self.editor.request("textDocument/completion", self.editor.end_of(self.uri, "\nSay the "))]
+        for label in ("Fáfnir", "𝒜lpha Ωmega", "Überzahl", "drağon", "drağons", "élan", "très froid"):
+            self.assertIn(label, names)
+
+
+class WhatTheCompilerGives(unittest.TestCase):
+    """The parts of the compiler made for tools: notes beside errors, unsaved chapters, headings, the version."""
+
+    def test_the_version_and_the_headings(self):
+        editor = Editor()
+        self.assertEqual(editor.result["serverInfo"], {"name": "englishscript", "version": englishscript.__version__})
+        for category, heading in englishscript.CATEGORY_HEADINGS.items():
+            self.assertEqual(serving.heading(category), heading)
+            self.assertTrue(Server.problem_text({"category": category, "message": "x"}, False).startswith(heading + "\n"))
+        self.assertEqual(serving.heading("novelty"), "Novelty")
+        with mock.patch.object(englishscript, "CATEGORY_HEADINGS", None):
+            self.assertEqual(serving.heading("kinds"), "Kinds")
+
+    def test_a_good_line_is_explained_though_another_line_is_wrong(self):
+        text = ("A dragon has an age (number).\n"
+                "A dragon is ancient when its age is at least 500.\n"
+                "There is a dragon called Smaug whose age is 771.\n"
+                "Say the number of dragns.\n"
+                "If Smaug is ancient:\n  Say 1.\n")
+        problems, notes = englishscript.lint(text, notes=True)
+        self.assertEqual([p.line for p in problems if p.kind == "error"], [4])
+        by_line = {}
+        for number, note in notes:
+            by_line.setdefault(number, []).append(note)
+        self.assertIn(2, by_line)
+        editor = Editor(PLAIN_HOVER)
+        uri = editor.open(text)
+        for number, said in by_line.items():
+            hover = editor.request("textDocument/hover", {"textDocument": {"uri": uri},
+                                                          "position": {"line": number - 1, "character": 0}})
+            for note in said:
+                self.assertIn(note, hover["contents"]["value"])
+        wrong = editor.request("textDocument/hover", {"textDocument": {"uri": uri}, "position": {"line": 3, "character": 20}})
+        self.assertIn(problems[0].message, wrong["contents"]["value"])
+
+    def test_without_notes_from_the_linter_the_compiler_is_asked(self):
+        text = ("A dragon has an age (number).\nA dragon is ancient when its age is at least 500.\n"
+                "There is a dragon called Smaug whose age is 771.\nIf Smaug is ancient:\n  Say 1.\n")
+        real = englishscript.lint
+
+        def older(source, folder=None, name=None):  # a linter that knows neither `notes` nor `read`
+            return real(source, folder, name)
+
+        with mock.patch.object(englishscript, "lint", older):
+            editor = Editor(PLAIN_HOVER)
+            uri = editor.open(text)
+            hover = editor.request("textDocument/hover", {"textDocument": {"uri": uri}, "position": {"line": 1, "character": 0}})
+        notes = [note for number, note in englishscript.compile_source(text).notes if number == 2]
+        self.assertTrue(notes)
+        for note in notes:
+            self.assertIn(note, hover["contents"]["value"])
+
+    def test_a_chapter_that_is_open_and_unsaved_is_what_is_checked(self):
+        editor = Editor()
+        main = EXAMPLES / "almanac.english"
+        text = main.read_text(encoding="utf-8") + "Say the moon of 3.\n"
+        uri = editor.open(text, main.as_uri())
+        self.assertEqual([d["severity"] for d in editor.published[uri]], [1])  # on the disk, no chapter has a "moon"
+        chapter = EXAMPLES / "almanac" / "calendar.english"
+        saved = chapter.read_text(encoding="utf-8")
+        unsaved = (saved.replace("month title and weekday.", "month title, weekday and moon.")
+                   + '\nTo work out the moon (text) of a month (number):\n  The answer is "moon {the month}".\n')
+        chapter_uri = editor.open(saved, chapter.as_uri())
+        self.assertEqual(len(editor.published[uri]), 1)
+        editor.change(chapter_uri, unsaved)
+        self.assertEqual(editor.published[chapter_uri], [])
+        self.assertEqual(editor.published[uri], [], "told again, now that the chapter it uses shares a moon")
+        found = editor.request("textDocument/definition", editor.place(uri, "Say the moon of 3", 9))
+        self.assertEqual(found["uri"], chapter_uri)
+        self.assertEqual(cut(unsaved, found["range"]), "moon")
+        after_the = {"textDocument": {"uri": uri}, "position": Text(text).position(text.index("moon of 3"))}
+        self.assertIn("moon", [i["label"] for i in editor.request("textDocument/completion", after_the)])
+        editor.notify("textDocument/didClose", {"textDocument": {"uri": chapter_uri}})
+        self.assertEqual(len(editor.published[uri]), 1, "closed without saving: the file on the disk counts again")
+        self.assertEqual(chapter.read_text(encoding="utf-8"), saved)
+
+    def test_a_rename_sees_the_unsaved_chapter_too(self):
+        editor = Editor()
+        main = EXAMPLES / "almanac.english"
+        text = main.read_text(encoding="utf-8")
+        uri = editor.open(text, main.as_uri())
+        chapter = EXAMPLES / "almanac" / "calendar.english"
+        saved = chapter.read_text(encoding="utf-8")
+        editor.open(saved.replace("month title and weekday.", "month title, weekday and moon.")
+                    + '\nTo work out the moon (text) of a month (number):\n  The answer is "new".\n', chapter.as_uri())
+        where = editor.place(uri, "Let the year be", 9)
+        refused = editor.answer("textDocument/rename", {**where, "newName": "moon"})
+        self.assertEqual(refused["error"]["code"], serving.REQUEST_FAILED)  # in use, in the chapter as it is open
+        edits = editor.request("textDocument/rename", {**where, "newName": "annum"})["changes"][uri]
+        self.assertEqual(apply(text, edits), renaming.rename(text, "year", "annum", folder=EXAMPLES))
 
 
 class Pipes(unittest.TestCase):

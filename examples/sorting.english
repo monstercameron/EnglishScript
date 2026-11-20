@@ -1,65 +1,43 @@
 # Sorting and searching.
 #
-# The language has no arrays, so a row of numbers is a row of things, each with
-# a place and a value. Sorting is then swapping values between places.
+# A row of numbers is a list. Sorting it is swapping items that are out of
+# order, and searching it is halving what is left to look through.
 
-A slot has a place (number) and a value (number).
-
-There is a slot called One whose place is 1 and whose value is 42.
-There is a slot called Two whose place is 2 and whose value is 7.
-There is a slot called Three whose place is 3 and whose value is 93.
-There is a slot called Four whose place is 4 and whose value is 18.
-There is a slot called Five whose place is 5 and whose value is 61.
-There is a slot called Six whose place is 6 and whose value is 3.
-There is a slot called Seven whose place is 7 and whose value is 77.
-There is a slot called Eight whose place is 8 and whose value is 25.
-
+Let the row be a list of 42, 7, 93, 18, 61, 3, 77 and 25.
+Let the gap always be " ".
 Let the swaps be 0.
 
+# The number at a place in the row. There is always one where this is used.
 To work out the holding (number) at a spot (number):
-  For each slot whose place is the spot:
-    The answer is the slot's value.
-  The answer is 0.
-
-To put an amount (number) at a spot (number):
-  For each slot whose place is the spot:
-    Set the slot's value to the amount.
+  The answer is item the spot of the row or else 0.
 
 To swap a near (number) with a far (number):
   Let the held be the holding at the near.
-  Put the holding at the far at the near.
-  Put the held at the far.
+  Set item the near of the row to the holding at the far.
+  Set item the far of the row to the held.
   Add 1 to the swaps.
-
-To work out the row (text):
-  Let the line be "".
-  For each slot:
-    Set the line to "{the line}{the slot's value} ".
-  The answer is the line.
 
 # Bubble sort: walk along the row swapping neighbours that are out of order,
 # and stop after a walk that swaps nothing.
 To sort:
-  Let the size be the number of slots.
-  Let settled (yes or no) be no.
-  While settled is no:
-    Set settled to yes.
+  Let the size be the number of items in the row.
+  Let unsorted (yes or no) be yes.
+  While unsorted is yes:
+    Set unsorted to no.
     Let the spot be 1.
     Repeat the size - 1 times:
       If the holding at the spot is more than the holding at (the spot + 1):
         Swap the spot with the spot + 1.
-        Set settled to no.
+        Set unsorted to yes.
       Add 1 to the spot.
 
 # Binary search: look at the middle of what is left, and throw away the half
 # the number cannot be in. It gives the place, or nothing.
 To work out the finding (number, if any) of a wanted (number):
   Let the low be 1.
-  Let the high be the number of slots.
+  Let the high be the number of items in the row.
   While the low is at most the high:
-    Let the middle be the low + the high.
-    If the middle is not divisible by 2:
-      Subtract 1 from the middle.
+    Let the middle be (the low + the high) rounded down to the nearest 2.
     Divide the middle by 2.
     If the holding at the middle is the wanted:
       The answer is the middle.
@@ -69,12 +47,14 @@ To work out the finding (number, if any) of a wanted (number):
       Set the high to the middle - 1.
   The answer is nothing.
 
-Say "Before: {the row}"
+Say "Before: {the row joined with the gap}"
 Sort.
-Say "After:  {the row}"
+Say "After:  {the row joined with the gap}"
 Say "That took {the swaps} swaps."
-For example, the row is "3 7 18 25 42 61 77 93 ".
+For example, the row joined with the gap is "3 7 18 25 42 61 77 93".
 For example, the swaps is 14.
+For example, (the first of the row) or else 0 is 3.
+For example, (the last of the row) or else 0 is 93.
 
 Let the found be the finding of 61.
 If the found is nothing:

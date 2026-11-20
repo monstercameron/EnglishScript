@@ -128,6 +128,18 @@ If an answer runs into a problem, such as a rule that would be broken or a `Fail
 
 After every answer, the library compares the things with the elements and writes only what differs. An element stays the same element for as long as its thing exists, so a box that is being typed in is never rebuilt.
 
+## Keeping the page true
+
+A page usually shows things that follow from other things: a count, a label, which lines are in sight. Those need not be set by hand after every change. The language can keep them (section 9.5 of [the reference](SYNTAX.md)):
+
+```text
+Keep Tally's wording as "{the number of open cards} still to do".
+Keep each card hidden when the showing is "open" and the card is ticked.
+Keep each card's order as the standing of the card.
+```
+
+After every change, each kept value is worked out again and the page follows. What cannot be kept, because it is something to do and not something to be, goes in `Whenever everything has settled:`, which is carried out once however much changed. The to-do list saves itself there.
+
 ## Making several of something
 
 The library has no "component", and does not need one. A kind of your own holds the elements that belong together, and a verb makes them. `examples/web_counters.english` makes three counters this way:

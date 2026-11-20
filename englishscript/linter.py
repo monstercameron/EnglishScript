@@ -96,19 +96,56 @@ def tally(problems):
     return out
 
 
-def lint(source, folder=None, name=None):
+def lint(source, folder=None, name=None, notes=False, read=None):
     """Every problem in `source`: errors the compiler refuses, and warnings.
 
     `folder` is where the chapters it uses are looked for (by default the
     current directory). The problems of a chapter it uses are given as one
-    error at the "Use" sentence; `name` is what to call the file."""
+    error at the "Use" sentence; `name` is what to call the file. `read`, if
+    given, takes a chapter's path and gives its text, or None to read the disk.
+
+    With `notes=True`, gives back (problems, notes) instead: the notes are
+    (line, text), how each sentence that could be read was read, as --explain
+    shows them, for every line that has no error."""
     try:
         with no_digit_limit():
-            return _lint(source, folder, name)
+            problems, compiler = _lint(source, folder, name, read)
     except RecursionError:
-        return [_whole("This program nests more deeply than I can follow.", source)]
+        problems, compiler = [_whole("This program nests more deeply than I can follow.", source)], None
     except Exception as error:  # noqa: BLE001 - the linter must never raise
-        return [_whole(f"The linter could not read this program: {type(error).__name__}: {error}", source)]
+        problems = [_whole(f"The linter could not read this program: {type(error).__name__}: {error}", source)]
+        compiler = None
+    if not notes:
+        return problems
+    wrong = {p.line for p in problems if p.kind == "error" and p.file is None}
+    found = [(line, text) for line, text in (compiler.notes if compiler is not None else ()) if line not in wrong]
+    return problems, found
+
+
+def names(source, folder=None, name=None, read=None):
+    """The table of names of a program, as far as it can be read (through the linter,
+    so a program with errors gives what its good sentences define).
+
+    Returns {"names": [...], "chapters": [...]}. Each name is a dict with "name" (as
+    written), "what" ("kind", "plural of a kind", "property", "worked-out property",
+    "thing", "adjective", "verb", "worked-out value", "variable", "role", "reaction",
+    "set of choices" or "choice"), "of" (the kind an adjective, property or thing
+    belongs to, or the set of a choice, else None), "file" (a chapter's file, or None
+    for the program's own), "line", "col" (from 0) and "width". Each chapter is a dict
+    with "file", "name" and "shares": the names it shares, or None for everything."""
+    try:
+        with no_digit_limit():
+            _, compiler = _lint(source, folder, name, read)
+    except Exception:  # noqa: BLE001 - like the linter, never raises
+        return {"names": [], "chapters": []}
+    table = []
+    for what, written, of, line, col, width in compiler.defined:
+        table.append({"name": written, "what": what, "of": of, "file": chapter_file(line), "line": line.number,
+                      "col": col, "width": width})
+    chapters = [{"file": unit.file, "name": unit.name,
+                 "shares": None if unit.shares is None else [entry[3] for entry in unit.share_at.values()]}
+                for unit in compiler.chapters.values() if unit is not compiler.main]
+    return {"names": table, "chapters": chapters}
 
 
 def _whole(message, source):
@@ -117,9 +154,9 @@ def _whole(message, source):
     return Problem(1, None, 1, "error", message, None, first, None, category, rule, see)
 
 
-def _lint(source, folder=None, name=None):
+def _lint(source, folder=None, name=None, read=None):
     collector = Collector(source)
-    compiler = Compiler(folder, name)
+    compiler = Compiler(folder, name, read)
     layout = []
     lines = read_source(source, problems=layout, unit=compiler.main)
     for error in layout:
@@ -127,7 +164,7 @@ def _lint(source, folder=None, name=None):
     compiler.lint = collector
     compiler.program(lines)
     collector.never_used(compiler)
-    return collector.result()
+    return collector.result(), compiler
 
 
 def chapter_file(line):
@@ -135,7 +172,7 @@ def chapter_file(line):
     return chapter.file if chapter is not None else None
 
 
-WORD = re.compile(r"[a-z][a-z0-9_]*")
+WORD = re.compile(r"[^\W\d_]\w*")
 QUOTED = re.compile(r'"([^"]+)"')
 ARTICLES = ("the", "a", "an")
 NO_ENDING = (NO_PERIOD, NO_COLON)

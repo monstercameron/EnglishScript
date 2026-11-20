@@ -19,6 +19,7 @@
     <a class="page" href="playground.html">The playground</a>
     <a class="page" href="todo.html">A page</a>
     <a class="page" href="compare.html">Compared</a>
+    <a class="page" href="opposition.html">The opposition</a>
     <a class="page" href="reference.html">The grammar</a>
     <a class="page" href="how.html">The machinery</a>
     <a class="page" href="https://github.com/monstercameron/EnglishScript">The source</a>
@@ -125,6 +126,12 @@ Whenever an option becomes picked:
 <p>A card's words are edited by clicking on them. Enter or leaving the words finishes the edit, and Escape gives it up. The words are kept as one line: spaces at the ends are dropped and runs of spaces become one. Leaving the words as they were is not a rewording.</p>
 <p>If an answer runs into a problem, such as a rule that would be broken or a <code>Fail because</code>, everything it changed is put back, as after a failed <code>Try</code>, and the problem is said. That includes what the person did: a box that was ticked is unticked again, and a letter that was typed is taken back out of its box. The page never shows something the program refused.</p>
 <p>After every answer, the library compares the things with the elements and writes only what differs. An element stays the same element for as long as its thing exists, so a box that is being typed in is never rebuilt.</p>
+<h2 id="keeping-the-page-true">Keeping the page true</h2>
+<p>A page usually shows things that follow from other things: a count, a label, which lines are in sight. Those need not be set by hand after every change. The language can keep them (section 9.5 of <a href="reference.html">the reference</a>):</p>
+<pre class="form">Keep Tally's wording as "{the number of open cards} still to do".
+Keep each card hidden when the showing is "open" and the card is ticked.
+Keep each card's order as the standing of the card.</pre>
+<p>After every change, each kept value is worked out again and the page follows. What cannot be kept, because it is something to do and not something to be, goes in <code>Whenever everything has settled:</code>, which is carried out once however much changed. The to-do list saves itself there.</p>
 <h2 id="making-several-of-something">Making several of something</h2>
 <p>The library has no "component", and does not need one. A kind of your own holds the elements that belong together, and a verb makes them. <code>examples/web_counters.english</code> makes three counters this way:</p>
 <pre class="form">A counter has a title (text), a count (number), a face (note), a raiser (button) and a lowerer (button).

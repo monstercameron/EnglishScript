@@ -13,17 +13,27 @@ was not there before, the rename is refused and nothing is changed.
 How the names are found
 -----------------------
 
-This module reads the *text*, not the compiler's tables. `read_names` goes
-through the sentences and recognises the forms that define a name ("A dragon
-has ...", "There is a dragon called Smaug ...", "To send a knight against a
-dragon:", "Let the total be ...", and the rest). That is a second, much
-simpler reading than the compiler's, and it can be wrong about a sentence the
-compiler would refuse. It is enough to say where a name is defined, and it
-keeps this module working while the compiler changes; whether a rename is
-*right* is still decided by the compiler, through `englishscript.lint`.
+`read_program` asks the compiler for its own table of names
+(`englishscript.names`): what each name is, what it belongs to, and where it
+is defined. That table is taken wherever it has something to say.
+
+Under it is a reading of the *text*. `read_names` goes through the sentences
+and recognises the forms that define a name ("A dragon has ...", "There is a
+dragon called Smaug ...", "To send a knight against a dragon:", "Let the
+total be ...", and the rest). That is a second, much simpler reading than the
+compiler's, and it can be wrong about a sentence the compiler would refuse.
+It is used for what the compiler's table leaves out (the name a loop gives
+its thing, the words of a library, how the lines nest, what is written in
+brackets after a name), and for everything when the compiler's table can't
+be had. Whether a rename is *right* is decided by the compiler either way,
+through `englishscript.lint`.
 
 The language server (server.py) uses the same reading for its outline, for
 "go to definition" and for its suggestions.
+
+A word is letters of any alphabet, digits and underscores, starting with a
+letter, as section 3 of the reference says, and capitals are folded with
+`str.lower`, as the compiler folds them.
 
 What a rename changes
 ---------------------
@@ -54,7 +64,8 @@ from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 
-__all__ = ["rename", "plan", "apply_edits", "RenameRefused", "Edit", "read_names", "reserved_words", "pluralize"]
+__all__ = ["rename", "plan", "apply_edits", "RenameRefused", "Edit", "read_names", "read_program", "reserved_words",
+           "pluralize"]
 
 
 class RenameRefused(Exception):
@@ -78,14 +89,14 @@ FALLBACK_RESERVED = frozenset("""
 
 
 def reserved_words():
-    """The words no name may use: the compiler's own set if it can be found, or the table of section 3."""
-    try:
-        compiler = importlib.import_module("englishscript.compiler")
-        words = getattr(compiler, "KEYWORDS", None)
-        if words and all(isinstance(word, str) for word in words):
-            return frozenset(word.lower() for word in words)
-    except Exception:  # noqa: BLE001 - the compiler may be missing or half-written; the table will do
-        pass
+    """The words no name may use: `englishscript.KEYWORDS` if it is there, or the table of section 3."""
+    for module in ("englishscript", "englishscript.compiler"):
+        try:
+            words = getattr(importlib.import_module(module), "KEYWORDS", None)
+            if words and all(isinstance(word, str) for word in words):
+                return frozenset(word.lower() for word in words)
+        except Exception:  # noqa: BLE001 - the compiler may be missing or half-written; the table will do
+            pass
     return FALLBACK_RESERVED
 
 
@@ -102,13 +113,15 @@ def pluralize(word):
 
 # ----------------------------------------------------------------- the words
 
-WORD = re.compile(r"[A-Za-z][A-Za-z0-9_]*\Z")
+# A word: a letter of any alphabet, then letters, digits and underscores (section 3; the lexer's own pattern).
+LETTERS = r"[^\W\d_]\w*"
+WORD = re.compile(LETTERS + r"\Z")
 _TOKEN = re.compile(
     r"""
     (?P<string>"(?:[^"]|"")*"?)
   | (?P<pos>'s\b)
-  | (?P<word>[A-Za-z][A-Za-z0-9_]*)
-  | (?P<number>\$?\d+(?:,\d{3})*(?:\.\d+)?%?)
+  | (?P<word>[^\W\d_]\w*)
+  | (?P<number>\$?[0-9]+(?:,[0-9]{3})*(?:\.[0-9]+)?%?)
   | (?P<space>\s+)
   | (?P<mark>.)
     """,
@@ -195,12 +208,12 @@ class Name:
     """A name, at the sentence that defines it."""
     words: tuple  # in lower case
     text: str  # as written there
-    what: str  # kind plural property adjective thing verb value variable role loop
+    what: str  # kind plural property adjective thing verb value variable role loop choices choice
     line: int  # counting from 0
     start: int
     end: int
     top: bool = True  # defined at the top level (not a role, a loop's name or a variable of a block)
-    owner: str | None = None  # the kind of a property, an adjective, a thing or a plural
+    owner: str | None = None  # the kind of a property, an adjective, a thing or a plural; the set of a choice
     type: str | None = None  # what is written in brackets after it, if anything
     scope: tuple | None = None  # (first line, last line) where a name of a block may be said
     worked: bool = False  # a property that is worked out ("The hoard of a dragon is ...")
@@ -221,7 +234,13 @@ class Use:
 WHAT = {
     "kind": "a kind", "plural": "the plural of a kind", "property": "a property", "adjective": "an adjective",
     "thing": "a thing", "verb": "a verb", "value": "a worked-out value", "variable": "a variable",
-    "role": "a role", "loop": "the name of a loop's thing",
+    "role": "a role", "loop": "the name of a loop's thing", "choices": "a set of choices", "choice": "a choice",
+}
+# What the compiler's table of names (englishscript.names) calls each of them.
+FROM_COMPILER = {
+    "kind": "kind", "plural of a kind": "plural", "property": "property", "worked-out property": "property",
+    "thing": "thing", "adjective": "adjective", "verb": "verb", "worked-out value": "value",
+    "variable": "variable", "role": "role", "set of choices": "choices", "choice": "choice",
 }
 ONE_WORD = ("kind", "plural", "adjective", "verb")  # section 3: these are named with one word
 
@@ -336,6 +355,15 @@ class Reading:
                         self._add(line, run, "property", owner=kind[0][0], type=type_)
                     else:
                         k += 1
+            elif low(2) == "is" and low(3) == "one" and low(4) == "of":
+                # "A mood is one of sleepy, grumpy or very cross." (section 4.6)
+                self._add(line, kind, "choices")
+                k = 5
+                while k < len(code):
+                    run = self._run(code, k)
+                    if run:
+                        self._add(line, run, "choice", owner=kind[0][0])
+                    k = run[4] if run else k + 1
             elif low(2) == "is" and low(4) == "when" and self._run(code, 3):
                 self._add(line, self._run(code, 3), "adjective", owner=kind[0][0])
             elif low(2) == "can" and low(3) == "be" and self._run(code, 4):
@@ -453,6 +481,57 @@ class Reading:
         if name:
             self.shares.add(tuple(name))
 
+    # The compiler's table -------------------------------------------------
+
+    def adopt(self, entries, shares=False):
+        """Take the compiler's own names for this text (entries of englishscript.names) in
+        place of those read from the sentence forms. What the table does not say is kept
+        from the reading: what is in brackets after a name, a verb's roles, how far a name
+        of a block reaches, and the name a loop gives its thing, which the table leaves out.
+        `shares` is the chapter's list of what it shares, None for everything; False keeps
+        what the text says. An entry that does not fit the text is left out."""
+        read = {(n.line, n.start): n for n in self.names}
+        names, plurals, reactions = [], {}, {}
+        for entry in entries:
+            what = FROM_COMPILER.get(entry.get("what"))
+            number, start, width = entry.get("line"), entry.get("col"), entry.get("width")
+            if not (isinstance(number, int) and isinstance(start, int) and isinstance(width, int)):
+                continue
+            number -= 1
+            if not 0 <= number < len(self.lines):
+                continue
+            line = self.lines[number]
+            if entry.get("what") == "reaction":
+                if line.code:
+                    reactions[number] = line.raw[line.code[0].start:line.code[-1].end].rstrip(" :")
+                continue
+            written = line.raw[start:start + width]
+            words = tuple(str(entry.get("name", "")).lower().split())
+            if what is None or not words or tuple(written.translate(_STRAIGHT).lower().split()) != words:
+                continue
+            before = read.get((number, start))
+            name = Name(words, " ".join(written.split()), what, number, start, start + width, owner=entry.get("of"))
+            name.worked = entry.get("what") == "worked-out property"
+            if before is not None and before.what == what:
+                name.type, name.pattern, name.constant = before.type, before.pattern, before.constant
+            after = next((tok for tok in line.code if tok.start >= name.end), None)
+            if what == "role":
+                if after is None or after.text != "(":
+                    continue  # a role called by its kind's name ("a dragon") is the kind's word, not a new name
+                name.top, name.scope = False, (number, line.last)
+            elif what == "variable" and line.parent is not None:
+                name.top, name.scope = False, (number, self.lines[line.parent].last)
+            if what == "plural" and name.owner:
+                plurals[str(name.owner).lower()] = name.text
+            names.append(name)
+        names += [n for n in self.names if n.what == "loop"]
+        for number, sentence in self.reactions:  # "Whenever everything has settled:" is not in the table
+            reactions.setdefault(number, sentence)
+        self.names = sorted(names, key=lambda n: (n.line, n.start))
+        self.plurals, self.reactions = plurals, sorted(reactions.items())
+        if shares is not False:
+            self.shares = None if shares is None else {tuple(str(s).lower().split()) for s in shares}
+
     # Looking up -----------------------------------------------------------
 
     def defined(self, words, within=None):
@@ -518,18 +597,75 @@ def _library_source(word):
 
 def neighbours(reading, folder=None, read=None):
     """The chapters and libraries a text uses, each read the same way:
-    [(the Use, what to call it, its path or None, its Reading)]. One that can't be read is left out."""
-    read = read or _read_file
+    [(the Use, what to call it, its path or None, its Reading)]. One that can't be read is left out.
+    `read(path)` gives the text of a chapter that is open and unsaved, or None for the file on the disk."""
     found = []
     for use in reading.uses:
         if use.what == "library":
             source, path, label = _library_source(use.words[0]), None, f"the {use.words[0]} library"
         else:
             path = chapter_path(folder, use.words, use.book)
-            source, label = read(path), f"the {' '.join(use.words)} chapter"
+            source, label = read(path) if read is not None else None, f"the {' '.join(use.words)} chapter"
+            if source is None:
+                source = _read_file(path)
         if source is not None:
             found.append((use, label, path, Reading(source, reading.reserved)))
     return found
+
+
+def _table(source, folder, name, read):
+    """The compiler's table of names, {"names": [...], "chapters": [...]}, or None if it can't be had."""
+    try:
+        names = getattr(importlib.import_module("englishscript"), "names", None)
+        if not callable(names):
+            return None
+        try:
+            table = names(source, folder, name, read=read)
+        except TypeError:  # a compiler whose `names` does not take `read`
+            table = names(source, folder, name)
+    except Exception:  # noqa: BLE001 - the text reading will do
+        return None
+    if not isinstance(table, dict) or not isinstance(table.get("names"), list):
+        return None
+    if not all(isinstance(entry, dict) for entry in table["names"]):
+        return None
+    return table
+
+
+def _same_file(a, b):
+    import os
+    return os.path.normcase(os.path.abspath(str(a))) == os.path.normcase(os.path.abspath(str(b)))
+
+
+def read_program(source, folder=None, name=None, read=None, reserved=None):
+    """A text and the chapters and libraries it uses, read for their names:
+    (the text's Reading, [(the Use, what to call it, its path or None, its Reading)]).
+
+    The names are the compiler's own (englishscript.names) where it gives them. The
+    reading of the sentence forms stands in where it does not: for a library's words,
+    and for everything if the compiler's table can't be had or has nothing for a text
+    in which the sentence forms do define names (`names` gives an empty table when it
+    fails, as it does for an empty program)."""
+    reading = Reading(source, reserved)
+    others = neighbours(reading, folder, read)
+    table = _table(source, folder, name, read)
+    if table is None:
+        return reading, others
+    mine = [entry for entry in table["names"] if not entry.get("file")]
+    if mine or not reading.names:
+        reading.adopt(mine)
+    chapters = [c for c in table.get("chapters") or [] if isinstance(c, dict) and c.get("file")]
+    base = Path(folder) if folder is not None else Path(".")
+    for _, _, path, other in others:
+        if path is None:
+            continue  # a library: its words are not in the table
+        for chapter in chapters:
+            if _same_file(base / str(chapter["file"]), path):
+                theirs = [entry for entry in table["names"] if entry.get("file") == chapter["file"]]
+                if theirs or not other.names:
+                    other.adopt(theirs, chapter.get("shares"))
+                break
+    return reading, others
 
 
 # ------------------------------------------------------------- occurrences
@@ -587,16 +723,21 @@ def occurrences(reading, targets, known=(), lines=None):
 
 
 def recase(written, defined, new):
-    """`new`, with the capitals of this occurrence where it differed from the definition."""
+    """`new`, with the capitals of this occurrence where it differed from the definition.
+
+    The compiler folds capitals with str.lower, so a spelling is only used if it folds
+    back to the same name: "MASS" is not "Maß" again, so "Maß" is then written as given."""
     if written == defined or not written or not new:
         return new
     if written.isupper() and not defined.isupper() and len(written) > 1:
-        return new.upper()
-    if written.islower() and not defined.islower():
-        return new.lower()
-    if written[0].isupper() != defined[0].isupper():
-        return (new[0].upper() if written[0].isupper() else new[0].lower()) + new[1:]
-    return new
+        dressed = new.upper()
+    elif written.islower() and not defined.islower():
+        dressed = new.lower()
+    elif written[0].isupper() != defined[0].isupper():
+        dressed = (new[0].upper() if written[0].isupper() else new[0].lower()) + new[1:]
+    else:
+        return new
+    return dressed if dressed.lower() == new.lower() else new
 
 
 # ---------------------------------------------------------------- the edits
@@ -640,11 +781,14 @@ def _name_words(text, which):
     return words
 
 
-def _problems(source, folder, name):
+def _problems(source, folder, name, read=None):
     """The linter's problems as dicts. Raises RenameRefused if the linter can't be asked."""
     try:
         lint = importlib.import_module("englishscript").lint
-        found = lint(source, folder, name)
+        try:
+            found = lint(source, folder, name, read=read) if read is not None else lint(source, folder, name)
+        except TypeError:  # a linter that does not take `read`
+            found = lint(source, folder, name)
     except Exception as error:  # noqa: BLE001 - without the compiler's verdict there is no rename
         raise RenameRefused(
             f"The compiler could not be asked to check the result ({type(error).__name__}: {error}), "
@@ -658,16 +802,16 @@ def _problems(source, folder, name):
 
 
 def _phrase(words):
-    return re.compile(r"(?<![A-Za-z0-9_])" + r"\s+".join(re.escape(w) for w in words) + r"(?![A-Za-z0-9_])", re.I)
+    return re.compile(r"(?<!\w)" + r"\s+".join(re.escape(w) for w in words) + r"(?!\w)", re.I)
 
 
 class _Judge:
     """Compares what the linter says before and after, leaving the two names out of account."""
 
-    def __init__(self, source, folder, name, phrases):
-        self.folder, self.name = folder, name
+    def __init__(self, source, folder, name, phrases, read=None):
+        self.folder, self.name, self.read = folder, name, read
         self.patterns = [_phrase(words) for words in sorted(set(phrases), key=len, reverse=True)]
-        self.before = Counter(self.key(p) for p in _problems(source, folder, name))
+        self.before = Counter(self.key(p) for p in _problems(source, folder, name, read))
         self.asked = 0
 
     def key(self, problem):
@@ -682,7 +826,7 @@ class _Judge:
         self.asked += 1
         left = Counter(self.before)
         found = []
-        for problem in _problems(text, self.folder, self.name):
+        for problem in _problems(text, self.folder, self.name, self.read):
             key = self.key(problem)
             if left[key] > 0:
                 left[key] -= 1
@@ -691,7 +835,7 @@ class _Judge:
         return found
 
 
-_SEGMENT = re.compile(r"[A-Za-z]+|[^A-Za-z]+")
+_SEGMENT = re.compile(r"[^\W\d_]+|[\W\d_]+")  # runs of letters, and what is between them
 
 
 def _article_swaps(current, fixed):
@@ -726,15 +870,15 @@ def plan(source, old, new, folder=None, name=None, only=None, within=None, read=
     `only` is "verb" or "name", for a word that is both a verb and something
     else (section 3 lets them share a word) when only one of them is meant.
     `within` is (first line, last line), counting from 0, to rename a name of
-    one block there and nowhere else. `read` reads a chapter's file (a path)
-    and gives its text, or None; by default the file on disk is read.
+    one block there and nowhere else. `read(path)` gives the text of a chapter
+    that is open in an editor and not saved, or None for the file on the disk,
+    as for englishscript.lint.
     """
     old_words, new_words = _name_words(old, "old"), _name_words(new, "new")
     old_key, new_key = tuple(w.lower() for w in old_words), tuple(w.lower() for w in new_words)
     old_said, new_text = " ".join(old_words), " ".join(new_words)
     reserved = reserved_words()
-    reading = Reading(source, reserved)
-    others = neighbours(reading, folder, read)
+    reading, others = read_program(source, folder, name, read, reserved)
 
     # 1. The old name must be defined here.
     definitions = reading.defined(old_key, within)
@@ -829,7 +973,7 @@ def plan(source, old, new, folder=None, name=None, only=None, within=None, read=
     phrases = [old_key, new_key]
     if with_plural:
         phrases += [(old_plural.lower(),), (new_plural.lower(),)]
-    judge = _Judge(source, folder, name, phrases)
+    judge = _Judge(source, folder, name, phrases, read)
     edits = _settle(source, edits, fixed, judge)
     return edits
 
@@ -900,12 +1044,12 @@ def _articles(source, edits, fresh, judge):
     return (trial, found) if len(found) < len(fresh) else (edits, fresh)
 
 
-def rename(source, old, new, folder=None, name=None, only=None, within=None):
+def rename(source, old, new, folder=None, name=None, only=None, within=None, read=None):
     """`source` with the name `old` changed to `new` everywhere, or RenameRefused.
 
     `folder` is where the program's chapters are looked for and `name` is what
-    to call its file, as for englishscript.lint. See `plan` for `only` and `within`."""
-    return apply_edits(source, plan(source, old, new, folder, name, only, within))
+    to call its file, as for englishscript.lint. See `plan` for `only`, `within` and `read`."""
+    return apply_edits(source, plan(source, old, new, folder, name, only, within, read))
 
 
 # ------------------------------------------------------------ command line

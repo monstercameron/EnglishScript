@@ -309,9 +309,29 @@ def editors_page():
     )
 
 
+def opposition_page():
+    """docs/opposition.html: the other English-like languages, printed from docs/OPPOSITION.md."""
+    import pages
+
+    source = pages.Markdown((ROOT / "docs" / "OPPOSITION.md").read_text(encoding="utf-8"))
+    return pages.document(
+        title="EnglishScript and its rivals",
+        description="The English-like programming languages since 1955, and the new languages that ask a model: what each did with ambiguity, and what EnglishScript should borrow or fear.",
+        current="opposition.html",
+        heading="The Opposition",
+        standfirst="Seventy years of programming in English, and the new languages that ask a model, set beside this one.",
+        body=source.render(),
+        contents=source.contents(),
+        runnable=False,
+        colophon='Printed from <a href="' + pages.SOURCE + '/blob/main/docs/OPPOSITION.md">docs/OPPOSITION.md</a> by '
+                 "<code>tools/build_site.py</code>. Gathered in November 2026; every claim that matters links to its source.",
+    )
+
+
 #: The pages printed from Markdown: (file in docs/, the function that makes it).
 PRINTED = [("reference.html", reference_page), ("vulkan.html", vulkan_page), ("page.html", page_library_page),
-           ("concerns.html", concerns_page), ("editors.html", editors_page)]
+           ("concerns.html", concerns_page), ("editors.html", editors_page),
+           ("opposition.html", opposition_page)]
 
 
 def main():

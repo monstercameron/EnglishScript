@@ -1,6 +1,7 @@
 """What exists while a program runs: things, the world, variables, formatting."""
 from __future__ import annotations
 
+import math
 import re
 import sys
 from contextlib import contextmanager
@@ -41,6 +42,22 @@ class _EndProgram(_Signal):
     pass
 
 
+class Example:
+    """A "For example" sentence reached while testing (Program.test)."""
+
+    __slots__ = ("file", "line", "sentence", "held", "fact")
+
+    def __init__(self, file, line, sentence, held, fact):
+        self.file = file  # the chapter's file, or None for the program's own
+        self.line = line  # its line number
+        self.sentence = sentence  # as written
+        self.held = held  # did it hold?
+        self.fact = fact  # when it didn't: "In fact, ...", if that can be said; otherwise None
+
+    def __repr__(self):
+        return f"<Example line {self.line}: {'held' if self.held else 'did not hold'}>"
+
+
 class Thing:
     """One instance of a kind, e.g. the dragon called Smaug.
 
@@ -61,6 +78,13 @@ class Thing:
 
     def __repr__(self):
         return f"<{self.kind} {self.name}>"
+
+
+def join(items):
+    items = list(items)
+    if len(items) <= 1:
+        return "".join(items)
+    return ", ".join(items[:-1]) + " and " + items[-1]
 
 
 def alive(thing):
@@ -112,9 +136,11 @@ def read_line(prompt):
 class Reaction:
     """One "Whenever" sentence, once it has been reached."""
 
-    __slots__ = ("kind", "adjective", "test", "becomes", "thing", "run", "text", "local")
+    __slots__ = ("kind", "adjective", "test", "becomes", "thing", "run", "text", "local", "line", "word")
 
-    def __init__(self, kind, adjective, test, becomes, thing, run, text, local=False):
+    def __init__(self, kind, adjective, test, becomes, thing, run, text, local=False, line=None, word=None):
+        self.line = line  # the "Whenever" sentence, for the trace
+        self.word = word  # the adjective as written
         self.local = local  # does the adjective read only its own thing's stored properties?
         self.kind = kind
         self.adjective = adjective
@@ -129,9 +155,12 @@ class Reaction:
 
 
 class World:
-    def __init__(self, out=print, ask=None):
+    def __init__(self, out=print, ask=None, model=None, judge=None):
         self.out = out
         self.ask = ask if ask is not None else read_line
+        # Who answers "Ask the model" and "Judge" (section 7.8), or None: nothing is listening.
+        self.model = model  # (question, state, shape, complaint) -> text, or None for no reply
+        self.judge = judge  # (question, state, choices, meanings) -> a chance, or {choice: chance}
         self.things = {}  # kind -> [Thing], in order of creation; removed things leave
         self.named = {}  # lowercased name -> Thing
         self.made = {}  # kind -> how many have been made, for default names
@@ -144,11 +173,14 @@ class World:
         self.reacting = 0  # how deeply reactions are nested
         self.chain = []  # (the reaction's sentence, the thing's name) of each reaction being carried out
         self.settlers = []  # [(Line, run(world))]: each "Whenever everything has settled", once reached
+        self.keepers = []  # [(Line, keep(world) -> [what changed])]: each "Keep" sentence, once reached
         self.changed = False  # has the turn being carried out changed anything?
         self.settling = False  # is a settled block being carried out?
         self.rules = {}  # kind -> [Rule] (.fn(world, thing), .text), for world.event
         self.busy = False  # is a sentence or an event being carried out?
         self.ended = False  # did the program end ("End the program.", or a problem)?
+        self.testing = None  # with --test: [Example], every "For example" reached, held or not
+        self.trace = None  # with --trace: fn(depth, file, line, sentence, cause) for each sentence carried out
         # (kind, property) -> {value: [Thing], in the order made}: built the first time a
         # group is filtered by "whose <property> is <value>", and kept right through every
         # change (see `changed_field`). Anything that changes things in another way (a
@@ -158,6 +190,20 @@ class World:
     def new_serial(self):
         self.serials += 1
         return self.serials
+
+    def traced(self, line, cause=None):
+        """Tell the trace (Program.run's `trace`) that the sentence on `line` is being
+        carried out: (depth, file, line number, sentence, cause). The depth is how far
+        the line is indented, plus the verbs, worked-out values and reactions it is in."""
+        unit = getattr(line, "unit", None)
+        if line.library:
+            file = f"the {line.library} library"
+        elif unit is not None and getattr(unit, "kind", None) == "chapter":
+            file = unit.file
+        else:
+            file = None
+        depth = getattr(line, "level", 0) + self.depth + self.reacting
+        self.trace(depth, file, line.number, line.text.strip(), cause)
 
     # Finding things by a stored property, without a search ---------------------
 
@@ -294,6 +340,11 @@ class World:
                 continue
             self.reacting += 1
             self.chain.append((reaction.text, thing.name))
+            if self.trace is not None and reaction.line is not None:
+                self.reacting -= 1
+                self.traced(reaction.line, f"{thing.name} became {'' if reaction.becomes else 'not '}"
+                                           f"{reaction.word or reaction.adjective}")
+                self.reacting += 1
             try:
                 if self.reacting > REACTION_LIMIT:
                     raise EnglishError(
@@ -333,7 +384,18 @@ class World:
         self.changed = False
         self.settling = True
         try:
+            if self.keepers:
+                try:
+                    self.keep()
+                except EnglishError as error:
+                    if error.line is None:
+                        error.line = line
+                    elif line is not None and error.line is not line and len(error.trace) < 5:
+                        error.trace.append(line)
+                    raise
             for heading, run in list(self.settlers):
+                if self.trace is not None:
+                    self.traced(heading, "everything settled" + (f" after line {line.number}" if line else ""))
                 try:
                     run(self)
                 except EnglishError as error:
@@ -344,6 +406,25 @@ class World:
         finally:
             self.settling = False
             self.changed = False
+
+    KEEP_ROUNDS = 10
+
+    def keep(self):
+        """Make every kept property and adjective ("Keep ...") match what it is kept as,
+        at the end of a turn and before the settled blocks: again while that changes
+        something, up to KEEP_ROUNDS rounds. Their changes set off reactions as usual."""
+        for _ in range(self.KEEP_ROUNDS):
+            changed = []
+            for line, keeper in list(self.keepers):
+                if self.trace is not None:
+                    self.traced(line, "the end of a turn")
+                changed += keeper(self)
+            if not changed:
+                return
+        names = join(dict.fromkeys(changed))
+        raise EnglishError(f"These kept values would not settle: after {self.KEEP_ROUNDS} rounds, {names} still "
+                           "changed.", stage="run", teach="keep_rounds",
+                           hint="Look for kept values that are worked out from each other in a circle.")
 
     # Events from outside the program ---------------------------------------
 
@@ -378,7 +459,7 @@ class World:
                 self._check_rules(states)
                 if before is not None:
                     self.react(before)
-                if self.settlers:  # an event is a turn
+                if self.settlers or self.keepers:  # an event is a turn
                     self.changed = True
                     self.settle()
         except _EndProgram:
@@ -444,7 +525,7 @@ def split_lines(text):
 
 # ------------------------------------------------------------- reading values
 
-_NUMBER = re.compile(r"-?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?")
+_NUMBER = re.compile(r"-?(?:[1-9][0-9]{0,2}(?:,[0-9]{3})+|[0-9]+)(?:\.[0-9]+)?")  # digits 0 to 9 only
 
 
 def read_number(text):
@@ -487,6 +568,115 @@ def read_reply(text, type_):
         value = read_number(text[:-1])
         return None if value is None else value / 100
     return read_number(text)
+
+
+# ------------------------------------------------------------- asking a model
+#
+# "Ask the model" and "Judge" (section 7.8). What is asked is handed to whoever
+# listens (World.model, World.judge); what comes back is read and checked here.
+
+ITEM_PLURALS = {"number": "numbers", "money": "money", "text": "text", "percent": "percentages"}
+
+
+def expected(shape):
+    """What a reply of `shape` has to be, in words: 'a number, such as 7 or 2.5'."""
+    kind = shape["type"]
+    if kind == "choice":
+        words = shape["choices"]
+        said_as = "one of " + ", ".join(words[:-1]) + " or " + words[-1]
+    elif kind == "list":
+        said_as = f"a list of {ITEM_PLURALS[shape['items']]}, one item to a line"
+    else:
+        said_as = {
+            "text": "text", "number": "a number, such as 7 or 2.5",
+            "money": "an amount of money, such as $5 or $2.50", "percent": "a percentage, such as 10%",
+            "yes or no": "yes or no",
+        }[kind]
+    if shape["optional"]:
+        said_as += ', or "nothing"'
+    return said_as
+
+
+def shortened(text, most=60):
+    """A reply as a message quotes it: on one line, and cut short after `most` letters."""
+    text = " ".join(str(text).split())
+    return text if len(text) <= most else text[:most].rstrip() + "..."
+
+
+def read_model_reply(text, shape):
+    """A model's reply read as `shape` (see World.model): (True, the value), or (False, the
+    part that could not be read). Each value is read by read_reply, as a person's reply is.
+    A list is one item to a line; blank lines are passed over."""
+    if shape["optional"] and text.strip().lower() == "nothing":
+        return True, None
+    kind = shape["type"]
+    if kind == "choice":
+        wanted = " ".join(text.split()).lower()
+        for choice in shape["choices"]:
+            if choice.lower() == wanted:
+                return True, choice
+        return False, text
+    if kind == "list":
+        items = []
+        for line in split_lines(text):
+            if not line.strip():
+                continue
+            value = read_reply(line, shape["items"])
+            if value is None:
+                return False, line
+            items.append(value)
+        return True, tuple(items)
+    value = read_reply(text, kind)
+    return (False, text) if value is None else (True, value)
+
+
+def chance_of(value):
+    """A probability a judge gave, as an exact fraction from 0 to 1, or None if it is not one."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, Fraction)):
+        chance = Fraction(value)
+    elif isinstance(value, float) and math.isfinite(value):
+        chance = Fraction(repr(value))  # the shortest form, so 0.1 is exactly 1/10
+    else:
+        return None
+    return chance if 0 <= chance <= 1 else None
+
+
+def verdict_of(result, choices):
+    """{choice: chance} from a judge's answer, or None unless it gives one chance from 0
+    to 1 to each of the choices and to nothing else. A choice is matched as a reply is."""
+    if not isinstance(result, dict):
+        return None
+    by_word = {choice.lower(): choice for choice in choices}
+    found = {}
+    for key, value in result.items():
+        choice = by_word.get(" ".join(key.split()).lower()) if isinstance(key, str) else None
+        chance = chance_of(value)
+        if choice is None or choice in found or chance is None:
+            return None
+        found[choice] = chance
+    return found if len(found) == len(choices) else None
+
+
+def said(value, type_):
+    """A value as "Say" says it; a list as the language writes one ("a list of 3, 8 and 5")."""
+    if value is None:
+        return "nothing"
+    type_ = type_.rstrip("?")
+    if type_.startswith("list of "):
+        items = [said(item, type_[len("list of "):]) for item in value]
+        return "a list of " + join(items) if items else "an empty list"
+    return fmt(value, type_)
+
+
+def thing_state(thing, word, fields):
+    """A thing written out for a model: "<kind> called <name>", then one "property: value"
+    to a line, in the order the kind lists them (section 7.8)."""
+    thing = alive(thing)
+    lines = [f"{word} called {thing.name}"]
+    lines += [f"{name}: {said(thing.fields.get(name), type_)}" for name, type_ in fields]
+    return "\n".join(lines)
 
 
 # -------------------------------------------------------------- formatting

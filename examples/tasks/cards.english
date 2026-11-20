@@ -4,7 +4,7 @@
 # chapter adds what the library does not know: when a card counts as open, how
 # the words that were typed become a card, and what order cards stand in.
 
-This chapter shares only open, twin, jot and arrange.
+This chapter shares only open, twin and jot.
 
 Use the page library.
 Use the layout chapter.
@@ -41,11 +41,11 @@ To jot a line (text):
 
 # Starred cards stand first and finished ones last. Among cards of the same
 # sort, the one written first stands first: the page keeps that order itself.
-To arrange:
-  For each card:
-    If the card is ticked:
-      Set the card's order to 2.
-    Otherwise if the card is starred:
-      Set the card's order to 0.
-    Otherwise:
-      Set the card's order to 1.
+To work out the standing (number) of a card:
+  If the card is ticked:
+    The answer is 2.
+  If the card is starred:
+    The answer is 0.
+  The answer is 1.
+
+Keep each card's order as the standing of the card.

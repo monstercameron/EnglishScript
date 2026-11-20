@@ -19,6 +19,7 @@
     <a class="page" href="playground.html">The playground</a>
     <a class="page" href="todo.html">A page</a>
     <a class="page" href="compare.html">Compared</a>
+    <a class="page" href="opposition.html">The opposition</a>
     <a class="page" href="reference.html">The grammar</a>
     <a class="page" href="how.html">The machinery</a>
     <a class="page" href="https://github.com/monstercameron/EnglishScript">The source</a>
@@ -35,10 +36,11 @@
 <ul>
 <li><strong>Problems.</strong> Every problem the linter finds is marked in the text, with its message, its advice and the rule to remember. An error is an error; a suggestion is a warning. Where the reference teaches the rule, the problem links to that section.</li>
 <li><strong>Corrections.</strong> When the linter is certain how to mend a problem, the correction is offered as a quick fix, titled <code>Mend:</code> and the corrected line. When there are two or more, <code>Mend all that can be mended</code> applies them together.</li>
-<li><strong>Hover.</strong> Over a sentence the compiler read, the notes that <code>--explain</code> prints: what <code>its</code> meant, which definition a word led to. Over a name, the sentence that defines it. Over a line with a problem, the problem.</li>
-<li><strong>Outline.</strong> The kinds (with their properties), things, adjectives, verbs, worked-out values, top-level variables and reactions of the file.</li>
+<li><strong>Hover.</strong> Over a sentence the compiler read, the notes that <code>--explain</code> prints: what <code>its</code> meant, which definition a word led to. A mistake on another line does not hide them. Over a name, the sentence that defines it. Over a line with a problem, the problem.</li>
+<li><strong>Outline.</strong> The kinds (with their properties), sets of choices (with their choices), things, adjectives, verbs, worked-out values, top-level variables and reactions of the file.</li>
 <li><strong>Go to definition.</strong> From a name to the sentence that defines it, in the same file or in a chapter the file uses. From a <code>Use the ... chapter</code> sentence, to the chapter's file.</li>
 <li><strong>Suggestions.</strong> At the start of a line, the sentence forms (<code>Say</code>, <code>Let the ... be</code>, <code>If ...:</code>, <code>To ...:</code> and the rest) and the file's own verbs. After <code>'s</code>, <code>its</code> or <code>whose</code>, the properties. Elsewhere, the names that can be said there.</li>
+<li><strong>Unsaved chapters.</strong> A chapter that is open in the editor is read as it stands there, saved or not, for all of the above. Changing it marks the open files that use it again.</li>
 <li><strong>Rename.</strong> Renames a name throughout the file, and refuses if the result would read any worse than what was there. See "The rename tool" below.</li>
 </ul>
 <h2 id="starting-it">Starting it</h2>
@@ -91,10 +93,11 @@ python -m englishscript.rename examples/dragons.english "dragon" "wyrm" --write<
 <li>For a kind, its plural too: <code>dragon</code> to <code>wyrm</code> also turns <code>dragons</code> into <code>wyrms</code>. A plural that was stated where the kind was described (<code>A child (plural children) has ...</code>) is kept when the kind is renamed, and can be renamed itself (<code>children</code> to <code>bairns</code>).</li>
 <li><code>a</code> and <code>an</code> in front of the name, where the linter says the new name needs the other one.</li>
 <li>A name of several words is matched whole, and a longer name that contains it is left alone: renaming <code>month</code> does not touch <code>month row</code>. A leading <code>the</code> is ignored, so <code>"the month row"</code> and <code>"month row"</code> name the same thing.</li>
+<li>Names in any alphabet, as the language allows them: <code>Fáfnir</code>, <code>Größe</code>. Capitals are folded as the compiler folds them. Where an occurrence's capitals would not fold back to the new name (<code>MASS</code> is not <code>Maß</code>), the new name is written there as you gave it.</li>
 </ul>
 <p>What it refuses, changing nothing, with status 1 and the reason on standard error:</p>
 <ul>
-<li>a name that is not defined in the file (if a chapter the file uses defines it, the message says which);</li>
+<li>a name that is not defined in the file (if a chapter the file uses defines it, the message says which). A name counts as defined when the compiler read the sentence that defines it, so a name whose own sentence is refused cannot be renamed until that sentence is mended;</li>
 <li>a new name that is a reserved word or contains one;</li>
 <li>a new name that is already in use, in the file or in a chapter or library it uses;</li>
 <li>a thing whose name is also looked for in quotes (<code>the dragon called "Smaug"</code>), because quoted text is never changed;</li>
@@ -106,12 +109,12 @@ python -m englishscript.rename examples/dragons.english "dragon" "wyrm" --write<
 <li><strong>No colouring.</strong> There is no grammar for syntax highlighting, for any editor.</li>
 <li><strong>One file at a time.</strong> A rename changes the file it is given. Renaming a word that a chapter shares does not change the files that use the chapter; they will be marked with problems until they are changed too.</li>
 <li><strong>Checked by reading, not by running.</strong> A rename is checked by the linter, which compiles and runs nothing. Quoted text is not changed, so a <code>Say</code> or a <code>For example</code> that spells the old name out in quotes will still say the old name.</li>
-<li><strong>The outline, definitions and suggestions come from reading the text</strong>, not from the compiler. The server recognises the sentence forms that define names (<code>A dragon has ...</code>, <code>There is a dragon called Smaug ...</code>, <code>To send ...:</code>, <code>Let the total be ...</code>). In a sentence the compiler refuses, it can be wrong. Suggestions are not checked against types: every name that could be said at that place is offered, not only those that would fit.</li>
-<li><strong>Hover explains a sentence only when the whole file compiles.</strong> The notes come from the compiler, which stops at the first sentence it cannot read.</li>
-<li><strong>Chapters are checked as saved.</strong> The linter reads a chapter from the disk, so a change to a chapter shows in the files that use it once the chapter is saved. Definitions and suggestions do use a chapter that is open in the editor.</li>
-<li><strong>A library's words can be suggested and hovered, but not gone to.</strong> They are defined inside the library's Python file.</li>
+<li><strong>A name whose sentence is refused is not in the outline.</strong> The outline, the definitions and the suggestions come from the compiler's own table of names, which holds what its readable sentences define. Three things the table leaves out are read from the text instead, by the form of the sentence: the name a loop gives its thing (<code>For each rival in dragons:</code>), <code>Whenever everything has settled:</code>, and the words of a library. If the compiler cannot give its table at all, everything is read from the text that way, and can then be wrong about a sentence the compiler refuses.</li>
+<li><strong>Suggestions are not checked against types.</strong> Every name that could be said at that place is offered, not only those that would fit.</li>
+<li><strong>A chapter changed outside the editor is noticed late.</strong> A chapter that is not open is read from the disk when a file that uses it is next changed or saved in the editor, not at the moment it changes.</li>
+<li><strong>A library's words can be suggested and hovered, but not gone to.</strong> They are defined inside the library's Python file, and the compiler's table of names does not list them.</li>
 <li><strong>No formatting, find references, signature help, workspace symbols or semantic tokens.</strong></li>
-<li><strong>The whole text is sent and linted on every change.</strong> On the computer this was written on, linting any example in this repository took under a twentieth of a second, apart from the first use of a library. The server does not wait for a pause in typing; that is left to the editor.</li>
+<li><strong>The whole text is sent and linted on every change.</strong> On the computer this was written on, linting any example in this repository took under a twentieth of a second, apart from the first use of a library, and the table of names behind the outline and the suggestions took as long again. Open files that use chapters are linted again when any other open file changes. The server does not wait for a pause in typing; that is left to the editor.</li>
 <li><strong>Positions are counted in UTF-16</strong>, which every editor supports; the server does not offer another encoding.</li>
 </ul>
 </article>

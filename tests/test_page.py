@@ -565,9 +565,14 @@ class TheWebToDoList(unittest.TestCase):
         sentences = [line for line in self.source.splitlines() if line.strip() and not line.lstrip().startswith("#")]
         self.assertEqual(sum(1 for line in sentences if line.startswith("Use the ")), 5)
         self.assertGreaterEqual(sum(1 for line in sentences if line.startswith("Whenever ")), 10)
-        # The page is tidied in one place, once everything has settled, and nowhere else.
+        # Nothing is brought up to date by hand: the chapters say what is kept, and the
+        # program only saves the list, once, when everything has settled.
         self.assertIn("Whenever everything has settled:", sentences)
-        self.assertEqual(sum(1 for line in sentences if line.strip() == "Tidy."), 1)
+        self.assertEqual(sum(1 for line in sentences if line.strip() == "Save."), 1)
+        chapters = "".join(path.read_text(encoding="utf-8") for path in (EXAMPLES / "tasks").glob("*.english"))
+        kept = [line for line in chapters.splitlines() if line.startswith("Keep ")]
+        self.assertGreaterEqual(len(kept), 9)
+        self.assertNotIn("\n  Now the card is hidden.", chapters)
         self.assertFalse(any(line.startswith(("There is", "A card", "Let ")) for line in sentences))
 
     def test_a_chapter_s_own_words_stay_its_own(self):

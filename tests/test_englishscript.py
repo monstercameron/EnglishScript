@@ -2639,12 +2639,16 @@ class Choices(Base):
         self.assertEqual(said, ["sleepy", "yes", "very cross", "1"])
 
     def test_refusals(self):
+        error = self.refuses("A mood is one of sleepy, grumpy or content.\nA dragon has a mood (mood).\n"
+                             "There is a dragon called Puff whose mood is furious.\n", "not one of the moods")
+        self.assertIn("sleepy, grumpy or content", error.message)
+        self.refuses("A mood is one of sleepy or grumpy.\nLet the m (mood) be grumy.\n", 'Did you mean "grumpy"')
         self.refuses("A mood is one of sleepy.\n", "at least two")
         self.refuses("A mood is one of sleepy, grumpy.\n", '"or"')
         self.refuses("A mood is one of sleepy or grumpy.\nA temper is one of grumpy or calm.\n", "already means")
         self.refuses("A dragon has an age (number).\nA mood is one of dragon or calm.\n", "already means")
         self.refuses("A mood is one of sleepy or grumpy.\nLet the m be sleepy.\nIf the m is happy:\n  Say 1.\n",
-                     "not one of the choices")
+                     "not one of the moods")
         self.refuses("A mood is one of sleepy or grumpy.\nLet the m be sleepy.\nIf the m is \"sleepy\":\n  Say 1.\n",
                      "can't compare")
         self.refuses("A mood is one of sleepy or grumpy.\nLet the m be sleepy.\nIf the m is more than grumpy:\n"
@@ -2659,6 +2663,180 @@ class Text(Base):
                    "does not end with \"b\":\n  Say \"none\"\nSay the number of items in the words of \"a  b\tc\".\n")
         self.assertEqual(said, ["b", "nothing", "nothing", "z", "none", "3"])
         self.refuses("Say letter 1 of 5.\n", "takes a letter from text")
+
+
+class KindsOfProblem(InTemporaryFolder, Base):
+    """The problem's kind, Fail again, Either way."""
+
+    def test_each_kind(self):
+        cases = {
+            "a broken rule": "A box has a size (number).\nA box's size is never more than 1.\n"
+                             "There is a box called B whose size is 1.\nTry:\n  Set B's size to 2.\n",
+            "a division by zero": "Try:\n  Say 1 / 0.\n",
+            "a missing file": "Try:\n  Say the text of the file \"no such file.txt\".\n",
+            "a refused removal": "A box has a size (number).\nA tag has a box (box).\n"
+                                 "There is a box called B whose size is 1.\nThere is a tag called T whose box is B.\n"
+                                 "Try:\n  Remove B.\n",
+            "a removed thing": "A box has a size (number).\nThere is a box called B whose size is 1.\n"
+                               "Let the gone be B.\nRemove B.\nTry:\n  Say the gone's size.\n",
+            "a bad count": "Try:\n  Repeat -1 times:\n    Say 1.\n",
+            "a missing item": "Let the l be a list of 1.\nTry:\n  Set item 3 of the l to 1.\n",
+            "a bad number": "Try:\n  Say the square root of -1.\n",
+            "a failure": "Try:\n  Fail because \"no\".\n",
+        }
+        for kind, source in cases.items():
+            with self.subTest(kind):
+                checks = "".join(f"  If the problem is {other}:\n    Say \"{other}\"\n" for other in cases)
+                said = run(source + "If that fails:\n" + checks)
+                self.assertEqual(said, [kind])
+
+    def test_fail_again_passes_the_same_problem_on(self):
+        said = run("Try:\n  Try:\n    Say 1 / 0.\n  If that fails:\n    Say \"inner\"\n    Fail again.\n"
+                   "If that fails:\n  Say \"{the problem} {whether (the problem is a division by zero)}\"\n")
+        self.assertEqual(said, ["inner", "I can't divide by zero. yes"])
+        self.refuses("Fail again.\n", "inside one")
+
+    def test_either_way(self):
+        said = run("To go:\n  Try:\n    Say \"try\"\n    Stop.\n  If that fails:\n    Say \"fail\"\n"
+                   "  Either way:\n    Say \"either\"\n  Say \"never\"\nGo.\n"
+                   "Try:\n  Fail because \"x\".\nIf that fails:\n  Say \"fail\"\nEither way:\n  Say \"either\"\n"
+                   "Try:\n  Try:\n    Fail because \"y\".\n  If that fails:\n    Fail again.\n"
+                   "  Either way:\n    Say \"inner either\"\nIf that fails:\n  Say the problem.\n")
+        self.assertEqual(said, ["try", "either", "fail", "either", "inner either", "y"])
+        self.refuses("Either way:\n  Say 1.\n", "straight after")
+        self.refuses("If the problem is a broken rule:\n  Say 1.\n", "only means something")
+        self.refuses("Try:\n  Say 1.\nIf that fails:\n  If the problem is a broken rul:\n    Say 1.\n",
+                     "not a kind of problem")
+
+
+class Testing(InTemporaryFolder, Base):
+    def test_test_reports_every_example_and_goes_on(self):
+        source = ('Let the x be 2.\nSay "hello"\nFor example, the x is 2.\nFor example, the x is 3.\n'
+                  'Write "a" to the file "written.txt".\nFor example, the x + 1 is 3.\n'
+                  'Ask "?" and let the y (number) be the reply.\nFor example, the x is 9.\n')
+        results = compile_source(source).test()
+        self.assertEqual([(r.line, r.held) for r in results], [(3, True), (4, False), (6, True)])
+        self.assertEqual(results[1].fact, "In fact, the x is 2.")
+        self.assertFalse(os.path.exists("written.txt"))
+
+    def test_the_command_line(self):
+        from englishscript.__main__ import main
+        Path("p.english").write_text("For example, 1 is 1.\nFor example, 1 is 2.\n", encoding="utf-8")
+        import io
+        from contextlib import redirect_stdout
+        out = io.StringIO()
+        with redirect_stdout(out):
+            status = main(["p.english", "--test"])
+        self.assertEqual(status, 1)
+        self.assertIn("2 examples: 1 held, 1 did not.", out.getvalue())
+
+
+class Tracing(Base):
+    def test_the_trace_as_data(self):
+        source = ("A knight has a purse (money).\nA knight is broke when its purse is $0.\n"
+                  "There is a knight called Robin whose purse is $5.\n"
+                  "Whenever a knight becomes broke:\n  Say \"broke\"\n"
+                  "To spend from a knight:\n  Set the knight's purse to $0.\nSpend from Robin.\n")
+        seen = []
+        compile_source(source).run(lambda text: None, trace=lambda *entry: seen.append(entry))
+        lines = [(depth, line, cause) for depth, _, line, _, cause in seen]
+        self.assertEqual(lines, [(0, 3, None), (0, 4, None), (0, 8, None), (2, 7, None),
+                                 (1, 4, "Robin became broke"), (3, 5, None)])
+        self.assertTrue(all(file is None for _, file, _, _, _ in seen))
+
+
+class Keeping(Base):
+    WORLD = ("A card has a wording (text), a line (text) and a done (number).\nA card can be open.\n"
+             "There is a card called Milk whose wording is \"milk\", whose line is \"\", and whose done is 0.\n")
+
+    def test_kept_properties_and_adjectives(self):
+        said = run(self.WORLD + "Keep each card's line as \"- {its wording}\".\n"
+                   "Keep each card open when its done is 0.\n"
+                   "Whenever a card becomes not open:\n  Say \"{the card} closed\"\n"
+                   "Whenever everything has settled:\n  Say \"settled: {Milk's line}\"\n"
+                   "Say Milk's line.\nSet Milk's wording to \"eggs\".\nSet Milk's done to 1.\n"
+                   "A tally has a count (number).\nThere is a tally called Total whose count is 0.\n"
+                   "Keep Total's count as the number of open cards.\n"
+                   "There is a new card whose wording is \"x\" and whose line is \"\" and whose done is 0.\n"
+                   "Say Total's count.\n")
+        self.assertEqual(said, ["- milk", "settled: - eggs", "Milk closed", "settled: - eggs", "settled: - eggs",
+                                "settled: - eggs", "settled: - eggs", "1"])
+
+    def test_refusals(self):
+        self.refuses(self.WORLD + "Keep each card's line as \"x\".\nSet Milk's line to \"y\".\n",
+                     "kept in step by its own sentence")
+        self.refuses(self.WORLD + "Keep each card open when its done is 0.\nNow Milk is not open.\n",
+                     "kept in step")
+        self.refuses(self.WORLD + "Keep Milk's line as \"x\".\nSet Milk's line to \"y\".\n", "kept in step")
+        self.refuses(self.WORLD + "Keep each card's line as 5.\n", "is text")
+        self.refuses(self.WORLD + "Keep each card's line as \"x\".\nKeep Milk's line as \"y\".\n", "already kept")
+
+    def test_values_that_never_settle_are_a_problem(self):
+        self.refuses("A box has a size (number).\nThere is a box called B whose size is 1.\n"
+                     "Keep each box's size as its size + 1.\n", "would not settle", stage="run")
+
+    def test_a_rule_still_holds(self):
+        self.refuses("A box has a size (number).\nA box's size is never more than 5.\n"
+                     "There is a box called B whose size is 1.\nKeep each box's size as 9.\n", "break a rule",
+                     stage="run")
+
+    def test_a_verb_called_keep_still_works(self):
+        self.assertEqual(run("To keep:\n  Say \"kept\"\nKeep.\n"), ["kept"])
+        self.refuses(self.WORLD + "To keep a card:\n  Say 1.\nKeep each card's line as \"x\".\n", "verb \"keep\"")
+
+
+class VerbShapes(Base):
+    def test_shapes_told_apart_by_their_linking_words(self):
+        source = ("A knight has a purse (money).\nA dragon has an age (number).\n"
+                  "There is a knight called Gawain whose purse is $5.\nThere is a dragon called Smaug whose age is 1.\n"
+                  "To send a knight against a dragon:\n  Say \"{the knight} against {the dragon}\"\n"
+                  "To send a dragon to a knight:\n  Say \"{the dragon} to {the knight}\"\n"
+                  "To send:\n  Say \"nothing\"\n"
+                  "Send Gawain against Smaug.\nSend Smaug to Gawain.\nSend.\n")
+        self.assertEqual(run(source), ["Gawain against Smaug", "Smaug to Gawain", "nothing"])
+        error = self.refuses("A knight has a purse (money).\nA dragon has an age (number).\n"
+                             "To greet a knight:\n  Say 1.\nTo greet a dragon:\n  Say 2.\n", "same linking words")
+        self.assertEqual(error.key, "verb_shapes")
+        self.refuses(source + "Send Gawain with Smaug.\n", "")
+
+
+class BooksBesideTheProgram(InTemporaryFolder, Base):
+    def write(self, name, text):
+        path = self.folder / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+
+    def test_a_chapter_may_use_a_book_beside_the_program(self):
+        self.write("tales/start.english", "Use the end chapter of the lore book.\nSay the moral.\n")
+        self.write("lore/end.english", 'Let the moral be "be kind".\n')
+        out = []
+        compile_source("Use the start chapter of the tales book.\n", self.folder, "main.english").run(out.append)
+        self.assertEqual(out, ["be kind"])
+        self.write("tales/lore/end.english", 'Let the moral be "be brave".\n')
+        with self.assertRaises(EnglishError) as caught:
+            compile_source("Use the start chapter of the tales book.\n", self.folder, "main.english")
+        self.assertIn("two books", caught.exception.message + (caught.exception.hint or ""))
+
+
+class ReferenceFixes(Base):
+    """Phase G: what the reference now states, where it changed behaviour."""
+
+    def test_names_in_any_alphabet(self):
+        said = run("A dragon has an age (number).\nThere is a dragon called Fáfnir whose age is 3.\n"
+                   "Let the größe be 2.\nSay \"{fáfnir} {the größe}\"\n")
+        self.assertEqual(said, ["Fáfnir 2"])
+
+    def test_numbers(self):
+        error = self.refuses("Say 0,123.\n", "comma in the wrong place")
+        self.assertEqual(error.fix["text"], "Say 123.")
+        said = run('Say "-5" as a number.\nSay " 5" as a number.\nSay "007" as a number.\n'
+                   'Say "+5" as a number.\nSay "0,123" as a number.\nSay "1,000" as a number.\n')
+        self.assertEqual(said, ["-5", "5", "7", "nothing", "nothing", "1,000"])
+
+    def test_braces_and_quotes_in_text(self):
+        self.refuses('Say "a } b"\n', "closes no fill-in")
+        self.refuses('A dragon has an age (number).\nSay "{the dragon called ""x""}"\n', "can't contain quotes")
+        self.assertEqual(run('Say "a }} b {{c}}"\n'), ["a } b {c}"])
 
 
 class Indexes(Base):

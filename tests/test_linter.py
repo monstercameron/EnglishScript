@@ -15,6 +15,7 @@ sys.path.insert(0, str(ROOT))
 
 from englishscript import EnglishError, Problem, compile_source, lint  # noqa: E402
 from englishscript.compiler import KEYWORDS, pluralize  # noqa: E402
+from englishscript.lexer import RULES  # noqa: E402
 from englishscript.__main__ import main  # noqa: E402
 
 DRAGONS = (ROOT / "examples" / "dragons.english").read_text(encoding="utf-8")
@@ -857,7 +858,67 @@ class TheSpellingHelper(unittest.TestCase):
         self.assertIn("A dragon has: name, age.", problem.hint)
 
 
+class ForTools(unittest.TestCase):
+    """The API an editor or a language server uses (SYNTAX.md section 10, "For tools")."""
+
+    def test_notes_survive_an_error_elsewhere(self):
+        problems, notes = lint("Let the x be 1.\nSay nonsense.\nLet the y be the x.\n", notes=True)
+        self.assertEqual([p.line for p in problems if p.kind == "error"], [2])
+        self.assertEqual([line for line, _ in notes], [1, 3])
+        self.assertIsInstance(lint("Say 1.\n"), list)
+
+    def test_the_table_of_names(self):
+        import englishscript
+        table = englishscript.names("A dragon (plural dragonz) has an age (number).\n"
+                                    "A dragon is old when its age is more than 5.\n"
+                                    "There is a dragon called Smaug whose age is 9.\n"
+                                    "To roar at a victim (dragon):\n  Say 1.\nLet the x be 2.\nSay nonsense.\n"
+                                    "To work out the double (number) of a value (number):\n  The answer is 2.\n"
+                                    "Whenever a dragon becomes old:\n  Say 1.\n")
+        found = {(n["what"], n["name"], n["of"], n["line"], n["col"], n["width"]) for n in table["names"]}
+        for entry in [("kind", "dragon", None, 1, 2, 6), ("plural of a kind", "dragonz", "dragon", 1, 17, 7),
+                      ("property", "age", "dragon", 1, 33, 3), ("adjective", "old", "dragon", 2, 12, 3),
+                      ("thing", "Smaug", "dragon", 3, 25, 5), ("verb", "roar", None, 4, 3, 4),
+                      ("role", "victim", None, 4, 13, 6), ("variable", "x", None, 6, 8, 1),
+                      ("worked-out value", "double", None, 8, 16, 6)]:
+            self.assertIn(entry, found)
+        self.assertIn("reaction", {n["what"] for n in table["names"]})
+        self.assertEqual(table["chapters"], [])
+
+    def test_a_chapter_open_in_an_editor(self):
+        import englishscript
+        texts = {"near.english": "This chapter shares only greeting.\nLet the greeting be \"hi\".\n"}
+
+        def read(path):
+            return texts.get(path.name)
+        with tempfile.TemporaryDirectory() as folder:
+            self.assertEqual([p for p in lint("Use the near chapter.\nSay the greeting.\n", folder, read=read)
+                              if p.kind == "error"], [])
+            out = []
+            englishscript.compile_source("Use the near chapter.\nSay the greeting.\n", folder,
+                                         read=read).run(out.append)
+            self.assertEqual(out, ["hi"])
+            table = englishscript.names("Use the near chapter.\n", folder, read=read)
+            self.assertEqual(table["chapters"], [{"file": "near.english", "name": "near", "shares": ["greeting"]}])
+
+    def test_a_fix_keeps_the_line_as_written(self):
+        problem = lint("say “hi”   # greeting\n")[0]
+        self.assertEqual(problem.fix["text"], "Say “hi”   # greeting")
+
+    def test_the_exports(self):
+        import englishscript
+        self.assertIn("whenever", englishscript.KEYWORDS)
+        self.assertEqual(englishscript.CATEGORY_HEADINGS["spelling"], "Spelling")
+        self.assertRegex(englishscript.__version__, r"^\d+\.\d+\.\d+$")
+
+
 class TheNewWarnings(unittest.TestCase):
+    def test_a_kind_that_could_never_be_made(self):
+        found = [p for p in warnings("A node has a label (text) and a next (node).\n") if p.rule == RULES["endless_kind"][1]]
+        self.assertEqual(len(found), 1)
+        self.assertEqual(found[0].fix["text"], "A node has a label (text) and a next (node, if any).")
+        self.assertFalse([p for p in warnings("A node has a next (node, if any).\n") if p.rule == RULES["endless_kind"][1]])
+
     def test_a_or_an(self):
         found = warnings("A egg has an weight (number).\nA egg is big when its weight is more than 1.\n"
                          "There is a big egg called Ova whose weight is 2.\n")

@@ -27,12 +27,15 @@ How it is put together
 dict and gives back the messages to send, as dicts, so the tests drive it
 directly. `serve` is the loop that frames messages on a pair of streams.
 
-Problems come from `englishscript.lint` and the notes on how a sentence was
-read from `englishscript.compile_source`. Everything else (the outline, the
-definitions, the suggestions) comes from rename.py's `read_names`, which is a
-reading of the *text*: it recognises the sentence forms that define names. It
-is not the compiler's own table of names, so it can be wrong about a
-sentence the compiler refuses; the diagnostics will say so in that case.
+Problems, and the notes on how each sentence was read, come from
+`englishscript.lint`. The outline, the definitions and the suggestions come
+from rename.py's `read_program`: the compiler's own table of names
+(`englishscript.names`) where it has one, and under it `read_names`, a reading
+of the *text* that recognises the sentence forms that define names. The text
+reading supplies what the table leaves out (a loop's name, a library's words,
+a verb's roles) and stands in for the table if the compiler can't give it;
+alone, it can be wrong about a sentence the compiler refuses. A chapter that
+is open in the editor is read from the editor, saved or not, by all of them.
 
 Positions. The compiler counts lines as `str.splitlines` does and columns in
 characters. The protocol counts lines by \\n, \\r\\n and \\r only, and columns
@@ -189,8 +192,8 @@ class Document:
         self.text = Text(text)
         self.path = path_of(uri)
         self.problems = None  # the linter's problems, as dicts, once asked for
-        self.reading = None  # rename.read_names of the text, once asked for
-        self.notes = None  # {line number: [how it was read]}, or False if it does not compile
+        self.notes = None  # {line number: [how it was read]}; None until asked for, False if they can't be had
+        self.program = None  # (rename.Reading of the text, the chapters and libraries it uses), once asked for
 
     @property
     def folder(self):
@@ -212,8 +215,16 @@ OPENERS = [
     ("Let the … be ….", "Let the ${1:total} be ${2:0}.", "any", "Make a variable."),
     ("Let the … always be ….", "Let the ${1:tax rate} always be ${2:10%}.", "any",
      "Make a variable that never changes."),
+    ("Let the … be a list of …, … and ….", "Let the ${1:scores} be a list of ${2:3}, ${3:8} and ${4:5}.", "any",
+     "Make a list, written out."),
+    ("Let the … be an empty list of ….", "Let the ${1:scores} be an empty list of ${2:numbers}.", "any",
+     "Make a list with nothing in it."),
     ("Set … to ….", "Set ${1:the total} to ${2:0}.", "any", "Change a variable or a property."),
-    ("Add … to ….", "Add ${1:1} to ${2:the total}.", "any", "Add to a variable or a property."),
+    ("Add … to ….", "Add ${1:1} to ${2:the total}.", "any",
+     "Add to a number, or put a value at the end of a list."),
+    ("Remove … from ….", "Remove ${1:3} from ${2:the scores}.", "any", "Take a value out of a list."),
+    ("Set item … of … to ….", "Set item ${1:1} of ${2:the scores} to ${3:0}.", "any",
+     "Replace an item of a list."),
     ("Subtract … from ….", "Subtract ${1:1} from ${2:the total}.", "any",
      "Subtract from a variable or a property."),
     ("Multiply … by ….", "Multiply ${1:the total} by ${2:2}.", "any", "Multiply a variable or a property."),
@@ -227,6 +238,7 @@ OPENERS = [
     ("Repeat … times:", "Repeat ${1:3} times:\n  $0", "any", "Do the block a number of times."),
     ("While …:", "While ${1:the total is less than 10}:\n  $0", "any", "Do the block while the condition holds."),
     ("Try:", "Try:\n  $1\nIf that fails:\n  $0", "any", "Recover from a problem."),
+    ("Either way:", "Either way:\n  $0", "any", "After If that fails: what is done whether the Try failed or not."),
     ("Fail because \"…\"", 'Fail because "${1:the reason}".', "any", "Stop with a problem a Try can recover from."),
     ("There is a … called … whose … is ….", "There is a ${1:dragon} called ${2:Smaug} whose ${3:age} is ${4:771}.",
      "top", "Make a thing with a name."),
@@ -243,6 +255,14 @@ OPENERS = [
     ("A … is … when ….", "A ${1:dragon} is ${2:ancient} when ${3:its age is at least 500}.", "top",
      "Define an adjective."),
     ("A … can be ….", "A ${1:task} can be ${2:done}.", "top", "An adjective the program sets with Now."),
+    ("A … is one of …, … or ….", "A ${1:mood} is one of ${2:sleepy}, ${3:grumpy} or ${4:very cross}.", "top",
+     "A fixed set of choices, used as a type."),
+    ("Keep each …'s … as ….", "Keep each ${1:card}'s ${2:line} as ${3:its wording}.", "top",
+     "Keep a property of every thing of a kind in step with a value."),
+    ("Keep …'s … as ….", "Keep ${1:Milk}'s ${2:line} as ${3:the heading}.", "top",
+     "Keep a property of one thing in step with a value."),
+    ("Keep each … … when ….", "Keep each ${1:card} ${2:open} when ${3:the card is not done}.", "top",
+     "Keep a stored adjective in step with a condition."),
     ("The … of a … is ….", "The ${1:tax} of a ${2:dragon} is ${3:10% of its hoard}.", "top",
      "Define a worked-out property."),
     ("A …'s … is never ….", "A ${1:knight}'s ${2:purse} is never ${3:less than \\$0}.", "top", "State a rule."),
@@ -252,6 +272,8 @@ OPENERS = [
     ("To work out the … (…) of a …:", "To work out the ${1:bounty} (${2:money}) ${3:of} a ${4:dragon}:\n  "
      "The answer is ${5:\\$0}.", "top", "Define a value that is worked out."),
     ("Whenever … becomes …:", "Whenever a ${1:knight} becomes ${2:broke}:\n  $0", "top", "React to a change."),
+    ("Whenever everything has settled:", "Whenever everything has settled:\n  $0", "top",
+     "React once at the end of each turn in which something changed."),
     ("Use the … library.", "Use the ${1:page} library.", "top", "Use a library."),
     ("Use the … chapter.", "Use the ${1:calendar} chapter.", "top", "Use another file beside this one."),
     ("Use the … chapter of the … book.", "Use the ${1:calendar} chapter of the ${2:almanac} book.", "top",
@@ -268,12 +290,21 @@ _PLACEHOLDER = re.compile(r"\$\{\d+:((?:[^}\\]|\\.)*)\}|\$\{\d+\}|\$\d+")
 
 # Completion item kinds and symbol kinds of the protocol, for each sort of name.
 ITEM_KIND = {"kind": 7, "plural": 7, "property": 10, "adjective": 20, "thing": 21, "verb": 2, "value": 3,
-             "variable": 6, "role": 6, "loop": 6}
+             "variable": 6, "role": 6, "loop": 6, "choices": 13, "choice": 20}
 SNIPPET = 15
 SYMBOL_KIND = {"kind": 5, "property": 7, "adjective": 17, "thing": 19, "verb": 6, "value": 12, "variable": 13,
-               "reaction": 24}
-HEADINGS = {"capitals": "Capital letters", "kinds": "Kinds of value", "borrowed": "From another language",
-            "running": "While running"}
+               "reaction": 24, "choices": 10, "choice": 22}
+
+
+def heading(category):
+    """The heading word of a category of mistake, as the compiler's own marks have it ("Kinds of value")."""
+    try:
+        headings = getattr(importlib.import_module("englishscript"), "CATEGORY_HEADINGS", None)
+        if isinstance(headings, dict) and isinstance(headings.get(category), str):
+            return headings[category]
+    except Exception:  # noqa: BLE001 - the category's own word will do
+        pass
+    return str(category).capitalize() if category else "Problem"
 
 
 def plain_snippet(snippet):
@@ -311,6 +342,8 @@ def describe(name):
         said += f" ({name.owner})"
     elif name.what == "plural" and name.owner:
         said = f"the plural of the kind {name.owner}"
+    elif name.what == "choice" and name.owner:
+        said = f"a choice of {name.owner}"
     elif name.what == "variable" and name.constant:
         said = "a variable that never changes"
     if name.type:
@@ -467,6 +500,19 @@ class Server:
         doc = Document(item["uri"], str(item.get("text", "")), item.get("version"))
         self.documents[doc.uri] = doc
         self.publish(doc)
+        self.others_changed(doc, publish=False)
+
+    def others_changed(self, doc, publish=True):
+        """A document was opened, changed, saved or closed. The others may use it as a chapter,
+        and the compiler reads an open chapter from the editor: forget what was worked out for
+        them, and tell the editor again about those that use chapters."""
+        for other in list(self.documents.values()):
+            if other is doc:
+                continue
+            uses_chapters = any(use.what == "chapter" for use in self.reading(other).uses)
+            other.problems = other.notes = other.program = None
+            if publish and uses_chapters:
+                self.publish(other)
 
     def did_change(self, params):
         doc = self.document(params)
@@ -484,15 +530,16 @@ class Server:
         fresh.text = text
         self.documents[doc.uri] = fresh
         self.publish(fresh)
+        self.others_changed(fresh)
 
     def did_save(self, params):
         doc = self.document(params)
         if doc is not None and isinstance(params.get("text"), str) and params["text"] != doc.text.text:
             doc = Document(doc.uri, params["text"], doc.version)
             self.documents[doc.uri] = doc
-        # The linter reads chapters from the disk, so a saved file may change what other files' problems are.
-        for other in self.documents.values():
-            other.problems = other.notes = None
+        # A chapter that is not open is read from the disk, so a save may change what any file's problems are.
+        for other in list(self.documents.values()):
+            other.problems = other.notes = other.program = None
             self.publish(other)
 
     def did_close(self, params):
@@ -500,64 +547,99 @@ class Server:
         if doc is not None:
             del self.documents[doc.uri]
             self.notify("textDocument/publishDiagnostics", {"uri": doc.uri, "diagnostics": []})
+            self.others_changed(None)
 
     # What the compiler says -------------------------------------------------
 
-    def problems(self, doc):
-        """The linter's problems for a document, as dicts, in the linter's order."""
-        if doc.problems is None:
-            try:
-                lint = importlib.import_module("englishscript").lint
-                doc.problems = [as_dict(problem) for problem in lint(doc.text.text, doc.folder, doc.name)]
-            except Exception as error:  # noqa: BLE001 - the compiler may be half-written; say so and carry on
-                self.log("englishscript server: the linter failed:\n" + traceback.format_exc())
-                doc.problems = [{"line": 1, "col": None, "width": 1, "kind": "warning", "category": None,
-                                 "message": f"The EnglishScript compiler could not check this file "
-                                            f"({type(error).__name__}: {error}).",
-                                 "hint": None, "rule": None, "see": None, "fix": None, "file": None}]
-        return doc.problems
-
-    def notes(self, doc):
-        """{line number, from 1: how its sentence was read}, or None if the program does not compile."""
-        if doc.notes is None:
-            doc.notes = False
-            try:
-                program = importlib.import_module("englishscript").compile_source(doc.text.text, doc.folder, doc.name)
-                found = {}
-                for entry in getattr(program, "notes", None) or []:
-                    number, text = entry[0], entry[1]
-                    found.setdefault(number, []).append(str(text))
-                doc.notes = found
-            except Exception:  # noqa: BLE001 - an EnglishError, or a compiler that is being rewritten
-                pass
-        return doc.notes or None
-
-    def reading(self, doc):
-        if doc.reading is None:
-            doc.reading = renaming.read_names(doc.text.text)
-        return doc.reading
-
-    def read_file(self, path):
-        """A chapter's text: what is open in the editor, or else what is on the disk."""
+    def open_text(self, path):
+        """The text of a file that is open in the editor, or None: what the compiler's `read=` asks for."""
         for other in self.documents.values():
             if other.path is not None and same_file(other.path, path):
                 return other.text.text
+        return None
+
+    def read_file(self, path):
+        """A chapter's text: what is open in the editor, or else what is on the disk."""
+        text = self.open_text(path)
+        if text is not None:
+            return text
         try:
             return Path(path).read_text(encoding="utf-8")
         except (OSError, UnicodeError):
             return None
 
+    def check(self, doc):
+        """Ask the linter for the document's problems and, where it gives them, the notes on how
+        each good sentence was read. A chapter that is open in the editor is read from there."""
+        doc.problems, doc.notes = [], None
+        try:
+            lint = importlib.import_module("englishscript").lint
+            source = doc.text.text
+            try:
+                found = lint(source, doc.folder, doc.name, notes=True, read=self.open_text)
+            except TypeError:  # a linter without `notes` or `read`
+                found = lint(source, doc.folder, doc.name)
+            if isinstance(found, tuple) and len(found) == 2:
+                found, notes = found
+                doc.notes = {}
+                for entry in notes or []:
+                    doc.notes.setdefault(entry[0], []).append(str(entry[1]))
+            doc.problems = [as_dict(problem) for problem in found]
+        except Exception as error:  # noqa: BLE001 - the compiler may be half-written; say so and carry on
+            self.log("englishscript server: the linter failed:\n" + traceback.format_exc())
+            doc.notes = False
+            doc.problems = [{"line": 1, "col": None, "width": 1, "kind": "warning", "category": None,
+                             "message": f"The EnglishScript compiler could not check this file "
+                                        f"({type(error).__name__}: {error}).",
+                             "hint": None, "rule": None, "see": None, "fix": None, "file": None}]
+
+    def problems(self, doc):
+        """The linter's problems for a document, as dicts, in the linter's order."""
+        if doc.problems is None:
+            self.check(doc)
+        return doc.problems
+
+    def notes(self, doc):
+        """{line number, from 1: how its sentence was read}, or None if that can't be had."""
+        if doc.problems is None:
+            self.check(doc)
+        if doc.notes is None:  # the linter gave no notes: the compiler has them, if the whole file compiles
+            doc.notes = False
+            try:
+                compile_source = importlib.import_module("englishscript").compile_source
+                try:
+                    program = compile_source(doc.text.text, doc.folder, doc.name, read=self.open_text)
+                except TypeError:
+                    program = compile_source(doc.text.text, doc.folder, doc.name)
+                found = {}
+                for entry in getattr(program, "notes", None) or []:
+                    found.setdefault(entry[0], []).append(str(entry[1]))
+                doc.notes = found
+            except Exception:  # noqa: BLE001 - an EnglishError, or a compiler that is being rewritten
+                pass
+        return doc.notes or None
+
+    def program(self, doc):
+        """(the Reading of the document, [(the Use, what to call it, its path, its Reading, its text)])
+        for the document and the chapters and libraries it uses: rename.read_program, which takes
+        the compiler's table of names where there is one. A library has no path and no text."""
+        if doc.program is None:
+            texts = {}
+
+            def read(path):
+                texts[str(path)] = self.read_file(path)
+                return texts[str(path)]
+
+            reading, others = renaming.read_program(doc.text.text, doc.folder, doc.name, read)
+            doc.program = (reading, [(use, label, path, other, texts.get(str(path)))
+                                     for use, label, path, other in others])
+        return doc.program
+
+    def reading(self, doc):
+        return self.program(doc)[0]
+
     def neighbours(self, doc):
-        """The chapters and libraries the document uses:
-        [(the Use, what to call it, its path, its Reading, its text)]. A library has no path and no text."""
-        texts = {}
-
-        def read(path):
-            texts[str(path)] = self.read_file(path)
-            return texts[str(path)]
-
-        found = renaming.neighbours(self.reading(doc), doc.folder, read)
-        return [(use, label, path, reading, texts.get(str(path))) for use, label, path, reading in found]
+        return self.program(doc)[1]
 
     # Diagnostics ------------------------------------------------------------
 
@@ -711,8 +793,7 @@ class Server:
     def problem_text(problem, markdown):
         """A problem as the hover shows it: what is wrong, how to mend it, and the rule."""
         esc = escape_markdown if markdown else (lambda text: text)
-        category = problem.get("category")
-        head = HEADINGS.get(category) or (str(category).capitalize() if category else "Problem")
+        head = heading(problem.get("category"))
         if problem.get("kind") == "warning":
             head += ", a suggestion"
         parts = [f"**{esc(head)}**" if markdown else head, esc(str(problem.get("message") or ""))]
@@ -735,7 +816,8 @@ class Server:
         """Every name that may be written in the document:
         {words: [(uri or None, the Name, its file's Text or None, None or what its chapter or library is called)]}.
 
-        This is a reading of the text (rename.read_names), not of the compiler's tables."""
+        The names are the compiler's own table (englishscript.names) where it gives one, and
+        otherwise a reading of the sentence forms in the text: see rename.read_program."""
         found = {}
         reading = self.reading(doc)
         for name in reading.names:
@@ -800,17 +882,19 @@ class Server:
     # The outline ------------------------------------------------------------
 
     def document_symbol(self, params):
-        """The kinds, things, adjectives, verbs, worked-out values, top-level variables and
-        reactions of the file, each at its defining sentence.
+        """The kinds, sets of choices, things, adjectives, verbs, worked-out values, top-level
+        variables and reactions of the file, each at its defining sentence.
 
-        These are found by reading the sentence forms ("A dragon has ...", "There is a dragon
-        called Smaug ...", "To send a knight against a dragon:", ...) in rename.read_names.
-        It is a reading of the text, not of the compiler's tables."""
+        They are the compiler's own table of names (englishscript.names) where it gives one.
+        Where it does not, they are found by reading the sentence forms ("A dragon has ...",
+        "There is a dragon called Smaug ...", "To send a knight against a dragon:", ...) in
+        rename.read_names: that is a reading of the text, not of the compiler's tables, and it
+        also supplies "Whenever everything has settled:", which the table leaves out."""
         doc = self.document(params)
         if doc is None:
             return []
         reading, text = self.reading(doc), doc.text
-        symbols, kinds = [], {}
+        symbols, parents = [], {}  # parents: a kind or a set of choices, by its word
 
         def symbol(label, what, detail, number, start, end):
             line = reading.lines[number]
@@ -823,18 +907,19 @@ class Server:
             }
 
         for name in reading.names:
-            if not name.top or name.what in ("plural",):
+            if not name.top or name.what == "plural":
                 continue
             what = "value" if name.what == "property" and name.worked else name.what
             found = symbol(name.text, what, describe(name), name.line, name.start, name.end)
             if name.what == "variable" and name.constant:
                 found["kind"] = 14
-            if name.what == "property" and not name.worked and name.owner in kinds:
+            owner = (str(name.owner).lower(), name.what == "choice")
+            if (name.what == "choice" or (name.what == "property" and not name.worked)) and owner in parents:
                 found["range"] = found["selectionRange"]
-                kinds[name.owner].setdefault("children", []).append(found)
+                parents[owner].setdefault("children", []).append(found)
                 continue
-            if name.what == "kind":
-                kinds[name.words[0]] = found
+            if name.what in ("kind", "choices"):
+                parents[(name.words[0], name.what == "choices")] = found
             symbols.append((name.line, name.start, found))
         for number, sentence in reading.reactions:
             line = reading.lines[number]
@@ -882,7 +967,7 @@ class Server:
         if context in ("comment", "text"):
             return []
         written = prefix.lstrip()
-        if context == "code" and re.fullmatch(r"[A-Za-z]*", written):
+        if context == "code" and re.fullmatch(r"(?:[^\W\d_]\w*)?", written):  # nothing yet, or one word begun
             return self.sentence_starts(doc, number, col, len(prefix) - len(written))
         return self.name_items(doc, number, prefix, context)
 

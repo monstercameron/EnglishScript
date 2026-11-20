@@ -44,6 +44,8 @@ RULES = {
     "quotes": ("punctuation", "Text goes between double quotes.", "2"),
     "fill_in": ("punctuation", "A fill-in goes between braces inside the quotes, and holds one value.", "2"),
     "brackets": ("punctuation", "Every opening bracket has a closing one.", "5.3"),
+    "number_form": ("punctuation", "A comma in a number marks thousands: it is followed by exactly three digits, "
+                                   "and the number does not start with 0 and a comma.", "2"),
     "marks": ("punctuation", "A sentence is made of words, numbers, quoted text and the marks . , : ( ) + - * / $ %.", "1"),
     "question": ("punctuation", "A program gives instructions; it does not ask questions.", "6"),
     "list_commas": ("punctuation", 'Items in a list are separated by commas, with "and" before the last.', "4.1"),
@@ -194,6 +196,8 @@ RULES = {
     "semicolon": ("borrowed", "Each sentence goes on a line of its own.", "1"),
     # Style (warnings)
     "unused": ("style", "Whatever a program makes, it uses; what it never uses can be taken out.", "3"),
+    "endless_kind": ("style", "A kind whose required property is a thing of its own kind can never be made: give "
+                              'that property "if any".', "2"),
     "unreachable": ("style", "A sentence straight after one that always leaves its block is never carried out.", "8.4"),
     # While running
     "rule_broken": ("running", 'A change that would break a "never" or "always" rule is refused, and the program '
@@ -202,6 +206,30 @@ RULES = {
     "zero": ("running", "Nothing can be divided by zero.", "5.3"),
     "choices_form": ("grammar", 'A set of choices is written "A mood is one of sleepy, grumpy or content.": the '
                                 'choices separated by commas, with "or" before the last.', "4.6"),
+    "choice": ("kinds", "A value of a set of choices is one of the choices listed where the set is described.",
+               "4.6"),
+    "problem_kind": ("vocabulary", "A problem is a broken rule, a division by zero, a missing file, a refused "
+                                   "removal, a removed thing, a bad count, a missing item, a bad number, a bad "
+                                   "reply, no model, a library problem or a failure.", "8.5"),
+    "model_form": ("grammar", 'A model is asked as "Ask the model <text> [about <value>] and let <name> (<type>) be '
+                              'the reply."', "7.8"),
+    "judge_form": ("grammar", 'A judgement is asked for as "Judge <text> about <value> and let <name> (percent) be '
+                              'the chance." or "... and let <name> (<set of choices>) be the verdict."', "7.8"),
+    "meaning_form": ("grammar", 'A choice is given a meaning for the judge as "For a <set of choices>, <choice> '
+                                'means <text>.", once.', "7.8"),
+    "bad_reply": ("running", "A model's reply is read as the type that was asked for, and a judgement has to give "
+                             "a chance from 0 to 1 for what was asked.", "7.8"),
+    "no_model": ("running", "A program can ask a model only when one is listening.", "7.8"),
+    "model_fault": ("running", "A fault in the listener connected as the model is the listener's, not the "
+                               "program's.", "7.8"),
+    "keep_rounds": ("running", "Kept values are kept in step at the end of each turn, and must settle within ten "
+                               "rounds.", "9.5"),
+    "kept": ("meaning", 'A value made with "Keep" is kept in step by its own sentence, and is not changed in any '
+                        "other way.", "9.5"),
+    "keep_form": ("grammar", "A value is kept with \"Keep each <kind>'s <property> as ...\", \"Keep <thing>'s "
+                             "<property> as ...\" or \"Keep each <kind> <adjective> when ...\".", "9.5"),
+    "verb_shapes": ("vocabulary", "A verb may have several shapes only if they differ in their linking words: which "
+                                  "verb a sentence uses never depends on its values.", "9.1"),
     "count": ("running", "A count of times or of letters is a whole number, and not negative.", "8.3"),
     "rounding": ("running", "A value is rounded to a step of more than nothing; a negative number has no square "
                             "root, and is raised only to a whole power.", "5.3"),
@@ -216,6 +244,18 @@ RULES = {
                          "levels deep.", "9.1"),
     "library_run": ("running", "A library's own fault is the library's, not the program's.", "9.4"),
 }
+
+
+# The kinds of problem a Try can recover from, as "the problem is a ..." names them
+# (section 8.5), by the rule of the problem. "removed" is told apart where it is raised:
+# "removed thing" for using one, "refused removal" for removing one that is still needed.
+PROBLEM_KINDS = {
+    "rule_broken": "broken rule", "zero": "division by zero", "file": "missing file", "count": "bad count",
+    "missing_item": "missing item", "rounding": "bad number", "fail": "failure", "removed": "removed thing",
+    "bad_reply": "bad reply", "no_model": "no model",
+}
+PROBLEM_NAMES = ("broken rule", "division by zero", "missing file", "refused removal", "removed thing",
+                 "bad count", "missing item", "bad number", "bad reply", "no model", "library problem", "failure")
 
 
 def classify(message, stage):
@@ -282,8 +322,9 @@ class EnglishError(Exception):
     """
 
     def __init__(self, message, line=None, col=None, width=1, hint=None, stage="compile", recoverable=False,
-                 teach=None, fix=None, category=None):
+                 teach=None, fix=None, category=None, problem=None):
         super().__init__(message)
+        self.problem = problem  # the kind of problem, for "the problem is a ...", when not told by `teach`
         self.message = message
         self.line = line
         self.col = col
@@ -296,6 +337,13 @@ class EnglishError(Exception):
         self.trace = []
         self.fix_text = fix
         self.teach(teach or classify(message, stage), category)
+
+    @property
+    def kind(self):
+        """What kind of problem this is, as "the problem is a ..." names it (section 8.5)."""
+        if self.problem is not None:
+            return self.problem
+        return PROBLEM_KINDS.get(self.key, "failure")
 
     def teach(self, key, category=None):
         """Give the problem the rule `key` (and perhaps another category)."""
@@ -403,11 +451,11 @@ class Line:
 TOKEN_RE = re.compile(
     r"""
     (?P<STRING>"(?:[^"]|"")*")
-  | (?P<MONEY>\$\d{1,3}(?:,\d{3})+(?:\.\d+)?|\$\d+(?:\.\d+)?)
-  | (?P<PERCENT>\d+(?:\.\d+)?%)
-  | (?P<NUMBER>\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)
+  | (?P<MONEY>\$[0-9]{1,3}(?:,[0-9]{3})+(?:\.[0-9]+)?|\$[0-9]+(?:\.[0-9]+)?)
+  | (?P<PERCENT>[0-9]+(?:\.[0-9]+)?%)
+  | (?P<NUMBER>[0-9]{1,3}(?:,[0-9]{3})+(?:\.[0-9]+)?|[0-9]+(?:\.[0-9]+)?)
   | (?P<POS>'s\b)
-  | (?P<WORD>[A-Za-z][A-Za-z0-9_]*)
+  | (?P<WORD>[^\W\d_]\w*)
   | (?P<PUNCT><=|>=|[()+\-*/<>=,.:])
   | (?P<WS>\s+)
     """,
@@ -516,6 +564,12 @@ def tokenize(text, line, start, end, partial=None):
             message, hint, rule, at, width, fix = _symbol_advice(text, pos, line)
             raise EnglishError(message, line, at, width, hint, teach=rule, fix=fix)
         kind, raw = m.lastgroup, m.group()
+        if kind in ("NUMBER", "MONEY") and "," in raw and raw.lstrip("$").startswith("0"):
+            # "0,123": a comma marks thousands, so the first group can't be a lone 0.
+            raise EnglishError(f'"{raw}" has a comma in the wrong place: a comma marks thousands, as in 1,000.',
+                               line, pos, len(raw), "Write the number without the comma.", teach="number_form",
+                               fix=swap(line, pos, pos + len(raw), raw.replace(",", "").lstrip("0") or "0")
+                               if kind == "NUMBER" else None)
         if kind != "WS":
             value = None
             if kind == "NUMBER":
@@ -559,11 +613,15 @@ def read_source(source, library=None, problems=None, unit=None):
             raise error
         problems.append(error)
 
+    # Curly quotes are read as straight ones; a correction (EnglishError.fix) is made to the line
+    # as written, so `raw` keeps them. Each is one character for one, so the columns agree.
+    as_written = source.splitlines()
     source = source.replace("“", '"').replace("”", '"').replace("’", "'")
     written = []  # (number, raw, text) of each line with a sentence on it
-    for number, raw in enumerate(source.splitlines(), 1):
-        text = _strip_comment(raw).rstrip()
+    for number, straight in enumerate(source.splitlines(), 1):
+        text = _strip_comment(straight).rstrip()
         if text.strip():
+            raw = as_written[number - 1] if number <= len(as_written) else straight
             written.append((number, raw, text))
     lines = []
     for k, (number, raw, text) in enumerate(written):

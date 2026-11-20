@@ -7,9 +7,9 @@
 # The first word is x if it is done, the second is * if it is starred, the
 # third is its tag, and the rest is its wording. A dash stands for "no". How a
 # card is kept is this chapter's own business: the other files only ask it to
-# keep the list, fetch it, shelve a card or restore one.
+# save the list, fetch it, shelve a card or restore one, and whether one is spare.
 
-This chapter shares only keep, fetch, shelve and restore.
+This chapter shares only save, fetch, shelve, restore and sparing.
 
 Use the page library.
 Use the layout chapter.
@@ -60,9 +60,9 @@ To revive a line (text):
   If the tick is "x":
     Now the card is ticked.
 
-# Keep the whole list in the browser, for next time. It is written only when
+# Save the whole list in the browser, for next time. It is written only when
 # it differs from what was written last, so a letter typed in a box saves nothing.
-To keep:
+To save:
   Let the record be "".
   For each card:
     Set the record to "{the record}{the listing of the card}{new line}".
@@ -83,11 +83,14 @@ To fetch:
     For each line in the lines of the saved:
       Revive the line.
 
+# Is there a card that can be put back?
+To work out the sparing (yes or no):
+  The answer is whether the spare is not nothing.
+
 # Remove a card, keeping it as the one that can be put back.
 To shelve a card:
   Set the spare to the listing of the card.
   Remove the card.
-  Now Restorer is not hidden.
 
 # Put the last card removed back on the list.
 To restore:
@@ -95,4 +98,3 @@ To restore:
     Stop.
   Revive the spare.
   Set the spare to nothing.
-  Now Restorer is hidden.
