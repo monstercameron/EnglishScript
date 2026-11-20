@@ -52,6 +52,8 @@ EXAMPLES = [
     ("life", "The Game of Life", "Forty-nine cells, each a thing, and a glider that walks."),
     ("almanac", "An almanac, from the chapters of a book",
      "It uses three chapters of the almanac book: a calendar, Roman numerals and the feasts of the year."),
+    ("triage", "Sorting the post with a model",
+     "A model judges which team each letter belongs to, and the program decides in three bands. Here you answer as the model."),
     ("web_counters", "Three counters for the web",
      "One thing made three times: a kind that holds its own note and buttons, a verb that builds it, and one answer for them all."),
     ("web_almanac", "An almanac for the web",
@@ -328,10 +330,17 @@ def opposition_page():
     )
 
 
+def systems_page():
+    """docs/systems.html: System 0, 1 and 2, with every example run as the page is built."""
+    import systems
+
+    return systems.page()
+
+
 #: The pages printed from Markdown: (file in docs/, the function that makes it).
 PRINTED = [("reference.html", reference_page), ("vulkan.html", vulkan_page), ("page.html", page_library_page),
            ("concerns.html", concerns_page), ("editors.html", editors_page),
-           ("opposition.html", opposition_page)]
+           ("opposition.html", opposition_page), ("systems.html", systems_page)]
 
 
 def main():

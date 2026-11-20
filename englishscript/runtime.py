@@ -155,12 +155,16 @@ class Reaction:
 
 
 class World:
-    def __init__(self, out=print, ask=None, model=None, judge=None):
+    def __init__(self, out=print, ask=None, model=None, judge=None, judges=None):
         self.out = out
         self.ask = ask if ask is not None else read_line
         # Who answers "Ask the model" and "Judge" (section 7.8), or None: nothing is listening.
         self.model = model  # (question, state, shape, complaint) -> text, or None for no reply
         self.judge = judge  # (question, state, choices, meanings) -> a chance, or {choice: chance}
+        self.judges = judges  # ([request, ...]) -> [what judge would give for each], in order
+        # Every answer a model has given in this run, by its question: the same question about
+        # the same state is asked once. Outside the world: a failed "Try" does not forget them.
+        self.answers = {}
         self.things = {}  # kind -> [Thing], in order of creation; removed things leave
         self.named = {}  # lowercased name -> Thing
         self.made = {}  # kind -> how many have been made, for default names

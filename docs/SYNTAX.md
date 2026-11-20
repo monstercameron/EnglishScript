@@ -340,7 +340,7 @@ If the word starts with "a":
 | Arithmetic | `plus` `minus` `times` `divided` |
 | Prepositions | `with` `to` `from` `against` `for` `by` `on` `at` `into` `onto` `about` `over` `under` `as` `through` `toward` `towards` `upon` |
 
-**This list is frozen.** A new word in it would break every program that already uses that word in a name, so a new sentence form is recognised by where its words stand instead, wherever that can be done. Many words of the built forms are already free in this way, and may be part of names: `that`, `this`, `round`, `program`, `file`, `total`, `first`, `last`, `item`, `letter`, `letters`, `length`, `words`, `lines`, `upper`, `lower`, `case`, `chapter`, `book`, `library`, `shares`, `only`, `everything`, `settled`, `keep`, `either`, `way`, `again`, `because`, `joined`, `empty`, `remainder`, `rounded`, `nearest`, `raised`, `power`, `square`, `root`, `larger`, `smaller`, `absolute`, `value`, `does`, `contain`, `contains`, `starts`, `ends`, `comes`, `before`, `after`, `one`, `plural`, `done` and `fails`. Each is read as part of its form only where the form's other words stand around it (`the total of` a list, `Skip this round`, `the text of the file`), and as a name everywhere else.
+**This list is frozen.** A new word in it would break every program that already uses that word in a name, so a new sentence form is recognised by where its words stand instead, wherever that can be done. Many words of the built forms are already free in this way, and may be part of names: `that`, `this`, `round`, `program`, `file`, `total`, `first`, `last`, `item`, `letter`, `letters`, `length`, `words`, `lines`, `upper`, `lower`, `case`, `chapter`, `book`, `library`, `shares`, `only`, `everything`, `settled`, `keep`, `either`, `way`, `again`, `because`, `joined`, `empty`, `remainder`, `rounded`, `nearest`, `raised`, `power`, `square`, `root`, `larger`, `smaller`, `absolute`, `value`, `does`, `contain`, `contains`, `starts`, `ends`, `comes`, `before`, `after`, `one`, `plural`, `done`, `fails`, `model`, `judge`, `chance`, `verdict`, `grade`, `likelihood` and `means`. Each is read as part of its form only where the form's other words stand around it (`the total of` a list, `Skip this round`, `the text of the file`), and as a name everywhere else.
 
 **Plurals** are formed by rule: add `s`; add `es` after `s`, `x`, `z`, `ch` or `sh`; change a consonant plus `y` to `ies`. So `dragon` gives `dragons`, `fox` gives `foxes` and `pony` gives `ponies`. Another plural can be stated where the kind is described: `A child (plural children) has ...` (section 4.1). Every kind has its own name and its own plural: a kind whose name or plural is already another kind's name or plural is refused (`bus` and `buse` would both be `buses`; `ax` and `axe` both `axes`; a kind `dragons` beside `dragon`).
 
@@ -534,7 +534,8 @@ A | An <name> is one of <choice>, <choice> ... or <choice>.
 - A choice is a name: it may not be the name of a kind, a thing, a variable or a worked-out value, nor a choice of another set. It may be the same word as an adjective, because the left side of `is` always says which is meant: a thing on the left takes an adjective, and a value of the set takes a choice.
 - Choices are compared with `is` and `is not` only. A choice is said as its words, as they were written in the definition.
 - A word that is not one of the choices, where one of them is expected, is refused before the program runs.
-- Still proposed: lists of choices, and asking for a choice (sections 13.7 and 13.15).
+- A set keeps its choices in the order they were written. That order means nothing to `is`, but it makes a set usable as a scale (`low, middling or high`): a model may be asked for a choice, and a judge for the likeliest one, where a tie goes to the choice written first (section 7.8).
+- Still proposed: lists of choices (section 13.7). A person can't yet be asked for a choice with `Ask` (section 13.15); a model can.
 
 ```englishscript
 A mood is one of sleepy, grumpy or very cross.
@@ -999,7 +1000,7 @@ To check a file's examples apart from its other work:
 python -m englishscript my_program.english --test
 ```
 
-- The program is carried out with nothing said, nothing asked (an `Ask` finds that input has ended, so the program ends quietly there, section 7.6), and no file written (`Write` and `Add ... to the file` do nothing; files are still read). A library is not left running afterwards.
+- The program is carried out with nothing said, nothing asked (an `Ask` finds that input has ended, so the program ends quietly there, section 7.6), no model listening (every `Ask the model` and `Judge` is the problem `no model`, so a program with a fallback in `If that fails:` goes on, and one without stops there; section 7.8), and no file written (`Write` and `Add ... to the file` do nothing; files are still read). A library is not left running afterwards.
 - Every `For example` that is reached is reported with its line and whether it held. One that does not hold shows its "In fact" line, and the run goes on to the next, instead of stopping.
 - It ends with a count, and with status 1 if any example did not hold, or if a problem stopped the program; otherwise 0.
 - A program, a page or a tool can do the same with `Program.test()` (`englishscript.compile_source(...).test()`), which gives back the examples reached, in order, each with `file`, `line`, `sentence`, `held` and `fact`.
@@ -1100,6 +1101,8 @@ Judge <text> about <value> and let [the] <name> (percent) be the chance.
 Judge <text> about <value> and let [the] <name> (<set of choices>) be the verdict.
 Judge <text> about <value> and let [the] <name> (<set of choices>) be the verdict
       and [the] <name> (percent) be the likelihood.
+Judge <text> about <value> and let [the] <name> (<set of choices>) be the grade
+      [and [the] <name> (percent) be the likelihood].
 For a | an <set of choices>, <choice> means <text>.
 ```
 
@@ -1128,8 +1131,15 @@ Who answers is decided by whoever runs the program, never by the program: `pytho
 - `about` is required: a judgement is always about something, a text or a thing, handed over as above.
 - With `the chance`, the question is a statement or a yes-or-no question, and the value is how likely it is to be so, from 0% to 100%.
 - With `the verdict`, the question is one whose answer is one of the choices of the set in brackets, and the value is the likeliest choice. If two are equally likely, the one written first in the set wins. `the likelihood`, if it is asked for, is how likely that choice is: the judge's own figure for it, not a second opinion. A likelihood goes only with a verdict.
-- What comes back is checked. A chance must be a number from 0 to 1. A verdict must give a chance from 0 to 1 to every choice of the set and to nothing else; the chances need not add up to exactly 1. Anything else is `a bad reply`. A judgement is not asked for again.
-- `Judge`, `the chance`, `the verdict` and `the likelihood` are recognised by their places; none of them is reserved. If the program has taught a verb `judge`, a sentence that starts with `Judge` and ends with `be the chance`, `be the verdict` or `be the likelihood` could be either, and is refused. Rename the verb.
+- With `the grade`, the set of choices is a scale, in the order it was written (section 4.6), and the value is worked out from the chances, not picked: the choices are numbered 0, 1, 2 ... in the order written, the mean of those numbers is taken, each weighted by its choice's chance, and the grade is the choice whose number is nearest that mean. A mean exactly halfway between two choices goes to the higher one. `the likelihood`, if asked for, is the chance of the choice given as the grade. Whoever judges is told that the set is a scale.
+- A verdict and a grade differ on a split answer. With `A level is one of low, middle or high.` and the chances `low` 0.45, `middle` 0.10, `high` 0.45, the verdict is `low` (a tie goes to the choice written first), and the grade is `middle` (the mean is 1), with a likelihood of 10%.
+- What comes back is checked. A chance must be a number from 0 to 1. A verdict or a grade must give a chance from 0 to 1 to every choice of the set and to nothing else; the chances need not add up to exactly 1, but for a grade they may not all be 0. Anything else is `a bad reply`. A judgement is not asked for again.
+- `Judge`, `the chance`, `the verdict`, `the grade` and `the likelihood` are recognised by their places; none of them is reserved. If the program has taught a verb `judge`, a sentence that starts with `Judge` and ends with `be the chance`, `be the verdict`, `be the grade` or `be the likelihood` could be either, and is refused. Rename the verb.
+- **Judgements put together.** Consecutive `Judge` sentences in the same block, about the same state written the same way (capitals and spaces aside), may be put to the judge together, in one request, when whoever runs the program has connected a judge that takes several at once (`judges`, section 10). A sentence that reads a name set by an earlier one of them (in its question or what it is about) starts a new group. This never changes the result: the questions are independent, and each gets the answer it would have got alone. The answers are checked in the order of the sentences, and the first that can't be used is the problem, at its own sentence, after the sentences before it have kept their answers; `no model` arises at the first sentence. With no such judge connected, each sentence is put to the judge by itself, in order.
+
+**One answer per question**
+
+Within one run, the same question to a model about the same state, wanting the same type of reply, is asked once: a later asking gets the earlier answer, and the model is not asked again. The same holds for a judgement: the same question, about the same state, with the same choices and of the same sort (chance, verdict or grade). The question and the state are compared as they were worked out, after the fill-ins. A reply that could not be read and was asked for again is not kept; only the answer that was finally read. A failed `Try` does not forget an answer: like a file written, an answer is outside the world. One sentence means one thing, and a question asked twice about the same thing should not get two answers in one run. A program that wants a fresh answer asks a different question, or about a different state.
 - A choice may be given a meaning for the judge, at the top level, after its set is described: `For a team, returns means "the customer wants to send something back".` Each choice may have one meaning, in plain text without braces; each is optional. The meanings are handed to whoever judges, with the choices. They change nothing else.
 
 One question per judgement, and ordinary code around it: that is the whole design. A judgement gives a figure; the program decides, in sentences anyone can read, what is likely enough to act on, what a person should look at, and what to hand over. With nothing listening, as when this document is checked, each of these takes its `If that fails:` way:
@@ -1203,7 +1213,19 @@ Refused: a judgement is always about something.
 Judge "Is it raining?" and let the rain (percent) be the chance.
 ```
 
-Refused: a likelihood goes with a verdict.
+A grade and a verdict on the same scale, with nothing listening:
+
+```englishscript
+A level is one of low, middle or high.
+Try:
+  Judge "How hungry is this dragon?" about Smaug and let the guess (level) be the verdict.
+  Judge "How hungry is this dragon?" about Smaug and let the hunger (level) be the grade and the sureness (percent) be the likelihood.
+  Say "{the guess}, {the hunger}, {the sureness}"
+If that fails:
+  Say the problem.                  #> No model is listening.
+```
+
+Refused: a likelihood goes with a verdict or a grade.
 
 ```refused
 Judge "Is Smaug angry?" about Smaug and let the anger (percent) be the chance and the sureness (percent) be the likelihood.
@@ -1614,6 +1636,43 @@ To work out the census (number):
   The answer is the number of dragons.
 ```
 
+#### A value worked out by a model
+
+A worked-out value may instead be one question to a model (section 7.8). It has no block: its heading ends with a comma and the question, and with a period.
+
+```text
+To work out the <name> (<type>) [<preposition> a | an <role>]..., ask the model <text>.
+To work out the <name> (percent | <set of choices>) <preposition> a | an <role> [...], judge <text>.
+To work out the <name> (<set of choices>) <preposition> a | an <role> [...], grade <text>.
+```
+
+- The first is `Ask the model ... about ...` and the second `Judge ... about ...`: a chance when the type is `percent`, a verdict (the likeliest choice, with no likelihood) when it is a set of choices. The third is a grade on that set as a scale (section 7.8). The types are those of section 7.8.
+- The roles are what the question is about. One role is handed over as `about` hands it over: a text as it is, a thing written out. Several are handed over as one `<role>: <value>` line each, in the order written, each said as `Say` says it (a thing by its name). A judgement needs at least one role.
+- The question may fill in the roles: `ask the model "Say what {the letter} wants."`.
+- It is told from the usual heading by the comma: a heading has no comma outside brackets. A heading with the comma and a block under it is refused.
+- It is used like any worked-out value, and its problems (`no model`, `a bad reply`) arise where it is used, as problems a `Try` there can catch.
+- Because it asks, it may be used only where `Ask` may be: in a verb, a reaction or a sentence of the program, never in a `To work out` block, an adjective, a worked-out property, a rule or a kept value, which are worked out whenever they are needed.
+
+```englishscript
+A team is one of sales, support or returns.
+A letter has a wording (text).
+There is a letter called Ticket whose wording is "The jug came broken.".
+To work out the gist (text) of a note (text), ask the model "Say what this note wants, in one line.".
+To work out the team (team) for a letter, judge "Which team should handle this?".
+Try:
+  Say "{Ticket} goes to {the team for Ticket}."
+If that fails:
+  Say "{Ticket} waits: {the problem}"        #> Ticket waits: No model is listening.
+```
+
+Refused, because an adjective is worked out whenever it is needed, and so may not ask:
+
+```refused
+A team is one of sales, support or returns.
+To work out the team (team) for a dragon, judge "Which team should feed this dragon?".
+A dragon is fed when the team for it is sales.
+```
+
 ### 9.4 Using a library
 
 A library gives a program words whose work is done by Python code: drawing on a screen, say, or talking to a device.
@@ -1983,10 +2042,11 @@ Spelling (line 14):
 - a file cannot be read or written;
 - `Remove` is refused, or a removed thing is used;
 - `Fail because` is reached;
+- `Ask the model` or `Judge` finds no model listening, or gets a reply it can't read or a judgement that is not well-formed (section 7.8);
 - a `While` passes 1,000,000 rounds, a verb or a worked-out value uses itself more than 200 levels deep, or reactions set off reactions more than 200 levels deep (the message then names the reactions that repeat, if they go round in a circle);
-- a library reports a problem, or fails in a way it did not expect (section 9.4).
+- a library reports a problem, or fails in a way it did not expect (section 9.4), or what is connected as the model fails in a way it did not expect (section 7.8).
 
-All of these except a `For example`, the 1,000,000 rounds, the 200 levels and a library's unexpected failure are problems that a `Try` can recover from (section 8.5). When input runs out during `Ask`, the program ends quietly; that is not a problem.
+All of these except a `For example`, the 1,000,000 rounds, the 200 levels and an unexpected failure of a library or of what is connected as the model are problems that a `Try` can recover from (section 8.5). When input runs out during `Ask`, the program ends quietly; that is not a problem.
 
 A sentence of a chapter that can't be read, or a problem while running one, is reported with the chapter's file and line, such as `almanac/calendar.english, line 12`, followed by where the chapter is used from (section 9.6).
 
@@ -2055,7 +2115,7 @@ python -m englishscript my_program.english --lint --json
   - a variable (made with `Let` or `Ask`), a verb, a worked-out value, an adjective, or a role of a verb or worked-out value, that is never used;
   - a sentence that can never be reached, because the one before it in the same block always leaves (section 8.4);
   - a sentence that starts with a small letter;
-  - `a` before a vowel sound or `an` before any other (`a egg`, `an weight`). Only words whose sound the spelling makes plain are judged, with a list of the usual exceptions (`an hour`, `a unit`, `a one`); for other words, such as most that start with `u`, nothing is said;
+  - `a` before a vowel sound or `an` before any other (`a egg`, `an weight`). Only words whose sound the spelling makes plain are judged, with a list of the usual exceptions (`an hour`, `a unit`, `a one`); for other words, such as most that start with `u`, and words that start with a letter outside unaccented English (`élan`), nothing is said;
   - `are` after one thing in a comparison (`If Gawain's purse are $300:`). When the last word of the thing ends in `s`, nothing is said.
 - A warning is never given for a sentence that is refused, nor for anything that comes from a library. A warning never stops a program compiling or running.
 - With `--json`, the problems are printed as a list of objects with the fields `line`, `col`, `width`, `kind` (`"error"` or `"warning"`), `message`, `hint`, `sentence`, `file` (the file of a chapter, or `null` for the file being linted), `category` (`"spelling"`, `"punctuation"`, `"capitals"`, `"grammar"`, `"vocabulary"`, `"meaning"`, `"kinds"`, `"layout"`, `"borrowed"`, `"style"` or `"running"`), `rule` (the rule to remember), `see` (the section of this document, such as `"4.1"`) and `fix`. `fix` is `null`, or, when the correction is certain, `{"line": <number>, "text": <the whole line as it should be>}`; the line may be another one than the problem's, as when the sentence under an empty block should be indented. A fix is only ever offered, never applied.
@@ -2069,7 +2129,10 @@ An editor, a language server or a page can use the compiler from Python:
 |---|---|
 | `englishscript.lint(source, folder=None, name=None)` | the list of problems, as above |
 | `lint(..., notes=True)` | `(problems, notes)`: the notes are `(line, text)`, how each sentence was read (as `--explain` shows it), for every line of the file that has no error, so one mistake does not hide the explanations of the good lines |
-| `englishscript.names(source, folder=None, name=None)` | the table of names: `{"names": [...], "chapters": [...]}`. Each name has `name`, `what` (`kind`, `plural of a kind`, `property`, `worked-out property`, `thing`, `adjective`, `verb`, `worked-out value`, `variable`, `role`, `reaction`, `set of choices` or `choice`), `of` (the kind it belongs to, or the set of a choice), `file` (`None` for the file itself), `line`, `col` and `width` of where it is defined. Each chapter has `file`, `name` and `shares` (a list, or `None` for everything). A program with errors gives what its readable sentences define. |
+| `englishscript.names(source, folder=None, name=None)` | the table of names: `{"names": [...], "chapters": [...]}`. Each name has `name`, `what` (`kind`, `plural of a kind`, `property`, `worked-out property`, `thing`, `adjective`, `verb`, `worked-out value`, `variable`, `role`, `loop name`, `reaction` (a settled block too), `set of choices` or `choice`), `of` (the kind it belongs to, or the set of a choice), `file` (`None` for the file itself), `line`, `col` and `width` of where it is defined; `type`, its type as written in brackets (`"number"`, `"dragon, if any"`, `"list of text"`), or `None` where it has none; `scope`, `None` for the top level, or `{"from": <line>, "to": <line>}`, the block it belongs to (for a role, its verb's or worked-out value's block; for a loop name, the loop's block); `by_kind`, `true` for a role called by its kind (`To greet a dragon:`) rather than by a name of its own; and `library`, the library a word comes from, or `None`. A word a library brings has `line`, `col` and `width` `None`. A verb and a worked-out value also have `roles`, a list of `{"link": <linking word, or None for the direct object>, "name", "type"}`. Each chapter has `file`, `name` and `shares` (a list, or `None` for everything). A program with errors gives what its readable sentences define. If the table could not be finished, it has an `"error"` key saying why, with what had been read so far. |
+| `Program.run(..., judges=None)` | `judges(requests)` answers several judgements at once (section 7.8, "Judgements put together"): each request is `{"question": text, "state": text or None, "choices": [...] or None, "meanings": {...} or None, "scale": True for a grade}`, and it returns a list of what `judge` would return for each, in the same order. A list of another length is a fault in it. An `EnglishError` it raises is a problem at the first sentence of the group. When only `judges` is connected, a single judgement is put to it as a list of one; when only `judge` is, a group is put to it one question at a time, and a grade is asked for as a verdict is (the scale is a hint for `judges`). The answers of a run are kept in `world.answers`. `--model SPEC` passes the `judges` attribute of what `connect` returns, if it has one. |
+| `Program.run(out, ask, trace=None, model=None, judge=None)` | carries out a compiled program (`compile_source(...)`). `model(question, state, shape, complaint)` answers `Ask the model`: `question` and `state` are text (`state` is `None` without `about`; a thing arrives written out as section 7.8 shows), `shape` is `{"type": "text" \| "number" \| "money" \| "percent" \| "yes or no" \| "choice" \| "list", "choices": [...] or None, "items": the item type of a list or None, "optional": True or False}`, `complaint` is `None` the first time and, on a second or third asking, says what was wrong; it returns the reply as text, or `None` for no reply. `judge(question, state, choices, meanings)` answers `Judge`: with `choices` `None` it returns a chance from 0 to 1, otherwise `{choice: chance}`; `meanings` is `{choice: text}` for the choices given a meaning. Either may raise `EnglishError(..., stage="run", recoverable=True)` for a problem of its own, which is `a bad reply` unless it says otherwise; anything else it raises ends the program as its fault. Without them nothing is listening. `Program.test()` connects neither. |
+| `python -m englishscript program.english --model SPEC` | runs the program with `englishscript.models.connect(SPEC)` listening; that module is imported only then |
 | `read=fn` (to `lint`, `names` and `compile_source`) | `fn(path)` gives the text of a chapter that is open and unsaved, or `None` to read the file from the disk |
 | `englishscript.KEYWORDS` | the reserved words of section 3 |
 | `englishscript.CATEGORIES`, `CATEGORY_HEADINGS`, `RULES` | the categories of mistake, their headings (`"Spelling"`), and the rules with their sections |
@@ -2085,7 +2148,8 @@ Words in capitals are names from the program's own vocabulary. Quoted words are 
 sentence    = definition | action | block-opener
 
 definition  = kind | thing | adjective | stored-adj | property | rule | verb | work-out
-            | reaction | settled | library | chapter | shares | choices | keep   (top level only)
+            | reaction | settled | library | chapter | shares | choices | keep | meaning   (top level only)
+meaning     = "For" article CHOICE-SET "," CHOICE "means" TEXT "."             (TEXT: without braces)
 keep        = "Keep each" KIND "'s" PROPERTY "as" whole "." | "Keep" THING "'s" PROPERTY "as" whole "."
             | "Keep each" KIND ADJECTIVE "when" condition "."
 choices     = article NAME "is one of" CHOICE { "," CHOICE } [ "," ] "or" CHOICE "."
@@ -2098,7 +2162,8 @@ stored-adj  = article KIND "can be" ADJECTIVE "."
 property    = "The" NAME "of" article KIND "is" expression "."
 rule        = article KIND "'s" PROPERTY "is" ( "never" | "always" ) tail "."
 verb        = "To" VERB [ role ] { PREPOSITION role } ":"
-work-out    = "To work out the" NAME "(" type ")" { ( PREPOSITION | "of" ) role } ":"
+work-out    = "To work out the" NAME "(" type ")" { ( PREPOSITION | "of" ) role }
+              ( ":" | "," ( "ask the model" | "judge" | "grade" ) expression "." )   (with ",": no block)
 reaction    = "Whenever" ( article KIND | THING ) "becomes" [ "not" ] ADJECTIVE ":"
 settled     = "Whenever everything has settled" ":"
 library     = "Use the" NAME "library" "."
@@ -2116,7 +2181,7 @@ base-type   = "number" | "money" | "text" | "percent" | "yes or no" | KIND | CHO
 PLURAL-TYPE = "numbers" | "percentages" | "money" | "text" | KINDS
 
 action      = let | change | say | use | example | answer | leave
-            | now | create | remove | ask | write | fail
+            | now | create | remove | ask | ask-model | judge | write | fail
 let         = "Let" [ "the" ] NAME [ "(" type ")" ] [ "always" ] "be" ( whole | new-thing ) "."
 whole       = expression | list-written | group                     (a group becomes a list)
 list-written = "a list of" expression { "," expression } [ [ "," ] "and" expression ]
@@ -2140,6 +2205,12 @@ create      = "There is" new-thing "."
 new-thing   = article "new" { ADJECTIVE } KIND [ "called" expression ] [ whose { sep whose } ]
 remove      = "Remove" expression "."
 ask         = "Ask" expression "and let" [ "the" ] NAME "(" type ")" "be the reply" "."
+ask-model   = "Ask the model" expression [ "about" expression ] "and let" [ "the" ] NAME "(" type ")"
+              "be the reply" "."
+judge       = "Judge" expression "about" expression "and let" [ "the" ] NAME
+              ( "(" "percent" ")" "be the chance"
+              | "(" CHOICE-SET ")" ( "be the verdict" | "be the grade" )
+                [ "and" [ "the" ] NAME "(" "percent" ")" "be the likelihood" ] ) "."
 write       = ( "Write" | "Add" ) expression "to the file" value "."
 fail        = "Fail because" expression "." | "Fail again."           (Fail again: inside If that fails)
 
@@ -2156,7 +2227,7 @@ block-opener = "If" condition ":"
 
 condition   = test { "and" test } | test { "or" test }
 test        = "not" test | "(" condition ")" | expression comparison
-            | "the problem is" [ "not" ] article PROBLEM-KIND             (inside If that fails)
+            | "the problem is" [ "not" ] ( article PROBLEM-KIND | "no model" )   (inside If that fails)
 comparison  = ( "is" | "are" ) [ "not" ] tail
             | "has" article PROPERTY | "has no" PROPERTY
             | ( "=" | "<" | ">" | "<=" | ">=" ) expression
@@ -2737,6 +2808,7 @@ Sections 12 and 13 settle most of what used to be listed here. These remain open
 - Chance: a number or a thing picked at random.
 - Rules that span several things, rules about worked-out properties or adjectives, and rules that read a variable that can change. Today a rule may read only values written out, variables made with `always`, and its own thing's stored properties (section 4.5), because it is checked only when that thing's stored properties change; a rule that read anything else could be broken without anyone noticing. Checking such rules would mean finding, after every change, every rule whose answer that change could alter.
 - Lookup tables from one value to another. Today the nearest thing is finding a thing by its name.
+- Asking a model (section 7.8) for a thing of a kind, for a list of things or of choices, or for several values in one reply; a limit on how long a model may take; and handing a model a group of things, or a thing's adjectives and worked-out properties, other than by filling them into the question.
 
 **Values**
 - Times of day, time zones, and calendar arithmetic such as "a month from now" or "every Monday".

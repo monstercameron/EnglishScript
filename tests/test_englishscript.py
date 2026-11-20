@@ -3042,5 +3042,552 @@ class VulkanLibrary(InTemporaryFolder, Base):
         self.assertFalse((ROOT / "gpu_triangle.png").exists())
 
 
+class AskingAModel(Base):
+    """Section 7.8: "Ask the model", with plain functions as the listener."""
+
+    LETTER = ('A team is one of sales, support or very cross.\n'
+              'A letter has a wording (text), a worth (money), a rate (percent), a mood (team, if any), '
+              'a sender (dragon) and a tags (list of text).\n'
+              'There is a letter called Note whose wording is "Help" and whose worth is $1,000.5 and whose rate '
+              'is 12.5% and whose sender is Smaug.\n')
+
+    def ask(self, source, replies, judge=None):
+        """Run with a model that gives `replies` in turn; returns (said, what the model was asked)."""
+        out, asked, waiting = [], [], list(replies)
+
+        def model(question, state, shape, complaint):
+            asked.append((question, state, shape, complaint))
+            return waiting.pop(0)
+        compile_source(WORLD + source).run(out.append, model=model, judge=judge)
+        return out, asked
+
+    def test_every_type_of_reply(self):
+        cases = [("text", "  two words ", "  two words "), ("number", "1,250.5", "1,250.5"), ("money", "$5", "$5"),
+                 ("money", "2.50", "$2.50"), ("percent", "12.5%", "12.5%"), ("yes or no", "Y", "yes"),
+                 ("team", "Very  Cross", "very cross"), ("number, if any", "nothing", "nothing"),
+                 ("text, if any", "Nothing", "nothing")]
+        for type_, reply, said in cases:
+            with self.subTest(type_):
+                out, asked = self.ask(self.LETTER + f'Ask the model "Q?" and let the p (' + type_ + ') be the reply.\n'
+                                      "Say the p.\n", [reply])
+                self.assertEqual(out, [said])
+                self.assertIsNone(asked[0][1])
+        for type_, reply, said in [("list of numbers", "1\n\n2,000\n", "1, 2,000"), ("list of text", "a b\nc", "a b, c"),
+                                   ("list of money", "$1\n2", "$1, $2"), ("list of percentages", "", "")]:
+            with self.subTest(type_):
+                out, _ = self.ask(f'Ask the model "Q?" and let the p ({type_}) be the reply.\n'
+                                  'Say the p joined with ", "\n', [reply])
+                self.assertEqual(out, [said])
+
+    def test_the_shape_handed_to_the_model(self):
+        _, asked = self.ask(self.LETTER + 'Ask the model "Q?" and let the p (team, if any) be the reply.\n'
+                            'Ask the model "Q?" and let the q (list of percentages) be the reply.\n'
+                            'Ask the model "Q?" and let the c (yes or no) be the reply.\n', ["sales", "1%", "no"])
+        self.assertEqual([shape for _, _, shape, _ in asked], [
+            {"type": "choice", "choices": ["sales", "support", "very cross"], "items": None, "optional": True},
+            {"type": "list", "choices": None, "items": "percent", "optional": False},
+            {"type": "yes or no", "choices": None, "items": None, "optional": False}])
+
+    def test_a_thing_as_the_state_and_its_exact_layout(self):
+        _, asked = self.ask(self.LETTER + 'Ask the model "Sum up {Note}." about Note and let the gist (text) be the '
+                            "reply.\n", ["ok"])
+        self.assertEqual(asked[0][0], "Sum up Note.")
+        self.assertEqual(asked[0][1], "letter called Note\nwording: Help\nworth: $1,000.50\nrate: 12.5%\n"
+                                      "mood: nothing\nsender: Smaug\ntags: an empty list")
+        _, asked = self.ask(self.LETTER + 'Set Note\'s tags to a list of "x", "y" and "z".\nSet Note\'s mood to sales.\n'
+                            'Ask the model "Q" about "plain" and let the p (text) be the reply.\n'
+                            'Ask the model "Q" about Note and let the q (text) be the reply.\n', ["1", "2"])
+        self.assertEqual(asked[0][1], "plain")
+        self.assertIn("mood: sales\nsender: Smaug\ntags: a list of x, y and z", asked[1][1])
+
+    def test_a_misread_reply_is_asked_again_and_then_read(self):
+        out, asked = self.ask('Ask the model "How many?" and let the n (number) be the reply.\nSay the n + 1.\n',
+                              ["about seven", "7"])
+        self.assertEqual(out, ["8"])
+        self.assertEqual([complaint for *_, complaint in asked],
+                         [None, 'I could not read "about seven": the reply has to be a number, such as 7 or 2.5, and '
+                                "nothing else."])
+
+    def test_three_misreads_are_a_bad_reply(self):
+        source = ('Try:\n  Ask the model "Which?" and let the t (team) be the reply.\nIf that fails:\n'
+                  '  Say whether (the problem is a bad reply).\n  Say the problem.\n')
+        out, asked = self.ask(self.LETTER + source, ["blue", "green", "x" * 100])
+        self.assertEqual(len(asked), 3)
+        self.assertEqual(out, ["yes", 'The model\'s reply could not be read as one of sales, support or very cross: "'
+                                      + "x" * 60 + '..."'])
+        with self.assertRaises(EnglishError) as caught:
+            self.ask('Ask the model "N" and let the n (number) be the reply.\n', ["a", "b", "c"])
+        self.assertEqual((caught.exception.kind, caught.exception.stage), ("bad reply", "run"))
+
+    def test_no_reply_is_a_bad_reply_at_once(self):
+        source = ('Try:\n  Ask the model "Q" and let the t (text) be the reply.\nIf that fails:\n'
+                  '  If the problem is a bad reply:\n    Say the problem.\n')
+        out, asked = self.ask(source, [None])
+        self.assertEqual(len(asked), 1)
+        self.assertEqual(out, ["The model gave no reply: it refused to answer, or its answer was cut short."])
+
+    def test_no_model(self):
+        source = ('Try:\n  Ask the model "Q" and let the t (text) be the reply.\nIf that fails:\n'
+                  '  If the problem is no model:\n    Say the problem.\n'
+                  'Try:\n  Judge "Q" about "x" and let the c (percent) be the chance.\nIf that fails:\n'
+                  '  Say whether (the problem is not no model).\n')
+        self.assertEqual(run(source), ["No model is listening.", "no"])
+        error = self.refuses('Ask the model "Q" and let the t (text) be the reply.\n', "No model is listening.",
+                             stage="run")
+        self.assertEqual((error.kind, error.recoverable, error.see), ("no model", True, "7.8"))
+
+    def test_a_problem_the_listener_reports(self):
+        def model(*_):
+            raise EnglishError("The network is down.", stage="run", recoverable=True)
+        out = []
+        compile_source('Try:\n  Ask the model "Q" and let the t (text) be the reply.\nIf that fails:\n'
+                       '  Say "{the problem}: {whether (the problem is a bad reply)}"\n').run(out.append, model=model)
+        self.assertEqual(out, ["The network is down.: yes"])
+
+    def test_a_fault_in_the_listener_ends_the_program(self):
+        def model(*_):
+            raise ValueError("oops")
+        with self.assertRaises(EnglishError) as caught:
+            compile_source('Try:\n  Ask the model "Q" and let the t (text) be the reply.\nIf that fails:\n'
+                           '  Say 1.\n').run(lambda text: None, model=model)
+        self.assertEqual(caught.exception.message, "The model failed: ValueError: oops")
+        self.assertFalse(caught.exception.recoverable)
+        with self.assertRaises(EnglishError) as caught:
+            compile_source('Ask the model "Q" and let the t (text) be the reply.\n').run(
+                lambda text: None, model=lambda *_: 5)
+        self.assertIn("not text", caught.exception.message)
+
+    def test_refusals(self):
+        self.refuses(WORLD + 'Ask the model "Q" and let the d (dragon) be the reply.\n', "I can't ask a model for a dragon")
+        self.refuses('Ask the model 5 and let the d (text) be the reply.\n', "The question is text")
+        self.refuses(WORLD + 'Ask the model "Q" about 5 and let the d (text) be the reply.\n',
+                     "A question is about text or a thing")
+        self.refuses('To work out the x (text):\n  Ask the model "Q" and let the d (text) be the reply.\n'
+                     "  The answer is the d.\n", "can't ask anything")
+        for clash in ('Let the model be "Q?"\n', 'Let the model words be "Q?"\n', "A model has an age (number).\n",
+                      'To work out the model (text):\n  The answer is "Q".\n'):
+            with self.subTest(clash):
+                self.refuses(clash + 'Ask the model "Q" and let the d (text) be the reply.\n', '"Ask the model" could')
+        # A plain "Ask" of a variable called model is still read as before.
+        self.assertEqual(run_asking('Let the modelling be "Q?"\nAsk the modelling and let the d (text) be the reply.\n'
+                                    "Say the d.\n", ["hi"]), ["Q?", "hi"])
+
+    def test_a_reaction_may_ask_a_model_during_an_event(self):
+        import types
+        module = types.ModuleType("englishscript.libraries.clicks")
+        module.SOURCE = "A button has a label (text).\nA button can be pressed.\n"
+        sys.modules[module.__name__] = module
+        self.addCleanup(sys.modules.pop, module.__name__, None)
+        out = []
+        source = ('Use the clicks library.\nThere is a button called Go whose label is "go".\n'
+                  'Whenever a button becomes pressed:\n'
+                  '  Ask the model "Say hi." about the button and let the hello (text) be the reply.\n'
+                  '  Judge "Is it urgent?" about the button and let the urgency (percent) be the chance.\n'
+                  '  Set the button\'s label to "{the hello} {the urgency}"\n')
+        world = compile_source(source).run(out.append, model=lambda q, s, shape, c: f"hi from {s.splitlines()[0]}",
+                                           judge=lambda q, s, choices, meanings: 0.5)
+        button = world.named["go"]
+        self.assertTrue(world.event(lambda: button.marks.add("pressed")))
+        self.assertEqual(button.fields["label"], "hi from button called Go 50%")
+
+    def test_the_trace_shows_the_sentence_and_not_the_reply(self):
+        seen = []
+        compile_source('Ask the model "Q" and let the t (text) be the reply.\n').run(
+            lambda text: None, trace=lambda *entry: seen.append(entry), model=lambda *_: "SECRET")
+        self.assertEqual(len(seen), 1)
+        self.assertNotIn("SECRET", repr(seen))
+
+    def test_test_connects_no_model(self):
+        source = ('Try:\n  Ask the model "Q" and let the t (text) be the reply.\nIf that fails:\n'
+                  "  For example, the problem is no model.\n")
+        self.assertEqual([r.held for r in compile_source(source).test()], [True])
+
+
+class Judging(Base):
+    """Section 7.8: "Judge", with plain functions as the judge."""
+
+    TEAMS = ('A team is one of sales, support or returns.\n'
+             'For a team, returns means "the customer wants to send something back".\n'
+             'For a team, sales means "a new order".\n')
+
+    def judge(self, source, answer):
+        out, asked = [], []
+
+        def judge(question, state, choices, meanings):
+            asked.append((question, state, choices, meanings))
+            return answer
+        compile_source(WORLD + self.TEAMS + source).run(out.append, judge=judge)
+        return out, asked
+
+    def test_a_chance(self):
+        out, asked = self.judge('Judge "Smaug is angry." about Smaug and let the anger (percent) be the chance.\n'
+                                "If the anger is at least 90%:\n  Say \"run\"\nSay the anger.\n", 0.95)
+        self.assertEqual(out, ["run", "95%"])
+        self.assertEqual(asked, [("Smaug is angry.", "dragon called Smaug\nage: 771", None, None)])
+        for answer, said in ((0, "0%"), (1, "100%"), (Fraction(1, 8), "12.5%"), (0.1, "10%")):
+            self.assertEqual(self.judge('Judge "Q" about "x" and let the c (percent) be the chance.\nSay the c.\n',
+                                        answer)[0], [said])
+
+    def test_a_verdict_with_and_without_a_likelihood(self):
+        source = ('Judge "Which team?" about "my cup broke" and let the team (team) be the verdict.\nSay the team.\n'
+                  'Judge "Which team?" about "my cup broke" and let the other (team) be the verdict and the sure '
+                  "(percent) be the likelihood.\nSay \"{the other} {the sure}\"\n")
+        out, asked = self.judge(source, {"sales": 0.1, "support": 0.2, "returns": 0.6})
+        self.assertEqual(out, ["returns", "returns 60%"])
+        self.assertEqual(asked[0], ("Which team?", "my cup broke", ["sales", "support", "returns"],
+                                    {"sales": "a new order", "returns": "the customer wants to send something back"}))
+
+    def test_a_tie_goes_to_the_choice_written_first(self):
+        out, _ = self.judge('Judge "Q" about "x" and let the t (team) be the verdict.\nSay the t.\n',
+                            {"returns": 0.4, "support": 0.4, "sales": 0.2})
+        self.assertEqual(out, ["support"])
+
+    def test_malformed_answers_are_a_bad_reply(self):
+        chance = ('Try:\n  Judge "Q" about "x" and let the c (percent) be the chance.\nIf that fails:\n'
+                  "  Say whether (the problem is a bad reply).\n")
+        for answer in (1.5, -0.1, True, "0.5", None, float("nan"), {"sales": 1}):
+            with self.subTest(answer):
+                self.assertEqual(self.judge(chance, answer)[0], ["yes"])
+        verdict = ('Try:\n  Judge "Q" about "x" and let the t (team) be the verdict.\nIf that fails:\n'
+                   "  Say the problem.\n")
+        for answer in ({"sales": 0.5, "support": 0.5}, {"sales": 0.5, "support": 0.5, "returns": 0.5, "other": 0},
+                       {"sales": 2, "support": 0, "returns": 0}, 0.5, {"sales": 1, "Sales": 0, "support": 0}):
+            with self.subTest(answer):
+                out, _ = self.judge(verdict, answer)
+                self.assertTrue(out[0].startswith("The model's judgement could not be used: a verdict gives a chance "
+                                                  "from 0 to 1 to each of sales, support and returns"), out[0])
+        out, _ = self.judge(chance, None)
+        self.assertEqual(out, ["yes"])
+
+    def test_meanings_and_their_refusals(self):
+        self.refuses(self.TEAMS + 'For a team, sales means "again".\n', '"sales" already has a meaning')
+        self.refuses(self.TEAMS + 'For a team, calm means "x".\n', "is not one of the teams")
+        self.refuses('For a dragon, old means "x".\n', "is not a set of choices")
+        self.refuses(self.TEAMS + 'For a team, support means "{1}".\n', "without braces")
+        self.refuses(self.TEAMS + 'If 1 is 1:\n  For a team, support means "x".\n', "top level")
+
+    def test_refusals(self):
+        self.refuses(self.TEAMS + 'Judge "Q" and let the c (percent) be the chance.\n', "always about something")
+        self.refuses(self.TEAMS + 'Judge "Q" about "x" and let the c (number) be the chance.\n',
+                     "A chance is a percentage")
+        self.refuses(self.TEAMS + 'Judge "Q" about "x" and let the c (percent) be the verdict.\n',
+                     "A verdict is one of a set of choices")
+        self.refuses(self.TEAMS + 'Judge "Q" about "x" and let the c (percent) be the chance and the l (percent) be '
+                     "the likelihood.\n", "A likelihood goes with a verdict")
+        self.refuses(self.TEAMS + 'Judge "Q" about "x" and let the t (team) be the verdict and the l (number) be '
+                     "the likelihood.\n", "A likelihood is a percentage")
+        self.refuses(self.TEAMS + 'Judge "Q" about "x" and let the t (team) be the verdict and the t (percent) be '
+                     "the likelihood.\n", '"t" already means something')
+        self.refuses(self.TEAMS + 'Judge "Q" about "x" and let the t (team) be the answer.\n',
+                     'comes "chance", "verdict" or "grade"')
+        self.refuses('To work out the x (percent):\n  Judge "Q" about "x" and let the c (percent) be the chance.\n'
+                     "  The answer is the c.\n", "can't ask for a judgement")
+
+    def test_a_verb_called_judge(self):
+        verb = "To judge a dragon:\n  Say \"judged {the dragon}\"\n"
+        self.assertEqual(run(WORLD + verb + "Judge Smaug.\n"), ["judged Smaug"])
+        self.refuses(WORLD + verb + 'Judge "Q" about Smaug and let the c (percent) be the chance.\n',
+                     'This could be the verb "judge"')
+
+
+class ValuesWorkedOutByAModel(Base):
+    """Section 9.3: a worked-out value that is one question to a model."""
+
+    SOURCE = ('A team is one of sales, support or returns.\nA ticket has a wording (text).\n'
+              'There is a ticket called Jug whose wording is "broken jug".\n'
+              'To work out the gist (text) of a letter (text), ask the model "Say what {the letter} wants.".\n'
+              'To work out the team (team) for a ticket, judge "Which team should handle this?".\n'
+              'To work out the urgency (percent) of a ticket for a sender (text), judge "Is it urgent?".\n'
+              'To work out the count (number), ask the model "How many?".\n')
+
+    def test_the_roles_are_the_state(self):
+        asked = []
+
+        def model(question, state, shape, complaint):
+            asked.append((question, state, shape["type"]))
+            return "3" if shape["type"] == "number" else "a refund"
+
+        def judge(question, state, choices, meanings):
+            asked.append((question, state, choices))
+            return 0.25 if choices is None else {"sales": 0.1, "support": 0.6, "returns": 0.3}
+        out = []
+        compile_source(self.SOURCE + 'Say the gist of "hi".\nSay the team for Jug.\nSay the urgency of Jug for "Ann".\n'
+                       "Say the count + 1.\n").run(out.append, model=model, judge=judge)
+        self.assertEqual(out, ["a refund", "support", "25%", "4"])
+        self.assertEqual(asked, [("Say what hi wants.", "hi", "text"),
+                                 ("Which team should handle this?", "ticket called Jug\nwording: broken jug",
+                                  ["sales", "support", "returns"]),
+                                 ("Is it urgent?", "ticket: Jug\nsender: Ann", None),
+                                 ("How many?", None, "number")])
+
+    def test_the_problems_arise_where_it_is_used(self):
+        self.assertEqual(run(self.SOURCE + 'Try:\n  Say the team for Jug.\nIf that fails:\n  Say the problem.\n'),
+                         ["No model is listening."])
+        out = []
+        compile_source(self.SOURCE + 'Try:\n  Say the count.\nIf that fails:\n  Say whether (the problem is a bad '
+                       'reply).\n').run(out.append, model=lambda *_: "many")
+        self.assertEqual(out, ["yes"])
+
+    def test_refusals(self):
+        self.refuses(self.SOURCE + "A ticket is hot when the urgency of it for \"x\" is more than 50%.\n",
+                     "asks a model")
+        self.refuses(self.SOURCE + "To work out the double (number):\n  The answer is the count * 2.\n", "asks a model")
+        self.refuses('To work out the gist (number), judge "Q".\n', "always about something")
+        self.refuses('To work out the gist (number) of a letter (text), judge "Q".\n',
+                     "A judgement is a chance (percent) or a verdict")
+        self.refuses(WORLD + 'To work out the eldest (dragon), ask the model "Q".\n', "can't ask a model for a dragon")
+        self.refuses('To work out the gist (text), ask the model "Q":\n  Say 1.\n', "does not open a block")
+        # The usual heading, with a block, is unchanged.
+        self.assertEqual(run('To work out the gist (text) of a letter (text):\n  The answer is the letter.\n'
+                             'Say the gist of "hi".\n'), ["hi"])
+
+
+class GradesGroupsAndOneAnswer(Base):
+    """Section 7.8: grades, judgements put together, and one answer per question in a run."""
+
+    LEVELS = "A level is one of low, middle or high.\n"
+
+    def judged(self, source, answer=None, judges=None, judge=True, model=None):
+        """Run with a judge giving `answer` (a function of the request, or a value); returns (said, calls)."""
+        out, calls = [], []
+
+        def give(request):
+            return answer(request) if callable(answer) else answer
+
+        def one(question, state, choices, meanings):
+            calls.append(("judge", question))
+            return give({"question": question, "state": state, "choices": choices, "meanings": meanings})
+
+        def many(requests):
+            calls.append(("judges", [r["question"] for r in requests]))
+            return judges(requests) if callable(judges) else [give(r) for r in requests]
+        compile_source(WORLD + self.LEVELS + source).run(out.append, judge=one if judge else None,
+                                                         judges=many if judges is not None else None, model=model)
+        return out, calls
+
+    def test_a_grade_against_a_verdict(self):
+        source = ('Judge "How hot?" about Smaug and let the verdict (level) be the verdict.\n'
+                  'Judge "How hot?" about Smaug and let the grade (level) be the grade and the sure (percent) be the '
+                  'likelihood.\nSay "{the verdict} {the grade} {the sure}"\n')
+        split = {"low": 0.45, "middle": 0.10, "high": 0.45}
+        self.assertEqual(self.judged(source, split)[0], ["low middle 10%"])
+        clear = {"low": 0.05, "middle": 0.15, "high": 0.8}
+        self.assertEqual(self.judged(source, clear)[0], ["high high 80%"])
+        # Halfway between two choices goes to the higher one; the chances need not add up to 1.
+        self.assertEqual(self.judged(source, {"low": 0.5, "middle": 0.5, "high": 0})[0], ["low middle 50%"])
+        self.assertEqual(self.judged(source, {"low": 0.2, "middle": 0, "high": 0.2})[0], ["low middle 0%"])
+        out = self.judged('Try:\n  Judge "Q" about Smaug and let the g (level) be the grade.\nIf that fails:\n'
+                          "  Say the problem.\n", {"low": 0, "middle": 0, "high": 0})[0]
+        self.assertIn("a grade needs a chance of more than 0", out[0])
+        self.refuses(self.LEVELS + 'Judge "Q" about "x" and let the g (percent) be the grade.\n',
+                     "A grade is one of a set of choices")
+
+    def test_a_grade_as_a_worked_out_value(self):
+        source = ('To work out the heat (level) of a dragon, grade "How hot is this dragon?".\n'
+                  'To work out the mood (level) of a dragon, judge "How hot is this dragon?".\n'
+                  "Say the heat of Smaug.\nSay the mood of Smaug.\n")
+        self.assertEqual(self.judged(source, {"low": 0.45, "middle": 0.1, "high": 0.45})[0], ["middle", "low"])
+        self.refuses('To work out the heat (number) of a word (text), grade "Q".\n', "A grade is one of a set")
+
+    def test_the_scale_is_told_to_judges(self):
+        seen = []
+
+        def many(requests):
+            seen.extend(requests)
+            return [{"low": 1, "middle": 0, "high": 0}, 0.5]
+        out, _ = self.judged('Judge "Q1" about Smaug and let the g (level) be the grade.\n'
+                             'Judge "Q2" about Smaug and let the c (percent) be the chance.\nSay "{the g} {the c}"\n',
+                             judges=many, judge=False)
+        self.assertEqual(out, ["low 50%"])
+        self.assertEqual(seen, [
+            {"question": "Q1", "state": "dragon called Smaug\nage: 771", "choices": ["low", "middle", "high"],
+             "meanings": {}, "scale": True},
+            {"question": "Q2", "state": "dragon called Smaug\nage: 771", "choices": None, "meanings": None,
+             "scale": False}])
+
+    GROUP = ('Judge "Angry?" about Smaug and let the anger (percent) be the chance.\n'
+             'Judge "Hungry?" about Smaug and let the hunger (percent) be the chance.\n'
+             'Judge "Which?" about Smaug and let the lvl (level) be the verdict.\n'
+             'Say "{the anger} {the hunger} {the lvl}"\n')
+
+    @staticmethod
+    def answer(request):
+        return {"Angry?": 0.25, "Hungry?": 0.5, "Which?": {"low": 0, "middle": 1, "high": 0}}.get(
+            request["question"], 0.1)
+
+    def test_a_group_is_answered_in_one_call_or_one_by_one(self):
+        out, calls = self.judged(self.GROUP, self.answer, judges=True)
+        self.assertEqual(out, ["25% 50% middle"])
+        self.assertEqual(calls, [("judges", ["Angry?", "Hungry?", "Which?"])])
+        out, calls = self.judged(self.GROUP, self.answer)
+        self.assertEqual(out, ["25% 50% middle"])
+        self.assertEqual(calls, [("judge", "Angry?"), ("judge", "Hungry?"), ("judge", "Which?")])
+        program = compile_source(WORLD + self.LEVELS + self.GROUP)
+        self.assertEqual([len(getattr(step, "group", [step])) for step in program.steps][-2:], [3, 1])
+
+    def test_what_breaks_a_group(self):
+        for source, expected in [
+            ('Judge "A" about Smaug and let the x (percent) be the chance.\nSay 1.\n'
+             'Judge "B" about Smaug and let the y (percent) be the chance.\n', [["A"], ["B"]]),
+            ('Judge "A" about Smaug and let the x (percent) be the chance.\n'
+             'Judge "B" about Norbert and let the y (percent) be the chance.\n', [["A"], ["B"]]),
+            ('Judge "A" about Smaug and let the x (percent) be the chance.\n'
+             'Judge "B {the x}" about Smaug and let the y (percent) be the chance.\n', [["A"], ["B 10%"]]),
+            ('Judge "A" about Smaug and let the x (percent) be the chance.\n'
+             'Judge "B" about  smaug and let the y (percent) be the chance.\n', [["A", "B"]]),
+        ]:
+            with self.subTest(source):
+                _, calls = self.judged(source, 0.1, judges=True, judge=False)
+                self.assertEqual([questions for _, questions in calls], expected)
+
+    def test_a_bad_answer_in_a_group_is_a_problem_at_its_own_sentence(self):
+        source = ('To check a dragon:\n'
+                  '  Judge "Angry?" about the dragon and let the p (percent) be the chance.\n'
+                  '  Judge "Bad?" about the dragon and let the q (percent) be the chance.\n'
+                  '  Judge "Hungry?" about the dragon and let the r (percent) be the chance.\n'
+                  '  Say "never"\n')
+        answers = {"Angry?": 0.25, "Bad?": 7, "Hungry?": 0.5}
+        caught = []
+        for judges in (True, None):
+            with self.subTest(judges=judges):
+                with self.assertRaises(EnglishError) as error:
+                    self.judged(source + "Check Smaug.\n", lambda request: answers[request["question"]],
+                                judges=judges)
+                caught.append((error.exception.line.number, error.exception.message, error.exception.kind))
+                out, calls = self.judged(source + 'Try:\n  Check Smaug.\nIf that fails:\n  Say the problem.\n',
+                                         lambda request: answers[request["question"]], judges=judges)
+                self.assertEqual(len(calls), 1 if judges else 2)
+                self.assertTrue(out[0].startswith("The model's judgement could not be used: a chance"), out)
+        self.assertEqual(caught[0], caught[1])
+        self.assertEqual(caught[0][0], WORLD.count("\n") + self.LEVELS.count("\n") + 3)
+        self.assertEqual(caught[0][2], "bad reply")
+
+    def test_the_names_before_a_bad_answer_keep_their_answers(self):
+        from englishscript.compiler import judgement_group
+        set_names = []
+        program = compile_source('Judge "A" about "x" and let the p (percent) be the chance.\n'
+                                 'Judge "B" about "x" and let the q (percent) be the chance.\n')
+        group = program.steps[0]
+        self.assertEqual(len(group.group), 2)
+        from englishscript.runtime import World
+        world = World(lambda text: None, judges=lambda requests: [0.25, 7])
+        with self.assertRaises(EnglishError) as caught:
+            group(world.globals)
+        self.assertEqual(caught.exception.line.number, 2)
+        self.assertEqual(world.globals.vars.get("p"), Fraction(1, 4))
+        self.assertNotIn("q", world.globals.vars)
+        self.assertTrue(callable(judgement_group))
+        del set_names
+
+    def test_a_wrong_number_of_answers_is_a_fault(self):
+        with self.assertRaises(EnglishError) as caught:
+            self.judged("Try:\n" + "".join("  " + line + "\n" for line in self.GROUP.splitlines()) +
+                        "If that fails:\n  Say 1.\n", judges=lambda requests: [0.5], judge=False)
+        self.assertIn("asked 3 questions at once and gave back 1 answers", caught.exception.message)
+        self.assertFalse(caught.exception.recoverable)
+
+    def test_no_model_at_the_first_sentence_of_a_group(self):
+        with self.assertRaises(EnglishError) as caught:
+            compile_source(WORLD + self.LEVELS + self.GROUP).run(lambda text: None)
+        self.assertEqual((caught.exception.kind, caught.exception.line.number),
+                         ("no model", WORLD.count("\n") + 2))
+
+    def test_the_trace_shows_each_sentence_of_a_group(self):
+        seen = []
+        compile_source(WORLD + self.LEVELS + self.GROUP).run(
+            lambda text: None, trace=lambda *entry: seen.append(entry[2]),
+            judges=lambda requests: [self.answer(r) for r in requests])
+        first = WORLD.count("\n") + 2
+        self.assertEqual(seen[-4:], [first, first + 1, first + 2, first + 3])
+
+    def test_one_answer_per_question_in_a_run(self):
+        asked = []
+
+        def model(question, state, shape, complaint):
+            asked.append((question, state, complaint))
+            return "seven" if len(asked) == 1 else "7"
+        source = ('To query a dragon:\n'
+                  '  Ask the model "How many?" about the dragon and let the n (number) be the reply.\n'
+                  '  Say the n.\n'
+                  'Query Smaug.\nQuery Smaug.\nQuery Norbert.\n'
+                  'Try:\n  Query Smaug.\n  Fail because "no"\nIf that fails:\n  Query Smaug.\n')
+        out = []
+        world = compile_source(WORLD + source).run(out.append, model=model)
+        self.assertEqual(out, ["7"] * 5)
+        self.assertEqual([state.splitlines()[0] for _, state, _ in asked],
+                         ["dragon called Smaug", "dragon called Smaug", "dragon called Norbert"])
+        self.assertEqual(len(world.answers), 2)  # the misread was not kept
+        # A different question, or a different kind of judgement, is asked again.
+        _, calls = self.judged('Judge "Q" about Smaug and let the w (level) be the verdict.\n'
+                               'Judge "Q" about Smaug and let the x (level) be the grade.\n'
+                               'Judge "Q" about Smaug and let the y (level) be the verdict.\n'
+                               'Judge "R" about Smaug and let the z (level) be the verdict.\n',
+                               {"low": 1, "middle": 0, "high": 0})
+        self.assertEqual(calls, [("judge", "Q"), ("judge", "Q"), ("judge", "R")])
+
+    def test_the_answers_are_shared_with_an_event(self):
+        import types
+        module = types.ModuleType("englishscript.libraries.taps")
+        module.SOURCE = "A button has a label (text).\nA button can be pressed.\n"
+        sys.modules[module.__name__] = module
+        self.addCleanup(sys.modules.pop, module.__name__, None)
+        calls = []
+        source = ('Use the taps library.\nThere is a button called Go whose label is "go".\n'
+                  'Judge "Urgent?" about Go and let the u (percent) be the chance.\n'
+                  'Whenever a button becomes pressed:\n'
+                  '  Judge "Urgent?" about the button and let the v (percent) be the chance.\n'
+                  '  Set the button\'s label to "{the v}"\n')
+        world = compile_source(source).run(lambda text: None, judge=lambda *a: calls.append(a) or 0.5)
+        button = world.named["go"]
+        world.event(lambda: button.marks.add("pressed"))
+        self.assertEqual((button.fields["label"], len(calls)), ("50%", 1))
+
+
+class ConnectingAModel(InTemporaryFolder, Base):
+    def test_the_command_line_connects_what_it_is_given(self):
+        import io
+        import types
+        from contextlib import redirect_stdout
+
+        from englishscript.__main__ import main
+        fake = types.ModuleType("englishscript.models")
+        given = []
+
+        def connect(spec):
+            given.append(spec)
+            return (lambda question, state, shape, complaint: "Ada"), (lambda *_: 0.75)
+        fake.connect = connect
+        saved = sys.modules.get("englishscript.models")
+        sys.modules["englishscript.models"] = fake
+        import englishscript
+        saved_attr = getattr(englishscript, "models", None)
+        englishscript.models = fake
+
+        def restore():
+            if saved is None:
+                sys.modules.pop("englishscript.models", None)
+            else:
+                sys.modules["englishscript.models"] = saved
+            if saved_attr is None:
+                delattr(englishscript, "models")
+            else:
+                englishscript.models = saved_attr
+        self.addCleanup(restore)
+        Path("p.english").write_text('Ask the model "Name?" and let the n (text) be the reply.\n'
+                                     'Judge "Q" about the n and let the c (percent) be the chance.\n'
+                                     'Say "{the n} {the c}"\n', encoding="utf-8")
+        out = io.StringIO()
+        with redirect_stdout(out):
+            status = main(["p.english", "--model", "fake:1"])
+        self.assertEqual((status, out.getvalue(), given), (0, "Ada 75%\n", ["fake:1"]))
+        # Without --model nothing is connected, and --test never connects one.
+        import contextlib
+        err = io.StringIO()
+        with redirect_stdout(io.StringIO()), contextlib.redirect_stderr(err):
+            self.assertEqual(main(["p.english"]), 1)
+        self.assertIn("No model is listening.", err.getvalue())
+        self.assertEqual(given, ["fake:1"])
+
+
 if __name__ == "__main__":
     unittest.main()

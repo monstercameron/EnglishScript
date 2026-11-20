@@ -20,6 +20,7 @@
     <a class="page" href="todo.html">A page</a>
     <a class="page" href="compare.html">Compared</a>
     <a class="page" href="opposition.html">The opposition</a>
+    <a class="page" href="systems.html">Three systems</a>
     <a class="page" href="reference.html" aria-current="page">The grammar</a>
     <a class="page" href="how.html">The machinery</a>
     <a class="page" href="https://github.com/monstercameron/EnglishScript">The source</a>
@@ -349,7 +350,7 @@ If the word starts with "a":
 <tr><td>Arithmetic</td><td><code>plus</code> <code>minus</code> <code>times</code> <code>divided</code></td></tr>
 <tr><td>Prepositions</td><td><code>with</code> <code>to</code> <code>from</code> <code>against</code> <code>for</code> <code>by</code> <code>on</code> <code>at</code> <code>into</code> <code>onto</code> <code>about</code> <code>over</code> <code>under</code> <code>as</code> <code>through</code> <code>toward</code> <code>towards</code> <code>upon</code></td></tr>
 </tbody></table></div>
-<p><strong>This list is frozen.</strong> A new word in it would break every program that already uses that word in a name, so a new sentence form is recognised by where its words stand instead, wherever that can be done. Many words of the built forms are already free in this way, and may be part of names: <code>that</code>, <code>this</code>, <code>round</code>, <code>program</code>, <code>file</code>, <code>total</code>, <code>first</code>, <code>last</code>, <code>item</code>, <code>letter</code>, <code>letters</code>, <code>length</code>, <code>words</code>, <code>lines</code>, <code>upper</code>, <code>lower</code>, <code>case</code>, <code>chapter</code>, <code>book</code>, <code>library</code>, <code>shares</code>, <code>only</code>, <code>everything</code>, <code>settled</code>, <code>keep</code>, <code>either</code>, <code>way</code>, <code>again</code>, <code>because</code>, <code>joined</code>, <code>empty</code>, <code>remainder</code>, <code>rounded</code>, <code>nearest</code>, <code>raised</code>, <code>power</code>, <code>square</code>, <code>root</code>, <code>larger</code>, <code>smaller</code>, <code>absolute</code>, <code>value</code>, <code>does</code>, <code>contain</code>, <code>contains</code>, <code>starts</code>, <code>ends</code>, <code>comes</code>, <code>before</code>, <code>after</code>, <code>one</code>, <code>plural</code>, <code>done</code> and <code>fails</code>. Each is read as part of its form only where the form's other words stand around it (<code>the total of</code> a list, <code>Skip this round</code>, <code>the text of the file</code>), and as a name everywhere else.</p>
+<p><strong>This list is frozen.</strong> A new word in it would break every program that already uses that word in a name, so a new sentence form is recognised by where its words stand instead, wherever that can be done. Many words of the built forms are already free in this way, and may be part of names: <code>that</code>, <code>this</code>, <code>round</code>, <code>program</code>, <code>file</code>, <code>total</code>, <code>first</code>, <code>last</code>, <code>item</code>, <code>letter</code>, <code>letters</code>, <code>length</code>, <code>words</code>, <code>lines</code>, <code>upper</code>, <code>lower</code>, <code>case</code>, <code>chapter</code>, <code>book</code>, <code>library</code>, <code>shares</code>, <code>only</code>, <code>everything</code>, <code>settled</code>, <code>keep</code>, <code>either</code>, <code>way</code>, <code>again</code>, <code>because</code>, <code>joined</code>, <code>empty</code>, <code>remainder</code>, <code>rounded</code>, <code>nearest</code>, <code>raised</code>, <code>power</code>, <code>square</code>, <code>root</code>, <code>larger</code>, <code>smaller</code>, <code>absolute</code>, <code>value</code>, <code>does</code>, <code>contain</code>, <code>contains</code>, <code>starts</code>, <code>ends</code>, <code>comes</code>, <code>before</code>, <code>after</code>, <code>one</code>, <code>plural</code>, <code>done</code>, <code>fails</code>, <code>model</code>, <code>judge</code>, <code>chance</code>, <code>verdict</code>, <code>grade</code>, <code>likelihood</code> and <code>means</code>. Each is read as part of its form only where the form's other words stand around it (<code>the total of</code> a list, <code>Skip this round</code>, <code>the text of the file</code>), and as a name everywhere else.</p>
 <p><strong>Plurals</strong> are formed by rule: add <code>s</code>; add <code>es</code> after <code>s</code>, <code>x</code>, <code>z</code>, <code>ch</code> or <code>sh</code>; change a consonant plus <code>y</code> to <code>ies</code>. So <code>dragon</code> gives <code>dragons</code>, <code>fox</code> gives <code>foxes</code> and <code>pony</code> gives <code>ponies</code>. Another plural can be stated where the kind is described: <code>A child (plural children) has ...</code> (section <a href="#s4-1">4.1</a>). Every kind has its own name and its own plural: a kind whose name or plural is already another kind's name or plural is refused (<code>bus</code> and <code>buse</code> would both be <code>buses</code>; <code>ax</code> and <code>axe</code> both <code>axes</code>; a kind <code>dragons</code> beside <code>dragon</code>).</p>
 <p><strong>Which names may share a word.</strong> There are four sets of words:</p>
 <div class="scroll"><table>
@@ -494,7 +495,8 @@ A dragon's age is always at least 100.</pre>
 <li>A choice is a name: it may not be the name of a kind, a thing, a variable or a worked-out value, nor a choice of another set. It may be the same word as an adjective, because the left side of <code>is</code> always says which is meant: a thing on the left takes an adjective, and a value of the set takes a choice.</li>
 <li>Choices are compared with <code>is</code> and <code>is not</code> only. A choice is said as its words, as they were written in the definition.</li>
 <li>A word that is not one of the choices, where one of them is expected, is refused before the program runs.</li>
-<li>Still proposed: lists of choices, and asking for a choice (sections <a href="#s13-7">13.7</a> and <a href="#s13-15">13.15</a>).</li>
+<li>A set keeps its choices in the order they were written. That order means nothing to <code>is</code>, but it makes a set usable as a scale (<code>low, middling or high</code>): a model may be asked for a choice, and a judge for the likeliest one, where a tie goes to the choice written first (section <a href="#s7-8">7.8</a>).</li>
+<li>Still proposed: lists of choices (section <a href="#s13-7">13.7</a>). A person can't yet be asked for a choice with <code>Ask</code> (section <a href="#s13-15">13.15</a>); a model can.</li>
 </ul>
 <figure class="snippet" data-with-world>
 <pre class="program" data-expect="ok">A mood is one of sleepy, grumpy or very cross.
@@ -880,7 +882,7 @@ Let the total be 2.</pre>
 <p>To check a file's examples apart from its other work:</p>
 <pre class="form">python -m englishscript my_program.english --test</pre>
 <ul>
-<li>The program is carried out with nothing said, nothing asked (an <code>Ask</code> finds that input has ended, so the program ends quietly there, section <a href="#s7-6">7.6</a>), and no file written (<code>Write</code> and <code>Add ... to the file</code> do nothing; files are still read). A library is not left running afterwards.</li>
+<li>The program is carried out with nothing said, nothing asked (an <code>Ask</code> finds that input has ended, so the program ends quietly there, section <a href="#s7-6">7.6</a>), no model listening (every <code>Ask the model</code> and <code>Judge</code> is the problem <code>no model</code>, so a program with a fallback in <code>If that fails:</code> goes on, and one without stops there; section <a href="#s7-8">7.8</a>), and no file written (<code>Write</code> and <code>Add ... to the file</code> do nothing; files are still read). A library is not left running afterwards.</li>
 <li>Every <code>For example</code> that is reached is reported with its line and whether it held. One that does not hold shows its "In fact" line, and the run goes on to the next, instead of stopping.</li>
 <li>It ends with a count, and with status 1 if any example did not hold, or if a problem stopped the program; otherwise 0.</li>
 <li>A program, a page or a tool can do the same with <code>Program.test()</code> (<code>englishscript.compile_source(...).test()</code>), which gives back the examples reached, in order, each with <code>file</code>, <code>line</code>, <code>sentence</code>, <code>held</code> and <code>fact</code>.</li>
@@ -959,6 +961,8 @@ Judge &lt;text&gt; about &lt;value&gt; and let [the] &lt;name&gt; (percent) be t
 Judge &lt;text&gt; about &lt;value&gt; and let [the] &lt;name&gt; (&lt;set of choices&gt;) be the verdict.
 Judge &lt;text&gt; about &lt;value&gt; and let [the] &lt;name&gt; (&lt;set of choices&gt;) be the verdict
       and [the] &lt;name&gt; (percent) be the likelihood.
+Judge &lt;text&gt; about &lt;value&gt; and let [the] &lt;name&gt; (&lt;set of choices&gt;) be the grade
+      [and [the] &lt;name&gt; (percent) be the likelihood].
 For a | an &lt;set of choices&gt;, &lt;choice&gt; means &lt;text&gt;.</pre>
 <p>A running program may ask a model, as it may ask a person with <code>Ask</code> (section <a href="#s7-6">7.6</a>). There are two sorts of model, and a sentence for each:</p>
 <ul>
@@ -983,8 +987,15 @@ For a | an &lt;set of choices&gt;, &lt;choice&gt; means &lt;text&gt;.</pre>
 <li><code>about</code> is required: a judgement is always about something, a text or a thing, handed over as above.</li>
 <li>With <code>the chance</code>, the question is a statement or a yes-or-no question, and the value is how likely it is to be so, from 0% to 100%.</li>
 <li>With <code>the verdict</code>, the question is one whose answer is one of the choices of the set in brackets, and the value is the likeliest choice. If two are equally likely, the one written first in the set wins. <code>the likelihood</code>, if it is asked for, is how likely that choice is: the judge's own figure for it, not a second opinion. A likelihood goes only with a verdict.</li>
-<li>What comes back is checked. A chance must be a number from 0 to 1. A verdict must give a chance from 0 to 1 to every choice of the set and to nothing else; the chances need not add up to exactly 1. Anything else is <code>a bad reply</code>. A judgement is not asked for again.</li>
-<li><code>Judge</code>, <code>the chance</code>, <code>the verdict</code> and <code>the likelihood</code> are recognised by their places; none of them is reserved. If the program has taught a verb <code>judge</code>, a sentence that starts with <code>Judge</code> and ends with <code>be the chance</code>, <code>be the verdict</code> or <code>be the likelihood</code> could be either, and is refused. Rename the verb.</li>
+<li>With <code>the grade</code>, the set of choices is a scale, in the order it was written (section <a href="#s4-6">4.6</a>), and the value is worked out from the chances, not picked: the choices are numbered 0, 1, 2 ... in the order written, the mean of those numbers is taken, each weighted by its choice's chance, and the grade is the choice whose number is nearest that mean. A mean exactly halfway between two choices goes to the higher one. <code>the likelihood</code>, if asked for, is the chance of the choice given as the grade. Whoever judges is told that the set is a scale.</li>
+<li>A verdict and a grade differ on a split answer. With <code>A level is one of low, middle or high.</code> and the chances <code>low</code> 0.45, <code>middle</code> 0.10, <code>high</code> 0.45, the verdict is <code>low</code> (a tie goes to the choice written first), and the grade is <code>middle</code> (the mean is 1), with a likelihood of 10%.</li>
+<li>What comes back is checked. A chance must be a number from 0 to 1. A verdict or a grade must give a chance from 0 to 1 to every choice of the set and to nothing else; the chances need not add up to exactly 1, but for a grade they may not all be 0. Anything else is <code>a bad reply</code>. A judgement is not asked for again.</li>
+<li><code>Judge</code>, <code>the chance</code>, <code>the verdict</code>, <code>the grade</code> and <code>the likelihood</code> are recognised by their places; none of them is reserved. If the program has taught a verb <code>judge</code>, a sentence that starts with <code>Judge</code> and ends with <code>be the chance</code>, <code>be the verdict</code>, <code>be the grade</code> or <code>be the likelihood</code> could be either, and is refused. Rename the verb.</li>
+<li><strong>Judgements put together.</strong> Consecutive <code>Judge</code> sentences in the same block, about the same state written the same way (capitals and spaces aside), may be put to the judge together, in one request, when whoever runs the program has connected a judge that takes several at once (<code>judges</code>, section <a href="#s10">10</a>). A sentence that reads a name set by an earlier one of them (in its question or what it is about) starts a new group. This never changes the result: the questions are independent, and each gets the answer it would have got alone. The answers are checked in the order of the sentences, and the first that can't be used is the problem, at its own sentence, after the sentences before it have kept their answers; <code>no model</code> arises at the first sentence. With no such judge connected, each sentence is put to the judge by itself, in order.</li>
+</ul>
+<p><strong>One answer per question</strong></p>
+<p>Within one run, the same question to a model about the same state, wanting the same type of reply, is asked once: a later asking gets the earlier answer, and the model is not asked again. The same holds for a judgement: the same question, about the same state, with the same choices and of the same sort (chance, verdict or grade). The question and the state are compared as they were worked out, after the fill-ins. A reply that could not be read and was asked for again is not kept; only the answer that was finally read. A failed <code>Try</code> does not forget an answer: like a file written, an answer is outside the world. One sentence means one thing, and a question asked twice about the same thing should not get two answers in one run. A program that wants a fresh answer asks a different question, or about a different state.</p>
+<ul>
 <li>A choice may be given a meaning for the judge, at the top level, after its set is described: <code>For a team, returns means "the customer wants to send something back".</code> Each choice may have one meaning, in plain text without braces; each is optional. The meanings are handed to whoever judges, with the choices. They change nothing else.</li>
 </ul>
 <p>One question per judgement, and ordinary code around it: that is the whole design. A judgement gives a figure; the program decides, in sentences anyone can read, what is likely enough to act on, what a person should look at, and what to hand over. With nothing listening, as when this document is checked, each of these takes its <code>If that fails:</code> way:</p>
@@ -1047,7 +1058,17 @@ Ask the model "List the dates in this text." about the letter and let the dates 
 <figure class="snippet" data-with-world>
 <pre class="program" data-expect="refused">Judge "Is it raining?" and let the rain (percent) be the chance.</pre>
 </figure>
-<p>Refused: a likelihood goes with a verdict.</p>
+<p>A grade and a verdict on the same scale, with nothing listening:</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">A level is one of low, middle or high.
+Try:
+  Judge "How hungry is this dragon?" about Smaug and let the guess (level) be the verdict.
+  Judge "How hungry is this dragon?" about Smaug and let the hunger (level) be the grade and the sureness (percent) be the likelihood.
+  Say "{the guess}, {the hunger}, {the sureness}"
+If that fails:
+  Say the problem.                  #&gt; No model is listening.</pre>
+</figure>
+<p>Refused: a likelihood goes with a verdict or a grade.</p>
 <figure class="snippet" data-with-world>
 <pre class="program" data-expect="refused">Judge "Is Smaug angry?" about Smaug and let the anger (percent) be the chance and the sureness (percent) be the likelihood.</pre>
 </figure>
@@ -1380,6 +1401,36 @@ Say the number of costly dragons.       #&gt; 1</pre>
   Say "Counting."
   The answer is the number of dragons.</pre>
 </figure>
+<h4 id="a-value-worked-out-by-a-model">A value worked out by a model</h4>
+<p>A worked-out value may instead be one question to a model (section <a href="#s7-8">7.8</a>). It has no block: its heading ends with a comma and the question, and with a period.</p>
+<pre class="form">To work out the &lt;name&gt; (&lt;type&gt;) [&lt;preposition&gt; a | an &lt;role&gt;]..., ask the model &lt;text&gt;.
+To work out the &lt;name&gt; (percent | &lt;set of choices&gt;) &lt;preposition&gt; a | an &lt;role&gt; [...], judge &lt;text&gt;.
+To work out the &lt;name&gt; (&lt;set of choices&gt;) &lt;preposition&gt; a | an &lt;role&gt; [...], grade &lt;text&gt;.</pre>
+<ul>
+<li>The first is <code>Ask the model ... about ...</code> and the second <code>Judge ... about ...</code>: a chance when the type is <code>percent</code>, a verdict (the likeliest choice, with no likelihood) when it is a set of choices. The third is a grade on that set as a scale (section <a href="#s7-8">7.8</a>). The types are those of section <a href="#s7-8">7.8</a>.</li>
+<li>The roles are what the question is about. One role is handed over as <code>about</code> hands it over: a text as it is, a thing written out. Several are handed over as one <code>&lt;role&gt;: &lt;value&gt;</code> line each, in the order written, each said as <code>Say</code> says it (a thing by its name). A judgement needs at least one role.</li>
+<li>The question may fill in the roles: <code>ask the model "Say what {the letter} wants."</code>.</li>
+<li>It is told from the usual heading by the comma: a heading has no comma outside brackets. A heading with the comma and a block under it is refused.</li>
+<li>It is used like any worked-out value, and its problems (<code>no model</code>, <code>a bad reply</code>) arise where it is used, as problems a <code>Try</code> there can catch.</li>
+<li>Because it asks, it may be used only where <code>Ask</code> may be: in a verb, a reaction or a sentence of the program, never in a <code>To work out</code> block, an adjective, a worked-out property, a rule or a kept value, which are worked out whenever they are needed.</li>
+</ul>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="ok">A team is one of sales, support or returns.
+A letter has a wording (text).
+There is a letter called Ticket whose wording is "The jug came broken.".
+To work out the gist (text) of a note (text), ask the model "Say what this note wants, in one line.".
+To work out the team (team) for a letter, judge "Which team should handle this?".
+Try:
+  Say "{Ticket} goes to {the team for Ticket}."
+If that fails:
+  Say "{Ticket} waits: {the problem}"        #&gt; Ticket waits: No model is listening.</pre>
+</figure>
+<p>Refused, because an adjective is worked out whenever it is needed, and so may not ask:</p>
+<figure class="snippet" data-with-world>
+<pre class="program" data-expect="refused">A team is one of sales, support or returns.
+To work out the team (team) for a dragon, judge "Which team should feed this dragon?".
+A dragon is fed when the team for it is sales.</pre>
+</figure>
 <h3 id="s9-4">9.4 Using a library</h3>
 <p>A library gives a program words whose work is done by Python code: drawing on a screen, say, or talking to a device.</p>
 <pre class="form">Use the &lt;name&gt; library.</pre>
@@ -1678,10 +1729,11 @@ Say the number of numerals.</pre>
 <li>a file cannot be read or written;</li>
 <li><code>Remove</code> is refused, or a removed thing is used;</li>
 <li><code>Fail because</code> is reached;</li>
+<li><code>Ask the model</code> or <code>Judge</code> finds no model listening, or gets a reply it can't read or a judgement that is not well-formed (section <a href="#s7-8">7.8</a>);</li>
 <li>a <code>While</code> passes 1,000,000 rounds, a verb or a worked-out value uses itself more than 200 levels deep, or reactions set off reactions more than 200 levels deep (the message then names the reactions that repeat, if they go round in a circle);</li>
-<li>a library reports a problem, or fails in a way it did not expect (section <a href="#s9-4">9.4</a>).</li>
+<li>a library reports a problem, or fails in a way it did not expect (section <a href="#s9-4">9.4</a>), or what is connected as the model fails in a way it did not expect (section <a href="#s7-8">7.8</a>).</li>
 </ul>
-<p>All of these except a <code>For example</code>, the 1,000,000 rounds, the 200 levels and a library's unexpected failure are problems that a <code>Try</code> can recover from (section <a href="#s8-5">8.5</a>). When input runs out during <code>Ask</code>, the program ends quietly; that is not a problem.</p>
+<p>All of these except a <code>For example</code>, the 1,000,000 rounds, the 200 levels and an unexpected failure of a library or of what is connected as the model are problems that a <code>Try</code> can recover from (section <a href="#s8-5">8.5</a>). When input runs out during <code>Ask</code>, the program ends quietly; that is not a problem.</p>
 <p>A sentence of a chapter that can't be read, or a problem while running one, is reported with the chapter's file and line, such as <code>almanac/calendar.english, line 12</code>, followed by where the chapter is used from (section <a href="#s9-6">9.6</a>).</p>
 <p>A sentence of a library that can't be read is reported at the program's <code>Use</code> sentence, as the library's fault, with the library's own sentence shown underneath. A problem while running inside a verb that a library wrote in English gives the library's line, as <code>line 5 of the paint library</code>.</p>
 <h3 id="sentences-from-other-languages">Sentences from other languages</h3>
@@ -1736,7 +1788,7 @@ python -m englishscript my_program.english --lint --json</pre>
 <li>a variable (made with <code>Let</code> or <code>Ask</code>), a verb, a worked-out value, an adjective, or a role of a verb or worked-out value, that is never used;</li>
 <li>a sentence that can never be reached, because the one before it in the same block always leaves (section <a href="#s8-4">8.4</a>);</li>
 <li>a sentence that starts with a small letter;</li>
-<li><code>a</code> before a vowel sound or <code>an</code> before any other (<code>a egg</code>, <code>an weight</code>). Only words whose sound the spelling makes plain are judged, with a list of the usual exceptions (<code>an hour</code>, <code>a unit</code>, <code>a one</code>); for other words, such as most that start with <code>u</code>, nothing is said;</li>
+<li><code>a</code> before a vowel sound or <code>an</code> before any other (<code>a egg</code>, <code>an weight</code>). Only words whose sound the spelling makes plain are judged, with a list of the usual exceptions (<code>an hour</code>, <code>a unit</code>, <code>a one</code>); for other words, such as most that start with <code>u</code>, and words that start with a letter outside unaccented English (<code>élan</code>), nothing is said;</li>
 <li><code>are</code> after one thing in a comparison (<code>If Gawain's purse are $300:</code>). When the last word of the thing ends in <code>s</code>, nothing is said.</li>
 </ul></li>
 <li>A warning is never given for a sentence that is refused, nor for anything that comes from a library. A warning never stops a program compiling or running.</li>
@@ -1750,7 +1802,10 @@ python -m englishscript my_program.english --lint --json</pre>
 <tbody>
 <tr><td><code>englishscript.lint(source, folder=None, name=None)</code></td><td>the list of problems, as above</td></tr>
 <tr><td><code>lint(..., notes=True)</code></td><td><code>(problems, notes)</code>: the notes are <code>(line, text)</code>, how each sentence was read (as <code>--explain</code> shows it), for every line of the file that has no error, so one mistake does not hide the explanations of the good lines</td></tr>
-<tr><td><code>englishscript.names(source, folder=None, name=None)</code></td><td>the table of names: <code>{"names": [...], "chapters": [...]}</code>. Each name has <code>name</code>, <code>what</code> (<code>kind</code>, <code>plural of a kind</code>, <code>property</code>, <code>worked-out property</code>, <code>thing</code>, <code>adjective</code>, <code>verb</code>, <code>worked-out value</code>, <code>variable</code>, <code>role</code>, <code>reaction</code>, <code>set of choices</code> or <code>choice</code>), <code>of</code> (the kind it belongs to, or the set of a choice), <code>file</code> (<code>None</code> for the file itself), <code>line</code>, <code>col</code> and <code>width</code> of where it is defined. Each chapter has <code>file</code>, <code>name</code> and <code>shares</code> (a list, or <code>None</code> for everything). A program with errors gives what its readable sentences define.</td></tr>
+<tr><td><code>englishscript.names(source, folder=None, name=None)</code></td><td>the table of names: <code>{"names": [...], "chapters": [...]}</code>. Each name has <code>name</code>, <code>what</code> (<code>kind</code>, <code>plural of a kind</code>, <code>property</code>, <code>worked-out property</code>, <code>thing</code>, <code>adjective</code>, <code>verb</code>, <code>worked-out value</code>, <code>variable</code>, <code>role</code>, <code>loop name</code>, <code>reaction</code> (a settled block too), <code>set of choices</code> or <code>choice</code>), <code>of</code> (the kind it belongs to, or the set of a choice), <code>file</code> (<code>None</code> for the file itself), <code>line</code>, <code>col</code> and <code>width</code> of where it is defined; <code>type</code>, its type as written in brackets (<code>"number"</code>, <code>"dragon, if any"</code>, <code>"list of text"</code>), or <code>None</code> where it has none; <code>scope</code>, <code>None</code> for the top level, or <code>{"from": &lt;line&gt;, "to": &lt;line&gt;}</code>, the block it belongs to (for a role, its verb's or worked-out value's block; for a loop name, the loop's block); <code>by_kind</code>, <code>true</code> for a role called by its kind (<code>To greet a dragon:</code>) rather than by a name of its own; and <code>library</code>, the library a word comes from, or <code>None</code>. A word a library brings has <code>line</code>, <code>col</code> and <code>width</code> <code>None</code>. A verb and a worked-out value also have <code>roles</code>, a list of <code>{"link": &lt;linking word, or None for the direct object&gt;, "name", "type"}</code>. Each chapter has <code>file</code>, <code>name</code> and <code>shares</code> (a list, or <code>None</code> for everything). A program with errors gives what its readable sentences define. If the table could not be finished, it has an <code>"error"</code> key saying why, with what had been read so far.</td></tr>
+<tr><td><code>Program.run(..., judges=None)</code></td><td><code>judges(requests)</code> answers several judgements at once (section <a href="#s7-8">7.8</a>, "Judgements put together"): each request is <code>{"question": text, "state": text or None, "choices": [...] or None, "meanings": {...} or None, "scale": True for a grade}</code>, and it returns a list of what <code>judge</code> would return for each, in the same order. A list of another length is a fault in it. An <code>EnglishError</code> it raises is a problem at the first sentence of the group. When only <code>judges</code> is connected, a single judgement is put to it as a list of one; when only <code>judge</code> is, a group is put to it one question at a time, and a grade is asked for as a verdict is (the scale is a hint for <code>judges</code>). The answers of a run are kept in <code>world.answers</code>. <code>--model SPEC</code> passes the <code>judges</code> attribute of what <code>connect</code> returns, if it has one.</td></tr>
+<tr><td><code>Program.run(out, ask, trace=None, model=None, judge=None)</code></td><td>carries out a compiled program (<code>compile_source(...)</code>). <code>model(question, state, shape, complaint)</code> answers <code>Ask the model</code>: <code>question</code> and <code>state</code> are text (<code>state</code> is <code>None</code> without <code>about</code>; a thing arrives written out as section <a href="#s7-8">7.8</a> shows), <code>shape</code> is <code>{"type": "text" | "number" | "money" | "percent" | "yes or no" | "choice" | "list", "choices": [...] or None, "items": the item type of a list or None, "optional": True or False}</code>, <code>complaint</code> is <code>None</code> the first time and, on a second or third asking, says what was wrong; it returns the reply as text, or <code>None</code> for no reply. <code>judge(question, state, choices, meanings)</code> answers <code>Judge</code>: with <code>choices</code> <code>None</code> it returns a chance from 0 to 1, otherwise <code>{choice: chance}</code>; <code>meanings</code> is <code>{choice: text}</code> for the choices given a meaning. Either may raise <code>EnglishError(..., stage="run", recoverable=True)</code> for a problem of its own, which is <code>a bad reply</code> unless it says otherwise; anything else it raises ends the program as its fault. Without them nothing is listening. <code>Program.test()</code> connects neither.</td></tr>
+<tr><td><code>python -m englishscript program.english --model SPEC</code></td><td>runs the program with <code>englishscript.models.connect(SPEC)</code> listening; that module is imported only then</td></tr>
 <tr><td><code>read=fn</code> (to <code>lint</code>, <code>names</code> and <code>compile_source</code>)</td><td><code>fn(path)</code> gives the text of a chapter that is open and unsaved, or <code>None</code> to read the file from the disk</td></tr>
 <tr><td><code>englishscript.KEYWORDS</code></td><td>the reserved words of section <a href="#s3">3</a></td></tr>
 <tr><td><code>englishscript.CATEGORIES</code>, <code>CATEGORY_HEADINGS</code>, <code>RULES</code></td><td>the categories of mistake, their headings (<code>"Spelling"</code>), and the rules with their sections</td></tr>
@@ -1762,7 +1817,8 @@ python -m englishscript my_program.english --lint --json</pre>
 <pre class="form">sentence    = definition | action | block-opener
 
 definition  = kind | thing | adjective | stored-adj | property | rule | verb | work-out
-            | reaction | settled | library | chapter | shares | choices | keep   (top level only)
+            | reaction | settled | library | chapter | shares | choices | keep | meaning   (top level only)
+meaning     = "For" article CHOICE-SET "," CHOICE "means" TEXT "."             (TEXT: without braces)
 keep        = "Keep each" KIND "'s" PROPERTY "as" whole "." | "Keep" THING "'s" PROPERTY "as" whole "."
             | "Keep each" KIND ADJECTIVE "when" condition "."
 choices     = article NAME "is one of" CHOICE { "," CHOICE } [ "," ] "or" CHOICE "."
@@ -1775,7 +1831,8 @@ stored-adj  = article KIND "can be" ADJECTIVE "."
 property    = "The" NAME "of" article KIND "is" expression "."
 rule        = article KIND "'s" PROPERTY "is" ( "never" | "always" ) tail "."
 verb        = "To" VERB [ role ] { PREPOSITION role } ":"
-work-out    = "To work out the" NAME "(" type ")" { ( PREPOSITION | "of" ) role } ":"
+work-out    = "To work out the" NAME "(" type ")" { ( PREPOSITION | "of" ) role }
+              ( ":" | "," ( "ask the model" | "judge" | "grade" ) expression "." )   (with ",": no block)
 reaction    = "Whenever" ( article KIND | THING ) "becomes" [ "not" ] ADJECTIVE ":"
 settled     = "Whenever everything has settled" ":"
 library     = "Use the" NAME "library" "."
@@ -1793,7 +1850,7 @@ base-type   = "number" | "money" | "text" | "percent" | "yes or no" | KIND | CHO
 PLURAL-TYPE = "numbers" | "percentages" | "money" | "text" | KINDS
 
 action      = let | change | say | use | example | answer | leave
-            | now | create | remove | ask | write | fail
+            | now | create | remove | ask | ask-model | judge | write | fail
 let         = "Let" [ "the" ] NAME [ "(" type ")" ] [ "always" ] "be" ( whole | new-thing ) "."
 whole       = expression | list-written | group                     (a group becomes a list)
 list-written = "a list of" expression { "," expression } [ [ "," ] "and" expression ]
@@ -1817,6 +1874,12 @@ create      = "There is" new-thing "."
 new-thing   = article "new" { ADJECTIVE } KIND [ "called" expression ] [ whose { sep whose } ]
 remove      = "Remove" expression "."
 ask         = "Ask" expression "and let" [ "the" ] NAME "(" type ")" "be the reply" "."
+ask-model   = "Ask the model" expression [ "about" expression ] "and let" [ "the" ] NAME "(" type ")"
+              "be the reply" "."
+judge       = "Judge" expression "about" expression "and let" [ "the" ] NAME
+              ( "(" "percent" ")" "be the chance"
+              | "(" CHOICE-SET ")" ( "be the verdict" | "be the grade" )
+                [ "and" [ "the" ] NAME "(" "percent" ")" "be the likelihood" ] ) "."
 write       = ( "Write" | "Add" ) expression "to the file" value "."
 fail        = "Fail because" expression "." | "Fail again."           (Fail again: inside If that fails)
 
@@ -1833,7 +1896,7 @@ block-opener = "If" condition ":"
 
 condition   = test { "and" test } | test { "or" test }
 test        = "not" test | "(" condition ")" | expression comparison
-            | "the problem is" [ "not" ] article PROBLEM-KIND             (inside If that fails)
+            | "the problem is" [ "not" ] ( article PROBLEM-KIND | "no model" )   (inside If that fails)
 comparison  = ( "is" | "are" ) [ "not" ] tail
             | "has" article PROPERTY | "has no" PROPERTY
             | ( "=" | "&lt;" | "&gt;" | "&lt;=" | "&gt;=" ) expression
@@ -2242,6 +2305,7 @@ group        = ... | group "in order of" PROPERTY | group "in reverse order of" 
 <li>Chance: a number or a thing picked at random.</li>
 <li>Rules that span several things, rules about worked-out properties or adjectives, and rules that read a variable that can change. Today a rule may read only values written out, variables made with <code>always</code>, and its own thing's stored properties (section <a href="#s4-5">4.5</a>), because it is checked only when that thing's stored properties change; a rule that read anything else could be broken without anyone noticing. Checking such rules would mean finding, after every change, every rule whose answer that change could alter.</li>
 <li>Lookup tables from one value to another. Today the nearest thing is finding a thing by its name.</li>
+<li>Asking a model (section <a href="#s7-8">7.8</a>) for a thing of a kind, for a list of things or of choices, or for several values in one reply; a limit on how long a model may take; and handing a model a group of things, or a thing's adjectives and worked-out properties, other than by filling them into the question.</li>
 </ul>
 <p><strong>Values</strong></p>
 <ul>

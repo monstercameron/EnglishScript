@@ -68,8 +68,9 @@ The argument at length is **[the treatise](https://monstercameron.github.io/Engl
 | | |
 |---|---|
 | **[The treatise](https://monstercameron.github.io/EnglishScript/)** | The argument for the language, with examples that run where they stand, and a chapter on agents and what a program means. |
-| **[The playground](https://monstercameron.github.io/EnglishScript/playground.html)** | An editor that marks your program as a teacher would, with corrections you can accept, twenty-three examples and a list of how to say things. |
+| **[The playground](https://monstercameron.github.io/EnglishScript/playground.html)** | An editor that marks your program as a teacher would, with corrections you can accept, twenty-four examples and a list of how to say things. |
 | **[A page](https://monstercameron.github.io/EnglishScript/todo.html)** | A to-do list for the web written in EnglishScript, as a book of four chapters, with its files and the things behind the page shown beside it. |
+| **[Three systems](https://monstercameron.github.io/EnglishScript/systems.html)** | The program's own exact sentences (System 0), a model that judges in the manner of TypeSafe's Jev (System 1), and a model that writes (System 2): which work belongs to which, with eight examples from a single rule to a cascade through all three. |
 | **[The opposition](https://monstercameron.github.io/EnglishScript/opposition.html)** | Seventy years of programming in English, from FLOW-MATIC to Inform 7, and the new languages that ask a model: what each did with a sentence that could mean two things, and what EnglishScript should borrow or fear. |
 | **[Compared](https://monstercameron.github.io/EnglishScript/compare.html)** | The same programs in JavaScript and in Java, and where the three part company. |
 | **[The grammar](https://monstercameron.github.io/EnglishScript/reference.html)** | Every sentence the compiler accepts. Its examples run in the page, and the test suite runs them too. |
@@ -141,6 +142,8 @@ The full reference is [docs/SYNTAX.md](docs/SYNTAX.md). In brief:
 | Arithmetic | `the remainder of 17 divided by 5`, `17 rounded up to the nearest 5`, `2 raised to the power of 10`, `the square root of 81`, `the larger of $5 and $8`, `the absolute value of -4` |
 | A fixed set of choices | `A mood is one of sleepy, grumpy or content.` then `a mood (mood)` |
 | Recover from a problem | `Try:` then `If that fails:` with `the problem`, and `Either way:` for what must be done in any case; `Fail because "..."`, `Fail again.`; `If the problem is a broken rule:` |
+| Ask a model | `Ask the model "In one line, what does the customer want?" about the letter and let the gist (text) be the reply.` |
+| Ask a model to judge | `Judge "Which team should handle this?" about the letter and let the pick (team) be the verdict and the sureness (percent) be the likelihood.` |
 | React to a change | `Whenever a knight becomes broke:`, `Whenever Adder becomes pressed:`, `Whenever a card becomes not ticked:`, and once when a turn is over, `Whenever everything has settled:` |
 | Keep something true | `Keep Tally's wording as "{the number of open cards} left".`, `Keep each card's order as the standing of the card.`, `Keep each card hidden when the card is ticked.` |
 | Use a library | `Use the vulkan library.`, `Use the page library.` |
@@ -171,6 +174,7 @@ Types are `number`, `money`, `text`, `percent`, `yes or no`, any kind you descri
 | `examples/web_todo.english` | A to-do list for the web, with tags, stars, editing in place, finding, and putting back what was removed. Its work is divided among four chapters of the book in `examples/tasks/`, and what the page shows is kept true by sentences beginning `Keep`. |
 | `examples/almanac.english` | A program put together from the chapters of a book: `examples/almanac/` holds a calendar, Roman numerals and the feasts of the year. |
 | `examples/web_almanac.english` | The same chapters set out as a web page: a menu of years, a table of feasts and a link. |
+| `examples/triage.english` | Sorting the post: a model judges which team each letter belongs to and how upset the customer is, and the program decides in three bands. It replays recorded answers with `--model replay:examples/triage_answers.txt`, and with no model it keeps every letter for a person. |
 | `examples/web_counters.english` | Three counters on one page, built by one verb: how to make several of something, and keep what a program is about apart from how it is shown. |
 | `examples/triangle.english` | A shaded triangle drawn in characters, following the steps of a Vulkan program without a graphics card. |
 | `examples/gpu_triangle.english` | The same triangle on a real graphics card, through the Vulkan API. |

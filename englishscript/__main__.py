@@ -58,12 +58,14 @@ def main(argv=None):
             return 0
         if args.test:
             return test_program(program, args.file)
-        model = judge = None
+        model = judge = judges = None
         if args.model:
             # Only now: the compiler itself depends on no model, nor on this module.
             from . import models
             try:
-                model, judge = models.connect(args.model)
+                pair = models.connect(args.model)
+                model, judge = pair
+                judges = getattr(pair, "judges", None)
             except EnglishError:
                 raise
             except Exception as error:  # noqa: BLE001 - reported in English
@@ -75,7 +77,7 @@ def main(argv=None):
                 where = f"{file}, line {line}" if file else f"line {line}"
                 because = f"   (because {cause})" if cause else ""
                 print(f"{'  ' * depth}[{where}] {sentence}{because}", file=sys.stderr, flush=True)
-        world = program.run(trace=trace, model=model, judge=judge)
+        world = program.run(trace=trace, model=model, judge=judge, judges=judges)
         sys.stdout.flush()
         if world.examples:
             noun = "example" if world.examples == 1 else "examples"

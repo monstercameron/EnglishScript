@@ -133,15 +133,30 @@ def names(source, folder=None, name=None, read=None):
     belongs to, or the set of a choice, else None), "file" (a chapter's file, or None
     for the program's own), "line", "col" (from 0) and "width". Each chapter is a dict
     with "file", "name" and "shares": the names it shares, or None for everything."""
+    compiler = None
     try:
         with no_digit_limit():
-            _, compiler = _lint(source, folder, name, read)
-    except Exception:  # noqa: BLE001 - like the linter, never raises
-        return {"names": [], "chapters": []}
+            compiler = Compiler(folder, name, read)
+            _lint(source, folder, name, read, compiler)
+    except Exception as error:  # noqa: BLE001 - like the linter, never raises; but says it failed
+        table = _table(compiler) if compiler is not None else {"names": [], "chapters": []}
+        table["error"] = f"The table of names could not be finished: {type(error).__name__}: {error}"
+        return table
+    return _table(compiler)
+
+
+def _table(compiler):
+    """The table of names (see `names`) of what the compiler has read so far."""
     table = []
-    for what, written, of, line, col, width in compiler.defined:
-        table.append({"name": written, "what": what, "of": of, "file": chapter_file(line), "line": line.number,
-                      "col": col, "width": width})
+    for what, written, of, line, col, width, more in compiler.defined:
+        library = more["library"]
+        entry = {"name": written, "what": what, "of": of, "file": chapter_file(line),
+                 "line": None if library else line.number, "col": col, "width": width,
+                 "type": more["type"], "by_kind": more["by_kind"], "library": library,
+                 "scope": None if more["scope"] is None else {"from": more["scope"][0], "to": more["scope"][1]}}
+        if "roles" in more:
+            entry["roles"] = more["roles"]
+        table.append(entry)
     chapters = [{"file": unit.file, "name": unit.name,
                  "shares": None if unit.shares is None else [entry[3] for entry in unit.share_at.values()]}
                 for unit in compiler.chapters.values() if unit is not compiler.main]
@@ -154,9 +169,9 @@ def _whole(message, source):
     return Problem(1, None, 1, "error", message, None, first, None, category, rule, see)
 
 
-def _lint(source, folder=None, name=None, read=None):
+def _lint(source, folder=None, name=None, read=None, compiler=None):
     collector = Collector(source)
-    compiler = Compiler(folder, name, read)
+    compiler = compiler if compiler is not None else Compiler(folder, name, read)
     layout = []
     lines = read_source(source, problems=layout, unit=compiler.main)
     for error in layout:
@@ -200,6 +215,8 @@ def article_for(word):
     low = word.lower()
     if len(low) < 2 or not low.isalpha() or (word.isupper() and len(word) > 1):
         return None  # a single letter, or an abbreviation such as "FBI"
+    if not "a" <= low[0] <= "z":
+        return None  # a letter outside unaccented English ("élan"): its sound can't be told from it
     if low in SOUNDS_LIKE_A:
         return "a"
     if low in SOUNDS_LIKE_AN:

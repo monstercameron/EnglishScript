@@ -31,8 +31,16 @@ A listener is a pair of plain functions, either of which may be ``None``:
     is, from 0 to 1. Otherwise it returns ``{choice: probability}`` for every
     choice. ``meanings`` is ``{choice: text}`` for the choices given a meaning.
 
-Either may raise ``EnglishError(..., stage="run", recoverable=True)`` for a
-problem a program can recover from, such as a network that is down.
+``judges(requests) -> list``
+    Several judgements at once. A program's consecutive judgements about the
+    same thing are put together, as Jev is meant to be asked. Each request is
+    ``{"question", "state", "choices", "meanings", "scale"}``; ``scale`` is
+    true when the choices are an ordered scale and the program wants a grade.
+    The answers come back in the same order, each what ``judge`` would give.
+    A listener without it is asked one question at a time.
+
+Any of them may raise ``EnglishError(..., stage="run", recoverable=True)`` for
+a problem a program can recover from, such as a network that is down.
 
 The specs ``connect`` understands
 ---------------------------------
@@ -80,6 +88,28 @@ CLAUDE = "claude-opus-5-5"
 #: The Jev model asked when none is named.
 JEV = "jev-latest"
 JEV_ENDPOINT = "https://api.typesafe.ai/v1/systemone"
+
+
+class Listeners(tuple):
+    """``(model, judge)``, as ``connect`` gives them, with ``judges`` beside.
+
+    A tuple of two, so ``model, judge = connect(spec)`` still works.
+    """
+
+    def __new__(cls, model, judge, judges=None):
+        pair = super().__new__(cls, (model, judge))
+        pair.judges = judges
+        return pair
+
+
+def one_by_one(judge):
+    """A ``judges`` for a listener that can only be asked one question at a time."""
+    if judge is None:
+        return None
+
+    def judges(requests):
+        return [judge(r["question"], r["state"], r["choices"], r["meanings"]) for r in requests]
+    return judges
 
 
 def problem(message):
@@ -362,6 +392,37 @@ class Claude:
             raise problem("The model gave no judgement.")
         return found
 
+    def judges(self, requests):
+        """Several ESTIMATES in one call, one property of the reply for each question."""
+        if len(requests) == 1:
+            r = requests[0]
+            return [self.judge(r["question"], r["state"], r["choices"], r["meanings"])]
+        properties, parts = {}, []
+        states = {r["state"] for r in requests}
+        shared = states.pop() if len(states) == 1 else None
+        for number, r in enumerate(requests, 1):
+            key = f"q{number}"
+            if r["choices"] is None:
+                properties[key] = {"type": "number"}
+                parts.append(f"{key}. How likely is the following to be so, from 0 to 1? {r['question']}")
+            else:
+                properties[key] = {"type": "object", "properties": {c: {"type": "number"} for c in r["choices"]},
+                                   "required": list(r["choices"]), "additionalProperties": False}
+                glosses = "".join(f" ({c}: {r['meanings'][c]})" for c in r["choices"] if r["meanings"] and c in r["meanings"])
+                order = " They are in order, from the least to the most." if r.get("scale") else ""
+                parts.append(f"{key}. {r['question']} The possible answers are {', '.join(r['choices'])}.{glosses}{order} "
+                             "Give each the probability, from 0 to 1, that it is the right one; they should add up to 1.")
+            if shared is None and r["state"]:
+                parts[-1] += "\nIt is about this:\n" + str(r["state"])
+        text = "Answer each question on its own.\n\n" + "\n\n".join(parts)
+        if shared:
+            text += "\n\nEvery question is about this:\n" + str(shared)
+        schema = {"type": "object", "properties": properties, "required": list(properties), "additionalProperties": False}
+        found = self._send(text, schema)
+        if found is None:
+            raise problem("The model gave no judgement.")
+        return [found.get(f"q{number}") for number in range(1, len(requests) + 1)]
+
 
 # ------------------------------------------------------------------------ Jev
 
@@ -397,19 +458,50 @@ class Jev:
         except (urllib.error.URLError, OSError, ValueError) as error:
             raise problem(f"Jev could not be reached: {getattr(error, 'reason', error)}.") from None
 
-    def judge(self, question, state, choices, meanings):
+    @staticmethod
+    def _question(question, choices, meanings, scale):
         if choices is None:
-            asked = {"type": "noul", "instructions": question}
-        else:
-            # Jev wants a description of each option. A choice with no meaning given stands for itself.
-            asked = {"type": "choice", "instructions": question,
-                     "criteria": {choice: (meanings or {}).get(choice, choice) for choice in choices}}
-        found = self.send({"model": self.name, "state": "" if state is None else str(state), "questions": {"q": asked}})
-        try:
-            answer = found["answers"]["q"]
-            return answer["noul"] if choices is None else answer["probabilities"]
-        except (KeyError, TypeError):
-            raise problem("Jev's answer was not in the form its documentation describes.") from None
+            return {"type": "noul", "instructions": question}
+        if scale and 2 <= len(choices) <= 10:
+            # A Score: the levels in order, from the lowest, each described.
+            return {"type": "score", "instructions": question,
+                    "criteria": [(meanings or {}).get(choice, choice) for choice in choices]}
+        # Jev wants a description of each option. A choice with no meaning given stands for itself.
+        return {"type": "choice", "instructions": question,
+                "criteria": {choice: (meanings or {}).get(choice, choice) for choice in choices}}
+
+    @staticmethod
+    def _answer(answer, choices, scale):
+        """What Jev answered, in the form a judge gives: a chance, or a probability for each choice."""
+        if choices is None:
+            return answer["noul"]
+        if answer.get("type") == "score":
+            # A Score's probabilities are keyed by the level's number, from "0".
+            return {choice: answer["probabilities"][str(number)] for number, choice in enumerate(choices)}
+        return answer["probabilities"]
+
+    def judge(self, question, state, choices, meanings):
+        return self.judges([{"question": question, "state": state, "choices": choices,
+                             "meanings": meanings, "scale": False}])[0]
+
+    def judges(self, requests):
+        """Every question about one state goes in one request, as Jev is meant to be asked."""
+        answers = [None] * len(requests)
+        states = {}
+        for index, r in enumerate(requests):
+            states.setdefault("" if r["state"] is None else str(r["state"]), []).append(index)
+        for state, indexes in states.items():
+            questions = {f"q{index}": self._question(requests[index]["question"], requests[index]["choices"],
+                                                    requests[index]["meanings"], requests[index].get("scale"))
+                         for index in indexes}
+            found = self.send({"model": self.name, "state": state, "questions": questions})
+            try:
+                for index in indexes:
+                    r = requests[index]
+                    answers[index] = self._answer(found["answers"][f"q{index}"], r["choices"], r.get("scale"))
+            except (KeyError, TypeError):
+                raise problem("Jev's answer was not in the form its documentation describes.") from None
+        return answers
 
 
 # -------------------------------------------------------------------- connect
@@ -433,31 +525,36 @@ def _split_record(rest):
 
 
 def connect(spec):
-    """The listeners a spec names, as ``(model, judge)``. Either may be ``None``."""
+    """The listeners a spec names: ``(model, judge)``, with ``.judges`` beside.
+
+    Any of the three may be ``None``.
+    """
     spec = (spec or "").strip()
     if not spec:
         raise problem("No listener was named. Try: person, anthropic, jev, replay:<file>.")
     if spec.startswith("replay:"):
         transcript = Transcript(spec[len("replay:"):])
-        return transcript.model, transcript.judge
+        return Listeners(transcript.model, transcript.judge, one_by_one(transcript.judge))
     if spec.startswith("record:"):
         path, inner = _split_record(spec[len("record:"):])
         transcript = Transcript(path, connect(inner))
-        return transcript.model, transcript.judge
-    model = judge = None
+        return Listeners(transcript.model, transcript.judge, one_by_one(transcript.judge))
+    model = judge = judges = None
     for part in spec.split("+"):
         name, _, which = part.strip().partition(":")
         if name == "person":
             found = Person()
-            pair = (found.model, found.judge)
+            found_model, found_judge, found_judges = found.model, found.judge, one_by_one(found.judge)
         elif name == "anthropic":
             found = Claude(which or CLAUDE)
-            pair = (found.model, found.judge)
+            found_model, found_judge, found_judges = found.model, found.judge, found.judges
         elif name == "jev":
-            pair = (None, Jev(which or JEV).judge)
+            found = Jev(which or JEV)
+            found_model, found_judge, found_judges = None, found.judge, found.judges
         else:
             raise problem(f'I don\'t know a listener called "{name}". There are: person, anthropic, jev, '
                           f'replay:<file> and record:<file>:<listener>.')
-        model = model or pair[0]
-        judge = judge or pair[1]
-    return model, judge
+        model = model or found_model
+        if judge is None and found_judge is not None:
+            judge, judges = found_judge, found_judges  # the judge and its way of judging several go together
+    return Listeners(model, judge, judges)

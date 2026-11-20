@@ -214,7 +214,8 @@ RULES = {
     "model_form": ("grammar", 'A model is asked as "Ask the model <text> [about <value>] and let <name> (<type>) be '
                               'the reply."', "7.8"),
     "judge_form": ("grammar", 'A judgement is asked for as "Judge <text> about <value> and let <name> (percent) be '
-                              'the chance." or "... and let <name> (<set of choices>) be the verdict."', "7.8"),
+                              'the chance.", "... and let <name> (<set of choices>) be the verdict." or "... be '
+                              'the grade."', "7.8"),
     "meaning_form": ("grammar", 'A choice is given a meaning for the judge as "For a <set of choices>, <choice> '
                                 'means <text>.", once.', "7.8"),
     "bad_reply": ("running", "A model's reply is read as the type that was asked for, and a judgement has to give "

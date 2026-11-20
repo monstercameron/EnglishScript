@@ -1,0 +1,77 @@
+# Sorting the post: a model reads each letter, and the program decides.
+#
+# The judging is done by a model built to answer closed questions with how
+# likely each answer is, in the manner of TypeSafe's Jev. A model that writes
+# text gives each letter a one-line summary. Everything that is decided is
+# decided here, in ordinary sentences: one question at a time, and three bands
+# for how sure the answer is, as Jev's documentation recommends.
+#
+# Run it as it is and no model is listening: every letter is kept for a person.
+# Run it with the recorded answers beside it, and it sorts the post the same
+# way every time, without asking any model:
+#
+#   python -m englishscript examples/triage.english --model replay:examples/triage_answers.txt
+#
+# Those answers were written for this example by hand. No model gave them.
+
+A team is one of returns, billing or shipping.
+
+For a team, returns means "the customer wants to send something back, or wants their money back".
+For a team, billing means "the customer has a question about a charge, a price or an invoice".
+For a team, shipping means "the customer is waiting for something that has not arrived".
+
+A letter has a wording (text), a team (team, if any) and a summary (text, if any).
+A letter can be urgent.
+A letter can be held.
+
+There is a letter called Ada whose wording is "The kettle I bought came with a crack in it. I would like my money back, please.".
+There is a letter called Bo whose wording is "I was charged twice for my order last week. Please fix this today.".
+There is a letter called Cy whose wording is "My parcel was meant to come on Monday and it still has not arrived.".
+There is a letter called Di whose wording is "Do you sell gift cards?".
+
+# A line saying what the letter wants, from a model that writes, or the start of
+# the letter itself when no model is listening.
+To work out the gist (text) of a note (text), ask the model "Say in one line what this customer wants.".
+
+# Sort one letter. Each question is a judgement on its own, and the program
+# combines them.
+To sort a letter:
+  Judge "Which team should handle this letter?" about the letter and let the pick (team) be the verdict and the sureness (percent) be the likelihood.
+  Judge "Is the customer upset, or in a hurry?" about the letter and let the heat (percent) be the chance.
+  # Sure enough to act: send it to the team.
+  If the sureness is at least 85%:
+    Set the letter's team to the pick.
+  # Not sure: send it, but hold it for a person to check.
+  Otherwise if the sureness is at least 50%:
+    Set the letter's team to the pick.
+    Now the letter is held.
+  # Unlikely to be right: a person decides.
+  Otherwise:
+    Now the letter is held.
+  If the heat is at least 70%:
+    Now the letter is urgent.
+
+For each letter:
+  Try:
+    Sort the letter.
+    Set the letter's summary to the gist of the letter's wording.
+  If that fails:
+    Now the letter is held.
+    If the problem is no model:
+      Set the letter's summary to "(no model is listening)".
+    Otherwise:
+      Set the letter's summary to "(the model's answer could not be used)".
+
+For each letter:
+  Let the destination be "a person".
+  If the letter has a team:
+    Set the destination to "{the letter's team}".
+  Let the flags be "".
+  If the letter is urgent:
+    Set the flags to " (urgent)".
+  If the letter is held:
+    Set the flags to "{the flags} (held for a person to check)".
+  Let the line be the letter's summary or else "".
+  Say "{the letter} to {the destination}{the flags}: {the line}"
+
+Say "{the number of held letters} of {the number of letters} held for a person."

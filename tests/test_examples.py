@@ -146,5 +146,59 @@ class Algorithms(unittest.TestCase):
         self.assertEqual(after, {(r + 1, c + 1) for r, c in before})
 
 
+class SortingThePost(unittest.TestCase):
+    """examples/triage.english: a model judges, the program decides."""
+
+    source = (EXAMPLES / "triage.english").read_text(encoding="utf-8")
+
+    def said(self, **listeners):
+        lines = []
+        compile_source(self.source).run(out=lambda text="": lines.append(str(text)), **listeners)
+        return lines
+
+    def test_it_is_free_of_lint(self):
+        self.assertEqual([p.render() for p in lint(self.source)], [])
+
+    def test_with_nothing_listening_every_letter_waits_for_a_person(self):
+        lines = self.said()
+        self.assertEqual(lines[-1], "4 of 4 held for a person.")
+        self.assertTrue(all("(no model is listening)" in line for line in lines[:4]))
+
+    def test_the_recorded_answers_sort_the_post_the_same_way_every_time(self):
+        from englishscript.models import connect
+
+        first = second = None
+        for attempt in range(2):
+            listeners = connect("replay:" + str(EXAMPLES / "triage_answers.txt"))
+            lines = self.said(model=listeners[0], judge=listeners[1], judges=listeners.judges)
+            if attempt == 0:
+                first = lines
+            else:
+                second = lines
+        self.assertEqual(first, second)
+        self.assertEqual(first, [
+            "Ada to returns: A refund for a kettle that arrived cracked.",
+            "Bo to billing (urgent) (held for a person to check): Money back for an order that was charged twice.",
+            "Cy to shipping: Where a parcel due on Monday has got to.",
+            "Di to a person (held for a person to check): Whether gift cards are sold.",
+            "2 of 4 held for a person."])
+
+    def test_the_three_bands(self):
+        # A sure judgement acts; an unsure one acts and holds; an unlikely one waits for a person.
+        lines = self.said()  # nothing connected: the third band for all
+        self.assertIn("to a person", lines[0])
+        from englishscript.models import Canned
+
+        canned = Canned(replies=["a", "b", "c", "d"], verdicts=[
+            {"returns": 0.9, "billing": 0.05, "shipping": 0.05}, 0.1,
+            {"returns": 0.1, "billing": 0.6, "shipping": 0.3}, 0.9,
+            {"returns": 0.3, "billing": 0.3, "shipping": 0.4}, 0.1,
+            {"returns": 0.9, "billing": 0.05, "shipping": 0.05}, 0.1])
+        lines = self.said(model=canned.model, judge=canned.judge)
+        self.assertTrue(lines[0].startswith("Ada to returns: "))
+        self.assertTrue(lines[1].startswith("Bo to billing (urgent) (held for a person to check)"))
+        self.assertTrue(lines[2].startswith("Cy to a person (held for a person to check)"))
+
+
 if __name__ == "__main__":
     unittest.main()

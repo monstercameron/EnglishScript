@@ -76,6 +76,7 @@
     <a class="page" href="todo.html">A page</a>
     <a class="page" href="compare.html">Compared</a>
     <a class="page" href="opposition.html">The opposition</a>
+    <a class="page" href="systems.html">Three systems</a>
     <a class="page" href="reference.html">The grammar</a>
     <a class="page" href="how.html">The machinery</a>
     <a class="page" href="https://github.com/monstercameron/EnglishScript">The source</a>
@@ -495,6 +496,16 @@ Ada still has $40.</pre>
   <li><strong>A judge that is not a model.</strong> The same program means the same thing every time, so what passed yesterday still passes today.</li>
 </ul>
 
+<h3>A program that asks a model</h3>
+
+<p>The other way round is also allowed. A program may hand a question to a model while it runs, as it may hand one to a person with <code>Ask</code>. It does so in two ways, and neither puts a model inside the compiler.</p>
+
+<p>A model that writes is asked with <code>Ask the model "Say in one line what this customer wants." about the letter and let the gist (text) be the reply.</code> Its reply is read by the same strict reader that reads a person's typed answer, so a reply that is not a number where a number was asked for is not quietly taken for one: the model is told what was wrong and asked again, and after that it is a problem the program can catch.</p>
+
+<p>A model that only decides is asked with <code>Judge "Which team should handle this letter?" about the letter and let the pick (team) be the verdict and the sureness (percent) be the likelihood.</code> This is the manner of TypeSafe's Jev, a model that writes nothing and answers closed questions with how likely each answer is. The answer is a choice from a set the program defined and a percentage, and what to do with them is decided in ordinary sentences: act when the judge is sure, ask a person to check when it is not, and hand the letter to a person when it is unlikely to be right. The judgement is the model's; the decision is the program's, and anyone can read it.</p>
+
+<p>The same question about the same thing gets one answer in a run, so a sentence still means one thing. Answers can be recorded and played back, so a program that asks a model can be tested without one. And when nothing is listening, that too is a problem the program can catch: <code>examples/triage.english</code> keeps every letter for a person, and goes on. <a href="systems.html">Three systems</a> shows the whole arrangement, from a single rule to a cascade.</p>
+
 <h3>What has been tried, and what has not</h3>
 
 <p>This repository is a small trial of the idea, in one direction only. Its example programs were written by a model working from <a href="reference.html">the grammar</a>. The first drafts were often refused: a reserved word used in a name, a preposition the language does not have, a variable given the name of one already in view. One program claimed that sorting eight numbers took thirteen swaps. The compiler ran it and answered that it took fourteen. Each was put right from the message alone.</p>
@@ -506,6 +517,7 @@ Ada still has $40.</pre>
 <ul>
   <li><a href="playground.html">The playground</a>, to write a program of your own.</li>
   <li><a href="todo.html">A page</a>: a to-do list for the web, written in these sentences, with every element of the page a thing in the program.</li>
+  <li><a href="systems.html">Three systems</a>: how a program divides its work between its own exact sentences, a model that judges and a model that writes, from a single rule to a cascade through all three.</li>
   <li><a href="opposition.html">The opposition</a>: the English-like languages since 1955, and the new languages that ask a model, set beside this one.</li>
   <li><a href="compare.html">Compared</a>: the same programs in JavaScript and in Java, and where the three part company.</li>
   <li><a href="reference.html">The grammar</a>: every sentence the compiler accepts, and the parts that are designed but not built.</li>

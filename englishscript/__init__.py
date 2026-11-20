@@ -12,7 +12,7 @@ __all__ = ["compile_source", "compile_file", "Program", "EnglishError", "run_sou
            "names", "KEYWORDS", "CATEGORIES", "CATEGORY_HEADINGS", "RULES", "__version__"]
 
 
-def run_source(source, out=print, ask=None, folder=None, name=None, model=None, judge=None):
+def run_source(source, out=print, ask=None, folder=None, name=None, model=None, judge=None, judges=None):
     """Compile and run a program. Returns the finished World.
 
     `ask` answers the program's questions (see Program.run); by default the
@@ -20,7 +20,7 @@ def run_source(source, out=print, ask=None, folder=None, name=None, model=None, 
     model" and "Judge" (Program.run); by default nothing is listening.
     `folder` and `name` are as for compile_source.
     """
-    return compile_source(source, folder, name).run(out, ask, model=model, judge=judge)
+    return compile_source(source, folder, name).run(out, ask, model=model, judge=judge, judges=judges)
 
 
 def explain(source, folder=None, name=None):

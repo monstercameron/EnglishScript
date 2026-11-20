@@ -137,25 +137,79 @@ class Claude(unittest.TestCase):
         self.assertEqual(models.Claude(client=client).judge("Is it urgent?", None, None, None), 0.25)
 
 
+class ClaudeJudgingSeveral(unittest.TestCase):
+    def test_several_judgements_are_one_call_with_one_property_each(self):
+        sent = []
+
+        def create(**request):
+            sent.append(request)
+            reply = {"q1": {"returns": 0.6, "billing": 0.4}, "q2": 0.3}
+            return SimpleNamespace(stop_reason="end_turn", content=[SimpleNamespace(type="text", text=json.dumps(reply))])
+
+        client = SimpleNamespace(beta=SimpleNamespace(messages=SimpleNamespace(create=create)))
+        answers = models.Claude(client=client).judges([
+            {"question": "Which team?", "state": "the letter", "choices": ["returns", "billing"], "meanings": {}, "scale": False},
+            {"question": "Is the customer angry?", "state": "the letter", "choices": None, "meanings": None, "scale": False},
+        ])
+        self.assertEqual(answers, [{"returns": 0.6, "billing": 0.4}, 0.3])
+        self.assertEqual(len(sent), 1)
+        schema = sent[0]["output_config"]["format"]["schema"]
+        self.assertEqual(sorted(schema["properties"]), ["q1", "q2"])
+        self.assertIn("Every question is about this:\nthe letter", sent[0]["messages"][0]["content"])
+
+
 class Jev(unittest.TestCase):
     """The Jev listener, against a stand-in for TypeSafe's service."""
 
     def test_a_chance_is_asked_as_a_yes_or_no_question(self):
         sent = []
-        jev = models.Jev(send=lambda body: (sent.append(body), {"answers": {"q": {"type": "noul", "noul": 0.93}}})[1])
+        jev = models.Jev(send=lambda body: (sent.append(body), {"answers": {"q0": {"type": "noul", "noul": 0.93}}})[1])
         self.assertEqual(jev.judge("Does the customer want a person?", "Please, a human.", None, None), 0.93)
-        self.assertEqual(sent[0]["questions"]["q"], {"type": "noul", "instructions": "Does the customer want a person?"})
+        self.assertEqual(sent[0]["questions"]["q0"], {"type": "noul", "instructions": "Does the customer want a person?"})
         self.assertEqual((sent[0]["model"], sent[0]["state"]), ("jev-latest", "Please, a human."))
 
     def test_a_verdict_is_asked_as_a_choice_with_each_meaning(self):
         sent = []
-        reply = {"answers": {"q": {"type": "choice", "choice": "returns", "confidence": 0.6,
+        reply = {"answers": {"q0": {"type": "choice", "choice": "returns", "confidence": 0.6,
                                    "probabilities": {"returns": 0.8, "billing": 0.2}}}}
         jev = models.Jev(send=lambda body: (sent.append(body), reply)[1])
         verdict = jev.judge("Which team?", "the letter", ["returns", "billing"], {"returns": "sending something back"})
         self.assertEqual(verdict, {"returns": 0.8, "billing": 0.2})
         # Jev wants a description of every option: a choice with no meaning given stands for itself.
-        self.assertEqual(sent[0]["questions"]["q"]["criteria"], {"returns": "sending something back", "billing": "billing"})
+        self.assertEqual(sent[0]["questions"]["q0"]["criteria"], {"returns": "sending something back", "billing": "billing"})
+
+    def test_several_questions_about_one_state_go_in_one_request(self):
+        sent = []
+
+        def send(body):
+            sent.append(body)
+            answers = {}
+            for key, question in body["questions"].items():
+                if question["type"] == "noul":
+                    answers[key] = {"type": "noul", "noul": 0.2}
+                elif question["type"] == "score":
+                    answers[key] = {"type": "score", "score": 1.0, "probabilities": {"0": 0.45, "1": 0.1, "2": 0.45}}
+                else:
+                    answers[key] = {"type": "choice", "probabilities": {"returns": 0.7, "billing": 0.3}}
+            return {"answers": answers}
+
+        jev = models.Jev(send=send)
+        requests = [
+            {"question": "Which team?", "state": "the letter", "choices": ["returns", "billing"], "meanings": {}, "scale": False},
+            {"question": "Is the customer angry?", "state": "the letter", "choices": None, "meanings": None, "scale": False},
+            {"question": "How urgent is it?", "state": "the letter", "choices": ["low", "middle", "high"], "meanings": {}, "scale": True},
+            {"question": "Is it spam?", "state": "another letter", "choices": None, "meanings": None, "scale": False},
+        ]
+        answers = jev.judges(requests)
+        self.assertEqual(len(sent), 2)  # one request for each state
+        self.assertEqual(sorted(sent[0]["questions"]), ["q0", "q1", "q2"])
+        self.assertEqual(sent[0]["questions"]["q2"], {"type": "score", "instructions": "How urgent is it?",
+                                                      "criteria": ["low", "middle", "high"]})
+        self.assertEqual(answers[0], {"returns": 0.7, "billing": 0.3})
+        self.assertEqual(answers[1], 0.2)
+        # A Score's probabilities come back keyed by level number, and go out keyed by choice.
+        self.assertEqual(answers[2], {"low": 0.45, "middle": 0.1, "high": 0.45})
+        self.assertEqual(answers[3], 0.2)
 
     def test_an_answer_in_another_form_is_a_problem(self):
         jev = models.Jev(send=lambda body: {"something": "else"})
@@ -186,6 +240,20 @@ class Connecting(unittest.TestCase):
         self.assertEqual(judge.__self__.__class__.__name__, "Jev")
         model, _ = models.connect("anthropic:claude-haiku-5-5")
         self.assertEqual(model.__self__.name, "claude-haiku-5-5")
+
+    def test_the_judge_and_its_way_of_judging_several_go_together(self):
+        listeners = models.connect("jev+anthropic")
+        model, judge = listeners  # still a pair
+        self.assertEqual(judge.__self__.__class__.__name__, "Jev")
+        self.assertEqual(listeners.judges.__self__.__class__.__name__, "Jev")
+        listeners = models.connect("anthropic+jev")
+        self.assertEqual(listeners.judges.__self__.__class__.__name__, "Claude")
+        # A listener that is asked one question at a time is given a way to be asked several.
+        canned = models.Canned(verdicts=[0.1, 0.9])
+        judges = models.one_by_one(canned.judge)
+        self.assertEqual(judges([{"question": "a", "state": None, "choices": None, "meanings": None, "scale": False}] * 2),
+                         [0.1, 0.9])
+        self.assertIsNone(models.one_by_one(None))
 
     def test_record_and_replay(self):
         with tempfile.TemporaryDirectory() as folder:

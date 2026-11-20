@@ -44,7 +44,7 @@ from .lexer import (
 )
 from .runtime import (
     RECURSION_LIMIT, Env, Example, Reaction, Thing, World, _EndProgram, _Signal, alive, chance_of, expected, fmt,
-    no_digit_limit, power, read_file, read_model_reply, read_number, read_reply, remainder, rounded, shortened,
+    no_digit_limit, power, read_file, read_model_reply, read_number, read_reply, remainder, rounded, said, shortened,
     split_lines, square_root, thing_state, verdict_of, write_file,
 )
 
@@ -194,6 +194,16 @@ def where(line):
     if unit is not None and unit.kind == "chapter":
         return f"in {unit.title}, line {line.number}"
     return f"line {line.number}"
+
+
+def block_span(lines):
+    """(the first line's number, the last line's number) of a block and everything in it, or None."""
+    if not lines:
+        return None
+    last = lines[-1]
+    while getattr(last, "children", None):
+        last = last.children[-1]
+    return (lines[0].number, last.number)
 
 
 def full_stop(sentence):
@@ -350,6 +360,172 @@ def bad_judgement(wanted, result):
     gave = "nothing" if result is None else f'"{shortened(repr(result))}"'
     return EnglishError(f"The model's judgement could not be used: {wanted}, and it gave {gave}.", stage="run",
                         recoverable=True, teach="bad_reply")
+
+
+def ask_model(world, asked, about, shape):
+    """Ask world.model (which is there) and read its reply as `shape` (Compiler.reply_shape),
+    asking again, with a complaint, up to MODEL_TRIES times in all. The same question about
+    the same state, for the same shape, is asked once in a run (World.answers)."""
+    key = ("model", asked, about, shape["type"], tuple(shape["choices"] or ()), shape["items"], shape["optional"])
+    if key in world.answers:
+        return world.answers[key]
+    value = _ask_model(world, asked, about, shape)
+    world.answers[key] = value
+    return value
+
+
+def _ask_model(world, asked, about, shape):
+    complaint = reply = None
+    for _ in range(MODEL_TRIES):
+        fresh = dict(shape, choices=list(shape["choices"]) if shape["choices"] else None)
+        reply = call_listener(world.model, asked, about, fresh, complaint)
+        if reply is None:
+            raise EnglishError("The model gave no reply: it refused to answer, or its answer was cut short.",
+                               stage="run", recoverable=True, teach="bad_reply")
+        if not isinstance(reply, str):
+            raise EnglishError(f"The model failed: it gave back {type(reply).__name__}, not text.",
+                               stage="run", hint=MODEL_FAULT, teach="model_fault")
+        read, value = read_model_reply(reply, shape)
+        if read:
+            return value
+        complaint = (f'I could not read "{shortened(value)}": the reply has to be {expected(shape)}, and '
+                     "nothing else.")
+    raise EnglishError(f'The model\'s reply could not be read as {expected(shape)}: "{shortened(reply)}"',
+                       stage="run", recoverable=True, teach="bad_reply")
+
+
+def judge_request(asked, about, cset, scale=False):
+    """One judgement, as the `judges` listener is given it (Program.run): a chance when
+    `cset` is None; otherwise a verdict, or a grade when `scale` is true."""
+    if cset is None:
+        return {"question": asked, "state": about, "choices": None, "meanings": None, "scale": False}
+    meanings = {display: cset.meanings[choice] for choice, display in zip(cset.choices, cset.displays)
+                if choice in cset.meanings}
+    return {"question": asked, "state": about, "choices": list(cset.displays), "meanings": meanings,
+            "scale": bool(scale)}
+
+
+def judge_key(request):
+    """What a judgement is kept under in World.answers."""
+    kind = "chance" if request["choices"] is None else "grade" if request["scale"] else "verdict"
+    return ("judge", request["question"], request["state"], tuple(request["choices"] or ()), kind)
+
+
+def fresh_request(request):
+    """A copy for a listener, which may change what it is given."""
+    return dict(request, choices=None if request["choices"] is None else list(request["choices"]),
+                meanings=None if request["meanings"] is None else dict(request["meanings"]))
+
+
+def judgement_of(result, request):
+    """(the value, the likelihood of a verdict or grade) from what a judge gave for `request`,
+    or a problem, "a bad reply", if it can't be used."""
+    if request["choices"] is None:
+        chance = chance_of(result)
+        if chance is None:
+            raise bad_judgement("a chance is a number from 0 to 1", result)
+        return chance, None
+    choices = request["choices"]
+    chances = verdict_of(result, choices)
+    if chances is None:
+        raise bad_judgement(f"a verdict gives a chance from 0 to 1 to each of {join_words(choices)}, and to nothing "
+                            "else", result)
+    if request["scale"]:
+        # A grade: the choices numbered 0, 1, 2 ... in the order written, the mean of those numbers
+        # weighted by the chances, and the choice nearest it (a mean halfway goes to the higher one).
+        total = sum(chances.values())
+        if total == 0:
+            raise bad_judgement("a grade needs a chance of more than 0 for at least one choice", result)
+        mean = sum(number * chances[choice] for number, choice in enumerate(choices)) / total
+        best = choices[min(len(choices) - 1, (mean + Fraction(1, 2)).__floor__())]
+        return best, chances[best]
+    best = choices[0]
+    for choice in choices[1:]:
+        if chances[choice] > chances[best]:  # a tie goes to the choice written first
+            best = choice
+    return best, chances[best]
+
+
+def judges_answers(world, requests):
+    """Put several judgements to world.judges at once: what it gave for each, in order."""
+    results = call_listener(world.judges, [fresh_request(request) for request in requests])
+    if not isinstance(results, (list, tuple)) or len(results) != len(requests):
+        got = f"{len(results)} answers" if isinstance(results, (list, tuple)) else type(results).__name__
+        raise EnglishError(f"The model failed: it was asked {len(requests)} questions at once and gave back {got}.",
+                           stage="run", hint=MODEL_FAULT, teach="model_fault")
+    return list(results)
+
+
+def judgement_group(steps):
+    """Consecutive judgements about one state (Compiler.group_judgements), as one step. With a
+    `judges` listener, those not answered before in this run are put to it at once; otherwise
+    each sentence is carried out by itself, in order. Either way, each gets the answer it
+    would have got alone, and a problem is a problem at its own sentence, after the ones
+    before it have kept their answers."""
+    first = steps[0]
+
+    def step(env):
+        world = env.world
+        if world.judges is None:
+            for one in steps:
+                one(env)
+            return
+        if world.trace is not None:
+            world.traced(first.line)
+        requests, failed = [], None
+        for one in steps:
+            try:
+                requests.append(one.judging["prepare"](env))
+            except EnglishError as error:
+                if error.line is None:
+                    error.line = one.line
+                failed = error
+                break
+        keys = [judge_key(request) for request in requests]
+        asking = [k for k, key in enumerate(keys) if key not in world.answers and key not in keys[:k]]
+        given = {}
+        if asking:
+            try:
+                given = dict(zip(asking, judges_answers(world, [requests[k] for k in asking])))
+            except EnglishError as error:
+                if error.line is None:
+                    error.line = first.line
+                raise
+        for k, key in enumerate(keys):
+            one = steps[k]
+            if k and world.trace is not None:
+                world.traced(one.line)
+            if key not in world.answers:
+                try:
+                    world.answers[key] = judgement_of(given[k], requests[k])
+                except EnglishError as error:
+                    error.line = one.line
+                    raise
+            one.judging["finish"](env, world.answers[key])
+        if failed is not None:
+            if world.trace is not None and len(requests) > 0:
+                world.traced(steps[len(requests)].line)
+            raise failed
+    step.line, step.answers, step.leaves, step.judging = first.line, False, False, None
+    step.group = steps  # for tests and tools: the sentences put together
+    return step
+
+
+def ask_judge(world, asked, about, cset, scale=False):
+    """Ask for one judgement (World.judge, or else World.judges with one question; one of them
+    is there). Returns (the value, the likelihood of a verdict or grade). The same judgement
+    is asked for once in a run (World.answers)."""
+    request = judge_request(asked, about, cset, scale)
+    key = judge_key(request)
+    if key in world.answers:
+        return world.answers[key]
+    if world.judge is not None:
+        fresh = fresh_request(request)
+        result = call_listener(world.judge, fresh["question"], fresh["state"], fresh["choices"], fresh["meanings"])
+    else:
+        result = judges_answers(world, [request])[0]
+    found = world.answers[key] = judgement_of(result, request)
+    return found
 
 
 def from_library(value, type_):
@@ -617,6 +793,7 @@ class Param:
     type: str
     prep: object  # None for the direct object
     at: tuple = None  # (column, width) of its name, for the linter
+    by_kind: bool = False  # called by its kind ("To greet a dragon:"), with no name of its own
 
     def slot(self):
         return f"<{article(self.name)}>"
@@ -656,6 +833,7 @@ class Workout:
     body: list = None
     used: bool = False  # by a sentence outside its own block
     unit: object = None
+    asks: bool = False  # is it one question to a model ("To work out ..., ask the model ...")?
 
     def usage(self):
         return " ".join([f"the {self.name}"] + [f"{p.prep} {p.slot()}" for p in self.params])
@@ -864,6 +1042,8 @@ class Compiler:
         # Where the sentence being compiled sits.
         self.verb = None  # the verb whose block this is, if any
         self.workout = None  # the worked-out value whose block this is, if any
+        self.defining = False  # inside an adjective, a property, a rule or a kept value (see fresh)
+        self.span = None  # (first, last) line of the block being compiled; None at the top level
         self.loops = []  # loops around the sentence: [{"id", "noun"}]
         # For the linter (englishscript/linter.py). Without it, a refused sentence is raised.
         self.lint = None  # the linter's collector, which records problems and carries on
@@ -890,18 +1070,46 @@ class Compiler:
 
     # ------------------------------------------------------------- helpers
 
-    def declare(self, what, name, line, at, used, of=None):
+    def declare(self, what, name, line, at, used, of=None, **more):
         """Remember a name the program made, so the linter can say if it is never used.
         Only names of the main file: the other files are not its business."""
-        self.defines({"value": "worked-out value"}.get(what, what), name, line, at[0], at[1], of)
+        self.defines({"value": "worked-out value"}.get(what, what), name, line, at[0], at[1], of, **more)
         if not line.library and getattr(line, "unit", None) in (None, self.main):
             self.declared.append((what, name, line, at[0], at[1], used))
 
-    def defines(self, what, name, line, col, width, of=None):
+    def defines(self, what, name, line, col, width, of=None, type_=None, roles=None, by_kind=False,
+                span=False):
         """Remember where a name was defined, for the table of names (englishscript.names).
-        `of` is the word of the kind an adjective or a property belongs to."""
-        if not line.library:
-            self.defined.append((what, name, of, line, col, width))
+        `of` is the word of the kind an adjective or a property belongs to; `type_` its type,
+        where it has one; `roles` a verb's or worked-out value's [(linking word, name, type)];
+        `by_kind` says a role is called by its kind ("To greet a dragon:"); `span` is the
+        (first, last) line of the block it belongs to, None for the top level, or False for
+        the block being compiled. A library's word is kept with its library and no place."""
+        more = {
+            "type": None if type_ is None else self.type_text(type_),
+            "by_kind": by_kind,
+            "scope": self.span if span is False else span,
+            "library": line.library or None,
+        }
+        if roles is not None:
+            more["roles"] = [{"link": prep, "name": role, "type": self.type_text(t)} for prep, role, t in roles]
+        if line.library:
+            if more["scope"] is not None:
+                return  # a name inside one of the library's blocks is not a word it brings
+            col = width = None
+        self.defined.append((what, name, of, line, col, width, more))
+
+    def type_text(self, type_):
+        """A type as it is written in brackets: "number", "dragon, if any", "list of text"."""
+        if is_opt(type_):
+            return self.type_text(base(type_)) + ", if any"
+        if is_list(type_):
+            return "list of " + self.plural_type(item_type(type_))
+        if type_ in self.kinds:
+            return self.kinds[type_].word
+        if type_ in self.choice_sets:
+            return self.choice_sets[type_].word
+        return type_
 
     # Which names a file may say ----------------------------------------
 
@@ -1248,14 +1456,17 @@ class Compiler:
             )
 
     @contextmanager
-    def fresh(self, verb=None, workout=None):
+    def fresh(self, verb=None, workout=None, chapter=False):
         """Compile a definition: it must not lean on where it happens to be written."""
-        saved = (self.verb, self.workout, self.loops, self.present)
+        saved = (self.verb, self.workout, self.loops, self.present, self.defining)
         self.verb, self.workout, self.loops, self.present = verb, workout, [], NONE
+        # Neither a verb nor a worked-out value: an adjective, a property, a rule or a kept value,
+        # which are worked out whenever they are needed, and so may not ask a model.
+        self.defining = verb is None and workout is None and not chapter
         try:
             yield
         finally:
-            self.verb, self.workout, self.loops, self.present = saved
+            self.verb, self.workout, self.loops, self.present, self.defining = saved
 
     def subject_scope(self, kind):
         """The scope of a definition about a thing of `kind` (its key): the thing is
@@ -2066,6 +2277,12 @@ class Compiler:
         w = self.workouts[name]
         if self.workout is not w:
             w.used = True
+        if w.asks and (self.workout is not None or self.defining):
+            first = s.toks[s.i - count]
+            s.fail(f'"The {w.name}" asks a model, and working something out can\'t ask anything: a worked-out value, '
+                   "an adjective, a property, a rule or a kept value is worked out whenever it is needed.", first,
+                   hint="Use it in a verb, or in a sentence of the program, and keep the answer with \"Let\".",
+                   teach="working_out")
         by_prep = {p.prep: p for p in w.params}
         usage = "It goes: " + w.usage() + "."
         args = {}
@@ -3198,15 +3415,18 @@ class Compiler:
 
     def block(self, lines, scope=None):
         saved = self.scope
+        saved_span = self.span
+        self.span = None if scope is self.globals else block_span(lines)
         self.scope = scope if scope is not None else Scope(saved)
         for line in lines:
             line.level = self.level  # how far in it is, for the trace
         self.level += 1
         try:
-            steps, i = [], 0
+            steps, i, places = [], 0, []
             leaving, warned = False, False  # has a sentence that always leaves been seen?
             while i < len(lines):
                 line = lines[i]
+                place = i
                 if not self.linting(line):
                     i, step = self.sentence(lines, i)
                 else:
@@ -3243,10 +3463,12 @@ class Compiler:
                     )
                     warned = True
                 steps.append(step)
+                places.append(place)
                 leaving = leaving or step.leaves
-            return steps
+            return self.group_judgements(steps, places)
         finally:
             self.scope = saved
+            self.span = saved_span
             self.level -= 1
 
     def linting(self, line):
@@ -3434,7 +3656,31 @@ class Compiler:
         step.answers = getattr(fn, "answers", False)
         step.leaves = getattr(fn, "leaves", False)
         step.line = line
+        step.judging = getattr(fn, "judging", None)
         return step
+
+    @staticmethod
+    def group_judgements(steps, places):
+        """Put consecutive "Judge" sentences about the same state, written the same way, into
+        groups, so that a `judges` listener can be asked them at once (section 7.8). A
+        sentence that reads a name an earlier one of the group sets starts a new group.
+        `places` is the index of each step's line among the block's lines."""
+        out, k = [], 0
+        while k < len(steps):
+            run = [steps[k]]
+            if getattr(steps[k], "judging", None) is not None:
+                state, sets = steps[k].judging["state"], list(steps[k].judging["sets"])
+                while k + len(run) < len(steps):
+                    nxt = steps[k + len(run)]
+                    info = getattr(nxt, "judging", None)
+                    if (info is None or info["state"] != state or places[k + len(run)] != places[k] + len(run)
+                            or any(re.search(r"\b" + re.escape(name) + r"\b", info["reads"]) for name in sets)):
+                        break
+                    run.append(nxt)
+                    sets += info["sets"]
+            out.append(run[0] if len(run) == 1 else judgement_group(run))
+            k += len(run)
+        return out
 
     @staticmethod
     def leaves(steps):
@@ -3763,7 +4009,7 @@ class Compiler:
                        hint="Move it out of the block, and start it at the left edge.", teach="top_level")
             if word == "to" and self.done_by_library(line):
                 return self.define_outside(s)
-            self.needs_block(s, word in ("to", "whenever"))
+            self.needs_block(s, word in ("to", "whenever") and not self.one_question(line))
             return definition(s)
 
         if word == "otherwise":
@@ -4285,7 +4531,8 @@ class Compiler:
             at = next((k for k in range(len(ftoks)) if [t.low for t in ftoks[k:k + len(words)]] == words), None)
             if at is not None:
                 first, last = ftoks[at], ftoks[at + len(words) - 1]
-                self.defines("property", fname, s.line, first.col, last.end - first.col, of=name)
+                self.defines("property", fname, s.line, first.col, last.end - first.col, of=name,
+                             type_=K.fields[fname])
         K.unit = self.unit
         K.adjectives = View(lambda word, adj: self.can_see(adj.unit, word))
         K.props = View(lambda word, prop: self.can_see(prop.unit, word))
@@ -4652,7 +4899,8 @@ class Compiler:
             s.fail_span("A property that is always nothing has no use.", value.span, teach="property_form")
         source = s.line.text[start:].rstrip(".").strip()
         K.props[name] = Prop(name, value.type, self.subject_fn(K.name, value.fn), source, unit=self.unit)
-        self.defines("worked-out property", name, s.line, toks[0].col, toks[-1].end - toks[0].col, of=K.word)
+        self.defines("worked-out property", name, s.line, toks[0].col, toks[-1].end - toks[0].col, of=K.word,
+                     type_=value.type)
         self.member_names.add(name)
 
     def param(self, s, prep, stops=PREPOSITIONS):
@@ -4684,7 +4932,8 @@ class Compiler:
                 hint=f'Describe that kind first, or give this a type: "{article(name)} (money)".\n'
                      + self.kinds_hint(name), teach="unknown_kind",
             )
-        return Param(name, type_, prep, (toks[0].col, toks[-1].end - toks[0].col))
+        by_kind = not s.toks[s.i - 1].is_punct(")")  # "a dragon", not "a victim (dragon)"
+        return Param(name, type_, prep, (toks[0].col, toks[-1].end - toks[0].col), by_kind=by_kind)
 
     def role_scope(self, s, params, at):
         scope = Scope(self.globals)
@@ -4706,7 +4955,8 @@ class Compiler:
             self.kind_named(s, p.name, p.type, span, "role")
             self.made(p.name, "a role", s.line)
             binding = scope.names[p.name] = Binding(p.name, p.type, focus=p.type in self.kinds)
-            self.declare("role", p.name, s.line, p.at, lambda b=binding: b.reads > 0)
+            self.declare("role", p.name, s.line, p.at, lambda b=binding: b.reads > 0, type_=p.type,
+                         by_kind=p.by_kind, span=block_span(s.line.children) or (s.line.number, s.line.number))
         return scope
 
     def name_is_new(self, s, name, tok, local=False, hint=None, shared_as=None):
@@ -4811,7 +5061,8 @@ class Compiler:
                                   "sentence uses must never depend on what its values are.", teach="verb_shapes")
             earlier.shapes.append(proc)
             proc.shapes = earlier.shapes
-        self.declare("verb", verb, s.line, (vtok.col, len(vtok.text)), lambda: proc.used)
+        self.declare("verb", verb, s.line, (vtok.col, len(vtok.text)), lambda: proc.used,
+                     roles=[(p.prep, p.name, p.type) for p in params])
         if earlier is None:
             self.procs[verb] = proc  # registered first, so it can call itself
         if outside:
@@ -4822,6 +5073,98 @@ class Compiler:
             return
         with self.fresh(verb=proc):
             proc.body = self.block(s.line.children, scope)
+
+    @staticmethod
+    def one_question(line):
+        """Is this "To work out the ... (<type>) ..., ask the model <text>." or "..., judge <text>.":
+        a worked-out value that is one question to a model (section 9.3)? A heading has no comma
+        outside brackets, so the comma, with "ask the model" or "judge" after it, tells it apart."""
+        toks = line.tokens
+        if not (len(toks) > 4 and toks[0].is_word("to") and toks[1].is_word("work") and toks[2].is_word("out")
+                and toks[3].is_word("the")):
+            return False
+        depth = 0
+        for k, tok in enumerate(toks):
+            if tok.is_punct("("):
+                depth += 1
+            elif tok.is_punct(")"):
+                depth -= 1
+            elif tok.is_punct(",") and depth == 0:
+                rest = toks[k + 1:k + 4]
+                return (len(rest) == 3 and rest[0].is_word("ask") and rest[1].is_word("the")
+                        and rest[2].is_word("model")) or (bool(rest) and rest[0].is_word("judge", "grade"))
+        return False
+
+    def question_body(self, s, w, scope):
+        """The rest of "To work out ..., ask the model <text>." or "..., judge <text>.": the one
+        step of the value, which gives the answer. The roles are what the question is about:
+        one role is handed over as "about" hands it over; several as "<role>: <value>" lines."""
+        s.expect_punct(",")
+        scale = s.at_word("grade")
+        judging = bool(s.eat_word("judge", "grade"))
+        if not judging:
+            for _ in range(3):  # ask the model
+                s.next()
+        usage = ('For example: "To work out the gist (text) of a letter (text), ask the model "Say what this '
+                 'letter wants, in one line."."')
+        saved = self.scope
+        self.scope = scope
+        try:
+            with self.fresh():
+                question = self.question_text(s, usage)
+        finally:
+            self.scope = saved
+        self.end(s)
+        params, type_, cset, shape = w.params, w.type, None, None
+        for p in params:  # every role is handed over as what the question is about, so each is used
+            scope.names[p.name].reads += 1
+        if judging:
+            if not params:
+                s.fail("A judgement is always about something: give the value a role for it to be about.", s.toks[0],
+                       hint='For example: "To work out the team (team) for a ticket, judge "Which team?"."',
+                       teach="judge_form")
+            if type_ in self.choice_sets:
+                cset = self.choice_sets[type_]
+            elif scale:
+                s.fail(f'A grade is one of a set of choices, but "the {w.name}" is {self.describe(type_)}.',
+                       s.toks[0], teach="judge_form")
+            elif type_ != "percent":
+                s.fail(f'A judgement is a chance (percent) or a verdict (a set of choices), but "the {w.name}" is '
+                       f"{self.describe(type_)}.", s.toks[0], teach="judge_form")
+        else:
+            shape = self.reply_shape(type_)
+            if shape is None:
+                s.fail(f"I can't ask a model for {self.describe(base(type_))}.", s.toks[0],
+                       hint="A reply can be text, a number, money, a percentage, yes or no, one of a set of choices, "
+                            "or a list of text, numbers, money or percentages.", teach="model_form")
+        if len(params) == 1:
+            p = params[0]
+            if p.type in self.kinds:
+                K = self.kinds[p.type]
+                word, fields = K.word, list(K.fields.items())
+
+                def state(env, name=p.name):
+                    return thing_state(env.get(name), word, fields)
+            else:
+                def state(env, name=p.name, type_=p.type):
+                    return said(env.get(name), type_)
+        elif params:
+            def state(env):
+                return "\n".join(f"{p.name}: {said(env.get(p.name), p.type)}" for p in params)
+        else:
+            state = None
+        qf = question.fn
+        self.note(f'"the {w.name}" is worked out by {"a judge" if judging else "a model"}')
+
+        def step(env):
+            world = env.world
+            if (world.judge is None and world.judges is None) if judging else world.model is None:
+                raise no_model()
+            about = state(env) if state is not None else None
+            if judging:
+                raise _Answer(ask_judge(world, qf(env), about, cset, scale)[0])
+            raise _Answer(ask_model(world, qf(env), about, shape))
+        return step
 
     def define_workout(self, s, outside=False):
         """To work out the <name> (<type>) [<preposition> a <role>]... :"""
@@ -4851,7 +5194,10 @@ class Compiler:
             )
         type_ = self.bracket_type(s)
         params = []
+        asks = self.one_question(s.line)
         while not s.at_end():
+            if asks and s.peek().is_punct(","):
+                break
             ptok = s.next()
             if ptok.kind != "WORD" or ptok.low not in ROLE_WORDS:
                 self.misspelt(s, ptok, sorted(ROLE_WORDS), "workout_form")
@@ -4865,10 +5211,15 @@ class Compiler:
             params.append(self.param(s, ptok.low, ROLE_WORDS))
         scope = self.role_scope(s, params, toks[0])
         w = Workout(name, type_, params, s.line, unit=self.unit)
-        self.declare("value", name, s.line, (toks[0].col, toks[-1].end - toks[0].col), lambda: w.used)
+        self.declare("value", name, s.line, (toks[0].col, toks[-1].end - toks[0].col), lambda: w.used,
+                     type_=type_, roles=[(p.prep, p.name, p.type) for p in params])
         self.workouts[name] = w  # registered first, so it can use itself
         if outside:
             w.body = [self.outside_value(s, w)]
+            return
+        if asks:
+            w.asks = True
+            w.body = [self.question_body(s, w, scope)]
             return
         with self.fresh(workout=w):
             w.body = self.block(s.line.children, scope)
@@ -5056,6 +5407,8 @@ class Compiler:
         self.end(s)
         if not self.reactive:  # program() looks ahead for every "Whenever"
             raise EnglishError("This reaction was not expected by the compiler.", s.line, start.col, len(start.text))
+        text = s.line.text[start.col:].rstrip(" :")
+        self.defines("reaction", text, s.line, start.col, len(text))
         with self.fresh(verb=Proc("whenever", [], s.line)):
             body = self.block(s.line.children, Scope(self.globals))  # no thing is in view
         line = s.line
@@ -5489,7 +5842,7 @@ class Compiler:
         self.unit, self.lint, self.scope = unit, collector, self.globals
         level, self.level = self.level, 0
         try:
-            with self.fresh():
+            with self.fresh(chapter=True):
                 layout = [] if collector is not None else None
                 lines = read_source(text, unit=unit, problems=layout)
                 for error in layout or ():
@@ -5937,7 +6290,7 @@ class Compiler:
         slot = binding.slot
         self.scope.names[slot] = binding
         self.declare("variable", name, s.line, (toks[0].col, toks[-1].end - toks[0].col),
-                     lambda: binding.reads > 0)
+                     lambda: binding.reads > 0, type_=declared)
         if is_opt(declared) and not is_opt(value.type) and value.type != "nothing":
             self.present = self.present | {("var", slot)}
         self.note(f'"{name}" is {self.describe(declared)}')
@@ -6484,7 +6837,7 @@ class Compiler:
             binding.slot = self.slot(name, self.unit)
         self.scope.names[binding.slot] = binding
         self.declare("variable", name, s.line, (toks[0].col, toks[-1].end - toks[0].col),
-                     lambda: binding.reads > 0)
+                     lambda: binding.reads > 0, type_=type_)
         self.note(f'"{name}" is {self.describe(type_)}, from {source}')
         return binding.slot
 
@@ -6537,12 +6890,13 @@ class Compiler:
         """Refuse "Ask the model ..." while a name in view starts with the word "model":
         the sentence could then ask a model, or ask a person what that name holds."""
         found = None
-        for names, what in ((self.scope.visible(), "a variable"), (self.names, "a thing"),
-                            (self.workouts, "a worked-out value")):
-            match = self.match_words(s, names, 1)
-            if match:
-                found = (match[0], what)
-                break
+        if self.defined_word("model"):
+            for names, what in ((self.scope.visible(), "a variable"), (self.names, "a thing"),
+                                (self.workouts, "a worked-out value")):
+                name = next((key for key in names if key.split(" ")[0] == "model"), None)
+                if name is not None:
+                    found = (name, what)
+                    break
         if found is None and s.peek(1).low in self.nouns:
             found = (s.peek(1).low, "a kind")
         if found is not None:
@@ -6605,36 +6959,17 @@ class Compiler:
         qf, sf = question.fn, state
 
         def step(env):
-            world = env.world
-            if world.model is None:
+            if env.world.model is None:
                 raise no_model()
-            asked = qf(env)
-            about = sf(env) if sf is not None else None
-            complaint = None
-            for _ in range(MODEL_TRIES):
-                fresh = dict(shape, choices=list(shape["choices"]) if shape["choices"] else None)
-                reply = call_listener(world.model, asked, about, fresh, complaint)
-                if reply is None:
-                    raise EnglishError("The model gave no reply: it refused to answer, or its answer was cut short.",
-                                       stage="run", recoverable=True, teach="bad_reply")
-                if not isinstance(reply, str):
-                    raise EnglishError(f"The model failed: it gave back {type(reply).__name__}, not text.",
-                                       stage="run", hint=MODEL_FAULT, teach="model_fault")
-                read, value = read_model_reply(reply, shape)
-                if read:
-                    env.vars[slot] = value
-                    return
-                complaint = (f'I could not read "{shortened(value)}": the reply has to be {expected(shape)}, and '
-                             "nothing else.")
-            raise EnglishError(f'The model\'s reply could not be read as {expected(shape)}: "{shortened(reply)}"',
-                               stage="run", recoverable=True, teach="bad_reply")
+            env.vars[slot] = ask_model(env.world, qf(env), sf(env) if sf is not None else None, shape)
         return step
 
     def judge_ahead(self, s):
         """Is this "Judge ... about ...", rather than a verb "judge" of the program? When
         the program has its own verb "judge" and the sentence could be either, refuse it."""
         toks = s.toks
-        form = (len(toks) >= 5 and toks[-2].is_word("chance", "verdict", "likelihood") and toks[-3].is_word("the")
+        form = (len(toks) >= 5 and toks[-2].is_word("chance", "verdict", "grade", "likelihood")
+                and toks[-3].is_word("the")
                 and toks[-4].is_word("be"))
         if "judge" in self.procs:
             if form:
@@ -6652,37 +6987,42 @@ class Compiler:
         self.no_change_here(s, "ask for a judgement")
         usage = ('For example: "Judge "Is this letter angry?" about the letter and let the anger (percent) be the '
                  'chance."')
+        begins = s.peek().col
         question = self.question_text(s, 'Put the question in quotes: Judge "Is it urgent?" about ...')
         if not s.eat_word("about"):
             s.fail('A judgement is always about something: after the question comes "about" and what it is about.',
                    hint=usage, teach="judge_form")
+        state_at = s.peek().col
         state = self.state_value(s, usage, "judge_form")
+        state_text = " ".join(s.line.text[state_at:s.prev_end(state_at)].split())
+        reads = s.line.text[begins:s.prev_end(state_at)].lower()  # the question and the state, as written
         s.expect_word("and", hint=usage, teach="judge_form")
         s.expect_word("let", hint=usage, teach="judge_form")
         name, toks, type_, type_tok = self.reply_name(s, usage, "judge_form")
         s.expect_word("be", hint=usage, teach="judge_form")
         s.expect_word("the", hint=usage, teach="judge_form")
         what = s.next()
+        scale = what.is_word("grade")
         if what.is_word("chance"):
             if type_ != "percent":
                 s.fail(f'A chance is a percentage, so "{name}" is written "{name} (percent)".', type_tok,
                        teach="judge_form")
             verdict = False
-        elif what.is_word("verdict"):
+        elif what.is_word("verdict", "grade"):
             if type_ not in self.choice_sets:
-                s.fail(f'A verdict is one of a set of choices, but "{name}" is {self.describe(type_)}.', type_tok,
+                s.fail(f'A {what.low} is one of a set of choices, but "{name}" is {self.describe(type_)}.', type_tok,
                        hint='Describe the choices first, such as "A team is one of sales, support or returns.", '
                             "and write that set in the brackets.", teach="judge_form")
             verdict = True
         else:
-            s.fail('After "be the" comes "chance" or "verdict".', what, hint=usage, teach="judge_form")
+            s.fail('After "be the" comes "chance", "verdict" or "grade".', what, hint=usage, teach="judge_form")
         likely = None
         if s.at_word("and"):
             and_tok = s.next()
             if not verdict:
-                s.fail("A likelihood goes with a verdict: a chance is already how likely something is.", and_tok,
-                       hint='To have both, ask for a verdict: "... (<set of choices>) be the verdict and the '
-                            'certainty (percent) be the likelihood."', teach="judge_form")
+                s.fail("A likelihood goes with a verdict or a grade: a chance is already how likely something is.",
+                       and_tok, hint='To have both, ask for a verdict: "... (<set of choices>) be the verdict and the '
+                                     'certainty (percent) be the likelihood."', teach="judge_form")
             lname, ltoks, ltype, ltype_tok = self.reply_name(s, usage, "judge_form", after="and", taken=name)
             if ltype != "percent":
                 s.fail(f'A likelihood is a percentage, so "{lname}" is written "{lname} (percent)".', ltype_tok,
@@ -6696,33 +7036,27 @@ class Compiler:
         qf, sf = question.fn, state
         cset = self.choice_sets[type_] if verdict else None
 
+        def prepare(env):
+            """The judgement this sentence asks for, worked out where it stands."""
+            return judge_request(qf(env), sf(env), cset, scale)
+
+        def finish(env, found):
+            """Keep (the value, the likelihood) where this sentence keeps them."""
+            env.vars[slot] = found[0]
+            if lslot is not None:
+                env.vars[lslot] = found[1]
+
         def step(env):
             world = env.world
-            if world.judge is None:
+            if world.judge is None and world.judges is None:
                 raise no_model()
-            asked, about = qf(env), sf(env)
-            if not verdict:
-                result = call_listener(world.judge, asked, about, None, None)
-                chance = chance_of(result)
-                if chance is None:
-                    raise bad_judgement("a chance is a number from 0 to 1", result)
-                env.vars[slot] = chance
-                return
-            choices = list(cset.displays)
-            meanings = {display: cset.meanings[choice] for choice, display in zip(cset.choices, cset.displays)
-                        if choice in cset.meanings}
-            result = call_listener(world.judge, asked, about, list(choices), meanings)
-            chances = verdict_of(result, choices)
-            if chances is None:
-                raise bad_judgement(f"a verdict gives a chance from 0 to 1 to each of {join_words(choices)}, and "
-                                    "to nothing else", result)
-            best = choices[0]
-            for choice in choices[1:]:
-                if chances[choice] > chances[best]:  # a tie goes to the choice written first
-                    best = choice
-            env.vars[slot] = best
-            if lslot is not None:
-                env.vars[lslot] = chances[best]
+            request = prepare(env)
+            finish(env, ask_judge(world, request["question"], request["state"], cset, scale))
+        # For putting consecutive judgements to the judge together (Compiler.group_judgements):
+        # what the state is, as written, and which names the sentence sets and reads.
+        sets = [name] + ([likely[0]] if likely else [])
+        step.judging = {"state": state_text.lower(), "sets": sets, "reads": reads, "prepare": prepare,
+                        "finish": finish}
         return step
 
     def define_meaning(self, s):
@@ -6885,6 +7219,8 @@ class Compiler:
             binding = Binding(name, coll.kind, focus=True)
             get = coll.fn
         self.kind_named(s, name, binding.type, (toks[0].col, toks[-1].end), "loop's thing")
+        self.defines("loop name", name, s.line, toks[0].col, toks[-1].end - toks[0].col, type_=binding.type,
+                     span=block_span(s.line.children) or (s.line.number, s.line.number))
         loop, body = self.loop_body(s.line.children, noun=name, binding=binding)
         return self.each_step(name, get, loop, body, group=items is None)
 
@@ -7091,7 +7427,7 @@ class Program:
         self.notes = notes
         self.compiler = compiler
 
-    def run(self, out=print, ask=None, trace=None, model=None, judge=None, testing=False):
+    def run(self, out=print, ask=None, trace=None, model=None, judge=None, judges=None, testing=False):
         """Carry out the program. `ask` takes a question and returns the reply,
         or None (or raises EOFError) when input has ended; by default it reads
         a line from standard input.
@@ -7099,8 +7435,10 @@ class Program:
         `model` and `judge` answer "Ask the model" and "Judge" (section 7.8):
         model(question, state, shape, complaint) -> the reply as text, or None for
         no reply; judge(question, state, choices, meanings) -> a chance from 0 to 1
-        when `choices` is None, otherwise {choice: chance}. Without them, every
-        question to a model is the problem "no model".
+        when `choices` is None, otherwise {choice: chance}. `judges([request, ...])`
+        answers several judgements at once, each request being {"question", "state",
+        "choices", "meanings", "scale"}, with a list of what `judge` would give for each.
+        Without them, every question to a model is the problem "no model".
 
         `trace`, if given, is called before each sentence is carried out, with
         (depth, file, line, sentence, cause): file is None for the program's own
@@ -7111,7 +7449,7 @@ class Program:
         called; then, however the run ended, each library's `finish(world)`.
         Returns the World, which a live library may still bring events into
         (World.event)."""
-        world = World(out, ask, model, judge)
+        world = World(out, ask, model, judge, judges)
         world.trace = trace
         if testing:
             world.testing = []

@@ -705,6 +705,21 @@ class TheTeachersMarks(unittest.TestCase):
         ("For each ancient rival in dragons:\n  Say 1.", "vocabulary", "begins with the adjective",
          "For each ancient dragon:", True),
         ("Repeat 3 time:\n  Say 1.", "spelling", 'Did you mean "times"', "Repeat 3 times:", True),
+        # Asking a model, and judging (section 7.8)
+        ('Ask the model "Which?" and let the eldest (dragon) be the reply.', "grammar",
+         "can't ask a model for a dragon", None, None),
+        ('Judge "Is it late?" and let the lateness (percent) be the chance.', "grammar", "always about something",
+         None, None),
+        ('Judge "Is it late?" about Smaug and let the lateness (number) be the chance.', "grammar",
+         "A chance is a percentage", None, None),
+        ('Judge "Q?" about Smaug and let the lateness (percent) be the chance and the sureness (percent) be the '
+         "likelihood.", "grammar", "A likelihood goes with a verdict", None, None),
+        ('A team is one of sales or support.\nFor a team, salse means "x".', "spelling", 'Did you mean "sales"',
+         'For a team, sales means "x".', None),
+        ('Let the model be "Q"\nAsk the model "Q" and let the colour (text) be the reply.', "meaning",
+         '"Ask the model" could', None, None),
+        ("Try:\n  Say 1.\nIf that fails:\n  If the problem is a no model:\n    Say 2.", "grammar", '"no model"',
+         "  If the problem is no model:", True),
     ]
 
     def lint_case(self, text):
@@ -885,6 +900,51 @@ class ForTools(unittest.TestCase):
         self.assertIn("reaction", {n["what"] for n in table["names"]})
         self.assertEqual(table["chapters"], [])
 
+    def test_the_table_says_scope_type_roles_and_more(self):
+        import englishscript
+        table = englishscript.names(
+            "A dragon has an age (number) and a rival (dragon, if any).\n"
+            "To greet a dragon with a word (text):\n"
+            "  For each other in dragons:\n"
+            '    Let the note be "{the word}"\n'
+            "    Say the note.\n"
+            "Whenever everything has settled:\n  Say 1.\n"
+            "Let the x (number, if any) be 2.\n"
+            "Use the page library.\n")["names"]
+        found = {(n["what"], n["name"]): n for n in table}
+        self.assertEqual(found[("property", "rival")]["type"], "dragon, if any")
+        role, word = found[("role", "dragon")], found[("role", "word")]
+        self.assertEqual((role["by_kind"], word["by_kind"]), (True, False))
+        self.assertEqual(role["scope"], {"from": 3, "to": 5})
+        self.assertEqual(found[("verb", "greet")]["roles"], [{"link": None, "name": "dragon", "type": "dragon"},
+                                                             {"link": "with", "name": "word", "type": "text"}])
+        self.assertEqual((found[("loop name", "other")]["type"], found[("loop name", "other")]["scope"]),
+                         ("dragon", {"from": 4, "to": 5}))
+        self.assertEqual(found[("variable", "note")]["scope"], {"from": 4, "to": 5})
+        self.assertEqual((found[("variable", "x")]["scope"], found[("variable", "x")]["type"]),
+                         (None, "number, if any"))
+        self.assertIn(("reaction", "Whenever everything has settled"), found)
+        panel = found[("kind", "panel")]
+        self.assertEqual((panel["library"], panel["line"], panel["col"]), ("page", None, None))
+        self.assertIsNone(found[("kind", "dragon")]["library"])
+        self.assertFalse([n for n in table if n["library"] and n["what"] in ("role", "variable")])
+
+    def test_a_table_that_could_not_be_finished_says_so(self):
+        import englishscript
+        from englishscript import linter
+        saved = linter.Collector.never_used
+
+        def broken(self, compiler):
+            raise ValueError("inside")
+        linter.Collector.never_used = broken
+        try:
+            table = englishscript.names("A dragon has an age (number).\n")
+        finally:
+            linter.Collector.never_used = saved
+        self.assertIn("ValueError: inside", table["error"])
+        self.assertEqual([n["name"] for n in table["names"]], ["dragon", "age"])
+        self.assertNotIn("error", englishscript.names("Say 1.\n"))
+
     def test_a_chapter_open_in_an_editor(self):
         import englishscript
         texts = {"near.english": "This chapter shares only greeting.\nLet the greeting be \"hi\".\n"}
@@ -934,7 +994,9 @@ class TheNewWarnings(unittest.TestCase):
         for source in ("A unit has a size (number).\n", "An hour has a length (number).\n",
                        "An umbrella has a size (number).\n", "A user has an age (number).\n",
                        "A unicorn has a horn (number).\n", "An unifier has a horn (number).\n",
-                       "A one has a size (number).\n", "A FBI has a size (number).\n"):
+                       "A one has a size (number).\n", "A FBI has a size (number).\n",
+                       "An élan has a size (number).\n", "A élan has a size (number).\n",
+                       "An ölfass has a size (number).\n"):
             with self.subTest(source):
                 self.assertEqual([p for p in warnings(source) if p.category == "grammar"], [])
 

@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>System 0, 1 and 2 in EnglishScript</title>
+<meta name="description" content="How an EnglishScript program divides its work between its own exact sentences, a model that judges, and a model that writes, with examples from the simplest to a full cascade.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;family=IM+Fell+English:ital@0;1&amp;family=IM+Fell+English+SC&amp;family=UnifrakturMaguntia&amp;display=swap">
+<link rel="stylesheet" href="assets/english.css">
+<style>
+  h3 .which { font: 0.9rem var(--caps); letter-spacing: 0.1em; text-transform: lowercase; color: var(--accent); margin-left: 0.4rem; white-space: nowrap; }
+  .given { margin: -0.9rem 0 1rem; padding: 0.55rem 0.9rem; border-left: 3px solid var(--gilt); background: var(--panel); font: italic 1rem/1.45 var(--fell); color: var(--muted); }
+  .given p { margin: 0; }
+  .given ul { margin: 0.2rem 0 0; padding-left: 1.2rem; }
+  table.systems td:first-child { font: 0.95rem var(--caps); letter-spacing: 0.06em; text-transform: lowercase; color: var(--muted); white-space: nowrap; }
+  table.systems th:nth-child(n+2) { width: 28%; }
+  .contents ol ol { margin: 0.3rem 0 0.4rem 0.8rem; font-size: 0.95em; }
+</style>
+</head>
+<body>
+
+<nav class="sitenav" aria-label="The pages of this site">
+  <div class="inner">
+    <a class="home" href="./">EnglishScript</a>
+    <a class="page" href="./">The treatise</a>
+    <a class="page" href="playground.html">The playground</a>
+    <a class="page" href="todo.html">A page</a>
+    <a class="page" href="compare.html">Compared</a>
+    <a class="page" href="opposition.html">The opposition</a>
+    <a class="page" href="systems.html" aria-current="page">Three systems</a>
+    <a class="page" href="reference.html">The grammar</a>
+    <a class="page" href="how.html">The machinery</a>
+    <a class="page" href="https://github.com/monstercameron/EnglishScript">The source</a>
+  </div>
+</nav>
+
+<main class="doc sided">
+<nav class="contents" aria-label="Contents">
+<h2>Contents</h2>
+<ol>
+<li><a href="#names">Three systems</a></li>
+<li><a href="#examples">From simple to complex</a><ol>
+<li><a href="#zero">Only System 0</a></li>
+<li><a href="#chance">One question to System 1</a></li>
+<li><a href="#verdict">A verdict from a set of choices</a></li>
+<li><a href="#grade">A grade on a scale</a></li>
+<li><a href="#composite">Small questions, combined in System 0</a></li>
+<li><a href="#ask">A question to System 2</a></li>
+<li><a href="#cascade">A cascade: System 0, then 1, then 2, then a person</a></li>
+<li><a href="#worked">Questions given names</a></li>
+<li><a href="#fallback">When nothing is listening</a></li>
+</ol></li>
+<li><a href="#testing">Testing</a></li>
+<li><a href="#connecting">Connecting a model</a></li>
+<li><a href="#cautions">What to be careful of</a></li>
+</ol>
+</nav>
+<article>
+<h1>System 0, 1 and 2</h1>
+<p class="standfirst">The program's own sentences, a model that judges, and a model that writes: which work belongs to which, from a single rule to a cascade through all three.</p>
+<p class="opening">A program that uses a language model has to decide which of its work is the model's. This page sorts that work into three systems, and shows, from the simplest case to a cascade through all three, how an EnglishScript program uses each.</p>
+
+<h2 id="names">Three systems</h2>
+
+<p>Daniel Kahneman's <em>Thinking, Fast and Slow</em> describes two ways of thinking: System 1, fast and intuitive, and System 2, slow and deliberate. In September 2026 TypeSafe AI named a class of model after the first: a <a href="https://docs.typesafe.ai/concepts/system-one">System One model</a>, such as their Jev, which writes no text and answers closed questions with how likely each answer is. Language models that write, and that can reason at length, stand where System 2 does.</p>
+
+<p>Below both there is a third layer, which this page calls <strong>System 0</strong>. The name is this project's, not TypeSafe's or Kahneman's. System 0 is the program itself: sentences that are read one way, carried out exactly, and the same on every computer. It does not judge and it does not guess. Everything that can be stated as a rule belongs there.</p>
+
+<div class="scroll">
+<table class="systems">
+  <thead><tr><th></th><th>System 0</th><th>System 1</th><th>System 2</th></tr></thead>
+  <tbody>
+    <tr><td>What it is</td><td>The program's own sentences</td><td>A model that only decides</td><td>A model that writes and reasons</td></tr>
+    <tr><td>In EnglishScript</td><td>Every sentence that is not a question to a model</td><td><code>Judge ... be the chance</code>, <code>... be the verdict</code></td><td><code>Ask the model ... be the reply</code></td></tr>
+    <tr><td>What comes back</td><td>Exact values</td><td>A chance, or a choice from a set, with how likely it is</td><td>Text, read as the type asked for</td></tr>
+    <tr><td>Good for</td><td>Rules, arithmetic, anything that can be stated</td><td>Small judgements about words or pictures: is it, which one, how much</td><td>Writing, reading figures out of prose, reasoning about a hard case</td></tr>
+    <tr><td>The same every time</td><td>Yes</td><td>Within a run; across runs, as the model is</td><td>Within a run; across runs, as the model is</td></tr>
+    <tr><td>Can be wrong without saying so</td><td>No: what it cannot read, it refuses</td><td>Yes, but it says how sure it is</td><td>Yes, and it does not say</td></tr>
+    <tr><td>Examples</td><td>This compiler</td><td>TypeSafe's Jev</td><td>Claude, and other language models</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The design follows from one rule: <strong>the decision is always System 0's.</strong> A model may judge, and may write, but what happens next is decided by sentences that anyone can read. TypeSafe's own guide to building with a System One model says the same in other words: keep the control flow, the rules and every action in ordinary code, and use the model only for the judgements code cannot make.</p>
+
+<h2 id="examples">From simple to complex</h2>
+
+<p>Each example below was compiled and run when this page was built. Where a model would answer, answers written by hand stood in for it, and they are shown beside the program, so what it printed is real. “Open in the playground” runs an example in your browser. There is no model in a browser, so there you answer as the model, and see each question as the model would.</p>
+
+<h3 id="zero">1. Only System 0 <span class="which">System 0</span></h3>
+<p>A refund that the rules can decide is decided by the rules. Nothing here is a matter of judgement, so no model is asked, and the answer is the same every time and on every computer.</p>
+<figure class="snippet">
+<pre class="program" data-expect="ok">A request has an amount (money) and an age (number).
+A request is recent when its age is at most 30.
+A request is small when its amount is at most $50.
+
+There is a request called First whose amount is $40 and whose age is 12.
+There is a request called Second whose amount is $400 and whose age is 12.
+There is a request called Third whose amount is $40 and whose age is 90.
+
+For each request:
+  If the request is recent and the request is small:
+    Say "{the request}: refunded at once."
+  Otherwise:
+    Say "{the request}: needs a look."</pre>
+<pre class="output">First: refunded at once.
+Second: needs a look.
+Third: needs a look.</pre>
+</figure>
+<p class="given">No model was asked.</p>
+<p>Most of a program should look like this. The cheapest, fastest and most trustworthy decision is the one that needs no model at all.</p>
+
+<h3 id="chance">2. One question to System 1 <span class="which">System 1</span></h3>
+<p>Whether a customer is asking for a refund is a judgement about words, so it goes to the judge. The judge answers how likely it is, and the program decides what to do in three bands: act when the judge is sure, hold for a person when it is not, and leave it alone when it is unlikely.</p>
+<figure class="snippet">
+<pre class="program" data-expect="ok">A message has a wording (text).
+There is a message called First whose wording is "The lamp came broken. Can I have my money back?".
+
+Judge "Is the customer asking for a refund?" about First's wording and let the asking (percent) be the chance.
+
+If the asking is at least 70%:
+  Say "A refund request ({the asking})."
+Otherwise if the asking is at most 30%:
+  Say "Not a refund request ({the asking})."
+Otherwise:
+  Say "Held for a person ({the asking})."</pre>
+<pre class="output">A refund request (94%).</pre>
+</figure>
+<div class="given"><p>Answers given by hand, standing in for a model:</p><ul><li>The judge: 94%</li></ul></div>
+<p>The thresholds are in the program, where anyone can read them and change them. TypeSafe's documentation suggests 70% and 30% as a place to start for a yes-or-no question, to be tuned on real data.</p>
+
+<h3 id="verdict">3. A verdict from a set of choices <span class="which">System 1</span></h3>
+<p>When the answer is one of several, the choices are a set the program defines, and each may be given a meaning for the judge. The verdict is the likeliest choice, and its likelihood says how sure the judge is of it.</p>
+<figure class="snippet">
+<pre class="program" data-expect="ok">A team is one of returns, billing or shipping.
+For a team, returns means "the customer wants to send something back, or wants their money back".
+For a team, billing means "the customer has a question about a charge, a price or an invoice".
+For a team, shipping means "the customer is waiting for something that has not arrived".
+
+A letter has a wording (text).
+There is a letter called First whose wording is "I was charged twice for one order.".
+
+Judge "Which team should handle this letter?" about First and let the pick (team) be the verdict and the sureness (percent) be the likelihood.
+
+If the sureness is at least 85%:
+  Say "Sent to {the pick}."
+Otherwise if the sureness is at least 50%:
+  Say "Sent to {the pick}, and held for a person to check."
+Otherwise:
+  Say "Held for a person to decide."</pre>
+<pre class="output">Sent to billing, and held for a person to check.</pre>
+</figure>
+<div class="given"><p>Answers given by hand, standing in for a model:</p><ul><li>The judge: returns 5%, billing 81%, shipping 14%</li></ul></div>
+<p>The judge is told about the letter as a whole: its kind, its name and each of its properties, one to a line. It cannot answer with a team that is not in the set: such an answer is a problem, not a fourth team.</p>
+
+<h3 id="grade">4. A grade on a scale <span class="which">System 1</span></h3>
+<p>When the choices are in order, low to high, the answer can be a grade. A verdict picks the likeliest choice. A grade is worked out from every chance at once, as TypeSafe's Score is: the choices are numbered in order, the chances weight the numbers, and the grade is the choice nearest the result. On a judge that cannot make up its mind between the ends, the two differ.</p>
+<figure class="snippet">
+<pre class="program" data-expect="ok">An urgency is one of low, middle or high.
+A message has a wording (text).
+There is a message called First whose wording is "The heating is off and it is very cold, but we can manage until Monday.".
+
+Judge "How urgent is this?" about First's wording and let the level (urgency) be the grade and the sure (percent) be the likelihood.
+Judge "How urgent is this?" about First's wording and let the top (urgency) be the verdict.
+
+Say "The grade is {the level}, and the judge gave it {the sure}."
+Say "The verdict would have been {the top}."</pre>
+<pre class="output">The grade is middle, and the judge gave it 10%.
+The verdict would have been low.</pre>
+</figure>
+<div class="given"><p>Answers given by hand, standing in for a model:</p><ul><li>The judge: low 45%, middle 10%, high 45%</li><li>The judge: low 45%, middle 10%, high 45%</li></ul></div>
+<p>The judge split between low and high. The verdict takes the first of the two likeliest, low; the grade takes the middle of the scale, which is what a split between the ends means. Which to ask for is the program's choice, and it is written in the sentence.</p>
+
+<h3 id="composite">5. Small questions, combined in System 0 <span class="which">System 0 and 1</span></h3>
+<p>A broad question hides several judgements in one answer. TypeSafe's guide calls asking narrow questions the most important thing to get right. Here three narrow questions about a message are combined by the program into a measure of risk, with weights the program chooses.</p>
+<figure class="snippet">
+<pre class="program" data-expect="ok">A message has a wording (text).
+There is a message called Prize whose wording is "You have won a prize! Send your password to claim it.".
+
+Judge "Does the message ask for a password or a code?" about Prize's wording and let the asking (percent) be the chance.
+Judge "Does the message promise something the reader did not ask for?" about Prize's wording and let the luring (percent) be the chance.
+Judge "Does the message press the reader to act at once?" about Prize's wording and let the hurrying (percent) be the chance.
+
+Let the risk be the asking * 0.45 + the luring * 0.3 + the hurrying * 0.25.
+Say "Risk: {the risk}."
+If the risk is at least 60%:
+  Say "Kept out of the inbox."
+Otherwise if the risk is at least 40%:
+  Say "Held for a person."
+Otherwise:
+  Say "Delivered."</pre>
+<pre class="output">Risk: 86.45%.
+Kept out of the inbox.</pre>
+</figure>
+<div class="given"><p>Answers given by hand, standing in for a model:</p><ul><li>The judge: 97%</li><li>The judge: 91%</li><li>The judge: 62%</li></ul></div>
+<p>The weights are ordinary numbers in an ordinary sentence. Changing how much a promised prize counts is an edit to the program, not to a prompt. Three judgements in a row about the same message can be put to the judge together, as Jev is meant to be asked.</p>
+
+<h3 id="ask">6. A question to System 2 <span class="which">System 2</span></h3>
+<p>Some work is writing, not deciding: a summary, a figure read out of a sentence. That goes to a model that writes. Its reply is read by the same strict reader as a person's typed reply, so a figure written in words is not quietly taken for a number.</p>
+<figure class="snippet">
+<pre class="program" data-expect="ok">A message has a wording (text).
+There is a message called First whose wording is "The vase cost me forty dollars and it arrived in pieces.".
+
+Ask the model "In one line, what does the customer want?" about First's wording and let the gist (text) be the reply.
+Ask the model "How much does the customer say they paid?" about First's wording and let the price (money) be the reply.
+
+Say "Gist: {the gist}"
+Say "Paid: {the price}"</pre>
+<pre class="output">Gist: A refund for a vase that arrived broken.
+Paid: $40</pre>
+</figure>
+<div class="given"><p>Answers given by hand, standing in for a model:</p><ul><li>The model: “A refund for a vase that arrived broken.”</li><li>The model: “forty dollars”</li><li>The model: “$40”</li></ul></div>
+<p>The second question was answered first with “forty dollars”, which cannot be read as money. The model was told why, and asked again, and its second answer was used. A third failure would have been a problem the program could catch.</p>
+
+<h3 id="cascade">7. A cascade: System 0, then 1, then 2, then a person <span class="which">All three</span></h3>
+<p>Each layer does only what it is for. The rules come first and settle what they can. The judge is asked only about what is left. When the judge is unsure, a model that reasons is asked for a second opinion, and when the two disagree, a person decides.</p>
+<figure class="snippet">
+<pre class="program" data-expect="ok">A team is one of returns, billing or shipping.
+
+A letter has a wording (text) and a total (money).
+There is a letter called First whose wording is "My order never came, and I was charged for it." and whose total is $80.
+
+Let the handled (yes or no) be no.
+
+# System 0: a rule that needs no model.
+If First's total is more than $500:
+  Say "A large sum: sent straight to a manager."
+  Set the handled to yes.
+
+If the handled is no:
+  # System 1: a quick judgement.
+  Judge "Which team should handle this letter?" about First and let the pick (team) be the verdict and the sureness (percent) be the likelihood.
+  If the sureness is at least 85%:
+    Say "Sent to {the pick}."
+  Otherwise:
+    # System 2: a second opinion, from a model that reads and reasons.
+    Ask the model "Which team should handle this letter? Think it through." about First and let the second (team) be the reply.
+    If the second is the pick:
+      Say "Sent to {the pick}: the second opinion agrees."
+    Otherwise:
+      Say "Held for a person: one says {the pick}, the other {the second}."</pre>
+<pre class="output">Sent to billing: the second opinion agrees.</pre>
+</figure>
+<div class="given"><p>Answers given by hand, standing in for a model:</p><ul><li>The judge: returns 5%, billing 48%, shipping 47%</li><li>The model: “billing”</li></ul></div>
+<p>The letter is about a charge for something that never came, so the judge split between billing and shipping. The second opinion said billing. Because both agreed, the letter went to billing; had they differed, it would have waited for a person. The order of the layers is the order of their cost.</p>
+
+<h3 id="worked">8. Questions given names <span class="which">System 1 and 2</span></h3>
+<p>A question asked in several places can be given a name, as a worked-out value whose whole body is one question. It is then used like any other value. Because it asks a model, it may be used only where asking is allowed: never inside a rule or an adjective, so nothing the language checks by itself can ever ask a model.</p>
+<figure class="snippet">
+<pre class="program" data-expect="ok">A team is one of returns, billing or shipping.
+A letter has a wording (text).
+There is a letter called First whose wording is "The kettle arrived cracked. I want a refund.".
+There is a letter called Second whose wording is "Where is my parcel? It is a week late.".
+
+To work out the team (team) for a letter, judge "Which team should handle this letter?".
+To work out the gist (text) of a note (text), ask the model "Say in one line what this customer wants.".
+
+For each letter:
+  Say "{the letter}: {the team for the letter}. {the gist of the letter's wording}"</pre>
+<pre class="output">First: returns. A refund for a cracked kettle.
+Second: shipping. To know where a late parcel is.</pre>
+</figure>
+<div class="given"><p>Answers given by hand, standing in for a model:</p><ul><li>The judge: returns 93%, billing 4%, shipping 3%</li><li>The judge: returns 2%, billing 3%, shipping 95%</li><li>The model: “A refund for a cracked kettle.”</li><li>The model: “To know where a late parcel is.”</li></ul></div>
+<p>In a run, the same question about the same thing is asked once and answered once, so a sentence still means one thing however often it is used.</p>
+
+<h3 id="fallback">9. When nothing is listening <span class="which">System 0</span></h3>
+<p>A program that asks a model must still run when no model is there: on a laptop with no key, in a test, in an outage. That is a problem like any other, and a program can catch it and fall back on what it can do alone.</p>
+<figure class="snippet">
+<pre class="program" data-expect="ok">A message has a wording (text).
+There is a message called First whose wording is "Can I have my money back?".
+
+Try:
+  Judge "Is the customer asking for a refund?" about First's wording and let the asking (percent) be the chance.
+  Say "Judged: {the asking}."
+If that fails:
+  If the problem is no model:
+    Say "No model is listening, so the message waits for a person."
+  Otherwise:
+    Say "The judge's answer could not be used: {the problem}"</pre>
+<pre class="output">No model is listening, so the message waits for a person.</pre>
+</figure>
+<p class="given">Nothing was connected.</p>
+<p>This one was run with nothing connected, as the page was built. A judge that answered with something unusable, such as a team not in the set or a chance above 100%, would be the second kind of problem, “a bad reply”.</p>
+
+<h2 id="testing">Testing a program that asks a model</h2>
+
+<p>A program whose answers come from a model is only as repeatable as the model. Three things make it testable all the same.</p>
+
+<ul>
+  <li><strong>Record and replay.</strong> Run it once with a model and keep what was said: <code>--model record:answers.txt:anthropic</code>. Replay it as often as you like with no model at all: <code>--model replay:answers.txt</code>. <code>examples/triage.english</code> comes with answers to replay.</li>
+  <li><strong>One answer per question.</strong> In a run, the same question about the same thing is asked once, so two sentences cannot be given two different answers to one question.</li>
+  <li><strong>The examples run alone.</strong> <code>--test</code> runs a program's <code>For example</code> sentences with nothing connected, so a test never depends on a model being there, and a program with a fallback goes on.</li>
+</ul>
+
+<h2 id="connecting">Connecting a model</h2>
+
+<p>The compiler never loads a model. Whoever runs a program chooses who answers:</p>
+
+<pre class="form">python -m englishscript program.english --model person          you answer, as the model would
+python -m englishscript program.english --model anthropic       a Claude model writes and judges
+python -m englishscript program.english --model jev             TypeSafe's Jev judges
+python -m englishscript program.english --model jev+anthropic   Jev judges, Claude writes
+python -m englishscript program.english --model replay:answers.txt</pre>
+
+<p>Jev writes no text, so with <code>--model jev</code> alone, a program that asks a model to write gets “no model” and falls back. A Claude model can judge as well as write, but its probabilities are an estimate written down by a model that writes, not a calibrated answer. The Claude and Jev connections were written from those services' published documentation and have not yet been run against them.</p>
+
+<h2 id="cautions">What to be careful of</h2>
+
+<ul>
+  <li><strong>A probability is not a promise.</strong> TypeSafe's documentation says that its confidence describes how concentrated an answer is, not the chance that it is right, and that calibration holds over many answers, not one. Choose thresholds by trying them on real cases.</li>
+  <li><strong>Speed and price are the vendor's figures.</strong> Jev's claims of answers in a tenth of a second, at a fraction of a language model's cost, come from TypeSafe's own measurements.</li>
+  <li><strong>A model can be misled.</strong> A judgement about a customer's message is a judgement about text the customer wrote. Keep what a judgement can make happen small, and keep a person in the loop where the cost of being wrong is high.</li>
+</ul>
+
+<p><a href="reference.html#s7-8">Section 7.8 of the grammar</a> gives every form exactly. <a href="opposition.html">The opposition</a> sets this beside Jac, DSPy, BAML, TypeChat and the rest.</p>
+
+</article>
+<footer class="colophon">
+  Printed by <code>tools/systems.py</code>. Every example was compiled and run when this page was built.
+</footer>
+</main>
+
+<script type="module">
+import { mountSnippets } from "./play/snippets.js";
+mountSnippets();
+</script>
+</body>
+</html>
