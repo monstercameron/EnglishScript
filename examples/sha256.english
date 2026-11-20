@@ -1,0 +1,382 @@
+# SHA-256, worked out from first principles.
+#
+#   python -m englishscript examples/sha256.english
+#
+# EnglishScript has no bit operators, no remainders, no rounding and no arrays.
+# This program builds all of them from what the language does have: exact whole
+# numbers of any size, halving, and "is divisible by".
+#
+#   - A number's lowest bit is whether it is divisible by 2. Halving it shifts
+#     every bit one place to the right; doubling shifts them to the left.
+#   - An array is a kind of thing with a place and a value.
+#   - SHA-256's 72 constants are not typed in. They are the first 32 bits after
+#     the point of the cube roots and square roots of the first primes, and the
+#     program finds the primes and takes the roots itself.
+
+Let the alphabet always be " !""#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{{|}}~".
+Let the hex digits always be "0123456789abcdef".
+Let the digest be "".
+
+# --- Four arrays, as things -----------------------------------------------------------
+
+A constant has a place (number) and a value (number).     # the 64 round constants
+A seed has a place (number) and a value (number).         # the 8 starting values
+A register has a place (number) and a value (number).     # the 8 running values
+An entry has a place (number) and a value (number).       # the 64 words of the schedule
+A byte has a place (number) and a value (number).         # the message, padded
+
+To work out the key (number) at a spot (number):
+  For each constant whose place is the spot:
+    The answer is the constant's value.
+  The answer is 0.
+
+To work out the origin (number) at a spot (number):
+  For each seed whose place is the spot:
+    The answer is the seed's value.
+  The answer is 0.
+
+To work out the word (number) at a spot (number):
+  For each entry whose place is the spot:
+    The answer is the entry's value.
+  The answer is 0.
+
+To store an amount (number) at a spot (number):
+  For each entry whose place is the spot:
+    Set the entry's value to the amount.
+
+# --- Bits, built from halving ---------------------------------------------------------
+
+# Keep a number within 32 bits: take away 2 to the power 32 until it fits.
+To work out the wrap (number) of a value (number):
+  Let the rest be the value.
+  While the rest is at least 4,294,967,296:
+    Subtract 4,294,967,296 from the rest.
+  The answer is the rest.
+
+# The lowest bits of a number, as a number: its remainder on dividing by a power of two.
+To work out the low part (number) of a value (number) under a width (number):
+  Let the rest be the value.
+  Let the part be 0.
+  Let the unit be 1.
+  Repeat the width times:
+    If the rest is not divisible by 2:
+      Add the unit to the part.
+      Subtract 1 from the rest.
+    Divide the rest by 2.
+    Multiply the unit by 2.
+  The answer is the part.
+
+# Shift right: drop the lowest bit and halve, so many times.
+To work out the slide (number) of a value (number) by a count (number):
+  Let the rest be the value.
+  Repeat the count times:
+    If the rest is not divisible by 2:
+      Subtract 1 from the rest.
+    Divide the rest by 2.
+  The answer is the rest.
+
+# Rotate right within 32 bits: a bit that falls off the bottom comes back at the top.
+To work out the turn (number) of a value (number) by a count (number):
+  Let the rest be the value.
+  Repeat the count times:
+    If the rest is divisible by 2:
+      Divide the rest by 2.
+    Otherwise:
+      Set the rest to (the rest - 1) / 2 + 2,147,483,648.
+  The answer is the rest.
+
+# Exclusive-or of three numbers: a bit is set where one or all three of them have it.
+To work out the blend (number) of a left (number) with a middle (number) against a right (number):
+  Let p be the left.
+  Let q be the middle.
+  Let r be the right.
+  Let the result be 0.
+  Let the unit be 1.
+  Repeat 32 times:
+    Let the ayes be 0.
+    If p is not divisible by 2:
+      Add 1 to the ayes.
+      Subtract 1 from p.
+    If q is not divisible by 2:
+      Add 1 to the ayes.
+      Subtract 1 from q.
+    If r is not divisible by 2:
+      Add 1 to the ayes.
+      Subtract 1 from r.
+    If the ayes is 1 or the ayes is 3:
+      Add the unit to the result.
+    Divide p by 2.
+    Divide q by 2.
+    Divide r by 2.
+    Multiply the unit by 2.
+  The answer is the result.
+
+# Majority: a bit is set where at least two of the three numbers have it.
+To work out the vote (number) of a left (number) with a middle (number) against a right (number):
+  Let p be the left.
+  Let q be the middle.
+  Let r be the right.
+  Let the result be 0.
+  Let the unit be 1.
+  Repeat 32 times:
+    Let the ayes be 0.
+    If p is not divisible by 2:
+      Add 1 to the ayes.
+      Subtract 1 from p.
+    If q is not divisible by 2:
+      Add 1 to the ayes.
+      Subtract 1 from q.
+    If r is not divisible by 2:
+      Add 1 to the ayes.
+      Subtract 1 from r.
+    If the ayes is at least 2:
+      Add the unit to the result.
+    Divide p by 2.
+    Divide q by 2.
+    Divide r by 2.
+    Multiply the unit by 2.
+  The answer is the result.
+
+# Choose: each bit of the chooser picks that bit from the upper number if it is
+# set, and from the lower number if it is not. With bits as 0 and 1 this needs
+# no "if": the chosen bit is  c * u + (1 - c) * w.
+To work out the pick (number) of a chooser (number) from an upper (number) over a lower (number):
+  Let c be the chooser.
+  Let u be the upper.
+  Let w be the lower.
+  Let the result be 0.
+  Let the unit be 1.
+  Repeat 32 times:
+    Let the c bit be 0.
+    Let the u bit be 0.
+    Let the w bit be 0.
+    If c is not divisible by 2:
+      Set the c bit to 1.
+      Subtract 1 from c.
+    If u is not divisible by 2:
+      Set the u bit to 1.
+      Subtract 1 from u.
+    If w is not divisible by 2:
+      Set the w bit to 1.
+      Subtract 1 from w.
+    Add the unit * (the c bit * the u bit + (1 - the c bit) * the w bit) to the result.
+    Divide c by 2.
+    Divide u by 2.
+    Divide w by 2.
+    Multiply the unit by 2.
+  The answer is the result.
+
+# --- Primes and roots, for the constants ------------------------------------------------
+
+To work out the primeness (yes or no) of a candidate (number):
+  Let the divisor be 2.
+  While the divisor * the divisor is at most the candidate:
+    If the candidate is divisible by the divisor:
+      The answer is no.
+    Add 1 to the divisor.
+  The answer is yes.
+
+# The whole part of a root, found by halving the gap between a number that is
+# too small and one that is too big. Everything stays a whole number.
+To work out the root (number) of a target (number) with a degree (number):
+  Let the floor be 0.
+  Let the ceiling be 68,719,476,736.
+  While the ceiling - the floor is more than 1:
+    Let the middle be the floor + the ceiling.
+    If the middle is not divisible by 2:
+      Subtract 1 from the middle.
+    Divide the middle by 2.
+    Let the power be 1.
+    Repeat the degree times:
+      Multiply the power by the middle.
+    If the power is at most the target:
+      Set the floor to the middle.
+    Otherwise:
+      Set the ceiling to the middle.
+  The answer is the floor.
+
+# --- Text ---------------------------------------------------------------------------------
+
+To work out the symbol (text) at a spot (number) of a line (text):
+  The answer is the first 1 letters of the last (the length of the line - the spot + 1) letters of the line.
+
+# The number a keyboard character stands for (its ASCII code), or nothing.
+To work out the code (number, if any) of a mark (text):
+  Let the spot be 0.
+  Repeat the length of the alphabet times:
+    Add 1 to the spot.
+    If the symbol at the spot of the alphabet is the mark:
+      The answer is the spot + 31.
+  The answer is nothing.
+
+# --- One block of 64 bytes ------------------------------------------------------------------
+
+To raise a spot (number) by an amount (number):
+  For each register whose place is the spot:
+    Set the register's value to the wrap of (the register's value + the amount).
+
+To work out the reading (number) at a spot (number):
+  For each register whose place is the spot:
+    The answer is the register's value.
+  The answer is 0.
+
+To crunch:
+  # Stretch the block's 16 words into 64.
+  Let t be 16.
+  Repeat 48 times:
+    Let the near be the word at (t - 15).
+    Let the far be the word at (t - 2).
+    Let the near stir be the blend of the turn of the near by 7 with the turn of the near by 18 against the slide of the near by 3.
+    Let the far stir be the blend of the turn of the far by 17 with the turn of the far by 19 against the slide of the far by 10.
+    Store the wrap of (the word at (t - 16) + the near stir + the word at (t - 7) + the far stir) at t.
+    Add 1 to t.
+
+  # Sixty-four rounds of mixing.
+  Let alpha be the reading at 0.
+  Let beta be the reading at 1.
+  Let gamma be the reading at 2.
+  Let delta be the reading at 3.
+  Let epsilon be the reading at 4.
+  Let zeta be the reading at 5.
+  Let eta be the reading at 6.
+  Let theta be the reading at 7.
+  Let the step be 0.
+  Repeat 64 times:
+    Let the upper stir be the blend of the turn of epsilon by 6 with the turn of epsilon by 11 against the turn of epsilon by 25.
+    Let the chosen be the pick of epsilon from zeta over eta.
+    Let the push be the wrap of (theta + the upper stir + the chosen + the key at the step + the word at the step).
+    Let the lower stir be the blend of the turn of alpha by 2 with the turn of alpha by 13 against the turn of alpha by 22.
+    Let the agreed be the vote of alpha with beta against gamma.
+    Set theta to eta.
+    Set eta to zeta.
+    Set zeta to epsilon.
+    Set epsilon to the wrap of (delta + the push).
+    Set delta to gamma.
+    Set gamma to beta.
+    Set beta to alpha.
+    Set alpha to the wrap of (the push + the lower stir + the agreed).
+    Add 1 to the step.
+
+  Raise 0 by alpha.
+  Raise 1 by beta.
+  Raise 2 by gamma.
+  Raise 3 by delta.
+  Raise 4 by epsilon.
+  Raise 5 by zeta.
+  Raise 6 by eta.
+  Raise 7 by theta.
+
+# --- The whole message --------------------------------------------------------------------
+
+To hash a message (text):
+  # The message as bytes.
+  For each byte:
+    Remove the byte.
+  Let the spot be 0.
+  Repeat the length of the message times:
+    Add 1 to the spot.
+    Let the found be the code of the symbol at the spot of the message.
+    If the found is nothing:
+      Fail because "I can only hash plain keyboard characters, and the one in place {the spot} is not."
+    There is a new byte whose place is the spot and whose value is the found.
+
+  # Padding: a single 1 bit, zeros, then the length in bits as eight bytes.
+  Let the size be the spot + 1.
+  There is a new byte whose place is the size and whose value is 128.
+  While the size + 8 is not divisible by 64:
+    Add 1 to the size.
+    There is a new byte whose place is the size and whose value is 0.
+  Let the bits be the spot * 8.
+  Let the shift be 56.
+  Repeat 8 times:
+    Add 1 to the size.
+    There is a new byte whose place is the size and whose value is the low part of (the slide of the bits by the shift) under 8.
+    Subtract 8 from the shift.
+
+  # Start from the seeds, then take the bytes four at a time into words, and
+  # crunch every sixteen words. Shifting left by eight bits is multiplying by 256.
+  For each register:
+    Set the register's value to the origin at the register's place.
+  Let the gathered be 0.
+  Let the count be 0.
+  Let the slot be 0.
+  For each byte:
+    Set the gathered to the gathered * 256 + the byte's value.
+    Add 1 to the count.
+    If the count is divisible by 4:
+      Store the gathered at the slot.
+      Set the gathered to 0.
+      Add 1 to the slot.
+      If the slot is 16:
+        Crunch.
+        Set the slot to 0.
+
+  # The eight running values, written in hexadecimal, four bits at a time.
+  Set the digest to "".
+  For each register:
+    Let the rest be the register's value.
+    Let the piece be "".
+    Repeat 8 times:
+      Let the nibble be the low part of the rest under 4.
+      Set the piece to "{the symbol at (the nibble + 1) of the hex digits}{the piece}".
+      Set the rest to (the rest - the nibble) / 16.
+    Set the digest to "{the digest}{the piece}".
+
+# --- Setting up: the constants, from primes ------------------------------------------------
+
+Let the cube scale be 1.
+Repeat 96 times:
+  Multiply the cube scale by 2.
+Let the square scale be 1.
+Repeat 64 times:
+  Multiply the square scale by 2.
+
+Let the prime be 2.
+Let the tally be 0.
+While the tally is less than 64:
+  If the primeness of the prime is yes:
+    There is a new constant whose place is the tally and whose value is the wrap of the root of (the prime * the cube scale) with 3.
+    If the tally is less than 8:
+      There is a new seed whose place is the tally and whose value is the wrap of the root of (the prime * the square scale) with 2.
+      There is a new register whose place is the tally and whose value is 0.
+    Add 1 to the tally.
+  Add 1 to the prime.
+
+Let the filled be 0.
+Repeat 64 times:
+  There is a new entry whose place is the filled and whose value is 0.
+  Add 1 to the filled.
+
+# The published constants, in decimal: 0x428a2f98, 0xc67178f2 and 0x6a09e667.
+For example, the key at 0 is 1,116,352,408.
+For example, the key at 63 is 3,329,325,298.
+For example, the origin at 0 is 1,779,033,703.
+
+# The bit operations, checked on small numbers.
+For example, the slide of 200 by 3 is 25.
+For example, the turn of 1 by 1 is 2,147,483,648.
+For example, the low part of 1,000 under 4 is 8.
+For example, the blend of 12 with 10 against 0 is 6.
+For example, the vote of 12 with 10 against 6 is 14.
+For example, the pick of 12 from 10 over 5 is 9.
+
+# The published test values.
+Hash "abc".
+For example, the digest is "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad".
+Hash "".
+For example, the digest is "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855".
+
+# --- The program ----------------------------------------------------------------------------
+
+Say "SHA-256, worked out in plain English. The constants and both test values check out."
+Let finished (yes or no) be no.
+While finished is no:
+  Ask "Text to hash (leave it empty to finish):" and let the line (text) be the reply.
+  If the line is "":
+    Set finished to yes.
+  Otherwise:
+    Try:
+      Hash the line.
+      Say the digest.
+    If that fails:
+      Say "Sorry. {the problem}"

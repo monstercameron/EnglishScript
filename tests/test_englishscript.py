@@ -4,6 +4,7 @@ import re
 import sys
 import tempfile
 import unittest
+from fractions import Fraction
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -306,6 +307,24 @@ class Examples(Base):
                 source = (ROOT / "examples" / name).read_text(encoding="utf-8")
                 self.assertEqual(run(source)[-1], last_line)
                 self.assertIn(source.splitlines()[0], explain(source))
+
+    def test_the_sha256_example_agrees_with_hashlib(self):
+        import hashlib
+
+        source = (ROOT / "examples" / "sha256.english").read_text(encoding="utf-8")
+        messages = [
+            "The quick brown fox jumps over the lazy dog",
+            'He said "hi" to {Sam} & paid $5 (50% off)! ' + "x" * 30,  # two blocks, awkward characters
+            "café",  # not a keyboard character
+        ]
+        replies = messages + [""]
+        said = []
+        world = compile_source(source).run(said.append, lambda prompt: replies.pop(0))
+        self.assertEqual(world.examples, 11)  # the constants, the bit operations and two published digests
+        self.assertEqual(said[1], hashlib.sha256(messages[0].encode()).hexdigest())
+        self.assertEqual(said[2], hashlib.sha256(messages[1].encode()).hexdigest())
+        self.assertTrue(said[3].startswith("Sorry. I can only hash plain keyboard characters"))
+        self.assertEqual(len(said), 4)
 
     def test_the_triangle_example_draws_a_shaded_triangle(self):
         source = (ROOT / "examples" / "triangle.english").read_text(encoding="utf-8")
@@ -983,6 +1002,267 @@ class ReviewFixes(InTemporaryFolder, Base):
         self.assertTrue(error.recoverable)
 
 
+class Libraries(Base):
+    """A fake library, registered in sys.modules for each test and removed afterwards."""
+
+    SOURCE = (
+        "A canvas has a width (number) and a frame (canvas, if any).\n"
+        "There is a canvas called Easel whose width is 3.\n"
+        "A canvas is wide when its width is more than 10.\n"
+        "To splash a colour (text) on a canvas with a big brush (yes or no) is done by the library.\n"
+        "To price a cost (money) at a rate (percent) for a count (number) by a few (list of text) "
+        "from a backup (canvas, if any) is done by the library.\n"
+        "To work out the pixel count (number) of a canvas at a scale (number) is done by the library.\n"
+        "To break a canvas is done by the library.\n"
+        "To widen a canvas:\n"
+        "  Add 1 to the canvas's width.\n"
+        "  Break the canvas.\n"
+    )
+    RETURNS = {  # worked-out value -> declared type, all answered from self.result
+        "label back": "text", "count back": "number", "cost back": "money", "share back": "percent",
+        "flag back": "yes or no", "pick back": "canvas", "maybe back": "canvas, if any",
+        "words back": "list of text",
+    }
+
+    def setUp(self):
+        import types
+        self.calls, self.finished, self.result = [], [], None
+        module = types.ModuleType("englishscript.libraries.paint")
+        module.SOURCE = self.SOURCE + "".join(
+            f"To work out the {name} ({type_}) is done by the library.\n" for name, type_ in self.RETURNS.items()
+        )
+
+        def record(name):
+            def fn(world, **roles):
+                self.calls.append((name, roles))
+                world.libraries["paint"].setdefault("calls", 0)
+                world.libraries["paint"]["calls"] += 1
+            return fn
+
+        def splash(world, **roles):
+            record("splash")(world, **roles)
+            roles["canvas"].fields["width"] += 10
+
+        def pixel_count(world, canvas, scale):
+            self.calls.append(("pixel count", {"canvas": canvas, "scale": scale}))
+            return canvas.fields["width"] * scale
+
+        def break_(world, canvas):
+            raise self.failure()
+
+        module.verb_splash = splash
+        module.verb_price = record("price")
+        module.verb_break = break_
+        module.value_pixel_count = pixel_count
+        for name in self.RETURNS:
+            setattr(module, "value_" + name.replace(" ", "_"), lambda world: self.result)
+        module.finish = lambda world: self.finished.append(dict(world.libraries["paint"]))
+        self.module = module
+        self.failure = lambda: EnglishError("The canvas tore.", stage="run", recoverable=True)
+        sys.modules[module.__name__] = module
+        self.addCleanup(sys.modules.pop, module.__name__, None)
+
+    def test_the_vocabulary_of_a_library_joins_the_program(self):
+        source = (
+            "Use the paint library.\n"
+            "Say Easel's width.\n"
+            "There is a canvas called Board whose width is 20.\n"
+            "Say the number of wide canvases.\n"
+        )
+        self.assertEqual(run(source), ["3", "1"])
+        self.refuses("Say Easel.\nUse the paint library.", 'don\'t know what "Easel"')
+
+    def test_outside_verbs_and_values_get_their_roles_by_keyword(self):
+        source = (
+            "Use the paint library.\n"
+            'Splash "red" on Easel with yes.\n'
+            "Say Easel's width.\n"
+            'Price $2.50 at 10% for 3 by the words of "a b" from Easel\'s frame.\n'
+            "Say the pixel count of Easel at 2.\n"
+        )
+        self.assertEqual(run(source), ["13", "26"])
+        splash, price, pixels = self.calls
+        self.assertEqual(splash[0], "splash")
+        self.assertEqual(set(splash[1]), {"colour", "canvas", "big_brush"})
+        self.assertEqual(splash[1]["colour"], "red")
+        self.assertIs(splash[1]["big_brush"], True)
+        self.assertEqual(splash[1]["canvas"].name, "Easel")
+        roles = price[1]
+        self.assertEqual(roles, {"cost": Fraction(5, 2), "rate": Fraction(1, 10), "count": Fraction(3),
+                                 "few": ("a", "b"), "backup": None})
+        self.assertIsInstance(roles["cost"], Fraction)
+        self.assertEqual(pixels[1]["scale"], Fraction(2))
+
+    def test_what_a_worked_out_value_gives_back_is_checked_and_converted(self):
+        say = {name: f"Use the paint library.\nSay the {name}." for name in self.RETURNS}
+        say["words back"] = "Use the paint library.\nFor each w in the words back:\n  Say the w."
+        good = [
+            ("label back", "hi", "hi"), ("count back", 7, "7"), ("count back", 0.1, "0.1"),
+            ("count back", Fraction(1, 4), "0.25"), ("cost back", 2.5, "$2.50"), ("share back", Fraction(1, 5), "20%"),
+            ("flag back", True, "yes"), ("maybe back", None, "nothing"), ("words back", ["a", "b"], "a"),
+        ]
+        for name, value, said in good:
+            with self.subTest(name=name, value=value):
+                self.result = value
+                self.assertEqual(run(say[name])[:1], [said])
+        self.result = ("x", "y")
+        self.assertEqual(run(say["words back"]), ["x", "y"])
+        # 0.1 arrives exactly, not as a float's approximation.
+        self.result = 0.1
+        self.assertEqual(run("Use the paint library.\nIf the count back * 3 is 0.3:\n  Say \"exact\""), ["exact"])
+        bad = [
+            ("label back", 5), ("count back", "5"), ("count back", True), ("count back", float("nan")),
+            ("flag back", 1), ("pick back", None), ("pick back", "Easel"), ("words back", "a b"),
+            ("words back", ["a", 1]), ("cost back", None),
+        ]
+        for name, value in bad:
+            with self.subTest(name=name, value=value):
+                self.result = value
+                error = self.refuses(say[name], "gave back", stage="run")
+                self.assertFalse(error.recoverable)
+
+    def test_a_thing_given_back_must_be_alive_and_of_the_kind(self):
+        self.module.value_pick_back = lambda world: world.named["easel"]
+        self.assertEqual(run("Use the paint library.\nSay the pick back."), ["Easel"])
+        self.refuses("Use the paint library.\nRemove Easel.\nSay the pick back.", "gave back", stage="run")
+        self.module.value_pick_back = lambda world: world.named["mug"]
+        self.refuses(
+            "Use the paint library.\nA cup has a size (number).\nThere is a cup called Mug whose size is 1.\n"
+            "Say the pick back.", "should be a canvas", stage="run",
+        )
+
+    def test_a_problem_in_a_library_can_be_recovered_from_and_the_world_is_put_back(self):
+        source = (
+            "Use the paint library.\n"
+            "Try:\n  Widen Easel.\nIf that fails:\n  Say \"{the problem} {Easel's width}\"\n"
+            "Try:\n  Splash \"red\" on Easel with no.\n  Break Easel.\nIf that fails:\n  Say Easel's width.\n"
+        )
+        self.assertEqual(run(source), ["The canvas tore. 3", "3"])
+        error = self.refuses("Use the paint library.\nBreak Easel.", "The canvas tore.", stage="run")
+        self.assertEqual(error.line.number, 2)
+
+    def test_an_unexpected_python_exception_is_reported_in_english(self):
+        self.failure = lambda: ZeroDivisionError("division by zero")
+        error = self.refuses("Use the paint library.\nBreak Easel.", "The paint library failed", stage="run")
+        self.assertIn("division by zero", error.message)
+        self.assertFalse(error.recoverable)
+        # It is a fault, so Try does not recover from it.
+        self.refuses("Use the paint library.\nTry:\n  Break Easel.\nIf that fails:\n  Say 1.", "failed", stage="run")
+        self.failure = KeyboardInterrupt
+        self.finished.clear()
+        with self.assertRaises(KeyboardInterrupt):
+            run("Use the paint library.\nBreak Easel.")
+        self.assertEqual(len(self.finished), 1)
+
+    def test_finish_is_called_once_however_the_run_ends(self):
+        endings = {
+            "normal end": ('Splash "red" on Easel with no.', None),
+            "End the program": ('Splash "red" on Easel with no.\nEnd the program.\nSay 1.', None),
+            "a problem": ('Splash "red" on Easel with no.\nBreak Easel.', EnglishError),
+        }
+        for title, (body, raised) in endings.items():
+            with self.subTest(title):
+                self.finished.clear()
+                program = compile_source("Use the paint library.\n" + body)
+                if raised:
+                    with self.assertRaises(raised):
+                        program.run(lambda text: None)
+                else:
+                    program.run(lambda text: None)
+                self.assertEqual(self.finished, [{"calls": 1}])
+        self.finished.clear()
+        run_asking('Use the paint library.\nAsk "?" and let x (text) be the reply.', [])
+        self.assertEqual(self.finished, [{}])
+
+    def test_a_failure_to_finish_never_hides_the_outcome_of_the_run(self):
+        def bad_finish(world):
+            raise RuntimeError("could not let go")
+        self.module.finish = bad_finish
+        self.refuses("Use the paint library.\nBreak Easel.", "The canvas tore.", stage="run")
+        with self.assertRaises(EnglishError) as caught:
+            run("Use the paint library.\nSay 1.")
+        self.assertIn("could not let go", caught.exception.message)
+
+    def test_library_state_starts_empty_for_each_run(self):
+        program = compile_source('Use the paint library.\nSplash "red" on Easel with no.')
+        for _ in range(2):
+            self.assertEqual(program.run(lambda text: None).libraries, {"paint": {"calls": 1}})
+
+    def test_outside_verbs_are_verbs(self):
+        self.refuses(
+            "Use the paint library.\nTo work out the x (number):\n  Splash \"red\" on Easel with no.\n  The answer is 1.",
+            "is a verb",
+        )
+        self.refuses(
+            "Use the paint library.\n"
+            "If Easel has a frame:\n  Splash \"red\" on Easel with no.\n  Say Easel's frame's width + 1.",
+            "may be nothing",
+        )
+        self.assertEqual(
+            run("Use the paint library.\nIf Easel has a frame:\n  Say Easel's frame's width + 1.\nOtherwise:\n  Say 0."),
+            ["0"],
+        )
+        notes = explain('Use the paint library.\nSplash "red" on Easel with no.')
+        self.assertIn('"splash" → colour = "red"', notes)
+        self.assertNotIn("is done by the library", notes)
+        # A worked-out value from a library may be used where working out is, in a definition.
+        self.assertEqual(
+            run("Use the paint library.\nA canvas is busy when the pixel count of it at 1 is more than 2.\n"
+                "Say the number of busy canvases."),
+            ["1"],
+        )
+
+    def test_using_a_library_is_checked(self):
+        self.refuses("Use the paint library.\nUse the paint library.", "already in use (line 1)")
+        self.refuses("If 1 is 1:\n  Use the paint library.", "top level")
+        error = self.refuses("Use the nonesuch library.", 'no library called "nonesuch"')
+        self.assertIn("paint", error.hint)
+        self.refuses("Use the paint brush library.", "one word")
+        self.refuses("Let use be 1.", "already has a meaning")
+        self.refuses("To splash a colour (text) is done by the library.", "Only a library")
+        self.refuses("To work out the x (number) is done by the library.", "Only a library")
+
+    def test_a_library_without_source_is_refused(self):
+        del self.module.SOURCE
+        self.refuses("Use the paint library.", "has no SOURCE text")
+
+    def test_a_library_may_not_use_another(self):
+        self.module.SOURCE = "Use the paint library.\n"
+        error = self.refuses("Say 1.\nUse the paint library.", "can't use another library")
+        self.assertEqual(error.line.number, 2)
+
+    def test_a_missing_function_is_the_librarys_fault(self):
+        del self.module.verb_break
+        error = self.refuses("Use the paint library.", "verb_break")
+        self.assertIn("fault in the paint library", error.hint)
+        self.module.SOURCE = "To work out the colour depth (number) is done by the library.\n"
+        self.refuses("Use the paint library.", "value_colour_depth")
+
+    def test_a_mistake_in_a_librarys_source_is_reported_as_the_librarys(self):
+        self.module.SOURCE = "A canvas has a width (number).\nSay the height of a canvas.\n"
+        error = self.refuses("Say 1.\n\nUse the paint library.", "The paint library has a sentence I can't read")
+        self.assertEqual(error.line.number, 3)
+        self.assertEqual(error.line.text, "Use the paint library.")
+        self.assertIn("In the paint library, line 2:", error.hint)
+        self.assertIn("Say the height of a canvas.", error.hint)
+        self.assertIn("fault in the paint library", error.hint)
+        # A clash with the program's own names is refused in the usual way.
+        self.module.SOURCE = "A canvas has a width (number).\n"
+        error = self.refuses("A canvas has a size (number).\nUse the paint library.", "already described on line 1")
+
+    def test_a_problem_inside_a_librarys_own_verb_names_the_library(self):
+        self.module.SOURCE = (
+            "A canvas has a width (number).\nA canvas's width is never less than 0.\n"
+            "There is a canvas called Easel whose width is 3.\n"
+            "To shrink a canvas:\n  Subtract 5 from the canvas's width.\n"
+        )
+        error = self.refuses("Say 1.\nUse the paint library.\nShrink Easel.", "break a rule", stage="run")
+        self.assertEqual(error.line.library, "paint")
+        rendered = error.render("drawing.english")
+        self.assertIn("line 5 of the paint library", rendered)
+        self.assertIn("(while doing line 3: Shrink Easel.)", rendered)
+
+
 class TodoExample(InTemporaryFolder, Base):
     SOURCE = (ROOT / "examples" / "todo.english").read_text(encoding="utf-8")
 
@@ -1066,6 +1346,154 @@ class SyntaxDocument(Base):
         for row in table.splitlines()[2:]:
             listed.update(re.findall(r"`(\w+)`", row.split("|")[2]))
         self.assertEqual(listed, set(KEYWORDS))
+
+
+class FailingInsteadOfAnswering(Base):
+    HALF = (
+        "To work out the half (number) of a count (number):\n"
+        "  If the count is divisible by 2:\n"
+        "    The answer is the count / 2.\n"
+        '  Fail because "{the count} is odd".\n'
+    )
+
+    def test_a_path_that_fails_needs_no_answer(self):
+        self.assertEqual(run(self.HALF + "Say the half of 10."), ["5"])
+        self.refuses(self.HALF + "Say the half of 7.", "7 is odd", stage="run")
+        said = run(self.HALF + "Try:\n  Say the half of 7.\nIf that fails:\n  Say the problem.")
+        self.assertEqual(said, ["7 is odd"])
+
+    def test_a_path_that_just_ends_still_needs_one(self):
+        self.refuses("To work out the half (number) of a count (number):\n  If the count is 2:\n    Fail because \"two\".", "Not every path")
+
+
+class ShadersAndPictures(unittest.TestCase):
+    """The parts of the vulkan library that need no graphics card."""
+
+    def test_each_shader_is_well_formed_spirv(self):
+        from englishscript.libraries import _spirv
+
+        for build in (_spirv.vertex_shader, _spirv.fragment_shader):
+            with self.subTest(build.__name__):
+                words = build()
+                self.assertEqual(words[0], 0x07230203)  # the SPIR-V magic number
+                bound, position, ids = words[3], 5, set()
+                while position < len(words):
+                    length, opcode = words[position] >> 16, words[position] & 0xFFFF
+                    self.assertGreater(length, 0)
+                    if opcode in (19, 21, 22, 23, 30, 32, 33, 248):  # types and labels define their first word
+                        ids.add(words[position + 1])
+                    position += length
+                self.assertEqual(position, len(words))  # every instruction's length adds up exactly
+                self.assertTrue(all(0 < found < bound for found in ids))
+                self.assertEqual(words[-1], (1 << 16) | 56)  # ends with OpFunctionEnd
+
+    def test_a_picture_is_saved_as_a_real_png(self):
+        import struct
+        import zlib
+
+        from englishscript.libraries import _vk
+
+        pixels = bytes([255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 9, 8, 7, 255])  # 2 by 2
+        data = _vk.png(2, 2, pixels)
+        self.assertEqual(data[:8], b"\x89PNG\r\n\x1a\n")
+        self.assertEqual(struct.unpack(">II", data[16:24]), (2, 2))
+        start = data.index(b"IDAT") + 4
+        length = struct.unpack(">I", data[start - 8:start - 4])[0]
+        raw = zlib.decompress(data[start:start + length])
+        self.assertEqual(raw, b"\0" + pixels[:8] + b"\0" + pixels[8:])
+
+
+def vulkan_works():
+    """Is there a graphics card here that Vulkan can draw on?"""
+    try:
+        from englishscript.libraries import _vk
+
+        _vk.Card("test").close()
+        return True
+    except Exception:  # noqa: BLE001 - any failure means "skip the tests that need a card"
+        return False
+
+
+@unittest.skipUnless(vulkan_works(), "no graphics card with a Vulkan driver on this computer")
+class VulkanLibrary(InTemporaryFolder, Base):
+    SCENE = (
+        "Use the vulkan library.\n"
+        "There is a vertex called Apex whose x is 0, whose y is -0.5, and whose colour is Red.\n"
+        "There is a vertex called East whose x is 0.5, whose y is 0.5, and whose colour is Green.\n"
+        "There is a vertex called West whose x is -0.5, whose y is 0.5, and whose colour is Blue.\n"
+        "There is a triangle called Hello whose top corner is Apex, whose right corner is East, and whose left corner is West.\n"
+        "There is a picture called Canvas whose width is 80, whose height is 60, and whose background is Black.\n"
+    )
+
+    @staticmethod
+    def parts(pixel):
+        return [int(part) for part in pixel.split(", ")]
+
+    def test_a_triangle_is_drawn_shaded_and_read_back(self):
+        said = run(self.SCENE + (
+            "Start Vulkan.\nPrepare Canvas.\n"
+            "Say the pixel of Canvas at 40 by 35.\n"        # before any drawing: just the background
+            "Draw Hello on Canvas.\n"
+            "Say the pixel of Canvas at 0 by 0.\n"          # outside the triangle
+            "Say the pixel of Canvas at 40 by 35.\n"        # the middle: an even mix of the corners
+            "Say the pixel of Canvas at 40 by 17.\n"        # near the top corner: mostly red
+            "Say Vulkan's card.\n"
+            "Close Vulkan.\nSay Vulkan's card.\n"
+        ))
+        self.assertEqual(said[0], "0, 0, 0")
+        self.assertEqual(said[1], "0, 0, 0")
+        for part in self.parts(said[2]):
+            self.assertAlmostEqual(part, 85, delta=6)
+        red, green, blue = self.parts(said[3])
+        self.assertGreater(red, 200)
+        self.assertLess(green + blue, 60)
+        self.assertNotEqual(said[4], "not started")
+        self.assertEqual(said[5], "not started")
+
+    def test_a_second_triangle_is_added_to_the_first(self):
+        said = run(self.SCENE + (
+            "There is a vertex called North whose x is -1, whose y is -1, and whose colour is White.\n"
+            "There is a vertex called Side whose x is -0.5, whose y is -1, and whose colour is White.\n"
+            "There is a vertex called Low whose x is -1, whose y is -0.5, and whose colour is White.\n"
+            "There is a triangle called Patch whose top corner is North, whose right corner is Side, and whose left corner is Low.\n"
+            "Start Vulkan.\nPrepare Canvas.\nDraw Hello on Canvas.\nDraw Patch on Canvas.\n"
+            "Say the pixel of Canvas at 2 by 2.\nSay the pixel of Canvas at 40 by 35.\n"
+        ))
+        self.assertEqual(said[0], "255, 255, 255")  # the new patch
+        self.assertNotEqual(said[1], "0, 0, 0")     # the first triangle is still there
+
+    def test_a_picture_is_saved_and_the_card_is_given_back(self):
+        program = compile_source(self.SCENE + 'Start Vulkan.\nPrepare Canvas.\nDraw Hello on Canvas.\nSave Canvas as "out.png".\n')
+        world = program.run(lambda text: None)  # the program never says "Close Vulkan."
+        self.assertEqual((self.folder / "out.png").read_bytes()[:8], b"\x89PNG\r\n\x1a\n")
+        self.assertNotIn("card", world.libraries["vulkan"])  # finish() closed it all the same
+
+    def test_mistakes_are_problems_a_program_can_recover_from(self):
+        cases = {
+            "Prepare Canvas.": "has not been started",
+            "Start Vulkan.\nStart Vulkan.": "already started",
+            "Start Vulkan.\nDraw Hello on Canvas.": "has not been prepared",
+            "Start Vulkan.\nPrepare Canvas.\nPrepare Canvas.": "already prepared",
+            "Start Vulkan.\nPrepare Canvas.\nSay the pixel of Canvas at 80 by 0.": "whole number from 0 to 79",
+            "Start Vulkan.\nPrepare Canvas.\nSay the pixel of Canvas at 1.5 by 0.": "whole number",
+            'Start Vulkan.\nPrepare Canvas.\nSave Canvas as ".".': "couldn't write",
+            "There is a picture called Vast whose width is 0, whose height is 5, and whose background is Black.\nStart Vulkan.\nPrepare Vast.": "width of Vast",
+        }
+        for sentences, fragment in cases.items():
+            with self.subTest(sentences):
+                self.refuses(self.SCENE + sentences, fragment, stage="run")
+                body = "\n".join("  " + line for line in sentences.split("\n") if not line.startswith("There is"))
+                setup = "\n".join(line for line in sentences.split("\n") if line.startswith("There is"))
+                said = run(self.SCENE + setup + "\nTry:\n" + body + '\nIf that fails:\n  Say "recovered"\n')
+                self.assertEqual(said[-1], "recovered")
+
+    def test_the_example_program_runs(self):
+        source = (ROOT / "examples" / "gpu_triangle.english").read_text(encoding="utf-8")
+        said = run(source)
+        self.assertTrue(said[0].startswith("Drawing on "))
+        self.assertEqual(said[1], "Saved gpu_triangle.png.")
+        self.assertTrue((self.folder / "gpu_triangle.png").stat().st_size > 1000)
+        self.assertFalse((ROOT / "gpu_triangle.png").exists())
 
 
 if __name__ == "__main__":

@@ -230,7 +230,7 @@ Three rules apply to every name:
 | Group | Reserved words |
 |---|---|
 | Articles and pronouns | `a` `an` `the` `it` `its` `they` `them` `their` |
-| Built-in verbs | `let` `set` `add` `subtract` `multiply` `divide` `say` `if` `for` `repeat` `while` `there` `stop` `skip` `end` `now` `remove` `ask` `write` `try` `fail` |
+| Built-in verbs | `let` `set` `add` `subtract` `multiply` `divide` `say` `if` `for` `repeat` `while` `there` `stop` `skip` `end` `now` `remove` `ask` `write` `try` `fail` `use` |
 | Types | `number` `money` `text` `percent` `yes` `no` `list` |
 | Linking words | `of` `is` `are` `be` `has` `called` `whose` `when` `each` `all` `otherwise` `example` `name` `nothing` `any` `else` `answer` `whether` `can` `in` `new` `reply` `problem` `items` |
 | Logic and comparison | `not` `and` `or` `never` `always` `than` `less` `more` `greater` `least` `most` `divisible` |
@@ -1057,7 +1057,7 @@ the <name> [<preposition> <value>]...
 
 - The type of the answer goes in brackets after the name. It may be `if any`.
 - Roles are written as for verbs (section 9.1), except that every role has a preposition, and `of` may be one of them. When it is used, the roles may come in any order.
-- `The answer is ...` ends the work and gives the value. Every path through the block must reach one.
+- `The answer is ...` ends the work and gives the value. Every path through the block must reach one, or end with `Fail because` (section 8.5).
 - **Working out changes nothing.** The block may make and change its own variables, loop, use other worked-out values, read files, and use `Try` and `Fail because`. It may not change a thing or an outside variable, use `Now`, make or remove a thing, say or ask anything, write to a file, or use a verb.
 - Because of that, a worked-out value may be used anywhere a value may, including in the definition of an adjective.
 - Each role takes a single value. Arithmetic in a role needs brackets: `the change from ($10 + $10) for $12.50`.
@@ -1111,6 +1111,50 @@ To work out the census (number):
   The answer is the number of dragons.
 ```
 
+### 9.4 Using a library
+
+A library gives a program words whose work is done by Python code: drawing on a screen, say, or talking to a device.
+
+```text
+Use the <name> library.
+```
+
+- This is allowed only at the top level, and a library may be used only once. Its name is one word.
+- The library's own sentences are read at that point, as if they were written there. The kinds, things, adjectives, rules, verbs and worked-out values it describes join the program's vocabulary from then on. A name in the library that the program has already given a meaning is refused, as any reused name is (section 3).
+- Its verbs and worked-out values are used like any others (sections 9.2 and 9.3). Some of them are carried out by the library's Python code, but the rules are the same: a verb may not be used inside `To work out`, and using one means checks for nothing no longer count (section 2); a worked-out value changes nothing.
+- A library may report a problem, such as a device that is not there. A `Try` can recover from it (section 8.5). A failed `Try` undoes the changes the library made to things in the world, but it cannot undo what the library did outside the world, such as what it showed on a screen.
+- If a library fails in a way it did not expect, the program stops with a message naming the library. That is a fault in the library, and `Try` does not recover from it.
+- When the program ends, for any reason, each library it used is told, so that it can let go of what it holds.
+- Only the libraries that come with EnglishScript can be used, from the folder `englishscript/libraries`. Naming any other is refused, and the message lists the libraries there are.
+- One library comes with EnglishScript today: `vulkan`, which draws shaded triangles on the graphics card. Its words are described in [VULKAN.md](VULKAN.md), and `examples/gpu_triangle.english` uses it.
+
+```text
+Use the paint library.
+Splash "red" on Easel.
+Say the pixel count of Easel.
+```
+
+```refused
+Use the nonesuch library.
+```
+
+#### Writing a library
+
+A library is a Python module in `englishscript/libraries`. It holds its sentences as ordinary EnglishScript text, and in that text, and only there, a verb or a worked-out value may be declared without a block:
+
+```text
+To splash a colour (text) on a canvas is done by the library.
+To work out the pixel count (number) of a canvas is done by the library.
+```
+
+The part before `is done by the library` is exactly the first line of a verb (section 9.1) or of a worked-out value (section 9.3), without its colon. The work is then done by a Python function of the library. A library's sentences may not say `Use`. The full interface, for people writing a library, is described in `englishscript/libraries/__init__.py`.
+
+A program cannot declare work to be done by a library:
+
+```refused
+To splash a colour (text) on a dragon is done by the library.
+```
+
 ## 10. How a sentence can go wrong
 
 Problems are reported at two stages.
@@ -1127,9 +1171,12 @@ Problems are reported at two stages.
 - a file cannot be read or written;
 - `Remove` is refused, or a removed thing is used;
 - `Fail because` is reached;
-- a `While` passes 10,000 rounds, or a verb or a worked-out value uses itself more than 200 levels deep.
+- a `While` passes 10,000 rounds, or a verb or a worked-out value uses itself more than 200 levels deep;
+- a library reports a problem, or fails in a way it did not expect (section 9.4).
 
-All of these except a `For example`, the 10,000 rounds and the 200 levels are problems that a `Try` can recover from (section 8.5). When input runs out during `Ask`, the program ends quietly; that is not a problem.
+All of these except a `For example`, the 10,000 rounds, the 200 levels and a library's unexpected failure are problems that a `Try` can recover from (section 8.5). When input runs out during `Ask`, the program ends quietly; that is not a problem.
+
+A sentence of a library that can't be read is reported at the program's `Use` sentence, as the library's fault, with the library's own sentence shown underneath. A problem while running inside a verb that a library wrote in English gives the library's line, as `line 5 of the paint library`.
 
 ## 11. Grammar summary
 
@@ -1138,7 +1185,8 @@ Words in capitals are names from the program's own vocabulary. Quoted words are 
 ```text
 sentence    = definition | action | block-opener
 
-definition  = kind | thing | adjective | stored-adj | property | rule | verb | work-out   (top level only)
+definition  = kind | thing | adjective | stored-adj | property | rule | verb | work-out
+            | library                                                (top level only)
 kind        = article KIND "has" field { sep field } "."
 field       = article NAME "(" type ")"
 thing       = "There is" article { ADJECTIVE } KIND "called" NAME [ whose { sep whose } ] "."
@@ -1149,6 +1197,9 @@ property    = "The" NAME "of" article KIND "is" expression "."
 rule        = article KIND "'s" PROPERTY "is" ( "never" | "always" ) tail "."
 verb        = "To" VERB [ role ] { PREPOSITION role } ":"
 work-out    = "To work out the" NAME "(" type ")" { ( PREPOSITION | "of" ) role } ":"
+library     = "Use the" NAME "library" "."
+outside     = ( verb | work-out ) without its ":", then "is done by the library" "."
+                                                          (only in a library's SOURCE, section 9.4)
 role        = article ( KIND | NAME "(" type ")" )
 article     = "a" | "an"
 sep         = "," | "and" | "," "and"
@@ -1851,7 +1902,7 @@ group        = ... | group "in order of" PROPERTY | group "in reverse order of" 
 Sections 12 and 13 settle most of what used to be listed here. These remain open.
 
 **Programs**
-- Splitting a program across files.
+- Splitting a program across files. Libraries (section 9.4) are carried out by Python code; they are not a way to include another `.english` file.
 - Chance: a number or a thing picked at random.
 - Rules that span several things, and rules about worked-out properties.
 - Lookup tables from one value to another. Today the nearest thing is finding a thing by its name.
@@ -1860,6 +1911,8 @@ Sections 12 and 13 settle most of what used to be listed here. These remain open
 - Times of day, time zones, and calendar arithmetic such as "a month from now" or "every Monday".
 - Measures built from other measures, such as speed, and conversion between measures, such as exchange rates.
 - Searching and replacing inside text.
+- Bit operations on whole numbers: and, or, exclusive-or and shifts. They can be built today from halving and `is divisible by`, as `examples/sha256.english` does, but there are no words for them.
+- The code of a character, and the character for a code. `examples/sha256.english` looks each character up in a text holding the whole keyboard.
 - Choosing how many decimal places a value is said with, beyond rounding it first.
 - Properties that can never change after a thing is created.
 

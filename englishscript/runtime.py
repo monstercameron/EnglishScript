@@ -97,6 +97,7 @@ class World:
         self.things = {}  # kind -> [Thing], in order of creation; removed things leave
         self.named = {}  # lowercased name -> Thing
         self.made = {}  # kind -> how many have been made, for default names
+        self.libraries = {}  # library name -> that library's own state (outside the world)
         self.globals = Env(None, self)
         self.examples = 0
         self.depth = 0

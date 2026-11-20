@@ -26,11 +26,15 @@ not, and always end the program.
 from __future__ import annotations
 
 import difflib
+import importlib
+import math
+import pkgutil
 import sys
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from fractions import Fraction
 
+from . import libraries
 from .lexer import EnglishError, Token, read_source, tokenize
 from .runtime import (
     Env, Thing, World, alive, fmt, no_digit_limit, read_file, read_number, read_reply, split_lines, write_file,
@@ -54,7 +58,7 @@ KEYWORDS = PREPOSITIONS | set(BUILTIN_VERBS) | set(BASE_TYPES) | set(POSSESSIVES
     "more", "greater", "least", "most", "plus", "minus", "times", "divided",
     "divisible", "all", "example", "name", "nothing", "any", "else", "answer",
     "yes", "no", "now", "whether", "can", "in", "new", "remove", "ask", "write",
-    "try", "fail", "reply", "problem", "list", "items",
+    "try", "fail", "reply", "problem", "list", "items", "use",
 }
 YES_NO = "yes or no"
 LIST = "list of "
@@ -106,6 +110,13 @@ def item_type(type_):
     return base(type_)[len(LIST):]
 
 
+def where(line):
+    """Where a definition was made, for messages: a line of the program, or a library."""
+    if line.library:
+        return f"in the {line.library} library"
+    return f"line {line.number}"
+
+
 def cap(text):
     """Capitalise the first letter, for a message that opens with a quoted phrase."""
     return text[:1].upper() + text[1:]
@@ -139,6 +150,58 @@ class _SkipRound(_Signal):
 class _Answer(_Signal):
     def __init__(self, value):
         self.value = value
+
+
+# ---------------------------------------------------------------- libraries
+
+DONE_BY_LIBRARY = ("is", "done", "by", "the", "library")
+_MISMATCH = object()  # what from_library gives for a value of the wrong type
+
+
+def call_library(lib, fn, world, roles):
+    """Call a library's Python function. A problem it reports (EnglishError)
+    and the signals for leaving early pass through; anything else it raises is
+    a fault in the library, which ends the program."""
+    try:
+        return fn(world, **roles)
+    except EnglishError as error:
+        error.stage = "run"  # whatever the library wrote, it happened while running
+        raise
+    except _Signal:
+        raise
+    except Exception as error:  # noqa: BLE001 - a library's own fault, reported in English
+        raise EnglishError(
+            f"The {lib} library failed: {type(error).__name__}: {error}", stage="run",
+            hint=f"This is a fault in the {lib} library, not in your program.",
+        ) from None
+
+
+def from_library(value, type_):
+    """A value a library gave back, as the language holds it, or _MISMATCH."""
+    if value is None:
+        return None if is_opt(type_) else _MISMATCH
+    type_ = base(type_)
+    if is_list(type_):
+        if not isinstance(value, (tuple, list)):
+            return _MISMATCH
+        items = tuple(from_library(item, item_type(type_)) for item in value)
+        return _MISMATCH if any(item is _MISMATCH for item in items) else items
+    if type_ == "text":
+        return value if isinstance(value, str) else _MISMATCH
+    if type_ == YES_NO:
+        return value if isinstance(value, bool) else _MISMATCH
+    if type_ in ("number", "money", "percent"):
+        if isinstance(value, bool):
+            return _MISMATCH
+        if isinstance(value, (int, Fraction)):
+            return Fraction(value)
+        if isinstance(value, float) and math.isfinite(value):
+            return Fraction(repr(value))  # the shortest repr, so 0.1 is exactly 1/10
+        return _MISMATCH
+    # A kind: a thing of that kind that is still in the world.
+    if isinstance(value, Thing) and value.kind == type_ and not value.removed:
+        return value
+    return _MISMATCH
 
 
 # --------------------------------------------------------------- vocabulary
@@ -351,11 +414,15 @@ class Compiler:
         self.verb = None  # the verb whose block this is, if any
         self.workout = None  # the worked-out value whose block this is, if any
         self.loops = []  # loops around the sentence: [{"id", "noun"}]
+        self.libraries = {}  # name -> (module, the "Use" line), in the order they were used
+        self.library = None  # (name, module) while a library's SOURCE is being compiled
         self.present = NONE  # keys known not to be nothing at this point
 
     # ------------------------------------------------------------- helpers
 
     def note(self, text):
+        if self.line.library:
+            return  # a library's own sentences are not part of the program's explanation
         entry = (self.line.number, text)
         if entry not in self.notes:
             self.notes.append(entry)
@@ -1810,9 +1877,13 @@ class Compiler:
             definition = self.define_procedure
         elif word == "there" and not s.peek(3).is_word("new"):
             definition = self.create_thing
+        elif word == "use":
+            definition = self.use_library
         if definition:
             if not top:
                 s.fail("This belongs at the top level, not inside a block.")
+            if word == "to" and self.done_by_library(line):
+                return self.define_outside(s)
             self.needs_block(s, word == "to")
             return definition(s)
 
@@ -1853,7 +1924,9 @@ class Compiler:
         self.check_new_name(s, [ktok], "the name of a kind")
         name = ktok.low
         if name in self.kinds:
-            s.fail(f"{article(name).capitalize()} was already described on line {self.kinds[name].line.number}.", ktok)
+            earlier = self.kinds[name].line
+            at = where(earlier) if earlier.library else f"on line {earlier.number}"
+            s.fail(f"{article(name).capitalize()} was already described {at}.", ktok)
         s.next()  # has
         K = Kind(name, pluralize(name), s.line)
         while True:
@@ -2028,15 +2101,16 @@ class Compiler:
             scope.names[p.name] = Binding(p.name, p.type, focus=p.type in self.kinds)
         return scope
 
-    def define_procedure(self, s):
+    def define_procedure(self, s, outside=False):
+        """To <verb> ...:  with a block, or, in a library, "... is done by the library."."""
         s.next()  # to
         if s.at_words("work", "out", "the"):
-            return self.define_workout(s)
+            return self.define_workout(s, outside)
         vtok = s.next()
         self.check_new_name(s, [vtok], "a verb")
         verb = vtok.low
         if verb in self.procs:
-            s.fail(f'I already know how to "{verb}" (line {self.procs[verb].line.number}).', vtok)
+            s.fail(f'I already know how to "{verb}" ({where(self.procs[verb].line)}).', vtok)
         params = []
         if s.at_word("a", "an"):
             params.append(self.param(s, None))
@@ -2053,10 +2127,13 @@ class Compiler:
         scope = self.role_scope(s, params, vtok)
         proc = Proc(verb, params, s.line)
         self.procs[verb] = proc  # registered first, so it can call itself
+        if outside:
+            proc.body = [self.outside_verb(s, proc)]
+            return
         with self.fresh(verb=proc):
             proc.body = self.block(s.line.children, scope)
 
-    def define_workout(self, s):
+    def define_workout(self, s, outside=False):
         """To work out the <name> (<type>) [<preposition> a <role>]... :"""
         for _ in range(3):  # work out the
             s.next()
@@ -2068,7 +2145,7 @@ class Compiler:
         self.check_new_name(s, toks, "a name")
         name = " ".join(t.low for t in toks)
         if name in self.workouts:
-            s.fail(f'I already know how to work out "the {name}" (line {self.workouts[name].line.number}).', toks[0])
+            s.fail(f'I already know how to work out "the {name}" ({where(self.workouts[name].line)}).', toks[0])
         if name in self.member_names:
             s.fail(f'"{name}" is already a property, so something worked out can\'t share its name.', toks[0])
         if self.globals.find(name) or name in self.names or name in self.nouns:
@@ -2093,6 +2170,9 @@ class Compiler:
         scope = self.role_scope(s, params, toks[0])
         w = Workout(name, type_, params, s.line)
         self.workouts[name] = w  # registered first, so it can use itself
+        if outside:
+            w.body = [self.outside_value(s, w)]
+            return
         with self.fresh(workout=w):
             w.body = self.block(s.line.children, scope)
         if not self.answers(w.body):
@@ -2101,6 +2181,148 @@ class Compiler:
                 s.line, s.toks[0].col, len(s.line.text.strip()),
                 hint='Finish the block with "The answer is ...".',
             )
+
+    # libraries ----------------------------------------------------------
+
+    @staticmethod
+    def library_names():
+        """The libraries a program may use: the modules of englishscript.libraries
+        whose names don't start with an underscore, including any registered in
+        sys.modules under that package (as the tests do)."""
+        prefix = libraries.__name__ + "."
+        names = {found.name for found in pkgutil.iter_modules(libraries.__path__)}
+        names.update(key[len(prefix):] for key in sys.modules if key.startswith(prefix))
+        return sorted(name for name in names if "." not in name and not name.startswith("_"))
+
+    def use_library(self, s):
+        """Use the <name> library.  Compiles the library's SOURCE here, as if written here."""
+        use = s.next()
+        if self.library is not None:
+            s.fail("A library can't use another library.", use,
+                   hint='The program itself must say "Use the ... library." for each library it needs.')
+        usage = 'For example: "Use the paint library."'
+        s.expect_word("the", hint=usage)
+        tok = s.next()
+        if tok.kind != "WORD":
+            s.fail("I expected the name of a library here.", tok, hint=usage)
+        if not s.at_word("library"):
+            s.fail('A library\'s name is one word, followed by "library".', hint=usage)
+        s.next()
+        self.end(s)
+        name = tok.low
+        if name in self.libraries:
+            s.fail(f"The {name} library is already in use ({where(self.libraries[name][1])}).", tok)
+        available = self.library_names()
+        if name not in available:
+            s.fail(
+                f'There is no library called "{tok.text}".', tok,
+                hint=("Libraries: " + ", ".join(available) + ".") if available else "There are no libraries yet.",
+            )
+        try:
+            module = importlib.import_module(f"{libraries.__name__}.{name}")
+        except Exception as error:  # noqa: BLE001 - any failure to import is the library's fault
+            s.fail(f"The {name} library could not be loaded: {error}", tok,
+                   hint="This is a fault in the library, not in your program.")
+        source = getattr(module, "SOURCE", None)
+        if not isinstance(source, str):
+            s.fail(f"The {name} library has no SOURCE text, so I can't tell what it provides.", tok,
+                   hint="This is a fault in the library, not in your program.")
+        self.libraries[name] = (module, s.line)
+        self.note(f'"{name}" → the Python library {module.__name__}')
+        use_line = s.line
+        self.library = (name, module)
+        try:
+            lines = read_source(source, library=name)
+            steps = self.block(lines, self.globals)
+        except EnglishError as error:
+            raise self.library_fault(use_line, tok, name, error) from None
+        finally:
+            self.library = None
+            self.line = use_line
+
+        def step(env):
+            for inner in steps:
+                inner(env)
+        return step
+
+    @staticmethod
+    def library_fault(use_line, tok, name, error):
+        """A sentence of a library's SOURCE can't be read. Point at the "Use"
+        sentence, and show the library's own sentence in the hint."""
+        detail = []
+        if error.line is not None and error.line.library == name:
+            detail.append(f"In the {name} library, line {error.line.number}:")
+            detail.append("    " + error.line.text.strip())
+        else:
+            detail.append(f"In the {name} library:")
+        detail.append(error.message)
+        if error.hint:
+            detail.extend(error.hint.split("\n"))
+        detail.append(f"This is a fault in the {name} library, unless it reuses a name your program "
+                      "defined before this sentence.")
+        return EnglishError(f"The {name} library has a sentence I can't read.", use_line, tok.col,
+                            len(tok.text), hint="\n".join(detail))
+
+    @staticmethod
+    def done_by_library(line):
+        """Does the sentence end "is done by the library"?"""
+        words = line.tokens[:-1]  # without END
+        return len(words) > 5 and all(t.is_word(w) for t, w in zip(words[-5:], DONE_BY_LIBRARY))
+
+    def define_outside(self, s):
+        """To <verb> ... is done by the library.
+        To work out the <name> (<type>) ... is done by the library.
+
+        Only in a library's SOURCE: the header of a verb or worked-out value
+        whose block is a Python function of the library.
+        """
+        line = s.line
+        cut = line.tokens[-6]  # "is"
+        if self.library is None:
+            s.fail('Only a library can say "is done by the library".', cut,
+                   hint="A program teaches a verb with a colon and an indented block.")
+        self.needs_block(s, False)
+        header = Sentence(line, line.tokens[:-6] + [Token("END", "", cut.col)])
+        self.define_procedure(header, outside=True)
+
+    def library_function(self, s, fname):
+        name, module = self.library
+        fn = getattr(module, fname, None)
+        if not callable(fn):
+            s.fail(f'The {name} library has no Python function "{fname}" for this.', s.toks[0],
+                   hint=f'It needs: def {fname}(world, ...):')
+        return name, fn
+
+    def outside_verb(self, s, proc):
+        """The body of a verb that is done by the library."""
+        lib, fn = self.library_function(s, "verb_" + proc.verb)
+        roles = [(p.name, p.name.replace(" ", "_")) for p in proc.params]
+
+        def step(env):
+            call_library(lib, fn, env.world, {key: env.get(role) for role, key in roles})
+        return step
+
+    def outside_value(self, s, w):
+        """The body of a worked-out value that is done by the library."""
+        lib, fn = self.library_function(s, "value_" + w.name.replace(" ", "_"))
+        roles = [(p.name, p.name.replace(" ", "_")) for p in w.params]
+        wanted = self.describe(w.type)
+
+        def step(env):
+            value = call_library(lib, fn, env.world, {key: env.get(role) for role, key in roles})
+            converted = from_library(value, w.type)
+            if converted is _MISMATCH:
+                shown = repr(value)
+                if len(shown) > 60:
+                    shown = shown[:57] + "..."
+                raise EnglishError(
+                    f'The {lib} library gave back {shown} ({type(value).__name__}) for "the {w.name}", '
+                    f"which should be {wanted}.", stage="run",
+                    hint=f"This is a fault in the {lib} library, not in your program.",
+                )
+            raise _Answer(converted)
+        step.answers = step.leaves = True
+        return step
 
     def create_thing(self, s):
         """There is a | an [<adjective>]... <kind> called <Name> [whose ...]... .   (top level)"""
@@ -2529,7 +2751,9 @@ class Compiler:
 
         def step(env):
             raise EnglishError(rf(env), stage="run", recoverable=True)
-        step.leaves = True
+        # A path that fails never falls off the end, so in "To work out" it
+        # needs no answer of its own.
+        step.answers = step.leaves = True
         return step
 
     def now(self, s):
@@ -2934,6 +3158,8 @@ class Program:
         or None (or raises EOFError) when input has ended; by default it reads
         a line from standard input."""
         world = World(out, ask)
+        for name in self.compiler.libraries:
+            world.libraries[name] = {}
         limit = sys.getrecursionlimit()
         sys.setrecursionlimit(max(limit, 20_000))  # each English call costs several Python frames
         try:
@@ -2946,7 +3172,25 @@ class Program:
             raise EnglishError("This program nests more deeply than I can follow.", stage="run") from None
         finally:
             sys.setrecursionlimit(limit)
+            # Every library is told the run is over, however it ended. If the run
+            # failed, that failure is what propagates, never a failure to finish.
+            failures = self.finish_libraries(world)
+        if failures:
+            raise EnglishError("A library could not finish: " + "; ".join(failures), stage="run",
+                               hint="This is a fault in the library, not in your program.")
         return world
+
+    def finish_libraries(self, world):
+        failures = []
+        for name, (module, _) in self.compiler.libraries.items():
+            finish = getattr(module, "finish", None)
+            if not callable(finish):
+                continue
+            try:
+                finish(world)
+            except Exception as error:  # noqa: BLE001 - reported (or set aside) above
+                failures.append(f"the {name} library: {type(error).__name__}: {error}")
+        return failures
 
 
 def compile_source(source):

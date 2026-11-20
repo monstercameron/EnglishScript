@@ -35,7 +35,9 @@ class EnglishError(Exception):
             out.append(head + ":")
         else:
             where = f"line {self.line.number}"
-            if filename:
+            if self.line.library:
+                where = f"{where} of the {self.line.library} library"
+            elif filename:
                 where = f"{filename}, {where}"
             out.append(f"{head} ({where}):" if location else f"{head}:")
             text = self.line.text
@@ -83,6 +85,7 @@ class Line:
     tokens: list = field(default_factory=list)
     terminator: str = "."
     children: list = field(default_factory=list)
+    library: str = None  # the library whose SOURCE this line is from, if any
 
 
 TOKEN_RE = re.compile(
@@ -136,8 +139,12 @@ def _strip_comment(raw):
     return raw
 
 
-def read_source(source):
-    """Source text -> top-level Lines, each with its indented children."""
+def read_source(source, library=None):
+    """Source text -> top-level Lines, each with its indented children.
+
+    `library` names the library whose SOURCE this is, so that its lines are
+    never mistaken for lines of the program.
+    """
     source = source.replace("“", '"').replace("”", '"').replace("’", "'")
     lines = []
     for number, raw in enumerate(source.splitlines(), 1):
@@ -145,7 +152,7 @@ def read_source(source):
         if not text.strip():
             continue
         indent = len(text) - len(text.lstrip())
-        line = Line(number, text, indent)
+        line = Line(number, text, indent, library=library)
         if "\t" in text[:indent]:
             raise EnglishError("Indent with spaces, not tabs.", line, 0, indent)
         tokens = tokenize(text, line, indent, len(text))

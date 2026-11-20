@@ -33,6 +33,18 @@ There is also a shaded triangle, drawn in characters. It follows the steps of a 
 python -m englishscript examples/triangle.english
 ```
 
+The same triangle can be drawn on the real graphics card. This one does use the Vulkan API, through the `vulkan` library, and saves `gpu_triangle.png`. It needs a card with a Vulkan driver and installs nothing; see [docs/VULKAN.md](docs/VULKAN.md):
+
+```bash
+python -m englishscript examples/gpu_triangle.english
+```
+
+The hardest example is SHA-256 worked out from first principles. The language has no bit operators, remainders or arrays, so the program builds shifts, rotations and exclusive-or out of halving and "is divisible by", and derives the algorithm's constants from primes and whole-number roots. It hashes what you type and agrees with other implementations:
+
+```bash
+python -m englishscript examples/sha256.english
+```
+
 ### What a program looks like
 
 ```
@@ -103,6 +115,7 @@ The full reference is [docs/SYNTAX.md](docs/SYNTAX.md). Its examples are run by 
 | Loop | `For each poor dragon:`, `For each rival in dragons:`, `For each word in the words of the line:`, `Repeat 3 times:`, `While ...:` |
 | Count and add up | `the number of ancient dragons`, `the total worth of Smaug's treasures`, `the number of items in the words` |
 | Recover from a problem | `Try:` then `If that fails:` with `the problem`; `Fail because "..."` |
+| Use a library | `Use the vulkan library.` (verbs and worked-out values carried out by Python code in `englishscript/libraries/`) |
 | Test | `For example, the hoard of Smaug is $12,000.` |
 
 Types are `number`, `money`, `text`, `percent`, `yes or no`, any kind you describe, and lists such as `list of text`. Comments start with `#`.
@@ -113,6 +126,7 @@ Types are `number`, `money`, `text`, `percent`, `yes or no`, any kind you descri
 - `englishscript/compiler.py` parses, checks and compiles each sentence into a Python closure in one pass.
 - `englishscript/runtime.py` holds what exists while a program runs.
 - `englishscript/tour.py` is the guided tour.
+- `englishscript/libraries/` holds the libraries a program can `Use`: Python modules that add verbs and worked-out values. Its `__init__.py` explains how to write one.
 - `examples/` has the example programs, including the to-do list; `tests/` has the test suite.
 
 ```bash

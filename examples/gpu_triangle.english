@@ -1,0 +1,41 @@
+# Hello Triangle on the real graphics card, through the Vulkan API.
+#
+#   python -m englishscript examples/gpu_triangle.english
+#
+# It needs a graphics card with a Vulkan driver. Nothing else is installed: the
+# vulkan library talks to the driver directly. The picture is drawn off screen
+# and saved as gpu_triangle.png in the folder the program is run from.
+#
+# (examples/triangle.english draws the same triangle without a graphics card,
+# by doing the card's work in EnglishScript.)
+
+Use the vulkan library.
+
+# The vertex buffer. Positions run from -1 to 1, with y pointing down, as in Vulkan.
+# Red, Green and Blue are colours the library provides.
+There is a vertex called Apex whose x is 0, whose y is -0.5, and whose colour is Red.
+There is a vertex called East whose x is 0.5, whose y is 0.5, and whose colour is Green.
+There is a vertex called West whose x is -0.5, whose y is 0.5, and whose colour is Blue.
+There is a triangle called Hello whose top corner is Apex, whose right corner is East, and whose left corner is West.
+
+There is a colour called Night whose red is 0.02, whose green is 0.02, and whose blue is 0.05.
+There is a picture called Canvas whose width is 800, whose height is 600, and whose background is Night.
+
+Try:
+  Start Vulkan.                          # vkCreateInstance, vkCreateDevice
+If that fails:
+  Say "This computer can't do it: {the problem}"
+  End the program.
+
+Say "Drawing on {Vulkan's card}."
+Prepare Canvas.                          # vkCreateImage, vkCreateRenderPass, vkCreateShaderModule, vkCreateGraphicsPipelines
+Draw Hello on Canvas.                    # vkCmdBeginRenderPass, vkCmdBindPipeline, vkCmdDraw, vkQueueSubmit
+Save Canvas as "gpu_triangle.png".       # vkCmdCopyImageToBuffer
+Say "Saved gpu_triangle.png."
+
+# The card's own arithmetic, read back. The corner of the picture is the
+# background colour, and the middle of the triangle is an even mix of its corners.
+For example, the pixel of Canvas at 0 by 0 is "5, 5, 13".
+Say "The middle of the triangle is {the pixel of Canvas at 400 by 350}."
+
+Close Vulkan.                            # vkDestroy..., vkDestroyDevice, vkDestroyInstance
