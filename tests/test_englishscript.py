@@ -655,6 +655,24 @@ class StoredAdjectives(Base):
 
 
 class NamedLoops(Base):
+    def test_list_properties_can_be_reached_through_the_current_thing(self):
+        source = ("A shelf has a tags (list of text).\n"
+                  'There is a shelf called Desk whose tags is a list of "red" and "blue".\n'
+                  "For each shelf:\n"
+                  "  Let the original be shelf.\n"
+                  "  For each tag in its tags:\n    Say the tag.\n"
+                  "  For each tag in their tags:\n    Say the tag.\n"
+                  "  For each tag in shelf's tags:\n    Say the tag.\n"
+                  "  Say the original.\n")
+        self.assertEqual(run(source), ["red", "blue"] * 3 + ["Desk"])
+
+    def test_a_possessive_group_skips_things_removed_before_their_turn(self):
+        source = WORLD + ("A shelf has a keeper (dragon).\n"
+                          "There is a shelf called Desk whose keeper is Smaug.\n"
+                          "For each shelf:\n  For each prize in its keeper's treasures:\n"
+                          "    Say the prize.\n    Remove Cup.\n")
+        self.assertEqual(run(source), ["Goblet"])
+
     def test_a_loop_can_name_its_thing(self):
         source = WORLD + (
             "To greet a dragon:\n"
@@ -2400,6 +2418,15 @@ class TwoReadings(Base):
                       "whether (Smaug is ancient and Robin is brave)", "(whether Smaug is ancient) and Robin is brave")
         self.assertEqual(run(WORLD + "Say whether (Smaug is ancient and Robin is brave)."), ["no"])
 
+    def test_a_bracketed_whether_can_be_followed_by_a_comparison_or_role(self):
+        source = ('To check a flag (yes or no) with a label (text):\n  If the flag is yes:\n    Say the label.\n'
+                  'Check whether (1 is 1 and 2 is 2) with "both".\n'
+                  'If whether (1 is 1 and 2 is 2) is yes:\n  Say "yes".\n'
+                  'If no is whether (1 is 2) and 2 is 2:\n  Say "separate".\n'
+                  'Say whether (2 + 3) is 5.')
+        self.assertEqual(run(source), ["both", "yes", "separate", "yes"])
+        self.refuses('If yes is whether (1) is (2) and 2 is 2:\n  Say 1.', "two ways")
+
     def test_or_else_beside_arithmetic(self):
         self.readings('Say "12" as a number or else 0 + 1.', '("12" as a number or else 0) + 1',
                       '"12" as a number or else (0 + 1)')
@@ -2519,6 +2546,48 @@ class Lists(Base):
                    "Gawain's shelf:\n  Say \"yes\"\nRemove Goblet.\nSay the number of items in Robin's shelf.\n"
                    "Say the number of items in Gawain's shelf.\nThere is a new knight whose purse is $1.\n")
         self.assertEqual(said, ["1", "2", "yes", "1", "0"])
+
+    def test_each_whose_separator_can_follow_a_written_list(self):
+        for separator in (" and ", ", ", ", and "):
+            with self.subTest(separator=separator):
+                source = self.WORLD + ("Let the guest be a new knight whose shelf is a list of Goblet and Cup"
+                                       + separator + "whose purse is $17.\nSay the guest's purse.\n"
+                                       "Say the number of items in the guest's shelf.\n")
+                self.assertEqual(run(source), ["$17", "2"])
+
+    def test_written_lists_accept_only_supported_item_types(self):
+        self.refuses("Let the flags be a list of yes and no.", "A list can hold")
+        self.refuses("A team is one of sales or support.\nLet the teams be a list of sales and support.",
+                     "A list can hold")
+
+    def test_owned_groups_and_long_adjective_chains_in_list_positions(self):
+        source = WORLD + (
+            "A treasure can be bright.\nA treasure can be small.\n"
+            "A treasure can be shiny.\nA treasure can be dusty.\n"
+            "There is a bright small shiny dusty treasure called Gem whose owner is Smaug and whose worth is $9.\n"
+            "To show a pile (list of treasures):\n  Say the number of items in the pile.\n"
+            "To work out the size (number) of a pile (list of treasures):\n  The answer is the number of items in the pile.\n"
+            "To work out the prizes (list of treasures) of a dragon:\n  The answer is its bright treasures.\n"
+            "For each bright small shiny dusty treasure:\n  Say the treasure.\n"
+            "Let the found be bright small shiny dusty treasures.\nShow the found.\n"
+            "Show Smaug's bright small shiny dusty treasures.\n"
+            "Say the size of (Smaug)'s bright treasures.\n"
+            "For each dragon:\n  Let the pile be their bright treasures.\n"
+            "  Say the number of items in the pile.\n  Say the number of dragon's bright treasures.\n"
+            "  Show the prizes of the dragon.\n"
+            "Show Cup's owner's bright treasures.\n")
+        self.assertEqual(run(source), ["Gem", "1", "1", "1", "1", "1", "1", "0", "0", "0", "1"])
+
+    def test_brackets_separate_group_filters_from_the_next_property(self):
+        start = WORLD + "A shelf has a display (list of treasures) and a size (number).\n"
+        source = ("There is a shelf called Desk whose display is treasures whose owner is Smaug"
+                  ", and whose size is 2.")
+        error = self.refuses(start + source, "can belong to the group")
+        self.assertEqual(run(start + error.fix["text"] + "\nSay the number of items in Desk's display."), ["2"])
+        source = ("There is a shelf called Desk whose display is (treasures whose owner is Smaug and whose worth is $500)"
+                  " and whose size is (the number of treasures whose owner is Smaug and whose worth is $3,000).\n"
+                  "Say the first of Desk's display.\nSay Desk's size.")
+        self.assertEqual(run(start + source), ["Cup", "1"])
 
     def test_a_group_where_a_list_is_wanted_is_the_things_in_it_then(self):
         said = run(self.WORLD + "Let the rich be all treasures whose worth is more than $100.\n"

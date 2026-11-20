@@ -145,7 +145,7 @@ an empty list of <plural type>             a list with no items
 
 - The plural type is `numbers`, `percentages`, `money`, `text`, or the plural of a kind, such as `dragons`.
 - A list may be kept in a variable, a role, a worked-out value or a property (`A knight has a trophy shelf (list of treasures).`). A list property that is not given when a thing is made starts empty.
-- **A list written out may appear only as the whole value** of `Let`, `Set`, a `whose` part or `The answer is`, so that its commas and its `and` can't be taken for anything else. Its items are all of one type; `a list of 5` has one item.
+- **A list written out may appear only as the whole value** of `Let`, `Set`, a `whose` part or `The answer is`, so that its commas and its `and` can't be taken for anything else. Its items must have one of the list item types above. `a list of 5` has one item.
 - **A group given where a list is expected becomes a list** of the things in it at that moment: as the whole value of `Let`, `Set`, a `whose` part or `The answer is`, and as a role of a verb or a worked-out value whose type is a list. `Let the suspects be all poor dragons.` makes a list of dragons; making another poor dragon afterwards does not change it.
 - Lists also come from `the words of` and `the lines of` (section 5.6) and from reading a file (section 7.7).
 
@@ -200,9 +200,14 @@ For each part in the parts:
 ```
 
 ```englishscript
-A shelf has a display (list of treasures).
-There is a shelf called Mantel whose display is a list of Cup.
+A shelf has a display (list of treasures) and a label (text).
+There is a shelf called Mantel whose display is a list of Cup and whose label is "Prizes".
 Add Goblet to Mantel's display.
+For each shelf:
+  For each prize in its display:
+    Say the prize.
+#> Cup
+#> Goblet
 Let the costly be all treasures whose worth is more than $1,000.
 Say the number of items in Mantel's display.             #> 2
 Say the number of items in the costly.                   #> 1
@@ -1130,9 +1135,9 @@ Both `Ask the model` and `Judge` accept `about the image in the file <text>`. Th
 
 **Judging**
 
-- `about` is required: a judgement is always about something, a text or a thing, handed over as above.
+- `about` is required: a judgement takes text, a thing, or an image from a file as described above.
 - With `the chance`, the question is a statement or a yes-or-no question, and the value is how likely it is to be so, from 0% to 100%.
-- With `the verdict`, the question is one whose answer is one of the choices of the set in brackets, and the value is the likeliest choice. If two are equally likely, the one written first in the set wins. `the likelihood`, if it is asked for, is how likely that choice is: the judge's own figure for it, not a second opinion. A likelihood goes only with a verdict.
+- With `the verdict`, the question is one whose answer is one of the choices of the set in brackets, and the value is the likeliest choice. If two are equally likely, the one written first in the set wins. `the likelihood`, if it is asked for, is how likely that choice is: the judge's own figure for it, not a second opinion.
 - With `the grade`, the set of choices is a scale, in the order it was written (section 4.6), and the value is worked out from the chances, not picked: the choices are numbered 0, 1, 2 ... in the order written, the mean of those numbers is taken, each weighted by its choice's chance, and the grade is the choice whose number is nearest that mean. A mean exactly halfway between two choices goes to the higher one. `the likelihood`, if asked for, is the chance of the choice given as the grade. Whoever judges is told that the set is a scale.
 - A verdict and a grade differ on a split answer. With `A level is one of low, middle or high.` and the chances `low` 0.45, `middle` 0.10, `high` 0.45, the verdict is `low` (a tie goes to the choice written first), and the grade is `middle` (the mean is 1), with a likelihood of 10%.
 - What comes back is checked. A chance must be a number from 0 to 1. A verdict or a grade must give a chance from 0 to 1 to every choice of the set and to nothing else; the chances need not add up to exactly 1, but for a grade they may not all be 0. Anything else is `a bad reply`. A judgement is not asked for again.
@@ -1274,7 +1279,7 @@ Otherwise:
 ### 8.2 For each
 
 ```text
-For each [<adjective>]... <kind> [of <thing>] [whose <property> <comparison>]:
+For each [<adjective>]... <kind> [of <thing>] [whose <property> <comparison> [and whose ...]...]:
 ```
 
 This is a group (section 5.5) written in the singular. Inside the block the current thing is `the <kind>`, and it is in view for pronouns. Things are visited in the order they were created, and the group is settled when the loop starts. A thing removed (section 7.5) before its turn comes is not visited.
@@ -2134,8 +2139,8 @@ An editor, a language server or a page can use the compiler from Python:
 | `englishscript.lint(source, folder=None, name=None)` | the list of problems, as above |
 | `lint(..., notes=True)` | `(problems, notes)`: the notes are `(line, text)`, how each sentence was read (as `--explain` shows it), for every line of the file that has no error, so one mistake does not hide the explanations of the good lines |
 | `englishscript.names(source, folder=None, name=None)` | the table of names: `{"names": [...], "chapters": [...]}`. Each name has `name`, `what` (`kind`, `plural of a kind`, `property`, `worked-out property`, `thing`, `adjective`, `verb`, `worked-out value`, `variable`, `role`, `loop name`, `reaction` (a settled block too), `set of choices` or `choice`), `of` (the kind it belongs to, or the set of a choice), `file` (`None` for the file itself), `line`, `col` and `width` of where it is defined; `type`, its type as written in brackets (`"number"`, `"dragon, if any"`, `"list of text"`), or `None` where it has none; `scope`, `None` for the top level, or `{"from": <line>, "to": <line>}`, the block it belongs to (for a role, its verb's or worked-out value's block; for a loop name, the loop's block); `by_kind`, `true` for a role called by its kind (`To greet a dragon:`) rather than by a name of its own; and `library`, the library a word comes from, or `None`. A word a library brings has `line`, `col` and `width` `None`. A verb and a worked-out value also have `roles`, a list of `{"link": <linking word, or None for the direct object>, "name", "type"}`. Each chapter has `file`, `name` and `shares` (a list, or `None` for everything). A program with errors gives what its readable sentences define. If the table could not be finished, it has an `"error"` key saying why, with what had been read so far. |
-| `Program.run(..., judges=None)` | `judges(requests)` answers several judgements at once (section 7.8, "Judgements put together"): each request is `{"question": text, "state": text or None, "choices": [...] or None, "meanings": {...} or None, "scale": True for a grade}`, and it returns a list of what `judge` would return for each, in the same order. A list of another length is a fault in it. An `EnglishError` it raises is a problem at the first sentence of the group. When only `judges` is connected, a single judgement is put to it as a list of one; when only `judge` is, a group is put to it one question at a time, and a grade is asked for as a verdict is (the scale is a hint for `judges`). The answers of a run are kept in `world.answers`. `--model SPEC` passes the `judges` attribute of what `connect` returns, if it has one. |
-| `Program.run(out, ask, trace=None, model=None, judge=None)` | carries out a compiled program (`compile_source(...)`). `model(question, state, shape, complaint)` answers `Ask the model`: `question` and `state` are text (`state` is `None` without `about`; a thing arrives written out as section 7.8 shows), `shape` is `{"type": "text" \| "number" \| "money" \| "percent" \| "yes or no" \| "choice" \| "list", "choices": [...] or None, "items": the item type of a list or None, "optional": True or False}`, `complaint` is `None` the first time and, on a second or third asking, says what was wrong; it returns the reply as text, or `None` for no reply. `judge(question, state, choices, meanings)` answers `Judge`: with `choices` `None` it returns a chance from 0 to 1, otherwise `{choice: chance}`; `meanings` is `{choice: text}` for the choices given a meaning. Either may raise `EnglishError(..., stage="run", recoverable=True)` for a problem of its own, which is `a bad reply` unless it says otherwise; anything else it raises ends the program as its fault. Without them nothing is listening. `Program.test()` connects neither. |
+| `Program.run(..., judges=None)` | `judges(requests)` answers several judgements at once (section 7.8, "Judgements put together"): each request is `{"question": text, "state": text or ImageState, "choices": [...] or None, "meanings": {...} or None, "scale": True for a grade}`, and it returns a list of what `judge` would return for each, in the same order. A list of another length is a fault in it. An `EnglishError` it raises is a problem at the first sentence of the group. When only `judges` is connected, a single judgement is put to it as a list of one; when only `judge` is, a group is put to it one question at a time, and a grade is asked for as a verdict is (the scale is a hint for `judges`). The answers of a run are kept in `world.answers`. `--model SPEC` passes the `judges` attribute of what `connect` returns, if it has one. |
+| `Program.run(out=print, ask=None, trace=None, model=None, judge=None, testing=False, *, judges=None)` | carries out a compiled program (`compile_source(...)`). `model(question, state, shape, complaint)` answers `Ask the model`: `question` is text. `state` is `None` without `about`, an `ImageState` for an image, or text (including a thing written out as section 7.8 shows), `shape` is `{"type": "text" \| "number" \| "money" \| "percent" \| "yes or no" \| "choice" \| "list", "choices": [...] or None, "items": the item type of a list or None, "optional": True or False}`, `complaint` is `None` the first time and, on a second or third asking, says what was wrong; it returns the reply as text, or `None` for no reply. `judge(question, state, choices, meanings)` answers `Judge`: with `choices` `None` it returns a chance from 0 to 1, otherwise `{choice: chance}`; `meanings` is `{choice: text}` for the choices given a meaning. Either may raise `EnglishError(..., stage="run", recoverable=True)` for a problem of its own, which is `a bad reply` unless it says otherwise; anything else it raises ends the program as its fault. Without them nothing is listening. `Program.test()` connects neither. |
 | `python -m englishscript program.english --model SPEC` | runs the program with `englishscript.models.connect(SPEC)` listening; that module is imported only then |
 | `read=fn` (to `lint`, `names` and `compile_source`) | `fn(path)` gives the text of a chapter that is open and unsaved, or `None` to read the file from the disk |
 | `englishscript.KEYWORDS` | the reserved words of section 3 |
@@ -2187,7 +2192,7 @@ PLURAL-TYPE = "numbers" | "percentages" | "money" | "text" | KINDS
 action      = let | change | say | use | example | answer | leave
             | now | create | remove | ask | ask-model | judge | write | fail
 let         = "Let" [ "the" ] NAME [ "(" type ")" ] [ "always" ] "be" ( whole | new-thing ) "."
-whole       = expression | list-written | group                     (a group becomes a list)
+whole       = expression | list-written | group                     (a group becomes a list and may be bracketed)
 list-written = "a list of" expression { "," expression } [ [ "," ] "and" expression ]
             | "an empty list of" PLURAL-TYPE
 change      = "Set" target "to" whole "."
@@ -2253,7 +2258,7 @@ value       = NUMBER | MONEY | PERCENT | TEXT | "(" expression ")" | "nothing" |
             | "the remainder of" value "divided by" value | "the square root of" value
             | "the" ( "larger" | "smaller" ) "of" value "and" value | "the absolute value of" value
             | "letter" value "of" value
-            | "yes" | "no" | "whether" condition
+            | "yes" | "no" | "whether" test
             | "the" WORKED-OUT { ( PREPOSITION | "of" ) value }
             | THING
             | [ "the" ] VARIABLE
@@ -2275,7 +2280,7 @@ value       = NUMBER | MONEY | PERCENT | TEXT | "(" expression ")" | "nothing" |
 group       = [ "all" ] { ADJECTIVE } KINDS [ "of" value ] [ filter ]
             | ( "its" | "their" ) { ADJECTIVE } KINDS [ filter ]
             | value "'s" { ADJECTIVE } KINDS [ filter ]
-filter      = "whose" PROPERTY comparison
+filter      = "whose" PROPERTY comparison { "and whose" PROPERTY comparison }
 ```
 
 ## 12. Proposed: time, and doing things at once

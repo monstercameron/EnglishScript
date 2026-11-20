@@ -171,7 +171,7 @@ an empty list of &lt;plural type&gt;             a list with no items</pre>
 <ul>
 <li>The plural type is <code>numbers</code>, <code>percentages</code>, <code>money</code>, <code>text</code>, or the plural of a kind, such as <code>dragons</code>.</li>
 <li>A list may be kept in a variable, a role, a worked-out value or a property (<code>A knight has a trophy shelf (list of treasures).</code>). A list property that is not given when a thing is made starts empty.</li>
-<li><strong>A list written out may appear only as the whole value</strong> of <code>Let</code>, <code>Set</code>, a <code>whose</code> part or <code>The answer is</code>, so that its commas and its <code>and</code> can't be taken for anything else. Its items are all of one type; <code>a list of 5</code> has one item.</li>
+<li><strong>A list written out may appear only as the whole value</strong> of <code>Let</code>, <code>Set</code>, a <code>whose</code> part or <code>The answer is</code>, so that its commas and its <code>and</code> can't be taken for anything else. Its items must have one of the list item types above. <code>a list of 5</code> has one item.</li>
 <li><strong>A group given where a list is expected becomes a list</strong> of the things in it at that moment: as the whole value of <code>Let</code>, <code>Set</code>, a <code>whose</code> part or <code>The answer is</code>, and as a role of a verb or a worked-out value whose type is a list. <code>Let the suspects be all poor dragons.</code> makes a list of dragons; making another poor dragon afterwards does not change it.</li>
 <li>Lists also come from <code>the words of</code> and <code>the lines of</code> (section <a href="#s5-6">5.6</a>) and from reading a file (section <a href="#s7-7">7.7</a>).</li>
 </ul>
@@ -227,9 +227,14 @@ For each part in the parts:
 #&gt; 5</pre>
 </figure>
 <figure class="snippet" data-with-world>
-<pre class="program" data-expect="ok">A shelf has a display (list of treasures).
-There is a shelf called Mantel whose display is a list of Cup.
+<pre class="program" data-expect="ok">A shelf has a display (list of treasures) and a label (text).
+There is a shelf called Mantel whose display is a list of Cup and whose label is "Prizes".
 Add Goblet to Mantel's display.
+For each shelf:
+  For each prize in its display:
+    Say the prize.
+#&gt; Cup
+#&gt; Goblet
 Let the costly be all treasures whose worth is more than $1,000.
 Say the number of items in Mantel's display.             #&gt; 2
 Say the number of items in the costly.                   #&gt; 1
@@ -985,9 +990,9 @@ For a | an &lt;set of choices&gt;, &lt;choice&gt; means &lt;text&gt;.</pre>
 </ul>
 <p><strong>Judging</strong></p>
 <ul>
-<li><code>about</code> is required: a judgement is always about something, a text or a thing, handed over as above.</li>
+<li><code>about</code> is required: a judgement takes text, a thing, or an image from a file as described above.</li>
 <li>With <code>the chance</code>, the question is a statement or a yes-or-no question, and the value is how likely it is to be so, from 0% to 100%.</li>
-<li>With <code>the verdict</code>, the question is one whose answer is one of the choices of the set in brackets, and the value is the likeliest choice. If two are equally likely, the one written first in the set wins. <code>the likelihood</code>, if it is asked for, is how likely that choice is: the judge's own figure for it, not a second opinion. A likelihood goes only with a verdict.</li>
+<li>With <code>the verdict</code>, the question is one whose answer is one of the choices of the set in brackets, and the value is the likeliest choice. If two are equally likely, the one written first in the set wins. <code>the likelihood</code>, if it is asked for, is how likely that choice is: the judge's own figure for it, not a second opinion.</li>
 <li>With <code>the grade</code>, the set of choices is a scale, in the order it was written (section <a href="#s4-6">4.6</a>), and the value is worked out from the chances, not picked: the choices are numbered 0, 1, 2 ... in the order written, the mean of those numbers is taken, each weighted by its choice's chance, and the grade is the choice whose number is nearest that mean. A mean exactly halfway between two choices goes to the higher one. <code>the likelihood</code>, if asked for, is the chance of the choice given as the grade. Whoever judges is told that the set is a scale.</li>
 <li>A verdict and a grade differ on a split answer. With <code>A level is one of low, middle or high.</code> and the chances <code>low</code> 0.45, <code>middle</code> 0.10, <code>high</code> 0.45, the verdict is <code>low</code> (a tie goes to the choice written first), and the grade is <code>middle</code> (the mean is 1), with a likelihood of 10%.</li>
 <li>What comes back is checked. A chance must be a number from 0 to 1. A verdict or a grade must give a chance from 0 to 1 to every choice of the set and to nothing else; the chances need not add up to exactly 1, but for a grade they may not all be 0. Anything else is <code>a bad reply</code>. A judgement is not asked for again.</li>
@@ -1100,7 +1105,7 @@ Otherwise:
   Say "low"</pre>
 </figure>
 <h3 id="s8-2">8.2 For each</h3>
-<pre class="form">For each [&lt;adjective&gt;]... &lt;kind&gt; [of &lt;thing&gt;] [whose &lt;property&gt; &lt;comparison&gt;]:</pre>
+<pre class="form">For each [&lt;adjective&gt;]... &lt;kind&gt; [of &lt;thing&gt;] [whose &lt;property&gt; &lt;comparison&gt; [and whose ...]...]:</pre>
 <p>This is a group (section <a href="#s5-5">5.5</a>) written in the singular. Inside the block the current thing is <code>the &lt;kind&gt;</code>, and it is in view for pronouns. Things are visited in the order they were created, and the group is settled when the loop starts. A thing removed (section <a href="#s7-5">7.5</a>) before its turn comes is not visited.</p>
 <p>A <code>For each</code> is refused when its kind is already in view, because <code>the &lt;kind&gt;</code> would then mean two things.</p>
 <figure class="snippet" data-with-world>
@@ -1805,8 +1810,8 @@ python -m englishscript my_program.english --lint --json</pre>
 <tr><td><code>englishscript.lint(source, folder=None, name=None)</code></td><td>the list of problems, as above</td></tr>
 <tr><td><code>lint(..., notes=True)</code></td><td><code>(problems, notes)</code>: the notes are <code>(line, text)</code>, how each sentence was read (as <code>--explain</code> shows it), for every line of the file that has no error, so one mistake does not hide the explanations of the good lines</td></tr>
 <tr><td><code>englishscript.names(source, folder=None, name=None)</code></td><td>the table of names: <code>{"names": [...], "chapters": [...]}</code>. Each name has <code>name</code>, <code>what</code> (<code>kind</code>, <code>plural of a kind</code>, <code>property</code>, <code>worked-out property</code>, <code>thing</code>, <code>adjective</code>, <code>verb</code>, <code>worked-out value</code>, <code>variable</code>, <code>role</code>, <code>loop name</code>, <code>reaction</code> (a settled block too), <code>set of choices</code> or <code>choice</code>), <code>of</code> (the kind it belongs to, or the set of a choice), <code>file</code> (<code>None</code> for the file itself), <code>line</code>, <code>col</code> and <code>width</code> of where it is defined; <code>type</code>, its type as written in brackets (<code>"number"</code>, <code>"dragon, if any"</code>, <code>"list of text"</code>), or <code>None</code> where it has none; <code>scope</code>, <code>None</code> for the top level, or <code>{"from": &lt;line&gt;, "to": &lt;line&gt;}</code>, the block it belongs to (for a role, its verb's or worked-out value's block; for a loop name, the loop's block); <code>by_kind</code>, <code>true</code> for a role called by its kind (<code>To greet a dragon:</code>) rather than by a name of its own; and <code>library</code>, the library a word comes from, or <code>None</code>. A word a library brings has <code>line</code>, <code>col</code> and <code>width</code> <code>None</code>. A verb and a worked-out value also have <code>roles</code>, a list of <code>{"link": &lt;linking word, or None for the direct object&gt;, "name", "type"}</code>. Each chapter has <code>file</code>, <code>name</code> and <code>shares</code> (a list, or <code>None</code> for everything). A program with errors gives what its readable sentences define. If the table could not be finished, it has an <code>"error"</code> key saying why, with what had been read so far.</td></tr>
-<tr><td><code>Program.run(..., judges=None)</code></td><td><code>judges(requests)</code> answers several judgements at once (section <a href="#s7-8">7.8</a>, "Judgements put together"): each request is <code>{"question": text, "state": text or None, "choices": [...] or None, "meanings": {...} or None, "scale": True for a grade}</code>, and it returns a list of what <code>judge</code> would return for each, in the same order. A list of another length is a fault in it. An <code>EnglishError</code> it raises is a problem at the first sentence of the group. When only <code>judges</code> is connected, a single judgement is put to it as a list of one; when only <code>judge</code> is, a group is put to it one question at a time, and a grade is asked for as a verdict is (the scale is a hint for <code>judges</code>). The answers of a run are kept in <code>world.answers</code>. <code>--model SPEC</code> passes the <code>judges</code> attribute of what <code>connect</code> returns, if it has one.</td></tr>
-<tr><td><code>Program.run(out, ask, trace=None, model=None, judge=None)</code></td><td>carries out a compiled program (<code>compile_source(...)</code>). <code>model(question, state, shape, complaint)</code> answers <code>Ask the model</code>: <code>question</code> and <code>state</code> are text (<code>state</code> is <code>None</code> without <code>about</code>; a thing arrives written out as section <a href="#s7-8">7.8</a> shows), <code>shape</code> is <code>{"type": "text" | "number" | "money" | "percent" | "yes or no" | "choice" | "list", "choices": [...] or None, "items": the item type of a list or None, "optional": True or False}</code>, <code>complaint</code> is <code>None</code> the first time and, on a second or third asking, says what was wrong; it returns the reply as text, or <code>None</code> for no reply. <code>judge(question, state, choices, meanings)</code> answers <code>Judge</code>: with <code>choices</code> <code>None</code> it returns a chance from 0 to 1, otherwise <code>{choice: chance}</code>; <code>meanings</code> is <code>{choice: text}</code> for the choices given a meaning. Either may raise <code>EnglishError(..., stage="run", recoverable=True)</code> for a problem of its own, which is <code>a bad reply</code> unless it says otherwise; anything else it raises ends the program as its fault. Without them nothing is listening. <code>Program.test()</code> connects neither.</td></tr>
+<tr><td><code>Program.run(..., judges=None)</code></td><td><code>judges(requests)</code> answers several judgements at once (section <a href="#s7-8">7.8</a>, "Judgements put together"): each request is <code>{"question": text, "state": text or ImageState, "choices": [...] or None, "meanings": {...} or None, "scale": True for a grade}</code>, and it returns a list of what <code>judge</code> would return for each, in the same order. A list of another length is a fault in it. An <code>EnglishError</code> it raises is a problem at the first sentence of the group. When only <code>judges</code> is connected, a single judgement is put to it as a list of one; when only <code>judge</code> is, a group is put to it one question at a time, and a grade is asked for as a verdict is (the scale is a hint for <code>judges</code>). The answers of a run are kept in <code>world.answers</code>. <code>--model SPEC</code> passes the <code>judges</code> attribute of what <code>connect</code> returns, if it has one.</td></tr>
+<tr><td><code>Program.run(out=print, ask=None, trace=None, model=None, judge=None, testing=False, *, judges=None)</code></td><td>carries out a compiled program (<code>compile_source(...)</code>). <code>model(question, state, shape, complaint)</code> answers <code>Ask the model</code>: <code>question</code> is text. <code>state</code> is <code>None</code> without <code>about</code>, an <code>ImageState</code> for an image, or text (including a thing written out as section <a href="#s7-8">7.8</a> shows), <code>shape</code> is <code>{"type": "text" | "number" | "money" | "percent" | "yes or no" | "choice" | "list", "choices": [...] or None, "items": the item type of a list or None, "optional": True or False}</code>, <code>complaint</code> is <code>None</code> the first time and, on a second or third asking, says what was wrong; it returns the reply as text, or <code>None</code> for no reply. <code>judge(question, state, choices, meanings)</code> answers <code>Judge</code>: with <code>choices</code> <code>None</code> it returns a chance from 0 to 1, otherwise <code>{choice: chance}</code>; <code>meanings</code> is <code>{choice: text}</code> for the choices given a meaning. Either may raise <code>EnglishError(..., stage="run", recoverable=True)</code> for a problem of its own, which is <code>a bad reply</code> unless it says otherwise; anything else it raises ends the program as its fault. Without them nothing is listening. <code>Program.test()</code> connects neither.</td></tr>
 <tr><td><code>python -m englishscript program.english --model SPEC</code></td><td>runs the program with <code>englishscript.models.connect(SPEC)</code> listening; that module is imported only then</td></tr>
 <tr><td><code>read=fn</code> (to <code>lint</code>, <code>names</code> and <code>compile_source</code>)</td><td><code>fn(path)</code> gives the text of a chapter that is open and unsaved, or <code>None</code> to read the file from the disk</td></tr>
 <tr><td><code>englishscript.KEYWORDS</code></td><td>the reserved words of section <a href="#s3">3</a></td></tr>
@@ -1854,7 +1859,7 @@ PLURAL-TYPE = "numbers" | "percentages" | "money" | "text" | KINDS
 action      = let | change | say | use | example | answer | leave
             | now | create | remove | ask | ask-model | judge | write | fail
 let         = "Let" [ "the" ] NAME [ "(" type ")" ] [ "always" ] "be" ( whole | new-thing ) "."
-whole       = expression | list-written | group                     (a group becomes a list)
+whole       = expression | list-written | group                     (a group becomes a list and may be bracketed)
 list-written = "a list of" expression { "," expression } [ [ "," ] "and" expression ]
             | "an empty list of" PLURAL-TYPE
 change      = "Set" target "to" whole "."
@@ -1920,7 +1925,7 @@ value       = NUMBER | MONEY | PERCENT | TEXT | "(" expression ")" | "nothing" |
             | "the remainder of" value "divided by" value | "the square root of" value
             | "the" ( "larger" | "smaller" ) "of" value "and" value | "the absolute value of" value
             | "letter" value "of" value
-            | "yes" | "no" | "whether" condition
+            | "yes" | "no" | "whether" test
             | "the" WORKED-OUT { ( PREPOSITION | "of" ) value }
             | THING
             | [ "the" ] VARIABLE
@@ -1942,7 +1947,7 @@ value       = NUMBER | MONEY | PERCENT | TEXT | "(" expression ")" | "nothing" |
 group       = [ "all" ] { ADJECTIVE } KINDS [ "of" value ] [ filter ]
             | ( "its" | "their" ) { ADJECTIVE } KINDS [ filter ]
             | value "'s" { ADJECTIVE } KINDS [ filter ]
-filter      = "whose" PROPERTY comparison</pre>
+filter      = "whose" PROPERTY comparison { "and whose" PROPERTY comparison }</pre>
 <h2 id="s12">12. Proposed: time, and doing things at once</h2>
 <blockquote><p><strong>Status: designed, partly built.</strong> <code>Whenever</code> (12.6) has been built, and is described in section <a href="#s9-5">9.5</a>. The compiler does not accept the other sentences in this section yet, and its examples are not run by the tests.</p></blockquote>
 <p>Other languages call these ideas "async" and "threading". EnglishScript does not use either word. It adds the two things English already says:</p>

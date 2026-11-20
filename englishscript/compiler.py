@@ -958,6 +958,13 @@ class Sentence:
     def eat_punct(self, *marks):
         return self.next() if self.peek().is_punct(*marks) else None
 
+    def next_whose(self):
+        """Does a separator introduce another property of the thing being made?"""
+        k = int(self.peek().is_punct(","))
+        if self.peek(k).is_word("and"):
+            k += 1
+        return k > 0 and self.peek(k).is_word("whose")
+
     def expect_word(self, word, message=None, hint=None, teach="sentence_form"):
         """Read the fixed word `word` of a sentence form, or refuse the sentence.
         A near spelling of it, or "are" for "is", is refused with the correction."""
@@ -1912,6 +1919,22 @@ class Compiler:
                 return lf(env) / divisor
         return self.stamp(s, Expr(result, fn), span[0], span[1])
 
+    def in_brackets(self, s, read):
+        """Inside brackets an 'and whose' belongs to the group there."""
+        start = s.i
+        s.next()
+        outside = self.in_thing_whose
+        self.in_thing_whose = 0
+        try:
+            value = read(s)
+        finally:
+            self.in_thing_whose = outside
+        if value is None:  # looking for a bracketed group, but this is an ordinary value
+            s.i = start
+            return None
+        s.expect_punct(")")
+        return value
+
     def primary(self, s, dangling_ok=False):
         tok = s.peek()
         start = tok.col
@@ -1923,9 +1946,7 @@ class Compiler:
             s.next()
             expr = self.template(s, tok)
         elif tok.is_punct("("):
-            s.next()
-            expr = self.expr(s)
-            s.expect_punct(")")
+            expr = self.in_brackets(s, self.expr)
         elif tok.is_punct("-") and s.peek(1).kind in ("NUMBER", "MONEY", "PERCENT", "WORD", "PUNCT") \
                 and not s.peek(1).is_punct("-"):
             # A minus sign in front of a single value, wherever a single value may stand: "the double of -3".
@@ -1962,7 +1983,9 @@ class Compiler:
                 first = s.peek()
                 found = self.cond_atom(s)  # one comparison, or a bracketed condition
                 if s.at_word("and", "or"):
-                    self.whether_mixed(s, tok, first, s.peek())
+                    bracketed = first.is_punct("(") and self.rest_end(s, first) == s.toks[s.i - 1].col
+                    if not bracketed:
+                        self.whether_mixed(s, tok, first, s.peek())
                 cond = found.fn
                 expr = Expr(YES_NO, lambda env: bool(cond(env)))
             elif s.at_words("a", "list", "of") or s.at_words("an", "empty", "list", "of"):
@@ -2387,11 +2410,16 @@ class Compiler:
             self.need(s, item)
             if is_list(item.type):
                 s.fail_span(f"{cap(item.text)} is a list, and a list can't hold lists.", item.span, teach="list")
+            if item.type not in BASE_TYPES and item.type not in self.kinds:
+                s.fail_span(f"{cap(item.text)} is {self.describe(item.type)}. A list can hold numbers, money, "
+                            "text, percentages or things of one kind.", item.span, teach="list")
             if items and item.type != items[0].type:
                 s.fail_span(f"The items of a list are all of one kind: {items[0].text} is "
                             f"{self.describe(items[0].type)}, but {item.text} is {self.describe(item.type)}.",
                             item.span, teach="list")
             items.append(item)
+            if self.in_thing_whose and s.next_whose():
+                break
             if s.eat_punct(","):
                 s.eat_word("and")  # "3, 8, and 5"
                 continue
@@ -2407,17 +2435,14 @@ class Compiler:
         and nothing read, if what follows is not a group."""
         start, mark = s.i, len(self.notes)
         tok = s.peek()
-        looks = s.at_word("all") or self.noun_ahead(s) or (
-            tok.kind == "WORD" and tok.low in POSSESSIVES and s.peek(1).kind == "WORD"
-            and self.nouns.get(s.peek(1).low, (None, False))[1])
-        if not looks:
-            # "Smaug's treasures": a value with a possessive, then the plural of a kind.
-            k = 0
-            while s.peek(k).kind == "WORD":
-                k += 1
-            if not (k and s.peek(k).kind == "POS" and s.peek(k + 1).kind == "WORD"
-                    and self.nouns.get(s.peek(k + 1).low, (None, False))[1]):
-                return None
+        if tok.is_punct("("):
+            group = self.in_brackets(s, self.group_as_list)
+            if group is not None:
+                return self.stamp(s, group, tok.col)
+        looks = self.group_head(s)
+        if not looks and not any(t.kind == "POS" and self.noun_ahead(s, i + 1, plural_only=True)
+                                 for i, t in enumerate(s.toks[s.i:])):
+            return None
         col = tok.col
         try:
             coll = self.collection(s, plural=True, value_start=col)
@@ -2784,36 +2809,42 @@ class Compiler:
 
     # --------------------------------------------------------- collections
 
-    def noun_ahead(self, s):
+    def noun_ahead(self, s, offset=0, plural_only=False):
         """Is this the start of '<adjective>* <kind>'?"""
-        for k in range(4):
+        for k in range(offset, len(s.toks) - s.i):
             tok = s.peek(k)
             if tok.kind != "WORD":
                 return False
             if tok.low in self.nouns:
-                return True
+                return not plural_only or self.nouns[tok.low][1]
             if tok.low in KEYWORDS or tok.low in self.names or self.scope.find(tok.low):
                 return False
         return False
+
+    def group_head(self, s):
+        """A group starting with 'all', a kind, or a possessive pronoun and a plural."""
+        if s.at_word(*POSSESSIVES):
+            return self.noun_ahead(s, 1, plural_only=True)
+        return s.at_word("all") or (self.noun_ahead(s) and not self.scope.find(s.peek().low))
 
     def collection(self, s, plural, value_start=None):
         """'grumpy dragons', 'treasures of Smaug', 'its treasures', 'Smaug's treasures'."""
         start = s.peek().col
         owner = None
         tok = s.peek()
-        if plural and tok.kind == "WORD" and tok.low in POSSESSIVES:
+        if plural and tok.is_word(*POSSESSIVES) and self.noun_ahead(s, 1, plural_only=True):
             s.next()
             owner = self.stamp(s, self.pronoun(s, tok), start)
             owner.text = f"the {self.word_of(owner.type)}"  # reads better than "its" in notes and errors
         else:
             if plural:
                 s.eat_word("all")
-            if not self.noun_ahead(s):
+            if not self.noun_ahead(s) or (plural and self.scope.find(s.peek().low)):
                 tok = s.peek()
                 shown = [K for k, K in self.kinds.items() if self.kind_visible(k)]
                 singulars, plurals = [K.word for K in shown], [K.plural for K in shown]
                 if not plural:
-                    for k in range(4):  # "For each young numeral:": the kind may follow adjectives
+                    for k in range(len(s.toks) - s.i):  # the kind may follow adjectives
                         if s.peek(k).kind != "WORD":
                             break
                         self.hidden_here(s, k)
@@ -3065,11 +3096,7 @@ class Compiler:
             # "(A and B)" is a bracketed condition; "(a + b) is 3" is not.
             mark = (s.i, len(self.notes))
             try:
-                s.next()
-                cond = self.condition(s)
-                s.expect_punct(")")
-                if s.at_end() or s.at_word("and", "or") or s.peek().is_punct(")"):
-                    return cond
+                return self.in_brackets(s, self.condition)
             except EnglishError as error:
                 first_error = error
             s.i = mark[0]
@@ -6185,8 +6212,7 @@ class Compiler:
                 value = self.whole_value(s, K.fields.get(fname))
             finally:
                 self.in_thing_whose -= 1
-            nxt = s.peek(1) if s.peek().is_punct(",") else s.peek()
-            if self.group_ended == s.i and (s.at_words("and", "whose") or (s.peek().is_punct(",") and nxt.is_word("whose"))):
+            if self.group_ended == s.i and s.next_whose():
                 # "whose wage is the total wage of squires whose wage is more than $2 and whose mount ...":
                 # the last "whose" could belong to the group or to the thing being made.
                 text, end = s.line.text, s.prev_end(start)
@@ -7209,7 +7235,7 @@ class Compiler:
         self.not_an_adjective(s, toks, "the name of a loop's thing", fix)
         self.made(name, "a loop's thing", s.line)
         items = None
-        if not (s.at_word("all") or s.peek().is_word(*POSSESSIVES) or self.noun_ahead(s)):
+        if not self.group_head(s):
             mark = (s.i, len(self.notes))
             try:
                 items = self.expr(s)
