@@ -12,7 +12,7 @@ sys.path.insert(0, str(ROOT))
 
 from englishscript import EnglishError, compile_source, explain  # noqa: E402
 from englishscript.compiler import KEYWORDS  # noqa: E402
-from englishscript.lexer import _strip_comment  # noqa: E402
+from englishscript.lexer import RULES, _strip_comment  # noqa: E402
 from englishscript.tour import REFUSALS, STORY_MARKER  # noqa: E402
 
 WORLD = """
@@ -185,7 +185,7 @@ class Control(Base):
     def test_unknown_verbs(self):
         self.refuses("Sya 1.", 'Did you mean "Say"')
         self.refuses("Frobnicate 1.", "Teach it to me")
-        self.refuses("Say 1 2.", "not this part")
+        self.refuses("Say 1 2.", 'The sentence is complete before "2"')
 
 
 class Things(Base):
@@ -254,7 +254,7 @@ class Verbs(Base):
         self.refuses(self.PAY + "Move 100 from Gawain to Robin.", "wants an amount here")
         self.refuses(self.PAY + "Move $1 from Gawain.", "to a taker")
         self.refuses(self.PAY + "Move $1 from Gawain to Robin to Robin.", "appears twice")
-        self.refuses(self.PAY + "Move $1 from Gawain onto Robin.", 'how "onto" fits')
+        self.refuses(self.PAY + "Move $1 from Gawain onto Robin.", '"Move" was taught with "from" and "to", not "onto".')
         self.refuses(self.PAY + "Move from Gawain to Robin.", "Move what?")
 
     def test_a_rule_stops_a_bad_change_and_says_where(self):
@@ -490,7 +490,7 @@ class Leaving(Base):
         source = WORLD + "To find:\n  For each dragon:\n    Say the dragon.\n    Stop.\nFind.\nSay \"after\""
         self.assertEqual(run(source), ["Smaug", "after"])
         self.refuses("Stop.", "isn't inside one")
-        self.refuses("To go:\n  Stop now.", "not this part")
+        self.refuses("To go:\n  Stop now.", 'The sentence is complete before "now"')
 
     def test_stop_repeating_ends_the_loop(self):
         self.assertEqual(run("Let n be 0.\nRepeat 10 times:\n  Add 1 to n.\n  If n is 3:\n    Stop repeating.\nSay n."), ["3"])
@@ -637,7 +637,7 @@ class StoredAdjectives(Base):
 
     def test_yes_or_no_values(self):
         source = self.SWORN + (
-            "Let the gate open be whether Gawain is sworn or Lancelot is sworn.\n"
+            "Let the gate open be whether (Gawain is sworn or Lancelot is sworn).\n"
             "Say the gate open.\n"
             "Let shut (yes or no) be no.\nSay shut.\n"
             "If the gate open is yes and shut is no:\n  Say \"Enter.\"\n"
@@ -683,11 +683,10 @@ class NamedLoops(Base):
         )
         self.assertEqual(run(source), ["3", "1", "3", "X", "Y"])
 
-    def test_lists_are_not_said_or_compared_or_stored_in_properties(self):
+    def test_lists_are_not_said_or_compared(self):
         self.refuses('Say the words of "a b".', "can't be said")
         self.refuses('Say "{the words of "a b"}".', "")
         self.refuses('If the words of "a" is the words of "a":\n  Say 1.', "can't be compared")
-        self.refuses("A cat has a toy box (list of text).", "can't hold a list")
         self.refuses("Let x (list of dogs) be nothing.", 'a list of "dogs"')
         self.refuses("Say the number of items in 5.", "not a list")
 
@@ -738,7 +737,8 @@ class CreatingAndRemoving(Base):
         self.refuses(STABLE + "Remove 5.", "Only a thing")
         self.refuses(STABLE + "Remove Tom's mount.", "may be nothing")
         self.refuses(STABLE + "To work out the x (number):\n  Remove Bill.\n  The answer is 1.", "can't remove anything")
-        self.refuses(STABLE + "A squire's mount is never nothing.\nRemove Shadowfax.", "would break a rule", stage="run")
+        self.refuses(STABLE + "Set Tom's mount to Bill.\nA squire's mount is never nothing.\nRemove Shadowfax.",
+                     "would break a rule", stage="run")
 
     def test_remove_cancels_checks_for_nothing(self):
         self.refuses(STABLE + "If Wat has a mount:\n  Remove Bill.\n  Say Wat's mount's speed + 1.", "may be nothing")
@@ -981,16 +981,17 @@ class ReviewFixes(InTemporaryFolder, Base):
         self.assertIn("variable first", error.hint)
         self.refuses('Say "oops {1 + ".', 'has no "}" to close it')
 
-    def test_a_group_where_a_list_is_wanted_is_explained(self):
+    def test_a_group_where_a_list_is_wanted_is_made_a_list(self):
         head = (
             "A horse has a speed (number).\nA horse can be tired.\n"
             "To count a batch (list of horses):\n  Say the number of items in the batch.\n"
             "To work out the size (number) of a batch (list of horses):\n  The answer is 1.\n"
         )
-        for sentence in ("Count all horses.", "Count tired horses.", "Count horses.",
-                         "Say the size of horses.", "Let b (list of horses) be all horses."):
-            with self.subTest(sentence):
-                self.refuses(head + sentence, "a group of things can't be given where a list is expected yet")
+        head += ("There is a horse called Bill whose speed is 5.\nNow Bill is tired.\n"
+                 "There is a horse called Ned whose speed is 1.\n")
+        said = run(head + "Count all horses.\nCount tired horses.\nCount horses.\nSay the size of horses.\n"
+                          "Let b (list of horses) be all horses.\nSay the number of items in b.\n")
+        self.assertEqual(said, ["2", "1", "2", "1", "2"])
 
     def test_a_removed_thing_cannot_own_a_group(self):
         source = (
@@ -1367,6 +1368,8 @@ class Reactions(Base):
         )
         error = self.refuses(source, "200 levels", stage="run")
         self.assertFalse(error.recoverable)
+        self.assertIn('in this circle: "Whenever Robin becomes sworn" (Robin), then '
+                      '"Whenever Robin becomes not sworn" (Robin), and round again.', error.message)
         # 197 levels are fine.
         source = self.KNIGHTS + (
             "Let the left be 99.\n"
@@ -1820,20 +1823,124 @@ class Chapters(InTemporaryFolder, Base):
         said, _ = self.run_main("Use the b chapter.\nUse the a chapter.\nSay the depth + the width.\nDig.\n")
         self.assertEqual(said, ["5", "1"])
 
-    def test_a_name_has_one_meaning_in_the_whole_program(self):
+    def test_a_name_a_chapter_does_not_share_is_its_own(self):
         self.write("a.english", "This chapter shares nothing.\nLet the count be 1.\nA gem has a size (number).\n"
                                 "There is a gem called Ruby whose size is 1.\nTo shine:\n  Say 1.\n"
-                                "To work out the glow (number):\n  The answer is 1.\n")
+                                "To work out the glow (number):\n  The answer is 1.\n"
+                                'Say "a: {the count} {the glow} {the number of gems} {Ruby\'s size}"\n')
         uses = "Use the a chapter.\n"
-        self.refuses_main(uses + "Let the count be 2.\n", "already means something (in the a chapter)")
-        self.refuses_main(uses + "A gem has a weight (number).\n", "already described in the a chapter, line 3")
-        self.refuses_main(uses + "To shine:\n  Say 2.\n", 'already know how to "shine" (in the a chapter, line 5)')
-        self.refuses_main(uses + "To work out the glow (number):\n  The answer is 2.\n", "in the a chapter, line 7")
-        self.refuses_main(uses + "A dragon has an age (number).\nThere is a dragon called Ruby whose age is 1.\n",
-                          "already means something (in the a chapter)")
+        said, _ = self.run_main(
+            uses + "Let the count be 2.\nA gem has a weight (number).\nThere is a gem called Ruby whose weight is 7.\n"
+            'To shine:\n  Say "main shines".\nTo work out the glow (number):\n  The answer is 2.\n'
+            "Shine.\nSay \"main: {the count} {the glow} {the number of gems} {Ruby's weight}\"\n")
+        self.assertEqual(said, ["a: 1 1 1 1", "main shines", "main: 2 2 1 7"])
         # A variable of a block, or a role, is its block's own.
         said, _ = self.run_main(uses + "To go with a count (number):\n  Let the size be the count.\n  Say the size.\nGo with 4.\n")
-        self.assertEqual(said, ["4"])
+        self.assertEqual(said, ["a: 1 1 1 1", "4"])
+
+    def private_chapter(self, name, shares):
+        """A chapter with a private variable, verb, worked-out value, adjective on a
+        shared kind, kind and thing, which another chapter may have too."""
+        self.write("knights.english", "A knight has a courage (number).\n"
+                                      "There is a knight called Champion whose courage is 9.\n")
+        self.write(f"{name}.english", (
+            f"{shares}\n"
+            "Use the knights chapter.\n"
+            "Let the count be 0.\n"
+            f"A cell has a {name} mark (text).\n"
+            f'There is a cell called Marker whose {name} mark is "{name}".\n'
+            "A knight can be ready.\n"
+            "To tidy:\n  Add 1 to the count.\n"
+            "To work out the size (number):\n  The answer is the number of cells.\n"
+            f"To sweep:\n  Tidy.\n  Now Champion is ready.\n"
+            f'  Say "{name}: count {{the count}}, size {{the size}}, Marker {{Marker\'s {name} mark}}, '
+            f'ready {{the number of ready knights}}"\n'))
+
+    def test_two_chapters_with_the_same_private_names_work_apart(self):
+        self.private_chapter("east", "This chapter shares only sweep.")
+        self.write("west.english", (
+            "This chapter shares only mop.\n"
+            "Use the knights chapter.\n"
+            "A cell has a west mark (text) and a level (number).\n"
+            'There is a cell called Marker whose west mark is "west" and whose level is 1.\n'
+            'There is a new cell whose west mark is "spare" and whose level is 2.\n'
+            "Let the count be 100.\n"
+            "A knight is ready when its courage is more than 100.\n"
+            "To tidy:\n  Subtract 1 from the count.\n"
+            "To work out the size (number):\n  The answer is the number of cells.\n"
+            "To mop:\n  Tidy.\n"
+            '  Say "west: count {the count}, size {the size}, Marker {Marker\'s west mark}, '
+            'ready {the number of ready knights}"\n'))
+        said, world = self.run_main("Use the east chapter.\nUse the west chapter.\n"
+                                    "Sweep.\nMop.\nSweep.\nMop.\n")
+        self.assertEqual(said, ["east: count 1, size 1, Marker east, ready 1",
+                                "west: count 99, size 2, Marker west, ready 0",
+                                "east: count 2, size 1, Marker east, ready 1",
+                                "west: count 98, size 2, Marker west, ready 0"])
+        # Two kinds, each with its own things; and two things called Marker.
+        cells = [kind for kind in world.things if kind.startswith("cell")]
+        self.assertEqual(sorted(len(world.things[kind]) for kind in cells), [1, 2])
+
+    def test_a_shared_name_has_one_meaning_in_the_whole_program(self):
+        self.write("a.english", "This chapter shares only count.\nLet the count be 1.\n")
+        self.write("b.english", "This chapter shares nothing.\nLet the count be 2.\n")
+        said, _ = self.run_main("Use the a chapter.\nUse the b chapter.\nSay the count.\n")
+        self.assertEqual(said, ["1"])
+        self.write("b.english", "This chapter shares only count.\nLet the count be 2.\n")
+        error = self.refuses_main("Use the a chapter.\nUse the b chapter.\n", "also shared by the a chapter")
+        self.assertEqual(error.line.number, 2)
+        # Even when no one file uses both.
+        self.write("c.english", "Use the b chapter.\n")
+        self.refuses_main("Use the a chapter.\nUse the c chapter.\n", "also shared by the a chapter")
+
+    def test_a_private_name_may_not_clash_with_a_name_a_used_chapter_shares(self):
+        self.write("a.english", "This chapter shares only count and shine.\nLet the count be 1.\n"
+                                "To shine:\n  Say 1.\n")
+        # The file's own name first: refused at the "Use".
+        error = self.refuses_main("This chapter shares nothing.\nLet the count be 2.\nUse the a chapter.\n",
+                                  'shares "count"')
+        self.assertEqual(error.line.number, 3)
+        self.assertIn("this file", error.message)
+        self.refuses_main("This chapter shares nothing.\nTo shine:\n  Say 2.\nUse the a chapter.\n", 'shares "shine"')
+        # The chapter first: refused at the definition.
+        error = self.refuses_main("This chapter shares nothing.\nUse the a chapter.\nLet the count be 2.\n",
+                                  "already means something (in the a chapter)")
+        self.assertEqual(error.line.number, 3)
+        self.refuses_main("Use the a chapter.\nTo shine:\n  Say 2.\n", 'already know how to "shine"')
+        # A private name of a chapter the file uses is never in view, so it never clashes.
+        self.write("b.english", "This chapter shares only polish.\nTo shine:\n  Say 2.\n"
+                                "To polish:\n  Shine.\n  Shine.\n")
+        said, _ = self.run_main("Use the a chapter.\nUse the b chapter.\nPolish.\nShine.\n")
+        self.assertEqual(said, ["2", "2", "1"])
+
+    def test_a_private_kind_is_seen_only_by_its_own_chapter(self):
+        self.private_chapter("east", "This chapter shares only sweep.")
+        self.write("west.english", (
+            "This chapter shares only age and census.\n"
+            "A cell has a level (number).\nA cell can be old.\n"
+            "There is a cell called Marker whose level is 1.\n"
+            'Whenever a cell becomes old:\n  Say "west: {the cell} is old"\n'
+            "A cell's level is never more than 5.\n"
+            "To age:\n  For each cell:\n    Now the cell is old.\n"
+            "  Try:\n    For each cell:\n      Set the cell's level to 9.\n  If that fails:\n"
+            '    Say "west: {the problem}"\n'
+            "  Try:\n    There is a new cell whose level is 2.\n    Fail because \"no\".\n  If that fails:\n"
+            '    Say "west: still {the number of cells}"\n'
+            "To census:\n  Say \"west: {the number of cells} cells\"\n"))
+        said, _ = self.run_main("Use the east chapter.\nUse the west chapter.\n"
+                                "Sweep.\nAge.\nCensus.\nSweep.\n")
+        self.assertEqual(said, ["east: count 1, size 1, Marker east, ready 1", "west: Marker is old",
+                                'west: That would break a rule: "A cell\'s level is never more than 5."',
+                                "west: still 1", "west: 1 cells", "east: count 2, size 1, Marker east, ready 1"])
+        # The program can't name either kind of cell.
+        self.refuses_main("Use the east chapter.\nUse the west chapter.\nSay the number of cells.\n", "cell")
+
+    def test_a_thing_of_a_kind_a_file_cannot_name_cannot_be_removed_there(self):
+        self.write("gems.english", "This chapter shares only biggest.\nA gem has a size (number).\n"
+                                   "There is a gem called Ruby whose size is 3.\n"
+                                   "To work out the biggest (gem):\n  The answer is Ruby.\n")
+        error = self.refuses_main("Use the gems chapter.\nRemove the biggest.\n", "can't name")
+        self.assertEqual(error.rule, RULES["shared"][1])
 
     def test_a_shared_value_may_give_back_a_thing_of_a_kind_that_is_not_shared(self):
         self.write("gems.english", "This chapter shares only biggest.\nA gem has a size (number).\n"
@@ -2141,6 +2248,472 @@ class ProjectPage(unittest.TestCase):
         for name in ("index.html", "reference.html"):
             self.assertIn("./play/snippets.js", (self.docs / name).read_text(encoding="utf-8"))
         self.assertIn("./play/engine.js", (self.docs / "playground.html").read_text(encoding="utf-8"))
+
+
+class ThePromise(Base):
+    """The four blockers of the adversarial review (docs/CONCERNS.md)."""
+
+    def test_a_rule_holds_from_its_sentence_on(self):
+        said = []
+        with self.assertRaises(EnglishError) as caught:
+            compile_source(WORLD + 'Say "before".\nA dragon\'s age is always at least 100.\nSay "after".').run(said.append)
+        self.assertEqual(said, ["before"])
+        self.assertEqual(caught.exception.stage, "run")
+        self.assertIn("Norbert already breaks this rule", caught.exception.message)
+        self.assertEqual(caught.exception.line.text, "A dragon's age is always at least 100.")
+        # Before its sentence, the rule does not hold.
+        self.assertEqual(run(WORLD + "Set Norbert's age to 0.\nSay Norbert's age.\nSet Norbert's age to 5.\n"
+                                     "A dragon's age is always at least 1.\nSay 1."), ["0", "1"])
+
+    def test_a_rule_reads_only_what_cannot_change_behind_its_back(self):
+        for source, fragment in (
+            ("Let the cap be $10.\nA knight's purse is never more than the cap.", 'the variable "cap"'),
+            ("A treasure's owner is always ancient.", 'the adjective "ancient"'),
+            ("A treasure's worth is never more than the hoard of Smaug.", "another thing, Smaug"),
+            ("A treasure's worth is never more than Gawain's purse.", "another thing, Gawain"),
+            ("A treasure's worth is never more than its owner's hoard.", "a property of another thing"),
+            ("A knight's purse is never more than the number of dragons * $1.", '"the number'),
+        ):
+            with self.subTest(source):
+                error = self.refuses(WORLD + source, fragment)
+                self.assertEqual(error.key, "rule_reads")
+        self.assertEqual(run(WORLD + "Let the cap always be $1,000.\nA knight's purse is never more than the cap.\n"
+                                     "Say 1."), ["1"])
+
+    def test_a_rule_on_two_of_the_things_own_properties_is_checked_when_either_changes(self):
+        source = ("A knight has a purse (money) and a debt (money).\n"
+                  "There is a knight called Gawain whose purse is $10 and whose debt is $5.\n"
+                  "A knight's debt is never more than its purse.\n")
+        self.refuses(source + "Add $10 to Gawain's debt.", "break a rule", stage="run")
+        self.refuses(source + "Set Gawain's purse to $1.", "break a rule", stage="run")
+        self.assertEqual(run(source + "Add $1 to Gawain's debt.\nSay Gawain's debt."), ["$6"])
+
+    def test_a_rule_on_an_if_any_property_holds_while_it_is_nothing(self):
+        source = ("A squire has a wage (money, if any).\nThere is a squire called Wat.\n"
+                  "A squire's wage is never more than $9.\n")
+        self.assertEqual(run(source + "Set Wat's wage to $5.\nSay Wat's wage."), ["$5"])
+        self.refuses(source + "Set Wat's wage to $50.", "break a rule", stage="run")
+
+    def test_numbers_are_said_exactly(self):
+        self.assertEqual(run("Say 123,456,789,012,345,678,901 + 0.5.\nSay 1,000,000,000,000,000.1234.\n"
+                             "Say 0.00005.\nSay 0.00015.\nSay -0.00005.\nSay -0.00001.\nSay $0.125.\nSay $0.005.\n"
+                             "Say -$0.001.\nSay 0.000005%.\nSay 12.34565%."),
+                         ["123,456,789,012,345,678,901.5", "1,000,000,000,000,000.1234", "0.0001", "0.0002",
+                          "-0.0001", "0", "$0.13", "$0.01", "$0", "0%", "12.3457%"])
+        error = self.refuses("For example, 1 / 3 is 0.", "doesn't hold", stage="run")
+        self.assertIn("1 / 3 is 0.3333", error.hint)
+
+    CHAIN = ("A node has a label (text) and a next (node, if any).\n"
+             'There is a node called Tail whose label is "tail".\n'
+             'There is a node called Head whose label is "head" and whose next is Tail.\n'
+             "Let the spot (node, if any) be Head.\n")
+
+    def test_a_check_before_a_loop_does_not_count_for_what_the_loop_changes(self):
+        self.assertEqual(run(self.CHAIN + "While the spot is not nothing:\n  Say the spot's label.\n"
+                                          "  Set the spot to the spot's next."), ["head", "tail"])
+        self.assertEqual(run(self.CHAIN + "Repeat 3 times:\n  If the spot is not nothing:\n"
+                                          "    Say the spot's label.\n    Set the spot to the spot's next."),
+                         ["head", "tail"])
+        # What the loop does not change still counts, and a needless check is still refused.
+        self.refuses(self.CHAIN + "Repeat 2 times:\n  If the spot is not nothing:\n    Say 1.", "nothing to check")
+        self.refuses(self.CHAIN + "Repeat 2 times:\n  Say the length of the spot's next's label.", "may be nothing")
+
+    def test_a_name_is_never_also_an_adjective(self):
+        world = WORLD + "A dragon can be sleepy.\n"
+        for source, fragment in (
+            ("There is a dragon called Ancient whose age is 3.", "already an adjective of a dragon"),
+            ("Let ancient be 1.", "already an adjective"),
+            ("For each ancient in dragons:\n  Say 1.", "already an adjective"),
+            ("To pet a sleepy (number):\n  Say 1.", "already an adjective"),
+            ("Let rich be 1.\nA dragon is rich when its age is 1.", '"rich" is already a variable (line'),
+            ("A cat has an age (number).\nA dragon is cat when its age is 1.", '"cat" is already a kind'),
+            ("A sleepy has an age (number).", "already an adjective"),
+            ("Let sleepy count be 1.", "begins with the adjective"),
+        ):
+            with self.subTest(source):
+                self.assertEqual(self.refuses(world + source, fragment).key, "namespaces")
+        error = self.refuses(world + "For each ancient rival in dragons:\n  Say 1.", "begins with the adjective")
+        self.assertEqual(error.fix["text"], "For each ancient dragon:")
+        # A property and a verb may share a word with anything.
+        self.assertEqual(run(world + "A gem has a sleepy (number).\nTo ancient:\n  Say 2.\nAncient."), ["2"])
+
+    def test_a_kind_name_in_a_block_holds_that_kind(self):
+        self.assertEqual(run(WORLD + "To hatch:\n  Let the dragon be a new dragon whose age is 0.\n"
+                                     "  Say the dragon's age.\nHatch."), ["0"])
+        self.refuses(WORLD + "To hatch:\n  Let the dragon be 5.\nHatch.", '"the dragon" would read as a dragon')
+        self.refuses(WORLD + "To hatch:\n  Let the dragon be Gawain.\nHatch.", "holds a knight")
+        self.refuses(WORLD + "To hatch a dragon (number):\n  Say 1.", "this role holds a plain number")
+
+    def test_only_what_a_file_may_say_counts_for_these_checks(self):
+        import types
+        module = types.ModuleType("englishscript.libraries.rowtest")
+        module.SOURCE = "A row has a size (number).\nA row can be ripe.\n"
+        sys.modules[module.__name__] = module
+        self.addCleanup(sys.modules.pop, module.__name__, None)
+        with tempfile.TemporaryDirectory() as folder:
+            (Path(folder) / "table.english").write_text(
+                "To show a row (text):\n  Say the row.\nShow \"a\".\nLet ripe be 1.\nSay ripe.\n", encoding="utf-8")
+            out = []
+            compile_source("Use the rowtest library.\nUse the table chapter.\n", folder).run(out.append)
+            self.assertEqual(out, ["a", "1"])
+
+    def test_two_kinds_never_share_a_name_or_a_plural(self):
+        for source, word in (("A bus has a size (number).\nA buse has a size (number).", '"buses"'),
+                             ("A ax has a size (number).\nA axe has a size (number).", '"axes"'),
+                             ("A dragons has a size (number).", '"dragons"')):
+            with self.subTest(source):
+                self.assertEqual(self.refuses(WORLD + source, word).key, "kind_names")
+
+
+class TwoReadings(Base):
+    """Phase A: a sentence a careful reader could take two ways is refused, with both readings."""
+
+    SQUIRES = ("A horse has a speed (number).\nA squire has a wage (money) and a mount (horse, if any).\n"
+               "There is a horse called Shadowfax whose speed is 40.\n"
+               "There is a squire called Wat whose wage is $3 and whose mount is Shadowfax.\n")
+
+    def readings(self, source, first, second):
+        error = self.refuses(source, "can be read two ways")
+        self.assertIn(f"(1) {first}", error.hint)
+        self.assertIn(f"(2) {second}", error.hint)
+        return error
+
+    def test_a_whose_filter_followed_by_arithmetic(self):
+        self.readings(WORLD + "Say the number of knights whose courage is more than 5 + 1.",
+                      "(the number of knights whose courage is more than 5) + 1",
+                      "the number of knights whose courage is more than (5 + 1)")
+        self.assertEqual(run(WORLD + "Say (the number of knights whose courage is more than 5) + 1.\n"
+                                     "Say the number of knights whose courage is more than (5 + 1)."), ["2", "1"])
+
+    def test_a_second_whose_where_a_thing_is_made(self):
+        error = self.refuses(self.SQUIRES + "There is a squire called Sum whose wage is the total wage of squires "
+                                            "whose wage is more than $2 and whose mount is Shadowfax.",
+                             "can belong to the group before it or to the new squire")
+        self.assertIn("whose wage is (the total wage of squires whose wage is more than $2) and whose mount",
+                      error.fix["text"])
+        self.assertEqual(run(self.SQUIRES + error.fix["text"] + "\nSay Sum's wage."), ["$3"])
+        self.assertEqual(run(self.SQUIRES + "For each squire whose wage is more than $2 and whose wage is less than $4:\n"
+                                            "  Say the squire."), ["Wat"])
+
+    def test_whether_with_and_or_or(self):
+        self.readings(WORLD + "If yes is whether Smaug is ancient and Robin is brave:\n  Say 1.",
+                      "whether (Smaug is ancient and Robin is brave)", "(whether Smaug is ancient) and Robin is brave")
+        self.assertEqual(run(WORLD + "Say whether (Smaug is ancient and Robin is brave)."), ["no"])
+
+    def test_or_else_beside_arithmetic(self):
+        self.readings('Say "12" as a number or else 0 + 1.', '("12" as a number or else 0) + 1',
+                      '"12" as a number or else (0 + 1)')
+        self.assertEqual(run('Say ("12" as a number or else 0) + 1.\nSay "x" as a number or else (0 + 1).'),
+                         ["13", "1"])
+
+    def test_not_before_and_or_or(self):
+        self.readings(WORLD + "If not Robin is brave and Gawain is brave:\n  Say 1.",
+                      "(not Robin is brave) and Gawain is brave", "not (Robin is brave and Gawain is brave)")
+        self.assertEqual(run(WORLD + "If Gawain is brave and not Robin is brave:\n  Say 1.\n"
+                                     "If (not Robin is brave) and Gawain is brave:\n  Say 2."), ["1", "2"])
+
+    def test_the_x_of_y_is_decided_by_y(self):
+        source = WORLD + "To review a courage (number):\n  Say the courage of Gawain.\nReview 1."
+        error = self.readings(source, "Gawain's courage", "(the courage) of Gawain")
+        self.assertEqual(error.key, "ambiguous_name")
+        # Y has no such property: it is the value in view.
+        self.assertEqual(run(WORLD + "To work out the pick (number) at a spot (number) of a row (text):\n"
+                                     "  The answer is the spot.\n"
+                                     "To show a courage (number):\n  Say the pick at the courage of \"x\".\n"
+                                     "Show 7."), ["7"])
+
+
+class Settling(InTemporaryFolder, Base):
+    """Whenever everything has settled: once at the end of each turn that changed something."""
+
+    KNIGHTS = "A knight has a purse (money).\nA knight can be sworn.\nThere is a knight called Gawain whose purse is $5.\n"
+
+    def test_once_a_turn_in_the_order_written_from_its_sentence_on(self):
+        source = self.KNIGHTS + (
+            "Add $1 to Gawain's purse.\n"
+            'Whenever everything has settled:\n  Say "first {Gawain\'s purse}"\n'
+            'Say "nothing changed".\n'
+            "Whenever everything has settled:\n  Say \"second\"\n"
+            "To pay:\n  Add $1 to Gawain's purse.\n  Add $1 to Gawain's purse.\n"
+            "Pay.\nRepeat 2 times:\n  Add $1 to Gawain's purse.\nNow Gawain is sworn.\n"
+        )
+        self.assertEqual(run(source), ["nothing changed", "first $8", "second", "first $10", "second",
+                                       "first $10", "second"])
+
+    def test_its_changes_set_off_reactions_but_never_another_settling(self):
+        source = self.KNIGHTS + (
+            "Whenever Gawain becomes sworn:\n  Say \"sworn\"\n"
+            "Whenever everything has settled:\n  Say \"settled\"\n  Now Gawain is sworn.\n  Stop.\n  Say \"never\"\n"
+            "Add $1 to Gawain's purse.\nAdd $1 to Gawain's purse.\n"
+        )
+        self.assertEqual(run(source), ["settled", "sworn", "settled"])
+
+    def test_a_problem_in_it_belongs_to_the_turn_and_a_try_does_not_catch_it(self):
+        source = self.KNIGHTS + (
+            "Whenever everything has settled:\n  If Gawain's purse is more than $9:\n    Fail because \"too rich\"\n"
+            "Try:\n  Add $10 to Gawain's purse.\nIf that fails:\n  Say \"caught\"\n"
+        )
+        said = []
+        with self.assertRaises(EnglishError) as caught:
+            compile_source(source).run(said.append)
+        self.assertEqual(said, [])
+        rendered = caught.exception.render()
+        self.assertIn("(while doing line 4: Whenever everything has settled:)", rendered)
+        self.assertIn("(while doing line 7: Try:)", rendered)
+
+    def test_each_sentence_of_a_chapter_being_read_is_a_turn(self):
+        (self.folder / "gems.english").write_text(
+            'A gem has a size (number).\nThere is a gem called Ruby whose size is 1.\nSay "read".\n'
+            "Add 1 to Ruby's size.\n", encoding="utf-8")
+        source = 'Whenever everything has settled:\n  Say "settled"\nUse the gems chapter.\n'
+        out = []
+        compile_source(source, self.folder).run(out.append)
+        self.assertEqual(out, ["settled", "read", "settled"])
+
+    def test_an_event_is_a_turn(self):
+        source = self.KNIGHTS + "Whenever everything has settled:\n  Say \"settled {Gawain's purse}\"\n"
+        out = []
+        world = compile_source(source).run(out.append)
+        gawain = world.named["gawain"]
+
+        def change():
+            gawain.fields["purse"] = 7
+        world.event(change)
+        self.assertEqual(out, ["settled $7"])
+        # A problem in the settled block undoes the event.
+        source = self.KNIGHTS + "Whenever everything has settled:\n  Fail because \"no\"\n"
+        world = compile_source(source).run(lambda text: None)
+        gawain = world.named["gawain"]
+        with self.assertRaises(EnglishError):
+            world.event(change)
+        self.assertEqual(gawain.fields["purse"], 5)
+
+    def test_it_is_a_definition(self):
+        self.refuses(self.KNIGHTS + "If 1 is 1:\n  Whenever everything has settled:\n    Say 1.", "top level")
+
+
+class Lists(Base):
+    """Lists written out, changed and read; lists as properties; groups as lists."""
+
+    WORLD = ("A treasure has a worth (money).\n"
+             "A knight has a purse (money) and a shelf (list of treasures).\n"
+             "There is a treasure called Goblet whose worth is $3,000.\n"
+             "There is a treasure called Cup whose worth is $500.\n"
+             "There is a knight called Gawain whose purse is $300.\n"
+             "There is a knight called Robin whose purse is $5 and whose shelf is a list of Cup and Goblet.\n")
+
+    def test_writing_reading_and_changing(self):
+        said = run("Let the scores be a list of 3, 8, and 5.\nAdd 10 to the scores.\n"
+                   "Say the scores joined with \", \".\nSay item 4 of the scores.\nSay item 0 of the scores.\n"
+                   "Say item 1.5 of the scores.\nSet item 1 of the scores to 4.\nRemove 8 from the scores.\n"
+                   "Remove 99 from the scores.\nSay the scores joined with \"+\".\nSay the total of the scores.\n"
+                   "Say the first of the scores.\nSay the last of the scores.\n"
+                   "Let the none be an empty list of money.\nSay the total of the none.\nSay the last of the none.\n"
+                   "Let the one be a list of 50%.\nSay the one joined with \"\".\n")
+        self.assertEqual(said, ["3, 8, 5, 10", "10", "nothing", "nothing", "4+5+10", "19", "4", "10", "$0",
+                                "nothing", "50%"])
+
+    def test_lists_as_properties(self):
+        said = run(self.WORLD + "Add Goblet to Gawain's shelf.\nSay the number of items in Gawain's shelf.\n"
+                   "Say the number of items in Robin's shelf.\nIf Cup is in Robin's shelf and Cup is not in "
+                   "Gawain's shelf:\n  Say \"yes\"\nRemove Goblet.\nSay the number of items in Robin's shelf.\n"
+                   "Say the number of items in Gawain's shelf.\nThere is a new knight whose purse is $1.\n")
+        self.assertEqual(said, ["1", "2", "yes", "1", "0"])
+
+    def test_a_group_where_a_list_is_wanted_is_the_things_in_it_then(self):
+        said = run(self.WORLD + "Let the rich be all treasures whose worth is more than $100.\n"
+                   "There is a new treasure whose worth is $900.\nSay the number of items in the rich.\n"
+                   "Set Gawain's shelf to treasures whose worth is $500.\n"
+                   "Say the number of items in Gawain's shelf.\n"
+                   "To show a pile (list of treasures):\n  Say the number of items in the pile.\n"
+                   "Show all treasures.\nShow treasures whose worth is $500.\n")
+        self.assertEqual(said, ["2", "1", "3", "1"])
+
+    def test_a_failed_try_and_reactions_and_loops(self):
+        said = run(self.WORLD + "A knight is laden when the number of items in its shelf is at least 2.\n"
+                   "Whenever a knight becomes laden:\n  Say \"{the knight} is laden.\"\n"
+                   "Add Cup to Gawain's shelf.\nAdd Goblet to Gawain's shelf.\n"
+                   "Try:\n  Remove Cup from Gawain's shelf.\n  Fail because \"no\".\nIf that fails:\n"
+                   "  Say the number of items in Gawain's shelf.\n"
+                   "Let the scores be a list of 1, 2 and 3.\nFor each score in the scores:\n"
+                   "  Add the score * 10 to the scores.\nSay the number of items in the scores.\n")
+        self.assertEqual(said, ["Gawain is laden.", "2", "6"])
+
+    def test_working_out_may_change_only_its_own_list(self):
+        said = run("To work out the evens (list of numbers) to a top (number):\n"
+                   "  Let the found be an empty list of numbers.\n  Let the n be 2.\n"
+                   "  While the n is at most the top:\n    Add the n to the found.\n    Add 2 to the n.\n"
+                   "  The answer is the found.\nSay the evens to 7 joined with \" \".\n")
+        self.assertEqual(said, ["2 4 6"])
+        self.refuses("Let the kept be an empty list of numbers.\nTo work out the size (number):\n"
+                     "  Add 1 to the kept.\n  The answer is 1.\n", "can't change anything")
+
+    def test_set_item_of_no_item_is_a_problem_a_try_can_recover_from(self):
+        said = run("Let the scores be a list of 1.\nTry:\n  Set item 2 of the scores to 5.\nIf that fails:\n"
+                   "  Say the problem.\n")
+        self.assertEqual(said, ["There is no item 2 of the scores: it has 1 item."])
+        self.refuses("Let the scores be a list of 1.\nSet item 2 of the scores to 5.\n", "no item 2", stage="run")
+
+    def test_refusals(self):
+        self.refuses("Say the number of items in a list of 1 and 2.\n", "whole value")
+        self.refuses('Let the scores be a list of 1, "two" and 3.\n', "all of one kind")
+        self.refuses("Let the scores be a list of 1.\nAdd $5 to the scores.\n", "holds numbers")
+        self.refuses("Let the scores be a list of 1.\nSubtract 1 from the scores.\n", "Remove 1 from the scores")
+        self.refuses("Let the scores be a list of 1.\nRemove the scores.\n", "Only a thing can be removed")
+        self.refuses("Let the words be a list of \"a\".\nSay the words joined with 5.\n", "takes text")
+        self.refuses(self.WORLD + "Say Gawain's shelf joined with \", \".\n", "only a list of text")
+        self.refuses("Let the scores be a list of 1.\nIf \"a\" is in the scores:\n  Say 1.\n", "can't be one")
+        error = self.refuses("To work out the total (number) of a pile (list of numbers):\n  The answer is 1.\n"
+                             "Let the scores be a list of 1.\nSay the total of the scores.\n", "two ways")
+        self.assertEqual(error.teach, "ambiguous_name") if isinstance(error.teach, str) else None
+
+    def test_item_and_first_and_total_are_free_for_names(self):
+        said = run("Let the item be 5.\nSay the item.\nSay item.\nFor each word in the words of \"x\":\n"
+                   "  Say the word.\nA box has a total (number) and a first (text).\n"
+                   "There is a box called Crate whose total is 7 and whose first is \"a\".\n"
+                   "Say Crate's total.\nSay the first of Crate.\nSay the first 2 letters of \"abc\".\n")
+        self.assertEqual(said, ["5", "5", "x", "7", "a", "ab"])
+
+
+class MoreArithmetic(Base):
+    """Remainders, rounding, powers, roots, larger and smaller, absolute values, percentages."""
+
+    def test_the_forms(self):
+        said = run("Say the remainder of 17 divided by 5.\nSay the remainder of -7 divided by 2.\n"
+                   "Say the remainder of 7 divided by -2.\nSay the remainder of -7 divided by -2.\n"
+                   "Say the remainder of 7.5 divided by 2.\n"
+                   "Say 12.5 rounded to the nearest 5.\nSay -12.5 rounded to the nearest 5.\n"
+                   "Say -17 rounded up to the nearest 5.\nSay -17 rounded down to the nearest 5.\n"
+                   "Say 2 + 17 rounded to the nearest 5.\nSay 5% rounded to the nearest 2%.\n"
+                   "Say 2 raised to the power of -2.\nSay 8 raised to the power of (2 / 3).\n"
+                   "Say the square root of 0.25.\nSay the larger of 2% and 3%.\nSay the smaller of -$1 and $1.\n"
+                   "Say the absolute value of -$2.50.\n")
+        self.assertEqual(said, ["2", "1", "-1", "-1", "1.5", "15", "-15", "-20", "-15", "17", "6%", "0.25", "4",
+                                "0.5", "3%", "-$1", "$2.50"])
+
+    def test_inexact_answers_have_twelve_places_from_the_exact_fraction(self):
+        program = compile_source("Let the r be the square root of 2.\nLet the p be 2 raised to the power of 0.5.\n")
+        world = program.run(lambda line: None)
+        self.assertEqual(world.globals.vars["r"], Fraction(1414213562373, 10 ** 12))
+        self.assertEqual(world.globals.vars["p"], world.globals.vars["r"])
+
+    def test_problems_a_try_can_recover_from(self):
+        for value, message in (("the square root of -4", "no square root"),
+                               ("the remainder of 3 divided by 0", "divide by zero"),
+                               ("(-8) raised to the power of 0.5", "not whole"),
+                               ("0 raised to the power of -1", "divide by zero"),
+                               ("5 rounded to the nearest 0", "more than nothing")):
+            with self.subTest(value):
+                said = run(f"Try:\n  Say {value}.\nIf that fails:\n  Say the problem.\n")
+                self.assertIn(message, said[0])
+
+    def test_percentages_and_minus_signs(self):
+        said = run("Say 10% - 15%.\nSay 3 * 10%.\nSay 10% / 4.\nSay 10% / 5%.\nLet the rate be 5%.\n"
+                   "Add 1% to the rate.\nSay the rate.\n"
+                   "To work out the double (number) of a value (number):\n  The answer is the value * 2.\n"
+                   "Say the double of -3.\nSay 2 * -3.\nSay 2 - -3.\n")
+        self.assertEqual(said, ["-5%", "30%", "2.5%", "2", "6%", "-6", "-6", "5"])
+
+    def test_refusals(self):
+        self.refuses("Say the remainder of $5 divided by 2.\n", "plain numbers")
+        self.refuses("Say $5 rounded to the nearest 1.\n", "same sort")
+        self.refuses("Say the larger of 1 and $1.\n", "two numbers")
+        self.refuses("Say 10% + 5.\n", "can't add")
+        self.refuses("To work out the remainder (number) of a value (number):\n  The answer is 1.\n"
+                     "Say the remainder of 5 divided by 2.\n", "two ways")
+
+    def test_the_words_stay_free_for_names(self):
+        said = run("Let the remainder be 4.\nSay the remainder.\nA box has a larger (number).\n"
+                   "There is a box called Crate whose larger is 9.\nSay the larger of Crate.\n")
+        self.assertEqual(said, ["4", "9"])
+
+
+class Choices(Base):
+    def test_a_set_of_choices(self):
+        said = run("A mood is one of sleepy, grumpy, or very cross.\nA dragon has a mood (mood).\n"
+                   "A dragon is grumpy when its mood is grumpy.\n"
+                   "There is a dragon called Puff whose mood is sleepy.\nSay Puff's mood.\n"
+                   "Set Puff's mood to grumpy.\nIf Puff is grumpy and Puff's mood is not sleepy:\n  Say \"yes\"\n"
+                   "Let the feeling (mood) be very cross.\nSay \"{the feeling}\"\n"
+                   "Say the number of dragons whose mood is grumpy.\n")
+        self.assertEqual(said, ["sleepy", "yes", "very cross", "1"])
+
+    def test_refusals(self):
+        self.refuses("A mood is one of sleepy.\n", "at least two")
+        self.refuses("A mood is one of sleepy, grumpy.\n", '"or"')
+        self.refuses("A mood is one of sleepy or grumpy.\nA temper is one of grumpy or calm.\n", "already means")
+        self.refuses("A dragon has an age (number).\nA mood is one of dragon or calm.\n", "already means")
+        self.refuses("A mood is one of sleepy or grumpy.\nLet the m be sleepy.\nIf the m is happy:\n  Say 1.\n",
+                     "not one of the choices")
+        self.refuses("A mood is one of sleepy or grumpy.\nLet the m be sleepy.\nIf the m is \"sleepy\":\n  Say 1.\n",
+                     "can't compare")
+        self.refuses("A mood is one of sleepy or grumpy.\nLet the m be sleepy.\nIf the m is more than grumpy:\n"
+                     "  Say 1.\n", "Only numbers")
+
+
+class Text(Base):
+    def test_letters_and_negative_text_tests(self):
+        said = run("Say letter 2 of \"abc\".\nSay letter 4 of \"abc\".\nSay letter 0 of \"abc\".\n"
+                   "Let the letter be \"z\".\nSay the letter.\n"
+                   "If \"abc\" does not contain \"x\" and \"abc\" does not start with \"b\" and \"abc\" "
+                   "does not end with \"b\":\n  Say \"none\"\nSay the number of items in the words of \"a  b\tc\".\n")
+        self.assertEqual(said, ["b", "nothing", "nothing", "z", "none", "3"])
+        self.refuses("Say letter 1 of 5.\n", "takes a letter from text")
+
+
+class Indexes(Base):
+    """'whose <property> is <value>' finds things through an index; it must agree with a search."""
+
+    def test_the_index_follows_every_change(self):
+        said = run("A slot has a place (number).\n"
+                   "There is a slot called Ann whose place is 1.\nThere is a slot called Bob whose place is 2.\n"
+                   "There is a slot called Cid whose place is 1.\n"
+                   "To show a spot (number):\n  Let the found be \"\".\n"
+                   "  For each slot whose place is the spot:\n    Set the found to \"{the found}{the slot}\".\n"
+                   "  Say \"{the spot}: {the found}\"\n"
+                   "Show 1.\nSet Bob's place to 1.\nShow 1.\nSet Ann's place to 3.\nShow 1.\nShow 3.\n"
+                   "There is a new slot called \"Dot\" whose place is 1.\nShow 1.\nRemove Cid.\nShow 1.\n"
+                   "Try:\n  Set Ann's place to 1.\n  Remove Bob.\n  Fail because \"no\".\nIf that fails:\n  Show 1.\n"
+                   "Set Ann's place to 1.\nShow 1.\nSay the number of slots whose place is 1 and whose name is \"Ann\".\n")
+        self.assertEqual(said, ["1: AnnCid", "1: AnnBobCid", "1: BobCid", "3: Ann", "1: BobCidDot", "1: BobDot",
+                                "1: BobDot", "1: AnnBobDot", "1"])
+
+    def test_things_found_and_text_and_things_as_values(self):
+        said = run("A knight has a lord (knight, if any) and a motto (text).\n"
+                   "There is a knight called Arthur whose motto is \"x\".\n"
+                   "There is a knight called Kay whose lord is Arthur and whose motto is \"x\".\n"
+                   "There is a knight called Bors whose lord is Kay and whose motto is \"y\".\n"
+                   "Say the number of knights whose motto is \"x\".\n"
+                   "For each knight whose motto is \"y\":\n  Say the knight.\n")
+        self.assertEqual(said, ["2", "Bors"])
+
+
+class StatedPlurals(Base):
+    CHILD = "A child has an age (number).\nThere is a child called Ann whose age is 3.\n"
+    CHILDREN = "A child (plural children) has an age (number).\nThere is a child called Ann whose age is 3.\n"
+
+    def test_a_stated_plural_replaces_the_one_by_rule(self):
+        self.assertEqual(run(self.CHILDREN + "Say the number of children.\n"
+                                             "For each kid in children:\n  Say the kid."), ["1", "Ann"])
+        error = self.refuses(self.CHILDREN + "Say the number of childs.", "childs")
+        self.assertIn('stated as "children"', error.hint)
+
+    def test_the_helper_shows_how_to_state_a_plural(self):
+        error = self.refuses(self.CHILD + "Say the number of children.", '"children"')
+        self.assertIn("A child (plural children) has ...", error.hint)
+
+    def test_what_is_refused(self):
+        for source, fragment in (
+            ("A sheep (plural sheep) has an age (number).", "has to differ"),
+            ("A kid has an age (number).\nA child (plural kids) has an age (number).", '"kids"'),
+            ("A kid has an age (number).\nA child (plural kid) has an age (number).", '"kid"'),
+            ("A dragon has an age (number).\nThere is a dragon called Ann whose age is 1.\nA child (plural ann) has an age (number).",
+             "already means something"),
+            ("A dragon has an age (number).\nA dragon is ancient when its age is 1.\nA child (plural ancient) has an age (number).", "already an adjective"),
+            ("A child (plural) has an age (number).", "plural"),
+        ):
+            with self.subTest(source):
+                self.refuses(source, fragment)
 
 
 class FailingInsteadOfAnswering(Base):

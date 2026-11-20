@@ -1,0 +1,63 @@
+# An almanac for the web: a menu, a table and a link, over the chapters of a book.
+#
+# The reckoning is done by the three chapters of the almanac book, which know
+# nothing about pages. This program only sets their answers out: a menu to
+# choose the year, and a table with a row for each feast.
+#
+# Run it in the playground and the page appears under what it says. Run from
+# the command line, it sketches the page.
+
+Use the page library.
+Use the calendar chapter of the almanac book.
+Use the numerals chapter of the almanac book.
+Use the feasts chapter of the almanac book.
+
+There is a heading called Banner whose wording is "An Almanack".
+
+There is a panel called Desk.
+There is a menu called Chooser whose hint is "Which year?" and whose panel is Desk.
+There is a note called Verdict whose wording is "" and whose panel is Desk.
+
+There is a table called Roster whose title is "The feasts of the year".
+There is a row called Head whose table is Roster.
+Now Head is leading.
+There is a new cell whose wording is "Feast" and whose row is Head.
+There is a new cell whose wording is "Date" and whose row is Head.
+There is a new cell whose wording is "Falls on a" and whose row is Head.
+
+There is a link called Source whose wording is "How the day of the week is worked out" and whose target is "https://github.com/monstercameron/EnglishScript/blob/main/examples/almanac/calendar.english".
+
+# The years on offer, written as the Romans wrote them.
+Let the offer be 2024.
+Repeat 8 times:
+  There is a new option whose wording is the roman of the offer and whose menu is Chooser.
+  Add 1 to the offer.
+
+# Set the table out afresh for a year: take away every row but the first, and
+# write one for each feast.
+To show a year (number):
+  For each row:
+    If the row is not leading:
+      For each cell whose row is the row:
+        Remove the cell.
+      Remove the row.
+  For each feast:
+    Let the line be a new row whose table is Roster.
+    There is a new cell whose wording is "{the feast}" and whose row is the line.
+    There is a new cell whose wording is "{the feast's day} {the month title of the feast's month}" and whose row is the line.
+    There is a new cell whose wording is the falling of the feast for the year and whose row is the line.
+  If the leapness of the year is yes:
+    Set Verdict's wording to "{the roman of the year} is a leap year of 366 days."
+  Otherwise:
+    Set Verdict's wording to "{the roman of the year} is a common year of 365 days."
+
+# As the page opens, the year is 2027.
+For each option whose wording is the roman of 2027:
+  Now the option is picked.
+Show 2027.
+
+Whenever an option becomes picked:
+  Show the reading of the option's wording.
+
+For example, the number of rows is 8.
+For example, the number of cells is 24.

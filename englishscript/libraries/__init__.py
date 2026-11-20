@@ -127,6 +127,12 @@ own verbs:
                          (in its own sentences or in a reaction to an event),
                          input running out, a problem, or a failed ``live``
 
+The keys above are the names as written for everything a library defines and
+for every name a file shares. A kind, a thing or a stored adjective that a
+chapter keeps to itself ("This chapter shares only ...") is kept under another
+key, because another chapter may have one of its own spelt the same way: a
+library should look only for its own kinds, things and adjectives by name.
+
 Events from outside
 -------------------
 
@@ -155,6 +161,13 @@ Events from outside
       "Try" does, including what the reactions changed, and raises the
       EnglishError. What was said stays said. Any other exception raised by
       ``change`` also puts the world back, and passes through;
+    * an event is a *turn*, as one top-level sentence of the program is (a
+      top-level sentence of the program or of a chapter being read, with
+      everything it sets off). After the reactions, each "Whenever everything
+      has settled" block the program has reached is carried out once, in the
+      order written; what they change sets off reactions but no further
+      settling. A problem there is a problem of the event, and puts the
+      world back like any other;
     * if a reaction says "End the program.", the event ends quietly, its
       changes stay, and ``world.ended`` becomes True.
 

@@ -68,7 +68,7 @@ The argument at length is **[the treatise](https://monstercameron.github.io/Engl
 | | |
 |---|---|
 | **[The treatise](https://monstercameron.github.io/EnglishScript/)** | The argument for the language, with examples that run where they stand, and a chapter on agents and what a program means. |
-| **[The playground](https://monstercameron.github.io/EnglishScript/playground.html)** | An editor that marks your program as a teacher would, with corrections you can accept, twenty-one examples and a list of how to say things. |
+| **[The playground](https://monstercameron.github.io/EnglishScript/playground.html)** | An editor that marks your program as a teacher would, with corrections you can accept, twenty-three examples and a list of how to say things. |
 | **[A page](https://monstercameron.github.io/EnglishScript/todo.html)** | A to-do list for the web written in EnglishScript, as a book of four chapters, with its files and the things behind the page shown beside it. |
 | **[Compared](https://monstercameron.github.io/EnglishScript/compare.html)** | The same programs in JavaScript and in Java, and where the three part company. |
 | **[The grammar](https://monstercameron.github.io/EnglishScript/reference.html)** | Every sentence the compiler accepts. Its examples run in the page, and the test suite runs them too. |
@@ -100,6 +100,8 @@ python -m englishscript examples/invoices.english
 
 From Python, `englishscript.compile_file(path).run()` runs a program and `englishscript.lint(source)` gives its problems as a list.
 
+**In an editor.** `python -m englishscript.server` is a language server: it marks a program as you write it, offers each certain correction, explains a sentence when you hover over it, completes names and sentence forms, and renames. `python -m englishscript.rename file.english "old name" "new name"` renames from the command line, and refuses any rename that would give the compiler a new complaint. [docs/EDITORS.md](docs/EDITORS.md) has the details and what has not been tried.
+
 ## What a program can say
 
 The full reference is [docs/SYNTAX.md](docs/SYNTAX.md). In brief:
@@ -109,7 +111,7 @@ The full reference is [docs/SYNTAX.md](docs/SYNTAX.md). In brief:
 
 | Purpose | Form |
 |---|---|
-| Describe a kind | `A dragon has an age (number) and a lair (text).` |
+| Describe a kind | `A dragon has an age (number) and a lair (text).`, and with a plural of its own, `A person (plural people) has an age (number).` |
 | Define an adjective | `A dragon is ancient when its age is at least 500.` |
 | Store an adjective | `A task can be done.` then `Now the task is done.` |
 | Define a worked-out property | `The tax of a dragon is 10% of its hoard.` |
@@ -132,8 +134,11 @@ The full reference is [docs/SYNTAX.md](docs/SYNTAX.md). In brief:
 | Compare | `is`, `is not`, `is less than`, `is more than`, `is at least`, `is at most`, `is divisible by` |
 | Loop | `For each poor dragon:`, `For each rival in dragons:`, `For each word in the words of the line:`, `Repeat 3 times:`, `While ...:` |
 | Count and add up | `the number of ancient dragons`, `the total worth of Smaug's treasures`, `the number of items in the words` |
+| Lists | `Let the scores be a list of 3, 8 and 5.`, `an empty list of numbers`, `Add 10 to the scores.`, `item 2 of the scores`, `Set item 2 of the scores to 9.`, `the total of the scores`, `the names joined with ", "`, `If 10 is in the scores:`, and as a property, `a shelf (list of treasures)` |
+| Arithmetic | `the remainder of 17 divided by 5`, `17 rounded up to the nearest 5`, `2 raised to the power of 10`, `the square root of 81`, `the larger of $5 and $8`, `the absolute value of -4` |
+| A fixed set of choices | `A mood is one of sleepy, grumpy or content.` then `a mood (mood)` |
 | Recover from a problem | `Try:` then `If that fails:` with `the problem`; `Fail because "..."` |
-| React to a change | `Whenever a knight becomes broke:`, `Whenever Adder becomes pressed:`, `Whenever a card becomes not ticked:` |
+| React to a change | `Whenever a knight becomes broke:`, `Whenever Adder becomes pressed:`, `Whenever a card becomes not ticked:`, and once when a turn is over, `Whenever everything has settled:` |
 | Use a library | `Use the vulkan library.`, `Use the page library.` |
 | Use another file | `Use the calendar chapter.`, `Use the calendar chapter of the almanac book.`, and in the chapter, `This chapter shares only leapness and weekday.` |
 | Test | `For example, the hoard of Smaug is $12,000.` |
@@ -161,6 +166,8 @@ Types are `number`, `money`, `text`, `percent`, `yes or no`, any kind you descri
 | `examples/todo.english` | A to-do list at the command line that saves to a file: asking, files, `Try`, making and removing things. |
 | `examples/web_todo.english` | A to-do list for the web, with tags, stars, editing in place, finding, and putting back what was removed. Its work is divided among four chapters of the book in `examples/tasks/`. |
 | `examples/almanac.english` | A program put together from the chapters of a book: `examples/almanac/` holds a calendar, Roman numerals and the feasts of the year. |
+| `examples/web_almanac.english` | The same chapters set out as a web page: a menu of years, a table of feasts and a link. |
+| `examples/web_counters.english` | Three counters on one page, built by one verb: how to make several of something, and keep what a program is about apart from how it is shown. |
 | `examples/triangle.english` | A shaded triangle drawn in characters, following the steps of a Vulkan program without a graphics card. |
 | `examples/gpu_triangle.english` | The same triangle on a real graphics card, through the Vulkan API. |
 | `examples/sha256.english` | SHA-256 from first principles, in a language with no bit operators, remainders or arrays. It agrees with other implementations. |
@@ -189,12 +196,12 @@ Types are `number`, `money`, `text`, `percent`, `yes or no`, any kind you descri
 ## What it does not do
 
 - **It does not accept loose English.** Every sentence must fit one of the forms above.
-- **It is slow.** Numbers are exact fractions, and a program with no lists must search for things one at a time. The SHA-256 example manages about 300 bytes a second.
-- **Lists are only partly there.** They come from splitting text or reading a file, and can be counted and gone through, but not written out, changed or indexed.
-- **Several features are designed but not built:** dates and the clock, fixed sets of choices, units, remainders and rounding, picking and ordering within a group, and doing things at the same time. Sections 12 and 13 of [docs/SYNTAX.md](docs/SYNTAX.md) give each a syntax.
-- **Plurals are formed by rule** ("dragons", "ponies", "foxes"), so irregular ones such as "children" are not recognised.
-- **A name means one thing in the whole program.** A chapter chooses which of its words other files may use, but two chapters cannot give the same word two meanings, even privately.
-- **The libraries are small.** `page` has seven kinds of element and no pictures, links or tables. `vulkan` has run on one computer and draws off screen to a file.
+- **It is slow.** Each sentence costs about a millionth of a second and numbers are exact fractions, which cost many times what a processor's own numbers do. The SHA-256 example, written before the language had lists or remainders, manages about 300 bytes a second.
+- **Lists cannot yet be put in order.** They can be written out, added to, indexed and changed, but not sorted, said whole or compared.
+- **Several features are designed but not built:** dates and the clock, units, picking and ordering within a group, a kind that is a kind of another, and doing things at the same time. Sections 12 and 13 of [docs/SYNTAX.md](docs/SYNTAX.md) give each a syntax.
+- **Plurals are formed by rule** ("dragons", "ponies", "foxes"). An irregular one is not guessed: it has to be stated where the kind is described, as in `A child (plural children) has ...`.
+- **A book is found only beside the file that uses it.** A chapter can use the other chapters of its own book, and not yet a book that sits beside its own.
+- **The libraries are small.** `page` has thirteen kinds of element, among them tables, menus, pictures and links, and stops there. `vulkan` has run on one computer and draws off screen to a file.
 
 Where the design will strain has been looked at properly. Forty-two concerns were measured against the compiler one by one, and an adversarial review of the reference found twenty-four more things to settle. The verdicts, the figures and what matters most are in **[docs/CONCERNS.md](docs/CONCERNS.md)**.
 
@@ -202,7 +209,7 @@ Where the design will strain has been looked at properly. Forty-two concerns wer
 
 | Path | What is there |
 |---|---|
-| `englishscript/` | The compiler: `lexer.py` splits the source into sentences, `compiler.py` reads, checks and compiles each one into a Python function in a single pass, `runtime.py` holds what exists while a program runs, `linter.py` reports every problem at once, and `tour.py` is the guided tour. |
+| `englishscript/` | The compiler: `lexer.py` splits the source into sentences, `compiler.py` reads, checks and compiles each one into a Python function in a single pass, `runtime.py` holds what exists while a program runs, `linter.py` reports every problem at once, and `tour.py` is the guided tour. `server.py` and `rename.py` are the editor tools. |
 | `englishscript/libraries/` | The libraries a program can `Use`. Its `__init__.py` explains how to write one. |
 | `examples/` | The example programs. `examples/almanac/` and `examples/tasks/` are books of chapters. |
 | `tests/` | The test suite. |

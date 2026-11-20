@@ -1,6 +1,6 @@
 """The page library: things that are elements of a web page.
 
-A program that says "Use the page library." gets seven kinds of thing. Each
+A program that says "Use the page library." gets thirteen kinds of thing. Each
 thing of one of those kinds *is* an element of the page:
 
     panel     a box that holds other elements, side by side where they fit
@@ -11,6 +11,10 @@ thing of one of those kinds *is* an element of the page:
     card      a line with a tick box, words that can be edited where they
               stand, a tag, a star and a cross to dismiss it
     gauge     a bar that shows how far along something is
+    picture   an image, with words for a reader who cannot see it
+    link      words that lead somewhere else
+    table     rows of cells: a "row" belongs to a table, a "cell" to a row
+    menu      a list to choose one of: an "option" belongs to a menu
 
 The binding goes both ways and there is nothing else to call.
 
@@ -51,7 +55,7 @@ from fractions import Fraction
 from ..lexer import EnglishError
 
 SOURCE = '''
-A panel has a title (text, if any).
+A panel has a title (text, if any) and a panel (panel, if any).
 A panel can be hidden.
 
 A heading has a wording (text) and a panel (panel, if any).
@@ -80,12 +84,36 @@ A card can be hidden.
 A gauge has a level (number), a limit (number), and a panel (panel, if any).
 A gauge can be hidden.
 
+A picture has a source (text), a caption (text, if any), and a panel (panel, if any).
+A picture can be hidden.
+
+A link has a wording (text), a target (text), and a panel (panel, if any).
+A link can be hidden.
+
+A table has a title (text, if any) and a panel (panel, if any).
+A table can be hidden.
+A row has a table (table).
+A row can be leading.
+A row can be hidden.
+A cell has a wording (text) and a row (row).
+
+A menu has a hint (text, if any) and a panel (panel, if any).
+A menu can be hidden.
+An option has a wording (text) and a menu (menu).
+An option can be picked.
+
 To remember a line (text) under a key (text) is done by the library.
 To work out the memory (text, if any) of a key (text) is done by the library.
 '''
 
 NAME = "page"
-KINDS = ("panel", "heading", "note", "field", "button", "card", "gauge")
+KINDS = ("panel", "heading", "note", "field", "button", "card", "gauge",
+         "picture", "link", "table", "row", "cell", "menu", "option")
+#: What each kind of element sits inside, by the property that says so. A kind
+#: not listed here sits in its panel, if it has one, and otherwise on the page.
+INSIDE = {"row": "table", "cell": "row", "option": "menu"}
+#: The kinds that hold other elements, and the part of their element that holds them.
+HOLDERS = {"panel": "body", "table": "body", "row": None, "menu": None}
 MOMENTARY = {"button": ("pressed",), "field": ("entered", "changed"), "card": ("dismissed", "reworded")}
 MOUNT = "englishscript-page"
 PREFIX = "englishscript:"
@@ -114,11 +142,12 @@ class Node:
         self.textContent = ""
         self.value = ""
         self.checked = False
+        self.selected = False
         self.hidden = False
         self.className = ""
 
     def __setattr__(self, name, value):
-        if Node.LOG is not None and name in ("textContent", "value", "checked", "hidden"):
+        if Node.LOG is not None and name in ("textContent", "value", "checked", "selected", "hidden"):
             Node.LOG.append((self, name, value))
         object.__setattr__(self, name, value)
 
@@ -309,6 +338,23 @@ class Backend:
         return None if line is None else str(line)
 
 
+def _safe(address, pictures=False):
+    """An address a page may use, or "" for one it may not. A page written by a
+    program must not be able to run a script because a text said so: only the
+    web, the post, and places on this site are allowed (and, for a picture,
+    an image carried in the address itself)."""
+    address = str(address).strip()
+    head = address.split("/", 1)[0].split("?", 1)[0].split("#", 1)[0]
+    if ":" not in head:
+        return address  # no scheme: somewhere on this site, or on this page
+    scheme = head.split(":", 1)[0].lower()
+    if scheme in ("http", "https") or (scheme == "mailto" and not pictures):
+        return address
+    if pictures and address.lower().startswith("data:image/") and not address.lower().startswith("data:image/svg"):
+        return address
+    return ""
+
+
 def _state(world):
     state = world.libraries[NAME]
     if "backend" not in state:
@@ -471,12 +517,52 @@ def _make(world, state, thing):
         backend.listen(words, "blur", edited)
         backend.listen(words, "keydown", keyed)
         backend.listen(cross, "click", lambda event: _act(world, lambda: thing.marks.add("dismissed")))
-    else:  # gauge
+    elif kind == "gauge":
         node = element("div", "es-gauge")
         node.setAttribute("role", "progressbar")
         node.setAttribute("aria-valuemin", "0")
         node.setAttribute("aria-valuemax", "100")
         binding = Binding(thing, node, {"bar": element("div", "es-gauge-bar", node)})
+    elif kind == "picture":
+        binding = Binding(thing, element("img", "es-picture"), {})
+    elif kind == "link":
+        binding = Binding(thing, element("a", "es-link"), {})
+    elif kind == "table":
+        node = element("table", "es-table")
+        binding = Binding(thing, node, {
+            "title": element("caption", "es-table-title", node),
+            "body": element("tbody", "es-table-body", node),
+        })
+    elif kind == "row":
+        binding = Binding(thing, element("tr", "es-row"), {})
+    elif kind == "cell":
+        binding = Binding(thing, element("td", "es-cell"), {})
+    elif kind == "menu":
+        node = element("select", "es-menu")
+        # Until something is picked, the menu shows its hint, which cannot itself be picked.
+        blank = element("option", "es-menu-hint", node)
+        blank.setAttribute("value", "")
+        blank.setAttribute("disabled", "")
+        binding = Binding(thing, node, {"blank": blank})
+
+        def picked(event):
+            chosen = str(node.value)
+            options = [each for each in world.things.get("option", ())
+                       if not each.removed and each.fields.get("menu") is thing]
+
+            def change():
+                for each in options:
+                    if str(each.serial) == chosen:
+                        each.marks.add("picked")
+                    else:
+                        each.marks.discard("picked")
+            _act(world, change)
+
+        backend.listen(node, "change", picked)
+    else:  # an option of a menu
+        node = element("option", "es-option")
+        node.setAttribute("value", str(thing.serial))
+        binding = Binding(thing, node, {})
     binding.node.setAttribute("data-kind", kind)
     binding.node.setAttribute("data-name", thing.name)
     return binding
@@ -542,6 +628,34 @@ def _show(binding):
             _flag(parts["star"], "aria-pressed")(value),
             parts["star"].setAttribute("aria-label", f"Star: {wording}"),
             setattr(parts["star"], "textContent", "\u2605" if value else "\u2606")))
+    elif kind == "picture":
+        binding.tell("source", _safe(fields["source"], pictures=True), lambda value: node.setAttribute("src", value))
+        binding.tell("caption", fields.get("caption") or "", lambda value: node.setAttribute("alt", value))
+    elif kind == "link":
+        binding.tell("wording", fields["wording"], _text(node))
+        binding.tell("target", _safe(fields["target"]), lambda value: (
+            node.setAttribute("href", value) if value else node.removeAttribute("href")))
+    elif kind == "table":
+        title = fields.get("title")
+        binding.tell("title", title or "", _text(parts["title"]))
+        binding.tell("titled", title is None, lambda value: setattr(parts["title"], "hidden", value))
+    elif kind == "row":
+        binding.tell("leading", "leading" in marks, _flag(node, "data-leading"))
+    elif kind == "cell":
+        binding.tell("wording", fields["wording"], _text(node))
+        row = fields.get("row")
+        heads = row is not None and "leading" in row.marks
+        binding.tell("heads", heads, lambda value: node.setAttribute("role", "columnheader" if value else "cell"))
+    elif kind == "menu":
+        hint = fields.get("hint") or ""
+        binding.tell("hint", hint, lambda value: (
+            setattr(parts["blank"], "textContent", value),
+            node.setAttribute("aria-label", value) if value else node.removeAttribute("aria-label")))
+    elif kind == "option":
+        binding.tell("wording", fields["wording"], _text(node))
+        picked = "picked" in marks
+        if bool(node.selected) != picked:
+            node.selected = picked
     else:
         share = _share(thing)
         binding.tell("share", share, lambda value: (
@@ -571,14 +685,29 @@ def sync(world):
         order.pop(serial, None)
         state["lists"].pop(serial, None)
         state["choices"].discard(serial)
-    # What belongs inside what. The page itself is 0; a panel is its thing's serial.
+    # What belongs inside what. The page itself is 0; a holder is its thing's serial.
     wanted = {ROOT: []}
-    wanted.update((thing.serial, []) for thing in things if thing.kind == "panel")
+    wanted.update((thing.serial, []) for thing in things if thing.kind in HOLDERS)
     for thing in things:
         binding = bound[thing.serial]
-        panel = thing.fields.get("panel") if thing.kind != "panel" else None
-        home = panel.serial if panel is not None and panel.serial in wanted else ROOT
+        holder = thing.fields.get(INSIDE.get(thing.kind, "panel"))
+        home = holder.serial if holder is not None and holder.serial in wanted else ROOT
+        if thing.kind in INSIDE and home == ROOT:
+            home = None  # a row with no table, a cell with no row: there is nowhere to put it
+        if thing.kind == "panel" and home != ROOT:
+            # A panel inside itself, or inside a panel that is inside it, goes on the page instead.
+            seen, above = {thing.serial}, holder
+            while above is not None and above.serial not in seen:
+                seen.add(above.serial)
+                above = above.fields.get("panel")
+            if above is not None:
+                home = ROOT
         binding.home = home
+        if home is None:
+            if binding.inside is not None:
+                binding.inside.removeChild(binding.node)
+                binding.inside = None
+            continue
         wanted[home].append(binding)
         if thing.kind == "button" and "chosen" in thing.marks:
             state["choices"].add(home)  # the buttons that stand with a chosen one are choices too
@@ -588,7 +717,11 @@ def sync(world):
         _show(binding)
     active = backend.active()
     for home, bindings in wanted.items():
-        parent = backend.root if home == ROOT else bound[home].parts["body"]
+        if home == ROOT:
+            parent = backend.root
+        else:
+            part = HOLDERS[bound[home].thing.kind]
+            parent = bound[home].node if part is None else bound[home].parts[part]
         # A lower order comes first; with the same order (or none), the order made.
         bindings.sort(key=lambda binding: (Fraction(binding.thing.fields.get("order") or 0), binding.thing.serial))
         now = [binding for binding in order.get(home, ())
@@ -603,7 +736,7 @@ def sync(world):
             if index < len(now):
                 parent.insertBefore(binding.node, now[index].node)
             else:
-                parent.appendChild(binding.node)
+                parent.appendChild(binding.node)  # after anything the library put there itself
             now.insert(index, binding)
             binding.inside = parent
         order[home] = bindings
@@ -615,6 +748,13 @@ def sync(world):
                 parent.setAttribute("role", "list")
             else:
                 parent.removeAttribute("role")
+    for thing in things:
+        if thing.kind == "menu":
+            binding = bound[thing.serial]
+            blank = binding.parts["blank"]
+            none = not any("picked" in each.thing.marks for each in order.get(thing.serial, ()))
+            if bool(blank.selected) != none:
+                blank.selected = none
     backend.attend(active)
 
 
@@ -690,23 +830,35 @@ def sketch(world):
                     continue
                 if child.thing.kind == "note" and not child.thing.fields["wording"]:
                     continue
-                if child.thing.kind in ("field", "button", "note", "gauge"):
-                    row.append(_inline(child.thing))
+                if child.thing.kind in ("field", "button", "note", "gauge", "picture", "link", "menu"):
+                    row.append(_inline(child.thing) if child.thing.kind != "menu" else _menu(state, child.thing))
                 else:
                     if row:
                         lines.append(pad + "  ".join(row))
                         row = []
-                    draw(child, indent)
+                    draw(child, indent + (1 if child.thing.kind == "panel" else 0))
             if row:
                 lines.append(pad + "  ".join(row))
         elif kind == "heading":
             lines.append(f"{pad}# {fields['wording']}")
+        elif kind == "table":
+            if fields.get("title") is not None:
+                lines.append(f"{pad}-- {fields['title']} --")
+            for row in state["order"].get(thing.serial, []):
+                if "hidden" in row.thing.marks:
+                    continue
+                cells = [cell.thing.fields["wording"] for cell in state["order"].get(row.thing.serial, [])]
+                lines.append(f"{pad}| " + " | ".join(cells) + " |")
+                if "leading" in row.thing.marks:
+                    lines.append(f"{pad}|" + "|".join("-" * (len(cell) + 2) for cell in cells) + "|")
         elif kind == "note" and not fields["wording"]:
             return  # a note with nothing to say takes no room
         elif kind == "card":
             star = "* " if "starred" in marks else ""
             tag = f"  #{fields['tag']}" if fields.get("tag") else ""
             lines.append(f"{pad}[{'x' if 'ticked' in marks else ' '}] {star}{fields['wording']}{tag}")
+        elif kind == "menu":
+            lines.append(pad + _menu(state, thing))
         else:
             lines.append(pad + _inline(thing))
 
@@ -715,8 +867,18 @@ def sketch(world):
     return "\n".join(lines)
 
 
+def _menu(state, thing):
+    picked = [each.thing.fields["wording"] for each in state["order"].get(thing.serial, [])
+              if "picked" in each.thing.marks]
+    return "{" + (picked[0] if picked else f"({thing.fields.get('hint') or 'choose'})") + " v}"
+
+
 def _inline(thing):
     fields, kind = thing.fields, thing.kind
+    if kind == "picture":
+        return f"(picture: {fields.get('caption') or fields['source']})"
+    if kind == "link":
+        return f"{fields['wording']} -> {_safe(fields['target']) or '(nowhere)'}"
     if kind == "field":
         words = fields["wording"] or (f"({fields['hint']})" if fields.get("hint") else "")
         return f"[_{words}_]"
@@ -769,6 +931,15 @@ def reword(world, name, words):
     node = element(world, name).parts["words"]
     node.textContent = words
     node.fire("blur")
+
+
+def pick(world, name):
+    """Choose an option from its menu, as a person would."""
+    option = element(world, name)
+    menu = option.thing.fields["menu"]
+    node = element(world, menu).node
+    node.value = str(option.thing.serial)
+    node.fire("change")
 
 
 def dismiss(world, name):

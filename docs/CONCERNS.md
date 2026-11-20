@@ -14,6 +14,44 @@ The measurements were made on 20 November 2026, on one computer (Windows on ARM6
 | **Not yet** | Would matter at a scale nothing has reached, or concerns something not built | 3 |
 | **By design** | A deliberate choice, with a cost that is accepted | 5 |
 
+## The ten that come first
+
+After the three reviews, ten things were put ahead of everything else. All ten are now fixed, and each fix was checked with a program that showed the fault. `tools/research/review_blockers.py` and `tools/research/later_fixes.py` are those programs.
+
+| | Issue | Standing |
+|---|---|---|
+| P0 | Numbers that are not whole were not said exactly | **Fixed.** The exact fraction is rounded, a half away from nothing. `Say 123,456,789,012,345,678,901 + 0.5.` says `123,456,789,012,345,678,901.5`. |
+| P0 | A check for nothing was wrongly kept inside a loop | **Fixed.** What is known before a loop is not assumed for anything the loop can change. A chain of things can be followed with `While the spot is not nothing:`. |
+| P0 | A name could also be an adjective | **Fixed.** A name may not be an adjective, nor begin with one, whichever comes first. Two kinds may not share a name or a plural. |
+| P0 | Rules were checked at the wrong time, or not at all | **Fixed.** A rule holds from its own sentence on. It may read only written-out values, variables made with `always`, and the thing's own stored properties, so nothing can break it behind its back. The Python error is gone. |
+| P1 | Accepted sentences with two readings | **Fixed.** Six shapes are now refused until brackets say which reading is meant: a filter followed by arithmetic, a second `whose` where a thing is being made, `whether` with `and` or `or`, `or else` beside arithmetic, `not` in front of `and` or `or`, and `the X of Y` when X is also a value in view. |
+| P1 | The compiler's vocabulary lookup | **Fixed.** A plain sentence now costs about 45 microseconds to compile whether the program has 10 kinds or 1,600. It was 3,500 microseconds at 1,600. |
+| P1 | Reactions checked against every thing | **Fixed.** A sentence that changes one thing checks that thing. Ticking one card among 200 fell from 72 ms to 6 ms. |
+| P1 | Private names collide across chapters | **Fixed.** A name a chapter does not share is its own, and other files may use the word, for variables, verbs, adjectives, things and kinds alike. Two chapters that each keep a private `count`, a private verb `tidy` and a private kind `cell` now run side by side. A name that files share still means one thing in the whole program. |
+| P1 | No indexed collections | **Fixed.** A list can be written out, added to, indexed and changed, and can be a property. Behind `whose <property> is <value>` there is now an index: looking up each of 1,600 things once took 2.3 seconds and now takes 0.02. |
+| P2 | Few kinds of element on a page | **Done.** The page library has thirteen kinds: pictures, links, tables with rows and cells, and menus with options were added, and a panel may sit inside a panel. `examples/web_almanac.english` uses a menu, a table and a link. |
+
+Two more things were built on the way, because the measurements asked for them.
+
+**A reaction for when everything has settled.** `Whenever everything has settled:` is carried out once at the end of a turn, however much the turn changed. The to-do list now tidies itself there and nowhere else. On 200 cards, "Tick them all" took 13.1 seconds and saved the list 201 times. It now takes 8 milliseconds and saves it once.
+
+| One action on 200 cards | Before | After |
+|---|---|---|
+| Tick one card | 72 ms, 1 save | 6 ms, 1 save |
+| Type a letter in the Find box | 37 ms | 5 ms |
+| Add a card | 66 ms, 1 save | 11 ms, 1 save |
+| Tick them all | 13,110 ms, 201 saves | 8 ms, 1 save |
+
+**Arithmetic and choices.** Remainders, rounding, whole powers, square roots, the larger and smaller of two values, and arithmetic on percentages are built, and so is a fixed set of choices (`A mood is one of sleepy, grumpy or content.`). The examples that work round their absence, SHA-256 above all, have not been rewritten yet.
+
+**Marks in the voice of a teacher.** Every refusal now names its kind of mistake (spelling, punctuation, grammar and so on), gives the rule to remember and the section of the reference that teaches it, and, where the correction is certain, the corrected line, which the playground can put in for you. A misspelt word is answered with the word that was meant.
+
+Adding the new kinds of element brought one of the other concerns to life at once. The library now has a kind called `row`, and a chapter written long before had a role called `row`. A program that used both was refused, though the chapter cannot even say the library's word. The check was wrong and has been put right: a name is judged only against what its own file may say. It is the clearest case so far for why names need to be private.
+
+**Still to do**, in the order it will be done: kinds of problem and a block that always runs after a `Try`; a way to run a program's examples on their own, and a trace of what set off what; properties kept equal to an expression; a verb with more than one shape; a book found beside the program; and the places where the reference is silent or says the wrong thing. Not planned: doing things at the same time, anything that waits, writing things out whole, and loading libraries from outside the compiler.
+
+The tables below are the reviews as they were first written, before any of this. They are kept as the record of what was found.
+
 ## What was measured
 
 | Question | Result |
@@ -52,7 +90,7 @@ Two of these change the picture the review drew. The compiler's scaling problem 
 | Reserved vocabulary | **Confirmed** | 96 words are reserved. Writing the examples ran into `name`, `number`, `more`, `new` and `list` as parts of names that would have been natural. | Reserve by position where possible, as `chapter`, `book` and `library` already are. A new reserved word breaks existing programs, so the list should be frozen early. |
 | Case insensitivity | **By design** | Names are matched without regard to capitals: `smaug` finds `Smaug`, and a second thing called `SMAUG` is refused. No external identifier is ever a name in a program, so there is nothing yet to disagree with. | To be looked at again if a library ever takes names from outside. |
 | Automatic pluralization | **Confirmed**, with a defect | Plurals are formed by rule, so `children` and `sheep` are not known. Worse, two kinds may share a plural: with kinds `bus` and `buse`, `the number of buses` is accepted and silently counts one of them. That is an ambiguity the compiler promises to refuse. | Refuse a kind whose plural, or whose name, collides with another's. Allow a kind to state its own plural. |
-| Refactoring safety | **Partly** | A rename is a search through every phrase, and there is no tool for it. But a missed use cannot go unnoticed: every name must be defined before it is used, so the compiler finds each one. | A rename in the tooling. The language already makes it safe. |
+| Refactoring safety | **Partly**, since answered | A rename is a search through every phrase. A missed use could never go unnoticed, because every name must be defined before it is used. | A rename tool now exists, `python -m englishscript.rename`. It changes every use, a kind's plural included, and then asks the linter: if the renamed program has any complaint the original did not, the rename is refused and nothing is changed. Tried on every name in every example, 583 of 585 went through. It works on one file at a time. |
 
 ### Data
 
@@ -79,7 +117,7 @@ Two of these change the picture the review drew. The compiler's scaling problem 
 | Concern | Verdict | What is so | What it needs |
 |---|---|---|---|
 | Diagnostics | **Handled**, and being improved | An ambiguous phrase is refused with its readings and a way to say which: `"feuds of Smaug" can be read 2 ways ... Say which: "feuds whose challenger is Smaug"`. The messages are being rewritten in the shape of a teacher's mark, with the rule and a correction that can be applied. | The rewrite in progress. |
-| IDE support | **Confirmed** | The playground checks as you type, underlines, lists every problem and can apply a correction. There is no completion, no rename and no way to jump to a definition. `--lint --json` gives a tool everything the playground has. | A language server built on the linter. |
+| IDE support | **Confirmed**, since answered | The playground checks as you type, underlines, lists every problem and can apply a correction. There was no completion, no rename and no way to jump to a definition. | A language server now exists, `python -m englishscript.server`: problems as you type, corrections as quick fixes, hover, an outline, go to definition (into chapters too), completion and rename. It has been driven by its tests, including a real exchange over pipes, and has not yet been run inside an editor. [EDITORS.md](EDITORS.md) says how to set it up. |
 | Testing infrastructure | **Partly** | `For example` runs with the program, every time, against the live world, and the count is reported. There is no way to run examples apart from the program, and no fixtures. | A way to run a file's examples without its other effects. |
 | Debugging and observability | **Confirmed** | A problem while running gives the sentence, the values, and the sentences that led to it. `--explain` shows how each sentence was read. There is no stepping, no tracing and no profiler. | Tracing first: a run that says each sentence as it is carried out is cheap to add and suits the language. |
 
@@ -113,10 +151,10 @@ The cost is in how reactions are checked. Before every sentence that could chang
 | Event recursion | **Handled** | Section 9.5 fixes the order: a reaction is carried out at once, after the sentence that set it off; when one sentence changes several things they are taken in the order they were made; reactions to the same change run in the order written. A probe with two reactions gave `A:First B:First A:Second B:Second A:Third B:Third`. Reactions that set each other off for ever are stopped at 200 levels, the whole event is undone, and the page is left as it was. | It is a limit on depth, not a detection of circles: the message names the reaction it stopped at, not the circle. It should name the circle. |
 | Redundant updates | **Confirmed**, and worse than stated | Every tick, star, edit and removal runs `Arrange`, `Sift`, `Reckon` and `Keep` over every card. The table shows the result. Two causes are multiplied together: the program asks for everything to be redone, and the runtime re-tests every card before every changing sentence. | In the runtime, test only the thing a sentence changes. In the language, a way to answer once after a whole event (see event ordering). |
 | Reactive dependencies | **Confirmed** | The language already has values that follow others: a worked-out property and a defined adjective are worked out afresh each time they are read. It has nothing that keeps a stored property, such as a note's wording, equal to something. `Tidy` is that, done by hand. | A sentence that says a property is kept equal to an expression. The compiler would have to know what an expression reads, which is the same analysis that doing things at the same time needs (section 12). |
-| UI and data coupling | **Confirmed** | In this example a card is the task. Running without a browser is not a problem: the stand-in page runs the whole program, and its 28 tests press, type and tick with no browser. A second view of the same tasks is the problem: it would need a kind of its own, kept in step with the cards by hand, in both directions. | Either a way to bind a program's own kind to a page kind, or acceptance that this suits small pages. |
+| UI and data coupling | **Confirmed**, by choice of that example | In the to-do list a card is the task. Running without a browser is not a problem: the stand-in page runs the whole program, and its tests press, type and tick with no browser. A second view of the same tasks would need a kind of its own, kept in step with the cards by hand. | The counters example keeps the two apart: the count belongs to a counter, and the note and buttons only show it. Kept properties, when built, will remove the keeping in step by hand. |
 | Transaction boundaries | **Partly** | The page cannot disagree with the world after a failure, because it is redrawn from the world after every event. A tick whose answer fails leaves the thing unticked, the box unticked and the note untouched. Two things escape. What was `Remember`ed inside the failed answer stays in storage, as a file written inside a failed `Try` stays. And a letter typed into a box whose answer fails is taken back out of the box, which is consistent and will surprise people. | Say in the reference that `Remember` is like writing a file. Decide whether a refused keystroke should disappear. |
 | Event ordering | **Partly** | The order is fully specified, as above. Batching is not: there is no way to say "when all of this has settled". A loop that ticks every card therefore runs a full answer after each one. | A settled form of reaction, carried out once when an event and everything it set off have finished. It would also cure the redundant updates and the saves. |
-| Component reuse | **Confirmed** | Every element is one named thing. A chapter is read once in a program, so it cannot be used to make two of anything. There is no kind made of parts. | A design. Nothing in the reference addresses it. |
+| Component reuse | **Confirmed**, since answered | Every element is one named thing, and a chapter is read once, so it cannot be used to make two of anything. But a kind of the program's own can hold the elements that belong together, a verb can make them, and one reaction can serve them all by finding the thing a pressed button belongs to. | `examples/web_counters.english` makes three counters this way, and the page library's document describes the pattern. Nothing new was needed in the language. |
 | Rendering efficiency | **Handled**, in the library | Only what differs is written: one element for a press that changes one note, two for a tick. A card that changes its place is the only one moved. The library's own walk over the things is linear: 0.55 ms among 200 cards, 3.5 ms among 1,000. | Nothing in the library. The waste is in the program's recomputation, above. |
 | Accessibility | **Partly**, since mended | Given without asking: real elements (a heading, buttons, text boxes, a tick box), so the keyboard works; a spoken label on a card's box, words, star and cross; attention kept on a card that moves; Enter and Escape while editing. Seven gaps were found: a field's only name was its hint; every button carried a pressed state, so "Add" was announced as a switch; a note that changed was not announced; the bar had no range; every cross said only "Remove"; cards were not a list; attention was lost when the card that had it was removed. | All seven have been closed in the library, with tests for six. The seventh, where attention goes when a card is removed, can only be seen in a browser. |
 | Debugging | **Confirmed** | A problem reports the sentences that led to it. Nothing shows a chain that went well. The to-do page's list of "the things behind the page" marks what changed after each click, which shows the result and not the cause. | A trace of each event: which reactions ran, in what order, and what each changed. |
@@ -202,8 +240,10 @@ python tools/research/timing.py .             how compiling and running scale
 python tools/research/where_time_goes.py .    which functions the compiler spends its time in
 python tools/research/probes.py .             small programs, one for each claim above
 python tools/research/more_probes.py .        a few more, and the compile time of each example
+python tools/research/review_blockers.py .    the four blockers of the adversarial review
+python tools/research/later_fixes.py .        private names, lists, the index, arithmetic and choices
 python tools/research/page_events.py .        what one click costs on the to-do page, and what a failure leaves
 python tools/research/page_where_time_goes.py .   which functions one tick spends its time in
 ```
 
-They print what they find and change nothing. The times will differ on another computer; the shapes should not.
+They print what they find and change nothing. The times will differ on another computer; the shapes should not. Run today they show the compiler as it is now, with the fixes in, so several of them no longer show the fault they were written to find: a probe that once ran to a wrong answer now ends in a refusal.

@@ -178,15 +178,15 @@ const result = JSON.parse(play(source, "run", JSON.stringify(replies)));</pre>
     <tr><td>The Python interpreter, as WebAssembly</td><td>9.9 MB</td></tr>
     <tr><td>Python's standard library</td><td>2.3 MB</td></tr>
     <tr><td>The script that starts the interpreter</td><td>1.2 MB</td></tr>
-    <tr><td>The EnglishScript compiler</td><td>54 KB</td></tr>
+    <tr><td>The EnglishScript compiler</td><td>about 130 KB</td></tr>
   </tbody>
 </table>
 </div>
 
 <ul>
-  <li><strong>The first run is slow to start.</strong> Nearly all of the download is the interpreter, and the compiler is less than half of one per cent of it. The browser keeps a copy, so later visits start much sooner.</li>
+  <li><strong>The first run is slow to start.</strong> Nearly all of the download is the interpreter, and the compiler is about one per cent of it. While it arrives, the page shows how much has come. The browser keeps a copy, so later visits start much sooner.</li>
   <li><strong>It runs somewhat slower than on your own machine.</strong> Setting up the SHA-256 example took 0.7 seconds here and 0.4 with ordinary Python on the same computer.</li>
-  <li><strong>A long-running program freezes the tab</strong> until it finishes, because it shares the page's thread. A <code>While</code> loop is stopped after ten thousand rounds, which catches the usual accident.</li>
+  <li><strong>A long-running program freezes the tab</strong> until it finishes, because it shares the page's thread. A <code>While</code> loop is stopped after a million rounds, which catches the usual accident.</li>
   <li><strong>Some things are out of reach.</strong> A browser has no way to call a graphics driver, so the <a href="vulkan.html">vulkan library</a> reports that it cannot start.</li>
   <li><strong>The page depends on two outside addresses:</strong> one for the interpreter and one for the typefaces. Without the first, the text and the printed outputs can still be read, but nothing runs.</li>
 </ul>

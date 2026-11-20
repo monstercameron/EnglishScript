@@ -19,7 +19,7 @@ import build_site  # noqa: E402
 
 REBUILD = "run: python tools/build_site.py"
 PAGES = ("index.html", "playground.html", "todo.html", "compare.html", "reference.html", "how.html",
-         "vulkan.html", "page.html", "concerns.html")
+         "vulkan.html", "page.html", "concerns.html", "editors.html")
 
 
 def read(name):

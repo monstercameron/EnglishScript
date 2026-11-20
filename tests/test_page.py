@@ -25,9 +25,9 @@ def open_page(source, kept=None):
 COUNTER = '''
 Use the page library.
 There is a heading called Banner whose wording is "A counter".
-There is a panel called Row.
-There is a note called Tally whose wording is "0" and whose panel is Row.
-There is a button called Clicker whose label is "One more" and whose panel is Row.
+There is a panel called Strip.
+There is a note called Tally whose wording is "0" and whose panel is Strip.
+There is a button called Clicker whose label is "One more" and whose panel is Strip.
 Let the count be 0.
 Whenever Clicker becomes pressed:
   Add 1 to the count.
@@ -69,7 +69,7 @@ There is a note called Low whose wording is "in the bottom panel" and whose pane
 
     def test_only_what_changed_is_written(self):
         world, _ = open_page(COUNTER)
-        nodes = [page.element(world, name).node for name in ("Banner", "Row", "Tally", "Clicker")]
+        nodes = [page.element(world, name).node for name in ("Banner", "Strip", "Tally", "Clicker")]
         page.Node.LOG = []
         try:
             page.press(world, "Clicker")
@@ -78,7 +78,7 @@ There is a note called Low whose wording is "in the bottom panel" and whose pane
             page.Node.LOG = None
         self.assertEqual(written, [("es-note", "textContent", "1")])
         # The elements are the same ones: nothing was rebuilt.
-        self.assertEqual([page.element(world, name).node for name in ("Banner", "Row", "Tally", "Clicker")], nodes)
+        self.assertEqual([page.element(world, name).node for name in ("Banner", "Strip", "Tally", "Clicker")], nodes)
 
     def test_typing_changes_the_thing_and_the_thing_changes_the_box(self):
         world, _ = open_page('''
@@ -286,6 +286,201 @@ Whenever Finder becomes changed:
         self.assertEqual(page.sketch(world), "[_ _]\n[ ] Sweep\n[ ] Post a letter".replace("[_ _]", "[__]"))
 
 
+class MoreKindsOfElement(unittest.TestCase):
+    def test_a_picture_and_a_link(self):
+        world, _ = open_page('''
+Use the page library.
+There is a picture called Plate whose source is "assets/triangle-gpu.png" and whose caption is "A shaded triangle".
+There is a link called Onward whose wording is "The grammar" and whose target is "reference.html#s9-6".
+''')
+        plate, onward = page.element(world, "Plate").node, page.element(world, "Onward").node
+        self.assertEqual((plate.tag, plate.attributes["src"], plate.attributes["alt"]),
+                         ("img", "assets/triangle-gpu.png", "A shaded triangle"))
+        self.assertEqual((onward.tag, onward.attributes["href"], onward.textContent), ("a", "reference.html#s9-6", "The grammar"))
+        self.assertEqual(page.sketch(world), "(picture: A shaded triangle)\nThe grammar -> reference.html#s9-6")
+
+    def test_an_address_cannot_carry_a_script(self):
+        for address, allowed in (("https://example.org/a?b=c", True), ("page.html", True), ("#top", True),
+                                 ("mailto:ada@example.org", True), ("javascript:alert(1)", False),
+                                 (" JavaScript:alert(1)", False), ("data:text/html,<script>", False),
+                                 ("vbscript:x", False), ("a/b:c", True)):
+            with self.subTest(address):
+                self.assertEqual(page._safe(address) != "", allowed)
+        self.assertNotEqual(page._safe("data:image/png;base64,AAAA", pictures=True), "")
+        self.assertEqual(page._safe("data:image/svg+xml,<svg onload=x>", pictures=True), "")
+        self.assertEqual(page._safe("mailto:ada@example.org", pictures=True), "")
+        world, _ = open_page('''
+Use the page library.
+There is a link called Trap whose wording is "Click" and whose target is "javascript:alert(1)".
+''')
+        self.assertNotIn("href", page.element(world, "Trap").node.attributes)
+        self.assertEqual(page.sketch(world), "Click -> (nowhere)")
+
+    def test_a_table_of_rows_and_cells(self):
+        world, _ = open_page('''
+Use the page library.
+There is a table called Ledger whose title is "Accounts".
+There is a row called Head whose table is Ledger.
+Now Head is leading.
+There is a new cell whose wording is "Name" and whose row is Head.
+There is a new cell whose wording is "Balance" and whose row is Head.
+There is a row called First whose table is Ledger.
+There is a cell called Who whose wording is "Ada" and whose row is First.
+There is a cell called Sum whose wording is "$40" and whose row is First.
+There is a button called Payer whose label is "Pay Ada".
+Whenever Payer becomes pressed:
+  Set Sum's wording to "$90".
+''')
+        ledger = page.element(world, "Ledger")
+        self.assertEqual((ledger.node.tag, ledger.parts["title"].textContent), ("table", "Accounts"))
+        rows = ledger.parts["body"].children
+        self.assertEqual([row.tag for row in rows], ["tr", "tr"])
+        self.assertEqual([cell.textContent for cell in rows[1].children], ["Ada", "$40"])
+        self.assertEqual(rows[0].children[0].attributes["role"], "columnheader")
+        self.assertEqual(rows[1].children[0].attributes["role"], "cell")
+        self.assertEqual(page.sketch(world).splitlines()[:4],
+                         ["-- Accounts --", "| Name | Balance |", "|------|---------|", "| Ada | $40 |"])
+        page.Node.LOG = []
+        try:
+            page.press(world, "Payer")
+            written = [(node.className, member, value) for node, member, value in page.Node.LOG]
+        finally:
+            page.Node.LOG = None
+        self.assertEqual(written, [("es-cell", "textContent", "$90")])  # one cell, and nothing else
+
+    def test_a_menu_and_the_option_picked(self):
+        world, _ = open_page('''
+Use the page library.
+There is a menu called Season whose hint is "Which season?".
+There is an option called Spring whose wording is "Spring" and whose menu is Season.
+There is an option called Autumn whose wording is "Autumn" and whose menu is Season.
+There is a note called Verdict whose wording is "".
+Whenever an option becomes picked:
+  Set Verdict's wording to "{the option's wording} it is.".
+''')
+        season = page.element(world, "Season")
+        self.assertEqual(season.node.tag, "select")
+        self.assertEqual(season.node.attributes["aria-label"], "Which season?")
+        self.assertTrue(season.parts["blank"].selected)  # nothing is picked, so the hint shows
+        self.assertEqual(page.sketch(world), "{(Which season?) v}")
+        page.pick(world, "Autumn")
+        self.assertEqual(page.element(world, "Verdict").node.textContent, "Autumn it is.")
+        self.assertTrue(page.element(world, "Autumn").node.selected)
+        self.assertFalse(season.parts["blank"].selected)
+        page.pick(world, "Spring")
+        self.assertEqual([name for name in ("Spring", "Autumn") if "picked" in page.element(world, name).thing.marks], ["Spring"])
+        self.assertEqual(page.sketch(world), "{Spring v}\nSpring it is.")
+
+    def test_a_panel_inside_a_panel(self):
+        world, _ = open_page('''
+Use the page library.
+There is a panel called Outer whose title is "Outer".
+There is a panel called Inner whose title is "Inner" and whose panel is Outer.
+There is a note called Deep whose wording is "inside both" and whose panel is Inner.
+There is a note called Shallow whose wording is "inside one" and whose panel is Outer.
+''')
+        outer, inner = page.element(world, "Outer"), page.element(world, "Inner")
+        self.assertIs(inner.node.parent, outer.parts["body"])
+        self.assertIs(page.element(world, "Deep").node.parent, inner.parts["body"])
+        self.assertEqual(page.sketch(world), "-- Outer --\n  -- Inner --\n  inside both\ninside one")
+
+    def test_panels_inside_each_other_go_on_the_page(self):
+        world, _ = open_page('''
+Use the page library.
+There is a panel called Left whose title is "Left".
+There is a panel called Right whose title is "Right" and whose panel is Left.
+Set Left's panel to Right.
+''')
+        root_node = page._state(world)["backend"].root
+        self.assertIn(page.element(world, "Left").node.parent, (root_node, page.element(world, "Right").parts["body"]))
+        # No element is its own ancestor.
+        node, seen = page.element(world, "Left").node, set()
+        while node is not None:
+            self.assertNotIn(id(node), seen)
+            seen.add(id(node))
+            node = node.parent
+
+    def test_a_cell_with_no_row_is_nowhere(self):
+        world, _ = open_page('''
+Use the page library.
+There is a table called Ledger.
+There is a row called Only whose table is Ledger.
+There is a cell called Lone whose wording is "x" and whose row is Only.
+Remove Lone.
+''')
+        self.assertEqual(page.element(world, "Only").node.children, [])
+
+
+class TheWebAlmanac(unittest.TestCase):
+    """examples/web_almanac.english: a menu, a table and a link over three chapters."""
+
+    source = (EXAMPLES / "web_almanac.english").read_text(encoding="utf-8")
+
+    def rows(self, world):
+        return [line for line in page.sketch(world).splitlines() if line.startswith("| ")]
+
+    def test_it_is_free_of_lint(self):
+        self.assertEqual([p.render() for p in lint(self.source, folder=EXAMPLES)], [])
+
+    def test_the_table_is_set_out_for_the_year_as_the_page_opens(self):
+        world, _ = open_page(self.source)
+        rows = self.rows(world)
+        self.assertEqual(rows[0], "| Feast | Date | Falls on a |")
+        self.assertEqual(rows[1], "| Candlemas | 2 February | Tuesday |")
+        self.assertEqual(rows[-1], "| Christmas | 25 December | Saturday |")
+        self.assertEqual(len(rows), 8)
+        self.assertIn("{MMXXVII v}  MMXXVII is a common year of 365 days.", page.sketch(world))
+        self.assertEqual(world.examples, 9)
+
+    def test_picking_a_year_sets_the_table_out_again(self):
+        import datetime
+
+        world, _ = open_page(self.source)
+        option = next(binding.thing.name for binding in page._state(world)["bound"].values()
+                      if binding.thing.kind == "option" and binding.thing.fields["wording"] == "MMXXVIII")
+        page.pick(world, option)
+        rows = self.rows(world)
+        self.assertEqual(len(rows), 8)
+        self.assertEqual(rows[-1], f"| Christmas | 25 December | {datetime.date(2028, 12, 25):%A} |")
+        self.assertIn("MMXXVIII is a leap year of 366 days.", page.sketch(world))
+        # The cells of the year before are gone from the page as well as from the world.
+        self.assertEqual(len(world.things["cell"]), 24)
+        self.assertEqual(sum(len(row.children) for row in page.element(world, "Roster").parts["body"].children), 24)
+
+
+class ThreeCounters(unittest.TestCase):
+    """examples/web_counters.english: one thing made three times, by a kind and a verb."""
+
+    source = (EXAMPLES / "web_counters.english").read_text(encoding="utf-8")
+
+    def test_it_is_free_of_lint(self):
+        self.assertEqual([p.render() for p in lint(self.source, folder=EXAMPLES)], [])
+
+    def press(self, world, title, which):
+        counter = next(thing for thing in world.things["counter"] if thing.fields["title"] == title)
+        page.press(world, counter.fields[which])
+
+    def test_each_counter_keeps_its_own_count(self):
+        world, _ = open_page(self.source)
+        self.press(world, "Pears", "raiser")
+        self.press(world, "Pears", "raiser")
+        self.press(world, "Plums", "raiser")
+        self.press(world, "Pears", "lowerer")
+        self.assertEqual(page.sketch(world).splitlines(), [
+            "# Counters", "2 counted in all.",
+            "-- Apples --", "0  [One more]  [One fewer]",
+            "-- Pears --", "1  [One more]  [One fewer]",
+            "-- Plums --", "1  [One more]  [One fewer]"])
+
+    def test_a_count_cannot_go_below_nothing_and_the_page_is_left_alone(self):
+        world, lines = open_page(self.source)
+        before, said = page.sketch(world), len(lines)
+        self.press(world, "Apples", "lowerer")
+        self.assertEqual(page.sketch(world), before)
+        self.assertEqual(len(lines), said + 1)
+        self.assertIn("never less than 0", lines[-1])
+
+
 class ForAReaderWhoCannotSeeThePage(unittest.TestCase):
     """What the library tells a screen reader, without the program asking."""
 
@@ -369,7 +564,10 @@ class TheWebToDoList(unittest.TestCase):
         # The program itself only says which chapters it uses and what happens when.
         sentences = [line for line in self.source.splitlines() if line.strip() and not line.lstrip().startswith("#")]
         self.assertEqual(sum(1 for line in sentences if line.startswith("Use the ")), 5)
-        self.assertGreaterEqual(sum(1 for line in sentences if line.startswith("Whenever ")), 14)
+        self.assertGreaterEqual(sum(1 for line in sentences if line.startswith("Whenever ")), 10)
+        # The page is tidied in one place, once everything has settled, and nowhere else.
+        self.assertIn("Whenever everything has settled:", sentences)
+        self.assertEqual(sum(1 for line in sentences if line.strip() == "Tidy."), 1)
         self.assertFalse(any(line.startswith(("There is", "A card", "Let ")) for line in sentences))
 
     def test_a_chapter_s_own_words_stay_its_own(self):
@@ -481,6 +679,19 @@ class TheWebToDoList(unittest.TestCase):
         self.assertTrue(page.element(world, "Sweeper").node.hidden)
         page.press(world, "Restorer")  # the last of those cleared comes back
         self.assertEqual(self.cards(world), ["[ ] Two", "[x] Three"])
+
+    def test_however_much_a_click_changes_the_list_is_saved_once(self):
+        world, _ = open_page(self.source, kept={self.KEY: "".join(f"- - - Task {n}{chr(10)}" for n in range(1, 31))})
+        backend = page._state(world)["backend"]
+        saves, keep = [], backend.keep
+        backend.keep = lambda key, line: (saves.append(key), keep(key, line))[1]
+        page.press(world, "Finisher")  # thirty cards ticked by one press
+        self.assertEqual(saves, ["tasks"])
+        self.assertEqual(self.says(world, "Tally"), "All 30 done.")
+        page.type_in(world, "Entry", "A")  # a letter typed changes no card, so nothing is saved
+        page.type_in(world, "Finder", "task 1")
+        self.assertEqual(saves, ["tasks"])
+        self.assertEqual(len(self.cards(world)), 11)  # Task 1, and Task 10 to Task 19
 
     def test_the_list_comes_back_as_it_was_left(self):
         world, _ = open_page(self.source, kept={self.KEY: ""})

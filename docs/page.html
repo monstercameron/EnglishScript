@@ -29,8 +29,8 @@
 <article>
 <h1>The Page Library</h1>
 <p class="standfirst">Things that are elements of a web page, and the sentences that answer a press or a keystroke.</p>
-<p><code>Use the page library.</code> lets an EnglishScript program be a web page. It adds seven kinds of thing, and each thing of one of those kinds <strong>is</strong> an element of the page. The program never touches the page. It makes things and changes them, and the page follows; a person presses and types, and the things change.</p>
-<p><code>examples/web_todo.english</code> is a to-do list written this way, and <a href="https://github.com/monstercameron/EnglishScript/blob/main/docs/todo.html">the page called "A page"</a> runs it. Its work is divided among four chapters of the book in <code>examples/tasks</code>: what is on the page, what a task is, which cards are in sight, and what is remembered.</p>
+<p><code>Use the page library.</code> lets an EnglishScript program be a web page. It adds thirteen kinds of thing, and each thing of one of those kinds <strong>is</strong> an element of the page. The program never touches the page. It makes things and changes them, and the page follows; a person presses and types, and the things change.</p>
+<p><code>examples/web_almanac.english</code> is a small one: a menu of years and a table of feasts, set out over three chapters that know nothing about pages. <code>examples/web_todo.english</code> is a to-do list written this way, and <a href="https://github.com/monstercameron/EnglishScript/blob/main/docs/todo.html">the page called "A page"</a> runs it. Its work is divided among four chapters of the book in <code>examples/tasks</code>: what is on the page, what a task is, which cards are in sight, and what is remembered.</p>
 <pre class="form">Use the page library.
 
 There is a heading called Banner whose wording is "A counter".
@@ -46,16 +46,39 @@ Whenever Clicker becomes pressed:
 <div class="scroll"><table>
 <thead><tr><th>Kind</th><th>What it is</th><th>Properties</th><th>Adjectives</th></tr></thead>
 <tbody>
-<tr><td><code>panel</code></td><td>A box that holds other elements, side by side where they fit</td><td><code>title (text, if any)</code></td><td><code>hidden</code></td></tr>
+<tr><td><code>panel</code></td><td>A box that holds other elements, side by side where they fit</td><td><code>title (text, if any)</code>, <code>panel (panel, if any)</code></td><td><code>hidden</code></td></tr>
 <tr><td><code>heading</code></td><td>A title</td><td><code>wording (text)</code>, <code>panel (panel, if any)</code></td><td><code>hidden</code></td></tr>
 <tr><td><code>note</code></td><td>A line of text</td><td><code>wording (text)</code>, <code>panel (panel, if any)</code></td><td><code>hidden</code></td></tr>
 <tr><td><code>field</code></td><td>A box to type in</td><td><code>wording (text)</code>, <code>hint (text, if any)</code>, <code>panel (panel, if any)</code></td><td><code>changed</code>, <code>entered</code>, <code>hidden</code></td></tr>
 <tr><td><code>button</code></td><td>Something to press</td><td><code>label (text)</code>, <code>panel (panel, if any)</code></td><td><code>pressed</code>, <code>chosen</code>, <code>hidden</code></td></tr>
 <tr><td><code>card</code></td><td>A line with a tick box, words that can be edited where they stand, a tag, a star, and a cross to dismiss it</td><td><code>wording (text)</code>, <code>tag (text, if any)</code>, <code>order (number, if any)</code>, <code>panel (panel, if any)</code></td><td><code>ticked</code>, <code>starred</code>, <code>reworded</code>, <code>dismissed</code>, <code>hidden</code></td></tr>
 <tr><td><code>gauge</code></td><td>A bar that shows how far along something is</td><td><code>level (number)</code>, <code>limit (number)</code>, <code>panel (panel, if any)</code></td><td><code>hidden</code></td></tr>
+<tr><td><code>picture</code></td><td>An image</td><td><code>source (text)</code>, <code>caption (text, if any)</code>, <code>panel (panel, if any)</code></td><td><code>hidden</code></td></tr>
+<tr><td><code>link</code></td><td>Words that lead somewhere else</td><td><code>wording (text)</code>, <code>target (text)</code>, <code>panel (panel, if any)</code></td><td><code>hidden</code></td></tr>
+<tr><td><code>table</code></td><td>Rows of cells</td><td><code>title (text, if any)</code>, <code>panel (panel, if any)</code></td><td><code>hidden</code></td></tr>
+<tr><td><code>row</code></td><td>One row of a table</td><td><code>table (table)</code></td><td><code>leading</code>, <code>hidden</code></td></tr>
+<tr><td><code>cell</code></td><td>One cell of a row</td><td><code>wording (text)</code>, <code>row (row)</code></td><td></td></tr>
+<tr><td><code>menu</code></td><td>A list to choose one of</td><td><code>hint (text, if any)</code>, <code>panel (panel, if any)</code></td><td><code>hidden</code></td></tr>
+<tr><td><code>option</code></td><td>One of a menu's choices</td><td><code>wording (text)</code>, <code>menu (menu)</code></td><td><code>picked</code></td></tr>
 </tbody></table></div>
 <p>These are ordinary kinds. Everything the language does with a kind works on them: <code>For each ticked card:</code>, <code>the number of cards</code>, <code>A card is open when it is not ticked.</code>, <code>Remove the card.</code></p>
 <p><strong>Where an element goes.</strong> Elements appear in the order their things were made. An element whose <code>panel</code> is given sits inside that panel, again in the order made. A panel lays its elements out in a row and wraps them; a card always takes a whole line.</p>
+<p><strong>Things inside things.</strong> A panel may be put inside a panel by giving it a <code>panel</code> of its own. A row sits in its <code>table</code>, a cell in its <code>row</code>, and an option in its <code>menu</code>, each in the order made. A row or a cell that belongs to nothing is not shown. Two panels put inside each other are both set on the page instead.</p>
+<p><strong>Tables.</strong> A table is built from things, like everything else:</p>
+<pre class="form">There is a table called Ledger whose title is "Accounts".
+There is a row called Head whose table is Ledger.
+Now Head is leading.
+There is a new cell whose wording is "Name" and whose row is Head.
+There is a new cell whose wording is "Balance" and whose row is Head.</pre>
+<p>A <code>leading</code> row is the table's heading. Changing a cell's wording changes that cell and nothing else.</p>
+<p><strong>Menus.</strong> The option a person chooses becomes <code>picked</code>, and the one that was picked before becomes not picked. Until something is picked, the menu shows its hint.</p>
+<pre class="form">There is a menu called Season whose hint is "Which season?".
+There is an option called Spring whose wording is "Spring" and whose menu is Season.
+There is an option called Autumn whose wording is "Autumn" and whose menu is Season.
+
+Whenever an option becomes picked:
+  Set Verdict's wording to "{the option's wording} it is.".</pre>
+<p><strong>Pictures and links.</strong> A picture's <code>caption</code> is read out to a reader who cannot see it, so it should say what the picture shows. An address may lead to the web (<code>https://...</code>), to the post (<code>mailto:...</code>, for a link), or to somewhere on the same site. Any other kind of address is not used: the picture is left empty, and the link is struck through and leads nowhere. A program cannot make a page run a script by putting one in a text.</p>
 <p><strong>The order of cards.</strong> A card may be given an <code>order</code>, which is a number. Cards with a lower order come first. Cards with the same order, or with none (which counts as 0), stay in the order they were made. The language has no sentence for sorting, and does not need one here: a program says which sort each card belongs to, and the page keeps them in place.</p>
 <pre class="form">For each card:
   If the card is ticked:
@@ -93,14 +116,30 @@ Whenever Clicker becomes pressed:
 <tr><td>presses a card's star</td><td>the card becomes <code>starred</code>, or becomes not <code>starred</code></td></tr>
 <tr><td>edits a card's words where they stand, and leaves them</td><td>the card's <code>wording</code> is the new words, and the card becomes <code>reworded</code></td></tr>
 <tr><td>presses a card's cross</td><td>the card becomes <code>dismissed</code></td></tr>
+<tr><td>chooses an option of a menu</td><td>that option becomes <code>picked</code>, and the others of its menu become not <code>picked</code></td></tr>
 </tbody></table></div>
 <p>The program answers with <code>Whenever</code> (see <a href="reference.html">the reference</a>):</p>
 <pre class="form">Whenever a card becomes dismissed:
   Remove the card.</pre>
-<p>Five of these adjectives are <strong>momentary</strong>: <code>pressed</code>, <code>changed</code>, <code>entered</code>, <code>reworded</code> and <code>dismissed</code> last only while the program's answer is being carried out. They do not "become not" afterwards, so a <code>Whenever ... becomes not pressed:</code> is never set off by them.</p>
+<p>Five of these adjectives are <strong>momentary</strong>: <code>pressed</code>, <code>changed</code>, <code>entered</code>, <code>reworded</code> and <code>dismissed</code> last only while the program's answer is being carried out. They do not "become not" afterwards, so a <code>Whenever ... becomes not pressed:</code> is never set off by them. If a program says <code>Now Adder is pressed.</code> itself, the reaction is set off as if a person had pressed it, and the button stays <code>pressed</code> until the next time the page is brought up to date, which is when the program's own sentences end or the next thing a person does has been answered.</p>
 <p>A card's words are edited by clicking on them. Enter or leaving the words finishes the edit, and Escape gives it up. The words are kept as one line: spaces at the ends are dropped and runs of spaces become one. Leaving the words as they were is not a rewording.</p>
-<p>If an answer runs into a problem, such as a rule that would be broken or a <code>Fail because</code>, everything it changed is put back, as after a failed <code>Try</code>, and the problem is said.</p>
+<p>If an answer runs into a problem, such as a rule that would be broken or a <code>Fail because</code>, everything it changed is put back, as after a failed <code>Try</code>, and the problem is said. That includes what the person did: a box that was ticked is unticked again, and a letter that was typed is taken back out of its box. The page never shows something the program refused.</p>
 <p>After every answer, the library compares the things with the elements and writes only what differs. An element stays the same element for as long as its thing exists, so a box that is being typed in is never rebuilt.</p>
+<h2 id="making-several-of-something">Making several of something</h2>
+<p>The library has no "component", and does not need one. A kind of your own holds the elements that belong together, and a verb makes them. <code>examples/web_counters.english</code> makes three counters this way:</p>
+<pre class="form">A counter has a title (text), a count (number), a face (note), a raiser (button) and a lowerer (button).
+
+To build a title (text):
+  Let the frame be a new panel whose title is the title.
+  Let the dial be a new note whose wording is "0" and whose panel is the frame.
+  Let the upper be a new button whose label is "One more" and whose panel is the frame.
+  Let the downer be a new button whose label is "One fewer" and whose panel is the frame.
+  There is a new counter whose title is the title and whose count is 0 and whose face is the dial and whose raiser is the upper and whose lowerer is the downer.
+
+Whenever a button becomes pressed:
+  For each counter whose raiser is the button:
+    Add 1 to the counter's count.</pre>
+<p>One answer serves every counter there is or will be, because it finds the counter that the pressed button belongs to. The same arrangement keeps what a program is about apart from how it is shown: the count belongs to the counter, and the note and buttons only show it. A second way of showing the same counters would be a second set of elements pointing at the same things.</p>
 <h2 id="remembering">Remembering</h2>
 <pre class="form">Remember &lt;text&gt; under &lt;text&gt;.
 the memory of &lt;text&gt;</pre>
@@ -108,6 +147,7 @@ the memory of &lt;text&gt;</pre>
 <pre class="form">Let the last be the memory of "visits" or else "never".
 Remember "once before" under "visits".</pre>
 <p>Nothing that is remembered leaves the browser.</p>
+<p><code>Remember</code> is like writing a file: it is not part of the world. If the answer it was said in fails, the world is put back and what was remembered stays remembered. Keep it as the last thing an answer does.</p>
 <h2 id="without-a-browser">Without a browser</h2>
 <p>Run from the command line, there is no page to show. The library keeps a stand-in for one in memory, and when the program ends it sketches the page in text:</p>
 <pre class="form">$ python -m englishscript examples/web_todo.english
@@ -136,7 +176,9 @@ compile_source(source).run(out=show_a_line, ask=ask_a_question)</pre>
 <p>When a thing is removed, its element is given the attribute <code>data-leaving</code> and stays for a quarter of a second before it goes, so that a style sheet can show it leave. A reader who has asked for reduced motion gets no such pause.</p>
 <h2 id="what-it-does-not-do">What it does not do</h2>
 <ul>
-<li>There are seven kinds of element. There are no pictures, links, tables or menus yet.</li>
+<li>There are thirteen kinds of element, and the list stops there: no sound or moving pictures, no drawing, and no page made of several pages.</li>
+<li>A picture cannot be pressed, and a link cannot be answered with <code>Whenever</code>: it only leads away.</li>
+<li>Using the library takes thirteen everyday words for its kinds (<code>row</code>, <code>cell</code>, <code>table</code>, <code>menu</code>, <code>link</code> and the rest). A program that uses it cannot give those words another meaning.</li>
 <li>Only cards can be put in an order of the program's choosing. Everything else stands in the order made.</li>
 <li>A program cannot ask where the pointer is, or what key was pressed, beyond Enter in a field.</li>
 <li>A panel cannot be put inside a panel.</li>

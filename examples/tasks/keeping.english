@@ -17,6 +17,9 @@ Use the layout chapter.
 # The last card removed, as a line, until it is put back.
 Let the spare (text, if any) be nothing.
 
+# The list as it was last written. No list is ever these two words.
+Let the written be "nothing yet".
+
 # A card as a line of text.
 To work out the listing (text) of a card:
   Let the tick be "-".
@@ -57,12 +60,16 @@ To revive a line (text):
   If the tick is "x":
     Now the card is ticked.
 
-# Keep the whole list in the browser, for next time.
+# Keep the whole list in the browser, for next time. It is written only when
+# it differs from what was written last, so a letter typed in a box saves nothing.
 To keep:
   Let the record be "".
   For each card:
     Set the record to "{the record}{the listing of the card}{new line}".
+  If the record is the written:
+    Stop.
   Remember the record under "tasks".
+  Set the written to the record.
 
 # Bring back the list as it was left. On a first visit there is none, so
 # three cards are written to begin with.

@@ -127,7 +127,7 @@
 
 <h2 id="bound">How the page is bound to the program</h2>
 
-<p>The program says <code>Use the page library.</code> and from then on seven kinds of thing are elements of the page: a <em>panel</em>, a <em>heading</em>, a <em>note</em>, a <em>field</em>, a <em>button</em>, a <em>card</em> and a <em>gauge</em>. Making one puts it on the page, in the order made. Nothing else has to be called. Use the list above, and watch the things on the right change with it.</p>
+<p>The program says <code>Use the page library.</code> and from then on thirteen kinds of thing are elements of the page. This page uses seven of them: a <em>panel</em>, a <em>heading</em>, a <em>note</em>, a <em>field</em>, a <em>button</em>, a <em>card</em> and a <em>gauge</em>. The others are pictures, links, tables and menus, which <a href="page.html">the page library's own page</a> describes. Making one puts it on the page, in the order made. Nothing else has to be called. Use the list above, and watch the things on the right change with it.</p>
 
 <table class="bound">
   <thead><tr><th>On the page</th><th>In the program</th></tr></thead>
@@ -135,10 +135,11 @@
     <tr><td>A line appears in the list</td><td><code>There is a new card whose wording is the line and whose panel is Roll.</code></td></tr>
     <tr><td>Someone types in the box</td><td><code>Entry's wording</code> is what they have typed</td></tr>
     <tr><td>Someone presses Add</td><td><code>Whenever Adder becomes pressed:</code></td></tr>
-    <tr><td>Someone ticks a box</td><td>The card is <code>ticked</code>, and <code>Whenever a card becomes ticked:</code> is carried out</td></tr>
+    <tr><td>Someone ticks a box</td><td>The card is <code>ticked</code>. No sentence answers the tick itself: the page is tidied when everything has settled</td></tr>
     <tr><td>Someone presses a card's star</td><td>The card is <code>starred</code>, and <code>Set the card's order to 0.</code> moves it to the head of the list</td></tr>
     <tr><td>Someone edits a card's words where they stand</td><td><code>Whenever a card becomes reworded:</code></td></tr>
-    <tr><td>Someone types in the Find box</td><td><code>Whenever Finder becomes changed:</code></td></tr>
+    <tr><td>Someone types in the Find box</td><td><code>Finder's wording</code> is what they have typed, and the tidying hides what does not match</td></tr>
+    <tr><td>Anything at all has changed</td><td><code>Whenever everything has settled:</code> is carried out, once</td></tr>
     <tr><td>The count at the foot changes</td><td><code>Set Tally's wording to "{the remaining} of {the whole} still to do."</code></td></tr>
     <tr><td>A task is not added, and the page says why</td><td><code>Fail because "there is nothing to write down".</code> inside a <code>Try</code></td></tr>
     <tr><td>A line leaves the list</td><td><code>Remove the card.</code></td></tr>
@@ -146,6 +147,8 @@
     <tr><td>The list is still there tomorrow</td><td><code>Remember the record under "tasks".</code></td></tr>
   </tbody>
 </table>
+
+<p>However much one click changes, the program tidies the page once, in one place: the sentence <code>Whenever everything has settled:</code>. “Tick them all” ticks every card, and then the cards are put in order, the counts are worked out and the list is saved a single time. Before that sentence existed, the same press on two hundred cards took thirteen seconds and saved the list two hundred and one times. It now takes eight thousandths of a second. <a href="concerns.html">The measurements</a> are written up.</p>
 
 <p>The binding goes both ways and is kept by the library, which is a few hundred lines of Python. After every sentence that a click sets off, it compares the things with the elements and changes only what differs, so the box you are typing in is never rebuilt under you. The sentences beginning <code>Whenever</code> are part of the language, not of the library: <a href="reference.html">the grammar</a> describes them, and any program may use them.</p>
 
@@ -163,7 +166,7 @@
   </tbody>
 </table>
 
-<p>What is left in the program is a list of sentences beginning <code>Whenever</code>, which is the part worth reading first. A chapter that tried to use a word another chapter keeps to itself would be refused, with a message naming the chapter that keeps it. <a href="reference.html#s9-6">Section 9.6 of the grammar</a> gives the rules.</p>
+<p>What is left in the program is a short list of sentences beginning <code>Whenever</code>, which is the part worth reading first. A chapter that tried to use a word another chapter keeps to itself would be refused, with a message naming the chapter that keeps it. <a href="reference.html#s9-6">Section 9.6 of the grammar</a> gives the rules.</p>
 
 <p>As everywhere on this site, the compiler here is the real one, running as WebAssembly: <a href="how.html">the machinery</a> explains how. You can change any of the five files above and run the program again. Try making the heading say something else in <code>layout</code>, or making finished cards stand first in <code>cards</code>.</p>
 

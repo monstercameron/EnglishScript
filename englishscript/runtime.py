@@ -67,7 +67,8 @@ def alive(thing):
     """The thing itself, or a problem if it has been removed."""
     if thing.removed:
         raise EnglishError(f"{thing.name} has been removed, so it can't be used any more.",
-                           stage="run", recoverable=True)
+                           stage="run", recoverable=True, teach="removed",
+                           hint="Check that it is still there before using it, or stop using it once it is removed.")
     return thing
 
 
@@ -111,9 +112,10 @@ def read_line(prompt):
 class Reaction:
     """One "Whenever" sentence, once it has been reached."""
 
-    __slots__ = ("kind", "adjective", "test", "becomes", "thing", "run", "text")
+    __slots__ = ("kind", "adjective", "test", "becomes", "thing", "run", "text", "local")
 
-    def __init__(self, kind, adjective, test, becomes, thing, run, text):
+    def __init__(self, kind, adjective, test, becomes, thing, run, text, local=False):
+        self.local = local  # does the adjective read only its own thing's stored properties?
         self.kind = kind
         self.adjective = adjective
         self.test = test  # (world, thing) -> does it fit the adjective?
@@ -140,13 +142,66 @@ class World:
         self.serials = 0  # how many things have been made, of every kind (Thing.serial)
         self.reactions = []  # [Reaction], in the order written, from when each "Whenever" is reached
         self.reacting = 0  # how deeply reactions are nested
+        self.chain = []  # (the reaction's sentence, the thing's name) of each reaction being carried out
+        self.settlers = []  # [(Line, run(world))]: each "Whenever everything has settled", once reached
+        self.changed = False  # has the turn being carried out changed anything?
+        self.settling = False  # is a settled block being carried out?
         self.rules = {}  # kind -> [Rule] (.fn(world, thing), .text), for world.event
         self.busy = False  # is a sentence or an event being carried out?
         self.ended = False  # did the program end ("End the program.", or a problem)?
+        # (kind, property) -> {value: [Thing], in the order made}: built the first time a
+        # group is filtered by "whose <property> is <value>", and kept right through every
+        # change (see `changed_field`). Anything that changes things in another way (a
+        # failed Try putting things back, an event, a library's verb) throws them away.
+        self.indexes = {}
 
     def new_serial(self):
         self.serials += 1
         return self.serials
+
+    # Finding things by a stored property, without a search ---------------------
+
+    @staticmethod
+    def _key(value):
+        """What a value is indexed under: a thing by itself, anything else by its value."""
+        return ("thing", id(value)) if isinstance(value, Thing) else value
+
+    def lookup(self, kind, name, value):
+        """The things of `kind` whose stored property `name` is `value`, in the order made."""
+        index = self.indexes.get((kind, name))
+        if index is None:
+            index = self.indexes[(kind, name)] = {}
+            for thing in self.things.get(kind, ()):
+                index.setdefault(self._key(thing.fields[name]), []).append(thing)
+        return index.get(self._key(value), ())
+
+    def changed_field(self, thing, name, old):
+        """Keep the index of `name`, if there is one, right after the property changed from `old`."""
+        index = self.indexes.get((thing.kind, name))
+        if index is None:
+            return
+        bucket = index.get(self._key(old))
+        if bucket is not None and thing in bucket:
+            bucket.remove(thing)
+        bucket = index.setdefault(self._key(thing.fields[name]), [])
+        at = len(bucket)
+        while at > 0 and bucket[at - 1].serial > thing.serial:
+            at -= 1
+        bucket.insert(at, thing)
+
+    def added(self, thing):
+        """A thing was made: it joins the indexes of its kind."""
+        for (kind, name), index in self.indexes.items():
+            if kind == thing.kind:
+                index.setdefault(self._key(thing.fields[name]), []).append(thing)
+
+    def dropped(self, thing):
+        """A thing was removed: it leaves the indexes of its kind."""
+        for (kind, name), index in self.indexes.items():
+            if kind == thing.kind:
+                bucket = index.get(self._key(thing.fields[name]))
+                if bucket is not None and thing in bucket:
+                    bucket.remove(thing)
 
     def snapshot(self, env):
         """Everything a failed "Try" must put back. Returns a function that does it."""
@@ -171,6 +226,7 @@ class World:
         made = dict(self.made)
 
         def restore():
+            self.indexes = {}  # built again when next needed
             self.things = things
             for thing, fields, marks, removed in states:
                 thing.fields, thing.marks, thing.removed = fields, marks, removed
@@ -182,18 +238,30 @@ class World:
 
     # Reactions ("Whenever") -------------------------------------------------
 
-    def noting(self):
+    def noting(self, focus=None):
         """What fits each watched adjective now, before something that may change it.
 
         {(kind, adjective, thing): (test, [(thing, fits)])}. Each adjective is
         worked out once per thing, however many reactions watch it.
+
+        `focus` is the one thing a sentence is about to change, when it changes
+        nothing else (a property or a stored adjective of one known thing). Then
+        an adjective that reads only its own thing's stored properties can change
+        only for that thing, and only that thing is noted for it. An adjective
+        that reads anything else (another thing, a worked-out property, a variable
+        that can change) is noted for every thing of its kind, as for any sentence.
         """
         watched = {}
         for reaction in self.reactions:
             key = reaction.watches()
             if key in watched:
                 continue
-            if reaction.thing is None:
+            if focus is not None and reaction.local:
+                if focus.removed or focus.kind != reaction.kind or (
+                        reaction.thing is not None and self.named.get(reaction.thing) is not focus):
+                    continue  # this sentence cannot change it
+                items = (focus,)
+            elif reaction.thing is None:
                 items = self.things.get(reaction.kind, ())
             else:
                 one = self.named.get(reaction.thing)
@@ -225,15 +293,57 @@ class World:
             if thing.removed:  # removed by an earlier reaction
                 continue
             self.reacting += 1
+            self.chain.append((reaction.text, thing.name))
             try:
                 if self.reacting > REACTION_LIMIT:
                     raise EnglishError(
-                        f'Reactions keep setting off reactions; I stopped after {REACTION_LIMIT} levels, at "{reaction.text}".',
-                        stage="run",
+                        f"Reactions keep setting off reactions; I stopped after {REACTION_LIMIT} levels, "
+                        + self.circle(), stage="run", teach="depth",
+                        hint="Look for a reaction that undoes what set it off, or that sets itself off again.",
                     )
                 reaction.run(self, thing)
             finally:
                 self.reacting -= 1
+                self.chain.pop()
+
+    def circle(self):
+        """'in this circle: "Whenever ..." (Robin), then "Whenever ..." (Robin)', when the
+        reactions being carried out repeat; otherwise 'at "Whenever ..."'."""
+        chain = self.chain
+        for size in range(1, len(chain) // 2 + 1):
+            if chain[-size:] == chain[-2 * size:-size]:
+                # Told from where it began, when the chain went round from its start.
+                circle = chain[:size] if chain[:size] == chain[size:2 * size] else chain[-size:]
+                steps = ", then ".join(f'"{text}" ({name})' for text, name in circle)
+                return f"in this circle: {steps}, and round again."
+        return f'at "{chain[-1][0]}".'
+
+    def settle(self, line=None):
+        """The end of a turn: if it changed anything, carry out each "Whenever
+        everything has settled" block once, in the order written.
+
+        A turn is one top-level sentence (`line`) of the program or of a chapter
+        being read, with all it sets off, or one event (World.event, `line` None).
+        What a settled block changes sets off reactions as usual, but never another
+        settling. A problem in it is a problem of the turn: it gets a trace line
+        for the settled block and for the sentence that formed the turn.
+        """
+        if not self.changed or self.settling:
+            return
+        self.changed = False
+        self.settling = True
+        try:
+            for heading, run in list(self.settlers):
+                try:
+                    run(self)
+                except EnglishError as error:
+                    for where in (heading, line):
+                        if where is not None and error.line is not where and len(error.trace) < 5:
+                            error.trace.append(where)
+                    raise
+        finally:
+            self.settling = False
+            self.changed = False
 
     # Events from outside the program ---------------------------------------
 
@@ -264,14 +374,18 @@ class World:
             with no_digit_limit():
                 before = self.noting() if self.reactions else None
                 change()
+                self.indexes = {}  # the change was made directly, so the indexes are built again
                 self._check_rules(states)
                 if before is not None:
                     self.react(before)
+                if self.settlers:  # an event is a turn
+                    self.changed = True
+                    self.settle()
         except _EndProgram:
             self.ended = True  # what was changed stays, as with "End the program." anywhere
         except RecursionError:
             restore()
-            raise EnglishError("This program nests more deeply than I can follow.", stage="run") from None
+            raise EnglishError("This program nests more deeply than I can follow.", stage="run", teach="depth") from None
         except BaseException:
             restore()
             raise
@@ -288,7 +402,7 @@ class World:
             for rule in self.rules.get(thing.kind, ()):
                 if not rule.fn(self, thing):
                     raise EnglishError(f'That would break a rule: "{rule.text}"', stage="run", recoverable=True,
-                                       hint=f"(It was {thing.name} that changed.)")
+                                       hint=f"(It was {thing.name} that changed.)", teach="rule_broken")
 
 
 # ------------------------------------------------------------------ files
@@ -308,7 +422,7 @@ def read_file(path):
             return handle.read()
     except (OSError, ValueError) as error:
         raise EnglishError(f"I couldn't read the file {path}: {_reason(error)}.",
-                           stage="run", recoverable=True) from None
+                           stage="run", recoverable=True, teach="file") from None
 
 
 def write_file(path, text, append):
@@ -317,7 +431,7 @@ def write_file(path, text, append):
             handle.write(text)
     except (OSError, ValueError) as error:
         raise EnglishError(f"I couldn't write to the file {path}: {_reason(error)}.",
-                           stage="run", recoverable=True) from None
+                           stage="run", recoverable=True, teach="file") from None
 
 
 def split_lines(text):
@@ -384,7 +498,7 @@ def fmt(value, type_):
         return "nothing"
     type_ = type_.rstrip("?")  # "money?" is money that turned out to be there
     if type_ == "money":
-        cents = round(Fraction(value) * 100)
+        cents = scaled(value, 2)
         sign = "-" if cents < 0 else ""
         dollars, rest = divmod(abs(cents), 100)
         return f"{sign}${dollars:,}" + (f".{rest:02d}" if rest else "")
@@ -399,13 +513,110 @@ def fmt(value, type_):
     return str(value)
 
 
+def scaled(value, places):
+    """The value times 10 ** places, rounded to a whole number on the exact fraction:
+    a half is rounded away from zero. Never through a float."""
+    n = Fraction(value) * 10 ** places
+    whole = (abs(n.numerator) * 2 + n.denominator) // (2 * n.denominator)  # floor(|n| + 1/2)
+    return -whole if n < 0 else whole
+
+
 def _number(value):
+    """A number to at most four places, rounded exactly; never "-0"."""
     value = Fraction(value)
     if value.denominator == 1:
         return f"{value.numerator:,}"
-    try:
-        return f"{float(value):,.4f}".rstrip("0").rstrip(".")
-    except OverflowError:  # too large for a float: round exactly instead
-        sign = "-" if value < 0 else ""
-        whole, rest = divmod(round(abs(value) * 10_000), 10_000)
-        return f"{sign}{whole:,}" + f".{rest:04d}".rstrip("0").rstrip(".")
+    n = scaled(value, 4)
+    sign = "-" if n < 0 else ""
+    whole, rest = divmod(abs(n), 10_000)
+    return f"{sign}{whole:,}" + f".{rest:04d}".rstrip("0").rstrip(".")
+
+
+# ------------------------------------------------------------- arithmetic
+
+PLACES = 12  # how many decimal places a power or a root that does not come out exactly is worked out to
+
+
+def _problem(message, hint=None, teach="rounding"):
+    return EnglishError(message, stage="run", recoverable=True, hint=hint, teach=teach)
+
+
+def remainder(value, divisor):
+    """What is left after taking away the divisor as many whole times as it goes,
+    rounding down: it has the sign of the divisor (or is 0), so the remainder of
+    -7 divided by 2 is 1, and of 7 divided by -2 is -1."""
+    if divisor == 0:
+        raise _problem("I can't divide by zero, so there is no remainder.", teach="zero")
+    return value - divisor * (Fraction(value) / divisor).__floor__()
+
+
+def rounded(value, step, how):
+    """The value rounded to a whole number of steps: "nearest" (a half away from
+    zero), "up" or "down" (towards more and towards less)."""
+    if step <= 0:
+        raise _problem(f"A value is rounded to the nearest step of more than nothing, not {_plain(step)}.",
+                       teach="rounding")
+    count = Fraction(value) / step
+    if how == "up":
+        whole = -((-count).__floor__())
+    elif how == "down":
+        whole = count.__floor__()
+    else:
+        whole = (abs(count.numerator) * 2 + count.denominator) // (2 * count.denominator)
+        whole = -whole if count < 0 else whole
+    return whole * step
+
+
+def _plain(value):
+    return _number(value)
+
+
+def _root(n, k):
+    """The whole k-th root of the whole number n >= 0, rounded down."""
+    if n < 2:
+        return n
+    x = 1 << ((n.bit_length() + k - 1) // k)  # more than the root
+    while True:
+        y = ((k - 1) * x + n // x ** (k - 1)) // k
+        if y >= x:
+            return x
+        x = y
+
+
+def _to_places(value, k):
+    """The k-th root of the fraction `value` >= 0, exactly if it is a fraction, else to PLACES places,
+    a half rounded away from zero."""
+    value = Fraction(value)
+    p, q = value.numerator, value.denominator
+    rp, rq = _root(p, k), _root(q, k)
+    if rp ** k == p and rq ** k == q:
+        return Fraction(rp, rq)
+    scale = 10 ** (PLACES + 1)
+    tenfold = _root(p * scale ** k // q, k)  # the root times 10 ** (PLACES + 1), rounded down
+    return Fraction((tenfold + 5) // 10, 10 ** PLACES)
+
+
+def square_root(value):
+    if value < 0:
+        raise _problem(f"A negative number, {_plain(value)}, has no square root.", teach="rounding")
+    return _to_places(value, 2)
+
+
+def power(base, exponent):
+    """The base raised to the power: exact for a whole exponent; otherwise worked out
+    to PLACES decimal places from the exact fractions, never through a float."""
+    base, exponent = Fraction(base), Fraction(exponent)
+    if exponent.denominator == 1:
+        if base == 0 and exponent < 0:
+            raise _problem("Nothing raised to a negative power: that would divide by zero.", teach="zero")
+        return base ** int(exponent)
+    if base < 0:
+        raise _problem(f"A negative number, {_plain(base)}, can't be raised to a power that is not whole.",
+                       teach="rounding")
+    if base == 0:
+        if exponent < 0:
+            raise _problem("Nothing raised to a negative power: that would divide by zero.", teach="zero")
+        return Fraction(0)
+    whole = base ** abs(exponent.numerator)  # then the root, then turned over if the power is negative
+    root = _to_places(whole, exponent.denominator) if exponent > 0 else _to_places(1 / whole, exponent.denominator)
+    return root

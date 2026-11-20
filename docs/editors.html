@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EnglishScript in an editor</title>
+<meta name="description" content="A language server and a rename tool for EnglishScript: marks as you type, corrections, hover, completion and safe renaming.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&amp;family=IM+Fell+English:ital@0;1&amp;family=IM+Fell+English+SC&amp;family=UnifrakturMaguntia&amp;display=swap">
+<link rel="stylesheet" href="assets/english.css">
+</head>
+<body>
+
+<nav class="sitenav" aria-label="The pages of this site">
+  <div class="inner">
+    <a class="home" href="./">EnglishScript</a>
+    <a class="page" href="./">The treatise</a>
+    <a class="page" href="playground.html">The playground</a>
+    <a class="page" href="todo.html">A page</a>
+    <a class="page" href="compare.html">Compared</a>
+    <a class="page" href="reference.html">The grammar</a>
+    <a class="page" href="how.html">The machinery</a>
+    <a class="page" href="https://github.com/monstercameron/EnglishScript">The source</a>
+  </div>
+</nav>
+
+<main class="doc plain">
+<article>
+<h1>In an Editor</h1>
+<p class="standfirst">A language server that marks a program as you write it, and a rename that the compiler checks.</p>
+<p>EnglishScript comes with a language server and a rename tool. The server lets an editor that speaks the Language Server Protocol mark problems as you write, offer corrections, and find where a name is defined. Both are plain Python with no dependencies, like the compiler.</p>
+<p>The server has been run and tested on Windows with Python 3.12, by the test suite, which drives it directly and also starts it as a separate program and talks to it over pipes. It has not been run inside Neovim, Helix or VS Code. The configurations below for Neovim and Helix are written from those editors' documentation and are untested.</p>
+<h2 id="what-the-server-does">What the server does</h2>
+<ul>
+<li><strong>Problems.</strong> Every problem the linter finds is marked in the text, with its message, its advice and the rule to remember. An error is an error; a suggestion is a warning. Where the reference teaches the rule, the problem links to that section.</li>
+<li><strong>Corrections.</strong> When the linter is certain how to mend a problem, the correction is offered as a quick fix, titled <code>Mend:</code> and the corrected line. When there are two or more, <code>Mend all that can be mended</code> applies them together.</li>
+<li><strong>Hover.</strong> Over a sentence the compiler read, the notes that <code>--explain</code> prints: what <code>its</code> meant, which definition a word led to. Over a name, the sentence that defines it. Over a line with a problem, the problem.</li>
+<li><strong>Outline.</strong> The kinds (with their properties), things, adjectives, verbs, worked-out values, top-level variables and reactions of the file.</li>
+<li><strong>Go to definition.</strong> From a name to the sentence that defines it, in the same file or in a chapter the file uses. From a <code>Use the ... chapter</code> sentence, to the chapter's file.</li>
+<li><strong>Suggestions.</strong> At the start of a line, the sentence forms (<code>Say</code>, <code>Let the ... be</code>, <code>If ...:</code>, <code>To ...:</code> and the rest) and the file's own verbs. After <code>'s</code>, <code>its</code> or <code>whose</code>, the properties. Elsewhere, the names that can be said there.</li>
+<li><strong>Rename.</strong> Renames a name throughout the file, and refuses if the result would read any worse than what was there. See "The rename tool" below.</li>
+</ul>
+<h2 id="starting-it">Starting it</h2>
+<pre class="form">python -m englishscript.server</pre>
+<p>It reads messages on standard input and answers on standard output, and writes nothing else there. Anything it has to say about itself goes to standard error. Run by hand, it will simply wait: it is meant to be started by an editor.</p>
+<p>Python must be able to find the <code>englishscript</code> package. It is not installed anywhere by default, so either start the server from the repository's folder, or set <code>PYTHONPATH</code> to that folder. The configurations below set <code>PYTHONPATH</code>; change <code>/path/to/EnglishScript</code> to where the repository is.</p>
+<h2 id="the-file-type">The file type</h2>
+<p>EnglishScript programs are files ending in <code>.english</code>. No editor knows that ending, so each configuration below teaches it. Indent with spaces: the language refuses tabs. The examples use two spaces. Comments start with <code>#</code>.</p>
+<h2 id="neovim">Neovim</h2>
+<p>An untested configuration, written from Neovim's documentation for its built-in LSP client (<code>vim.filetype.add</code> and <code>vim.lsp.start</code>, Neovim 0.8 or later). Put it in <code>init.lua</code>:</p>
+<pre class="form">vim.filetype.add({ extension = { english = "englishscript" } })
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "englishscript",
+  callback = function(args)
+    vim.bo[args.buf].expandtab = true
+    vim.bo[args.buf].shiftwidth = 2
+    vim.bo[args.buf].commentstring = "# %s"
+    vim.lsp.start({
+      name = "englishscript",
+      cmd = { "python", "-m", "englishscript.server" },
+      cmd_env = { PYTHONPATH = "/path/to/EnglishScript" },
+      root_dir = vim.fs.dirname(vim.api.nvim_buf_get_name(args.buf)),
+    })
+  end,
+})</pre>
+<h2 id="helix">Helix</h2>
+<p>An untested configuration, written from Helix's documentation for <code>languages.toml</code>. Put it in <code>~/.config/helix/languages.toml</code> (on Windows, <code>%AppData%\helix\languages.toml</code>):</p>
+<pre class="form">[language-server.englishscript]
+command = "python"
+args = ["-m", "englishscript.server"]
+environment = { PYTHONPATH = "/path/to/EnglishScript" }
+
+[[language]]
+name = "englishscript"
+scope = "source.englishscript"
+file-types = ["english"]
+comment-token = "#"
+indent = { tab-width = 2, unit = "  " }
+language-servers = ["englishscript"]</pre>
+<h2 id="vs-code">VS Code</h2>
+<p>VS Code does not start a language server from its settings. It needs a small extension that declares the <code>.english</code> file type and starts <code>python -m englishscript.server</code>. That extension has not been written, so the server cannot be used from VS Code today. The <a href="https://monstercameron.github.io/EnglishScript/playground.html">playground</a> marks and corrects a program in the browser without it.</p>
+<h2 id="the-rename-tool">The rename tool</h2>
+<pre class="form">python -m englishscript.rename examples/dragons.english "dragon" "wyrm"
+python -m englishscript.rename examples/dragons.english "dragon" "wyrm" --write</pre>
+<p>The first prints the program with the name changed. With <code>--write</code> it rewrites the file instead. The editor's rename command does the same through the server.</p>
+<p>What it changes:</p>
+<ul>
+<li>Every whole occurrence of the name outside quoted text, and inside the <code>{fill-ins}</code> of quoted text. Capitals don't matter, so <code>smaug</code> is found where <code>Smaug</code> was defined. Each occurrence keeps its own capitals where they differed from the definition, so a verb that starts a sentence stays capitalised.</li>
+<li>For a kind, its plural too: <code>dragon</code> to <code>wyrm</code> also turns <code>dragons</code> into <code>wyrms</code>. A plural that was stated where the kind was described (<code>A child (plural children) has ...</code>) is kept when the kind is renamed, and can be renamed itself (<code>children</code> to <code>bairns</code>).</li>
+<li><code>a</code> and <code>an</code> in front of the name, where the linter says the new name needs the other one.</li>
+<li>A name of several words is matched whole, and a longer name that contains it is left alone: renaming <code>month</code> does not touch <code>month row</code>. A leading <code>the</code> is ignored, so <code>"the month row"</code> and <code>"month row"</code> name the same thing.</li>
+</ul>
+<p>What it refuses, changing nothing, with status 1 and the reason on standard error:</p>
+<ul>
+<li>a name that is not defined in the file (if a chapter the file uses defines it, the message says which);</li>
+<li>a new name that is a reserved word or contains one;</li>
+<li>a new name that is already in use, in the file or in a chapter or library it uses;</li>
+<li>a thing whose name is also looked for in quotes (<code>the dragon called "Smaug"</code>), because quoted text is never changed;</li>
+<li><strong>anything the linter likes less afterwards.</strong> The result is linted, and if it has a problem the original did not, the rename is refused and the message gives that problem.</li>
+</ul>
+<p>A word that is both a verb and something else (the language allows a verb to share its word with a name) is renamed as both. <code>--only verb</code> or <code>--only name</code> renames one of them. The editor's rename picks by where the cursor is. In the editor, a name that belongs to one block (a role with its own name, a loop's name, a variable made inside) is renamed in that block only; the command renames it in every block of the file.</p>
+<h2 id="what-it-does-not-do">What it does not do</h2>
+<ul>
+<li><strong>No colouring.</strong> There is no grammar for syntax highlighting, for any editor.</li>
+<li><strong>One file at a time.</strong> A rename changes the file it is given. Renaming a word that a chapter shares does not change the files that use the chapter; they will be marked with problems until they are changed too.</li>
+<li><strong>Checked by reading, not by running.</strong> A rename is checked by the linter, which compiles and runs nothing. Quoted text is not changed, so a <code>Say</code> or a <code>For example</code> that spells the old name out in quotes will still say the old name.</li>
+<li><strong>The outline, definitions and suggestions come from reading the text</strong>, not from the compiler. The server recognises the sentence forms that define names (<code>A dragon has ...</code>, <code>There is a dragon called Smaug ...</code>, <code>To send ...:</code>, <code>Let the total be ...</code>). In a sentence the compiler refuses, it can be wrong. Suggestions are not checked against types: every name that could be said at that place is offered, not only those that would fit.</li>
+<li><strong>Hover explains a sentence only when the whole file compiles.</strong> The notes come from the compiler, which stops at the first sentence it cannot read.</li>
+<li><strong>Chapters are checked as saved.</strong> The linter reads a chapter from the disk, so a change to a chapter shows in the files that use it once the chapter is saved. Definitions and suggestions do use a chapter that is open in the editor.</li>
+<li><strong>A library's words can be suggested and hovered, but not gone to.</strong> They are defined inside the library's Python file.</li>
+<li><strong>No formatting, find references, signature help, workspace symbols or semantic tokens.</strong></li>
+<li><strong>The whole text is sent and linted on every change.</strong> On the computer this was written on, linting any example in this repository took under a twentieth of a second, apart from the first use of a library. The server does not wait for a pause in typing; that is left to the editor.</li>
+<li><strong>Positions are counted in UTF-16</strong>, which every editor supports; the server does not offer another encoding.</li>
+</ul>
+</article>
+<footer class="colophon">
+  Printed from <a href="https://github.com/monstercameron/EnglishScript/blob/main/docs/EDITORS.md">docs/EDITORS.md</a> by <code>tools/build_site.py</code>.
+</footer>
+</main>
+
+</body>
+</html>

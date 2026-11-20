@@ -9,9 +9,9 @@ from englishscript import compile_source  # noqa: E402
 kinds = 600
 parts = []
 for k in range(kinds):
-    word = "thing" + "".join(chr(97 + int(d)) for d in str(k))
+    word = "thing" + "".join("abdefgijkl"[int(d)] for d in str(k))
     parts.append(f"A {word} has a weight (number) and a label (text).\n")
-    parts.append(f"There is a {word} called Item{''.join(chr(65 + int(d)) for d in str(k))} whose weight is {k} and whose label is \"x\".\n")
+    parts.append(f"There is a {word} called Item{''.join("ABDEFGIJKL"[int(d)] for d in str(k))} whose weight is {k} and whose label is \"x\".\n")
     parts.append(f"A {word} is heavy when its weight is more than 5.\n")
 source = "".join(parts) + "Let the count be 0.\n" + "".join("Add 1 to the count.\n" for _ in range(300))
 

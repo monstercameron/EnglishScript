@@ -35,9 +35,9 @@ print("== 2. Compile time against the size of the vocabulary ==")
 for kinds in (10, 100, 400, 1600):
     parts = []
     for k in range(kinds):
-        word = "thing" + "".join(chr(97 + int(d)) for d in str(k))
+        word = "thing" + "".join("abdefgijkl"[int(d)] for d in str(k))
         parts.append(f"A {word} has a weight (number) and a label (text).\n")
-        parts.append(f"There is a {word} called Item{''.join(chr(65 + int(d)) for d in str(k))} whose weight is {k} and whose label is \"x\".\n")
+        parts.append(f"There is a {word} called Item{''.join("ABDEFGIJKL"[int(d)] for d in str(k))} whose weight is {k} and whose label is \"x\".\n")
         parts.append(f"A {word} is heavy when its weight is more than 5.\n")
     vocabulary = "".join(parts)
     body = "Let the count be 0.\n" + "".join("Add 1 to the count.\n" for _ in range(500))
@@ -51,7 +51,7 @@ for verbs in (10, 100, 400, 1600):
     parts = ["Let the count be 0.\n"]
     names = []
     for v in range(verbs):
-        name = "verb" + "".join(chr(97 + int(d)) for d in str(v))
+        name = "verb" + "".join("abdefgijkl"[int(d)] for d in str(v))
         names.append(name)
         parts.append(f"To {name} a sum (number):\n  Add the sum to the count.\n")
     defs = "".join(parts)

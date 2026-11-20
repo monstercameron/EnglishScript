@@ -71,7 +71,12 @@ RULES = {
     "unknown_variable": ("vocabulary", 'A variable is made with "Let" before it is used.', "7.1"),
     "reserved": ("vocabulary", "A new name cannot use a word that EnglishScript already uses.", "3"),
     "names": ("vocabulary", "A name is made of words: letters, digits and underscores, starting with a letter.", "3"),
-    "taken": ("vocabulary", "A name has one meaning: it cannot be given a second one while the first is in view.", "3"),
+    "namespaces": ("vocabulary", "A word that is an adjective is not also the name of a kind, a thing, a variable, a "
+                                 "role or a loop's thing, and no name begins with one.", "3"),
+    "kind_variable": ("meaning", "Inside a block, a variable or role may have a kind's name only when it holds a "
+                                 'thing of that kind, so that "the dragon" means a dragon either way.', "5.1"),
+    "kind_names":("vocabulary", "Every kind has its own name and its own plural, shared with no other kind.", "4.1"),
+    "taken":("vocabulary", "A name has one meaning: it cannot be given a second one while the first is in view.", "3"),
     "described_once": ("vocabulary", "A kind is described once, in one sentence that lists all its properties.", "4.1"),
     "types": ("vocabulary", "A type is number, money, text, percent, yes or no, a list, or a kind already "
                             "described.", "2"),
@@ -100,7 +105,9 @@ RULES = {
                                 "made from them.", "5"),
     "definition_form": ("grammar", 'A definition starts with its kind: "A dragon has ...", "A dragon is ... when ...", '
                                    '"A dragon can be ..." or "A dragon\'s ... is never ...".', "4"),
-    "kind_form": ("grammar", 'A kind is described as "A <kind> has a <property> (<type>) and a <property> '
+    "plural_form": ("grammar", 'A plural that is not formed by rule is stated in brackets after the kind\'s name, '
+                               'where the kind is described: "A person (plural people) has ..."', "4.1"),
+    "kind_form":("grammar", 'A kind is described as "A <kind> has a <property> (<type>) and a <property> '
                              '(<type>)."', "4.1"),
     "thing_form": ("grammar", 'A thing is made as "There is a <kind> called <Name> whose <property> is '
                               '<value>."', "4.2"),
@@ -129,11 +136,15 @@ RULES = {
                             '<property>".', "2"),
     "new_thing": ("grammar", 'A new thing is made with "There is a new ..." or as the whole value of "Let".', "7.5"),
     # Meaning
-    "pronoun": ("meaning", "A pronoun (it, its, they, them, their) points at the one thing in view, so there has "
+    "value_order": ("meaning", 'A phrase that could be grouped two ways is written with brackets: "or else", '
+                               '"whether" and a group\'s "whose" do not stand beside + - * / or "and" and "or" '
+                               "without them.", "5.3"),
+    "pronoun":("meaning", "A pronoun (it, its, they, them, their) points at the one thing in view, so there has "
                            "to be exactly one.", "5.1"),
     "the_noun": ("meaning", '"The" with a kind points at the one such thing in view, so there has to be exactly '
                             "one.", "5.1"),
-    "and_or": ("meaning", '"And" and "or" are not mixed without brackets.', "6"),
+    "and_or": ("meaning", '"And" and "or" are not mixed without brackets, and a "not" before "and" or "or" '
+                          "needs brackets to say how much it turns round.", "6"),
     "of_link": ("meaning", '"Of" between two kinds needs exactly one property that links them.', "5.5"),
     "maybe_nothing": ("meaning", "A value that may be nothing is checked before it is used.", "2"),
     "nothing_checks": ("meaning", "Only a value that may be nothing needs checking for nothing.", "2"),
@@ -144,7 +155,10 @@ RULES = {
     "working_out": ("meaning", "Working something out only works it out: it does not say, make, change or "
                                "remove anything.", "9.3"),
     "changeable": ("meaning", 'Only a variable or a stored property can be changed, and not one made with "always".', "7.2"),
-    "ambiguous_name": ("meaning", "Every name in view has one meaning, so that each phrase reads one way.", "3"),
+    "rule_reads": ("meaning", "A rule is checked when its thing's stored properties change, so it may depend only on "
+                              'what cannot change behind its back: values written out, variables made with "always", '
+                              "and the thing's own stored properties.", "4.5"),
+    "ambiguous_name":("meaning", "Every name in view has one meaning, so that each phrase reads one way.", "3"),
     # Kinds of value
     "arith": ("kinds", "Arithmetic needs values that go together: money with money, and plain numbers with plain "
                        "numbers or money.", "5.3"),
@@ -152,8 +166,8 @@ RULES = {
                                "percentages can be more or less than each other.", "6"),
     "fit": ("kinds", "A property, variable, role or answer holds only the kind of value it was described with.", "2"),
     "text_only": ("kinds", "Text is worked on only as text: a number or money is not text.", "5.6"),
-    "list": ("kinds", 'A list is gone through with "For each"; it cannot yet be said, compared or kept in a '
-                      "property.", "2"),
+    "list": ("kinds", "A list holds values of one kind, numbered from 1. It is written out only as the whole value "
+                      'of "Let", "Set", a "whose" part or "The answer is", and cannot yet be said or compared.', "2"),
     "percent": ("kinds", "A percentage is taken of a number or of money.", "5.4"),
     "props_of": ("kinds", "Only a thing has properties and adjectives.", "5.2"),
     "yes_no_property": ("kinds", "A yes-or-no fact about a thing is an adjective, not a property.", "4.3"),
@@ -186,12 +200,18 @@ RULES = {
                                'stops unless a "Try" catches it.', "4.5"),
     "example": ("running", 'A "For example" sentence has to hold when it is reached.', "7.4"),
     "zero": ("running", "Nothing can be divided by zero.", "5.3"),
+    "choices_form": ("grammar", 'A set of choices is written "A mood is one of sleepy, grumpy or content.": the '
+                                'choices separated by commas, with "or" before the last.', "4.6"),
     "count": ("running", "A count of times or of letters is a whole number, and not negative.", "8.3"),
+    "rounding": ("running", "A value is rounded to a step of more than nothing; a negative number has no square "
+                            "root, and is raised only to a whole power.", "5.3"),
     "file": ("running", "A file that is read has to be there, and a file that is written has to be writable.", "7.7"),
+    "missing_item": ("running", "An item can be changed only where there is one: the items of a list are numbered "
+                                "from 1 to the number of items.", "2"),
     "removed": ("running", "A removed thing cannot be used, and a thing cannot be removed while a property that "
                            'is not "if any" points at it.', "7.5"),
     "fail": ("running", '"Fail because" stops the program, unless a "Try" around it catches the problem.', "8.5"),
-    "loop_limit": ("running", 'A "While" loop has to end: I stop one after 10,000 rounds.', "8.3"),
+    "loop_limit": ("running", 'A "While" loop has to end: I stop one after 1,000,000 rounds.', "8.3"),
     "depth": ("running", "A verb, a worked-out value or a reaction may set off itself, but not more than 200 "
                          "levels deep.", "9.1"),
     "library_run": ("running", "A library's own fault is the library's, not the program's.", "9.4"),

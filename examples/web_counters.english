@@ -1,0 +1,50 @@
+# Three counters on one page: one thing made several times.
+#
+# The page library has no "component", and does not need one. A kind of your
+# own holds the elements that belong together, and a verb makes them. Here a
+# counter is a count, which is the matter, with a note and two buttons, which
+# are how it is shown. The same verb builds all three.
+#
+# Run it in the playground and the page appears under what it says. Run from
+# the command line, it sketches the page.
+
+Use the page library.
+
+A counter has a title (text), a count (number), a face (note), a raiser (button) and a lowerer (button).
+
+# A count never goes below nothing. Pressing "One fewer" at nought is refused
+# by this rule, and the page is left exactly as it was.
+A counter's count is never less than 0.
+
+There is a heading called Banner whose wording is "Counters".
+There is a note called Sum whose wording is "Nothing counted yet.".
+
+# Build a counter: a panel of its own, with its note and its buttons inside.
+To build a title (text):
+  Let the frame be a new panel whose title is the title.
+  Let the dial be a new note whose wording is "0" and whose panel is the frame.
+  Let the upper be a new button whose label is "One more" and whose panel is the frame.
+  Let the downer be a new button whose label is "One fewer" and whose panel is the frame.
+  There is a new counter whose title is the title and whose count is 0 and whose face is the dial and whose raiser is the upper and whose lowerer is the downer.
+
+# Show a counter's count on its own note, and the sum of them all.
+To show a counter:
+  Set the counter's face's wording to "{the counter's count}".
+  Set Sum's wording to "{the total count of all counters} counted in all.".
+
+Build "Apples".
+Build "Pears".
+Build "Plums".
+
+# One answer serves every counter there is, or will be: it finds the counter
+# that the pressed button belongs to.
+Whenever a button becomes pressed:
+  For each counter whose raiser is the button:
+    Add 1 to the counter's count.
+    Show the counter.
+  For each counter whose lowerer is the button:
+    Subtract 1 from the counter's count.
+    Show the counter.
+
+For example, the number of counters is 3.
+For example, the number of buttons is 6.

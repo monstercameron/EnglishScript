@@ -311,13 +311,19 @@ class Collector:
             return []
         first = low[0]
         if first in ("a", "an") and len(low) > 2:
+            if low[2] == "(" and len(low) > 6 and low[3] == "plural" and low[6] == "has":
+                # "A person (plural people) has ...": the stated plural instead of the one by rule.
+                names = [(low[1],), (low[4],)]
+                names += [run_of_words(k + 1) for k in range(7, len(words)) if low[k] in ("a", "an")]
+                return [name for name in names if name]
             if low[2] == "has":
                 # The kind, its plural, and each property: "a hoard (money)", "an owner (dragon)".
                 names = [(low[1],), (pluralize(low[1]),)]
                 names += [run_of_words(k + 1) for k in range(3, len(words)) if low[k] in ("a", "an")]
                 return [name for name in names if name]
             if low[2] in ("is", "can"):
-                adjective = low[3] if low[2] == "is" else (low[4] if len(low) > 4 else None)
+                at = 3 if low[2] == "is" else 4  # "A knight is <adjective>", "A knight can be <adjective>"
+                adjective = low[at] if len(low) > at else None
                 return [(adjective,)] if adjective and adjective != "be" else []
             return []
         if first == "the" and "of" in low:
@@ -430,7 +436,8 @@ class Collector:
                     mark_ = ":" if first.message == NO_COLON else "."
                     text = problem.fix["text"]
                     code = len(_strip_comment(text).rstrip())
-                    problem.fix = {"line": problem.line, "text": text[:code] + mark_ + text[code:]}
+                    if not text[:code].endswith((".", ":", '"')):  # the correction may end the sentence itself
+                        problem.fix = {"line": problem.line, "text": text[:code] + mark_ + text[code:]}
         seen = set()
         for problem in self.problems:
             key = (problem.line, problem.col, problem.message)

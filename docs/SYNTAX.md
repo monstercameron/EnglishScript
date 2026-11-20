@@ -59,11 +59,11 @@ Every value has one of these types. The compiler works out each type before the 
 | `text` | `"Hello"` | `Hello` |
 | `yes or no` | `yes`, `no` | `yes`, `no` |
 | a kind, such as `dragon` | the thing's name, `Smaug` | `Smaug` |
-| `list of <plural type>`, such as `list of text` | see "Lists" below | cannot be said yet |
+| `list of <plural type>`, such as `list of text` | `a list of 3, 8 and 5`; see "Lists" below | cannot be said yet; see `joined with` |
 
 - A comma in a number must be followed by exactly three digits.
 - There are no negative literals; write a minus sign in front: `-5`, `-$5`.
-- Arithmetic is exact, so `0.1 + 0.2` is `0.3`. Rounding happens only when a value is said: numbers show up to four decimal places, and money shows whole cents. However many digits a value has, it is said in full.
+- Arithmetic is exact, so `0.1 + 0.2` is `0.3`. Rounding happens only when a value is said (or filled into a text), and it is done on the exact value, never through an approximation: a number is said to at most four places, money to the cent, and a percentage to at most four places of its percent figure. A half is rounded away from zero, so `0.00005` is said as `0.0001` and `$0.125` as `$0.13`. A value that rounds to nothing is said as `0` or `$0`, never `-0`. However many digits a value has, it is said in full: `123,456,789,012,345,678,901 + 0.5` is said as `123,456,789,012,345,678,901.5`.
 - A condition produces a yes-or-no answer. That answer can steer `If`, `While` and definitions. To store it or say it, turn it into a `yes or no` value with `whether` (below).
 
 ```englishscript
@@ -73,13 +73,16 @@ Say 50%.               #> 50%
 Say 0.1 + 0.2.         #> 0.3
 Say 1 / 3.             #> 0.3333
 Say $10 / 3.           #> $3.33
+Say $0.125.            #> $0.13
+Say -0.00001.          #> 0
+Say 123,456,789,012,345,678,901 + 0.5.   #> 123,456,789,012,345,678,901.5
 Say -$5.               #> -$5
 Say Smaug.             #> Smaug
 ```
 
 ### Text
 
-Text sits between double quotes. Anything inside `{braces}` is an expression, worked out when the text is said. Four things are written specially:
+Text sits between double quotes. Anything inside `{braces}` is a value, worked out when the text is made: where the quoted text stands in the program, so `Let the note be "{the count}".` keeps the count as it was then, however the count changes later. Four things are written specially:
 
 | Written | Means |
 |---|---|
@@ -110,8 +113,14 @@ whether <condition>          a condition, as a value
 
 A `yes or no` value may be kept in a variable, a role or a worked-out value. A property cannot be yes or no: a yes-or-no fact about a thing is an adjective, written `A knight can be sworn.` (section 4.3).
 
-```englishscript
+`whether` takes one comparison, or a condition in brackets. A condition with `and` or `or` after `whether` must be in brackets, because `whether A and B` could mean `whether (A and B)` or `(whether A) and B`; it is refused with both readings.
+
+```refused
 Let the gate open be whether Gawain is brave or Robin is brave.
+```
+
+```englishscript
+Let the gate open be whether (Gawain is brave or Robin is brave).
 Say the gate open.                   #> yes
 Let the alarm (yes or no) be no.
 If the gate open is yes and the alarm is no:
@@ -126,19 +135,63 @@ A gate has a width (number) and an open (yes or no).
 
 ### Lists
 
+A list holds values of one type, in order, numbered from 1.
+
 ```text
-(list of <plural type>)              the type
-the number of items in <list>        a number
-For each <name> in <list>:           goes through the items (section 8.2)
+(list of <plural type>)                    the type
+a list of <value>, <value> ... and <value> a list written out
+an empty list of <plural type>             a list with no items
 ```
 
 - The plural type is `numbers`, `percentages`, `money`, `text`, or the plural of a kind, such as `dragons`.
-- A list may be kept in a variable, a role or a worked-out value, but not in a property.
-- Lists come from `the words of` and `the lines of` (section 5.6) and from reading a file (section 7.7). They cannot yet be written out, changed, said or compared, and a group such as `all horses` cannot yet be given where a list is expected; section 13.7 describes the rest.
+- A list may be kept in a variable, a role, a worked-out value or a property (`A knight has a trophy shelf (list of treasures).`). A list property that is not given when a thing is made starts empty.
+- **A list written out may appear only as the whole value** of `Let`, `Set`, a `whose` part or `The answer is`, so that its commas and its `and` can't be taken for anything else. Its items are all of one type; `a list of 5` has one item.
+- **A group given where a list is expected becomes a list** of the things in it at that moment: as the whole value of `Let`, `Set`, a `whose` part or `The answer is`, and as a role of a verb or a worked-out value whose type is a list. `Let the suspects be all poor dragons.` makes a list of dragons; making another poor dragon afterwards does not change it.
+- Lists also come from `the words of` and `the lines of` (section 5.6) and from reading a file (section 7.7).
+
+Reading a list:
+
+| Form | Gives |
+|---|---|
+| `the number of items in <list>` | a number |
+| `item <number> of <list>` | the item, if any: nothing when there is no such item (a number that is not a whole number from 1 to the number of items) |
+| `the first of <list>`, `the last of <list>` | an item, if any: nothing for an empty list |
+| `the total of <list>` | a number or money: the items added up, 0 or $0 for an empty list |
+| `<list> joined with <text>` | text: the items, each said as `Say` would say it, with the text between them. A list of text, numbers, money or percentages only. |
+| `<value> is [not] in <list>` | a condition: is the value one of the items? |
+| `For each <name> in <list>:` | goes through the items in order (section 8.2) |
+
+- Each `<number>`, `<list>` and `<text>` here is a single value or a bracketed expression. `joined with`, like `as a number`, applies to the single value just before it.
+- `item` and `joined` are not reserved: `item` is read this way only when a value and `of` follow it, and `joined` only after a list and before `with`. A variable may still be called `item`.
+- `the first of`, `the last of` and `the total of` are told from `the first 3 letters of` and `the total worth of dragons` by the `of` straight after the word, and are read this way only when what follows `of` is a list. If a worked-out value or a property called `first`, `last` or `total` is also in view, such a phrase could be read two ways, and is refused.
+
+Changing a list:
+
+| Sentence | Does |
+|---|---|
+| `Add <value> to <list>.` | Puts the value at the end. |
+| `Remove <value> from <list>.` | Takes out the first item equal to it. If there is none, nothing happens. |
+| `Set item <number> of <list> to <value>.` | Replaces that item. If there is no such item, that is a problem a `Try` can recover from (section 8.5). |
+
+- The list is a variable, or a list property of a thing (`Add Goblet to Gawain's trophy shelf.`). Whether `Add` puts an item on the end of a list or adds up a number is decided by the type of what is added to, which is always known. `Remove <value> from <list>.` is told from `Remove <thing>.` (section 7.5) by its `from`.
+- These are changing sentences, like `Set`: a failed `Try` undoes them; they may not appear in `To work out` unless the list is a variable made in that block; and they count for reactions and for "settled" (section 9.5).
+- `For each <name> in <list>:` goes through the list as it was when the loop began, whatever the block does to it.
+- A thing that is removed (section 7.5) leaves every list property it is in. A variable that holds a list keeps it, as a variable may keep a removed thing.
 
 ```englishscript
+Let the scores be a list of 3, 8 and 5.
+Add 10 to the scores.
+Say the number of items in the scores.         #> 4
+Say the total of the scores.                   #> 26
+Say the scores joined with ", ".               #> 3, 8, 5, 10
+Say item 2 of the scores.                      #> 8
+Say item 9 of the scores.                      #> nothing
+Set item 2 of the scores to 7.
+Remove 3 from the scores.
+Say the first of the scores or else 0.         #> 7
+If 10 is in the scores and 3 is not in the scores:
+  Say "ten, and no three"                      #> ten, and no three
 Let the parts (list of text) be the words of "fire and smoke".
-Say the number of items in the parts.     #> 3
 For each part in the parts:
   Say the length of the part.
 #> 4
@@ -146,8 +199,31 @@ For each part in the parts:
 #> 5
 ```
 
+```englishscript
+A shelf has a display (list of treasures).
+There is a shelf called Mantel whose display is a list of Cup.
+Add Goblet to Mantel's display.
+Let the costly be all treasures whose worth is more than $1,000.
+Say the number of items in Mantel's display.             #> 2
+Say the number of items in the costly.                   #> 1
+Let the none be an empty list of numbers.
+Say the total of the none.                               #> 0
+Try:
+  Set item 5 of the none to 1.
+If that fails:
+  Say the problem.                                       #> There is no item 5 of the none: it has 0 items.
+```
+
 ```refused
 Say the words of "fire and smoke".
+```
+
+```refused
+Say the number of items in a list of 1 and 2.
+```
+
+```refused
+Let the scores be a list of 3, "eight" and 5.
 ```
 
 ### Nothing
@@ -170,14 +246,30 @@ nothing                                the missing value
 - `the total` leaves out things whose property is nothing.
 - Because a property can be left out, a kind may have a property of its own kind.
 
-The compiler stops refusing once the program has checked. A check counts in four places:
+The compiler stops refusing once the program has checked, or has itself put a value there. This is the whole list of what counts:
 
-1. inside an `If` whose condition shows the value is there;
-2. in the rest of that condition, after `and`;
-3. in the `Otherwise` of an `If` that showed it missing;
-4. after an `If` that showed it missing and whose block always leaves (section 8.4).
+1. inside an `If` (or `Otherwise if`) whose condition shows the value is there (`is not nothing`, `has a`);
+2. in the rest of that condition, after `and` (and, after `or`, what the earlier part showed missing);
+3. in a later `Otherwise if` or `Otherwise` of an `If` whose earlier condition showed it missing;
+4. after an `If` that showed it missing and whose every branch always leaves (section 8.4);
+5. inside a `While` whose condition shows the value is there, each time round;
+6. after `Let` or `Set` gives a variable or a stored property a value that cannot be nothing.
 
 A check stops counting when that property or variable is changed, and when a verb is used, because a verb may change anything. In a program that has a `Whenever` (section 9.5), a check of a property or of a top-level variable also stops counting after any sentence that changes a thing, a top-level variable or a file, because a reaction may follow that sentence and change anything.
+
+A loop's block is carried out again after its own last sentence, so what was known before a loop counts inside it only if no sentence of the block can change it (by the rules just given). After a `Try` and its `If that fails`, only what was known before the `Try` and still holds after both blocks counts.
+
+```englishscript
+A link has a label (text) and a next (link, if any).
+There is a link called Tail whose label is "tail".
+There is a link called Head whose label is "head" and whose next is Tail.
+Let the spot (link, if any) be Head.
+While the spot is not nothing:
+  Say the spot's label.
+  Set the spot to the spot's next.
+#> head
+#> tail
+```
 
 ```englishscript
 A horse has a speed (number).
@@ -224,8 +316,19 @@ A word is letters, digits and underscores, starting with a letter.
 Three rules apply to every name:
 
 1. **Defined before use.** A sentence may only use kinds, things, adjectives, properties, verbs and variables introduced by an earlier sentence.
-2. **One meaning in view.** A name cannot be reused while an earlier meaning is still visible. To change a variable, use `Set`, not a second `Let`.
+2. **One meaning in view.** A name cannot be reused while an earlier meaning is still visible. To change a variable, use `Set`, not a second `Let`. In a program of several files, what is "in view" is the file's own names and those shared by the chapters it uses (section 9.6).
 3. **No reserved words.** None of the words below may be part of a new name.
+
+A name of several words is found by its words, up to twelve of them: a name of more than twelve words can be made, but never found again, so it is of no use.
+
+A name of several words is read **longest first, with no going back**: where the words of a sentence could start a longer name or a shorter one, the longer one is taken, and if the sentence then cannot go on, it is refused rather than read again with the shorter name. So with variables `the word` and `the word starts`, `If the word starts with "a":` reads `the word starts`, and is refused because `with` cannot follow it.
+
+```refused
+Let the word be "apple".
+Let the word starts be 1.
+If the word starts with "a":
+  Say 1.
+```
 
 | Group | Reserved words |
 |---|---|
@@ -237,7 +340,20 @@ Three rules apply to every name:
 | Arithmetic | `plus` `minus` `times` `divided` |
 | Prepositions | `with` `to` `from` `against` `for` `by` `on` `at` `into` `onto` `about` `over` `under` `as` `through` `toward` `towards` `upon` |
 
-**Plurals** are formed by rule: add `s`; add `es` after `s`, `x`, `z`, `ch` or `sh`; change a consonant plus `y` to `ies`. So `dragon` gives `dragons`, `fox` gives `foxes` and `pony` gives `ponies`.
+**Plurals** are formed by rule: add `s`; add `es` after `s`, `x`, `z`, `ch` or `sh`; change a consonant plus `y` to `ies`. So `dragon` gives `dragons`, `fox` gives `foxes` and `pony` gives `ponies`. Another plural can be stated where the kind is described: `A child (plural children) has ...` (section 4.1). Every kind has its own name and its own plural: a kind whose name or plural is already another kind's name or plural is refused (`bus` and `buse` would both be `buses`; `ax` and `axe` both `axes`; a kind `dragons` beside `dragon`).
+
+**Which names may share a word.** There are four sets of words:
+
+| Set | What is in it | Reached |
+|---|---|---|
+| Names | kinds and their plurals, things, variables (of the top level and of blocks), roles, the names of loops' things, worked-out values | on their own, or after `the` |
+| Adjectives | the adjectives of every kind | after `is`, or in front of a kind |
+| Properties | the properties of each kind, stored or worked out | only after `'s`, `its`, `of` or `whose` |
+| Verbs | the verbs taught with `To` | only first in a sentence |
+
+- **A word is never both a name and an adjective**, whichever comes first, because `If Smaug is ancient` must read one way. An adjective's word may not be the name of a kind, a thing, a variable, a role or a loop's thing, nor begin one; and no such name may be made with, or begin with, a word that is an adjective. So `For each ancient rival in dragons:` is refused: a reader would take `ancient` as a filter, and `For each ancient dragon:` says that.
+- A property belongs to its kind, and may be the same word as anything else, since it is only reached through a possessive, `of` or `whose`.
+- A verb is told apart by standing first in its sentence, and may share its word with a name or a worked-out value.
 
 ## 4. Describing the world
 
@@ -256,6 +372,33 @@ A | An <kind> has a | an <property> (<type>) [, a | an <property> (<type>)]... .
 ```englishscript
 A wizard has a hat size (number) and a motto (text).
 A tower has a height (number), a keeper (knight), and a prisoner (dragon).
+```
+
+A kind's plural is formed by rule (section 3). Another plural is stated in brackets after the kind's name, where the kind is described:
+
+```text
+A | An <kind> (plural <word>) has ...
+```
+
+- `<word>` is then the plural, and the plural formed by rule is not a word.
+- The plural must differ from the kind's name: with `sheep` for both, `the sheep` would mean one sheep and all of them at once, so it is refused. It must not be any other kind's name or plural, or any other name (section 3).
+- Writing a plural the kind does not have, such as `children` for a kind `child` described without one, is refused with this form as the way to state it.
+
+```englishscript
+A child (plural children) has an age (number).
+There is a child called Ann whose age is 3.
+Say the number of children.          #> 1
+For each pupil in children:
+  Say the pupil.                     #> Ann
+```
+
+```refused
+A child has an age (number).
+Say the number of children.
+```
+
+```refused
+A sheep (plural sheep) has an age (number).
 ```
 
 ### 4.2 Things
@@ -339,16 +482,74 @@ Say Gawain's bravery bonus.      #> $80
 A | An <kind>'s <property> is never | always <comparison>.
 ```
 
-The comparison is anything that may follow `is` in a condition (section 6). A rule must be about a stored property. It is checked when a thing of that kind is created and whenever one of its stored properties changes. A change that would break a rule is undone and the program stops.
+The comparison is anything that may follow `is` in a condition (section 6). A rule must be about a stored property.
+
+- **A rule holds from its sentence on**, not before. When the sentence is carried out, every thing of that kind there is already is checked; if one breaks the rule, the program stops there, after the sentences before it have been carried out.
+- From then on it is checked when a thing of that kind is made, and whenever one of that thing's stored properties changes (by `Set`, `Add` and the like, by `Remove` clearing an `if any` property, or by an event from a library). A change that would break a rule is undone and the program stops, unless a `Try` catches it (section 8.5).
+- **A rule may depend only on what cannot change behind its back**, because it is checked only when the thing's own stored properties change. After `never` or `always` it may use values written out (`5`, `$0`, `10%`, `"none"`, `nothing`), variables made with `always` (section 7.1), and the thing's own stored properties (`its purse`, `the knight's debt`). It may not use a variable that can change, another thing, a property of another thing, a worked-out property, an adjective, a worked-out value, a count or a total: those are refused when the rule is compiled.
+- A rule that uses another of the thing's own stored properties (`A knight's debt is never more than its purse.`) is checked when either of them changes.
+- A rule may be about an `if any` property. It then holds whenever the property is nothing (`A squire's wage is never more than $9.` says nothing about a squire with no wage), except a rule about being nothing itself (`A squire's mount is never nothing.`).
 
 ```englishscript
 A dragon's age is always at least 0.
 A treasure's worth is never more than $1,000,000.
+Let the cap always be $10,000.
+A knight's purse is never more than the cap.
 ```
 
 ```refused
 A dragon's age is always at least 0.
 Subtract 5 from Norbert's age.
+```
+
+Refused, because the variable can change without the rule being checked:
+
+```refused
+Let the cap be $10,000.
+A knight's purse is never more than the cap.
+```
+
+Refused, because Smaug's age can change without the treasure's rule being checked:
+
+```refused
+A treasure's owner is always ancient.
+```
+
+Stopped at the rule's own sentence, after `Say "before"` has been carried out, because Norbert is already younger:
+
+```refused
+Say "before"
+A dragon's age is always at least 100.
+```
+
+### 4.6 A fixed set of choices
+
+```text
+A | An <name> is one of <choice>, <choice> ... or <choice>.
+```
+
+- This defines a type, written in brackets like any other: `(mood)`. Each choice is one or more words, and there are at least two. The choices are separated by commas, with `or` before the last.
+- A choice is a name: it may not be the name of a kind, a thing, a variable or a worked-out value, nor a choice of another set. It may be the same word as an adjective, because the left side of `is` always says which is meant: a thing on the left takes an adjective, and a value of the set takes a choice.
+- Choices are compared with `is` and `is not` only. A choice is said as its words, as they were written in the definition.
+- A word that is not one of the choices, where one of them is expected, is refused before the program runs.
+- Still proposed: lists of choices, and asking for a choice (sections 13.7 and 13.15).
+
+```englishscript
+A mood is one of sleepy, grumpy or very cross.
+A beast has a mood (mood).
+A beast is grumpy when its mood is very cross.
+There is a beast called Grendel whose mood is sleepy.
+Set Grendel's mood to very cross.
+If Grendel's mood is very cross and Grendel is grumpy:
+  Say "Tread softly."       #> Tread softly.
+Say "{Grendel} is {Grendel's mood}."    #> Grendel is very cross.
+```
+
+```refused
+A mood is one of sleepy or grumpy.
+Let the feeling be sleepy.
+If the feeling is happy:
+  Say "Strange."
 ```
 
 ## 5. Expressions
@@ -368,6 +569,7 @@ A thing is **in view** inside a definition about it, inside a verb that has it a
 
 - `the <noun>` is refused unless something of that name is in view.
 - A pronoun is refused unless exactly one thing is in view.
+- Inside a block, a variable, a role or a loop's thing may have a kind's name only when it holds a thing of that kind, as in `Let the card be a new card ...`: `the card` then means a card either way. `Let the dragon be 5.` and `Let the dragon be Gawain.` (a knight) are refused. At the top level a kind's name is never a variable's name (section 3).
 
 ```englishscript
 Let the best knight be Gawain.
@@ -407,6 +609,17 @@ Say the age of the owner of Goblet.    #> 771
 Say Goblet's name.                     #> Goblet
 ```
 
+`the <property> of <owner>` is decided by the owner alone, never by what other files happen to define:
+
+- If the owner's kind has a property (stored or worked out) of that name, it is the property, unless a variable, role or loop's thing of that name is also in view: then it could be read two ways, and it is refused with both, `<owner>'s <property>` for the property and `(the <name>) of ...` for the value.
+- If the owner is not a thing, or its kind has no such property, and a value of that name is in view, it is that value, and the `of` belongs to what follows (as in `the pick at the month of the month row`, a worked-out value with roles `at` and `of`).
+
+```refused
+A knight has a rank (number).
+To review a rank (number):
+  Say the rank of Gawain.
+```
+
 ### 5.3 Arithmetic
 
 | Operation | Symbol | Words |
@@ -417,7 +630,9 @@ Say Goblet's name.                     #> Goblet
 | Divide | `/` | `divided by` |
 | Negate | `-` in front | |
 
-Order of working, tightest first: brackets and property access; a leading minus and `% of`; multiplying and dividing; adding and subtracting. Operations of the same strength go left to right.
+Order of working, tightest first: brackets and property access; the forms that apply to the single value just before them (`as a number`, `in upper case`, `in lower case`, `joined with`, `rounded ... to the nearest` and `raised to the power of`); a leading minus and `% of`; multiplying and dividing; adding and subtracting. Operations of the same strength go left to right. A minus sign may stand in front of any single value, wherever one may stand: `the double of -3`.
+
+`or else` (section 2) stands outside all of these, and never beside them: `"12" as a number or else 0 + 1` could mean `("12" as a number or else 0) + 1` or `"12" as a number or else (0 + 1)`, so a sum, a difference, a product or a quotient on either side of `or else` must be in brackets. Such a sentence is refused with both readings. In the same way, the value at the end of a group's `whose` filter (section 5.5) may not be followed by `+ - * /` without brackets.
 
 ```englishscript
 Say 2 + 3 * 4.            #> 14
@@ -434,16 +649,70 @@ Types decide what is allowed. Any combination not listed here is refused.
 |---|---|---|
 | Add, subtract | number and number | number |
 | | money and money | money |
+| | percent and percent | percent |
 | Multiply | number by number | number |
 | | money by number, in either order | money |
+| | percent by number, in either order | percent |
 | Divide | number by number | number |
 | | money by number | money |
 | | money by money | number |
+| | percent by number | percent |
+| | percent by percent | number |
 | `% of` | percent of number | number |
 | | percent of money | money |
+| Negate | number, money or percent | the same |
+
+```englishscript
+Say 10% + 5%.             #> 15%
+Say 10% * 3.              #> 30%
+Say -10%.                 #> -10%
+Let the rate be 5%.
+Add 1% to the rate.
+Say the rate.             #> 6%
+```
 
 ```refused
 Say $5 + 5.
+```
+
+```refused
+Say "12" as a number or else 0 + 1.
+```
+
+#### More arithmetic
+
+| Form | Example | Gives |
+|---|---|---|
+| `the remainder of <value> divided by <value>` | `the remainder of 17 divided by 5` | `2` |
+| `<value> rounded to the nearest <value>` | `$3.14159 rounded to the nearest $0.01` | `$3.14` |
+| `<value> rounded up to the nearest <value>` | `17 rounded up to the nearest 5` | `20` |
+| `<value> rounded down to the nearest <value>` | `17 rounded down to the nearest 5` | `15` |
+| `<value> raised to the power of <value>` | `2 raised to the power of 10` | `1,024` |
+| `the square root of <value>` | `the square root of 81` | `9` |
+| `the larger of <value> and <value>` | `the larger of $5 and $8` | `$8` |
+| `the smaller of <value> and <value>` | `the smaller of 3 and 7` | `3` |
+| `the absolute value of <value>` | `the absolute value of -4` | `4` |
+
+- Each `<value>` is a single value or a bracketed expression: `2 + 17 rounded to the nearest 5` is `2 + 15`. A leading minus works after them, as the order of working says: `-17 rounded up to the nearest 5` is `-(17 rounded up to the nearest 5)`, which is `-20`; write `(-17) rounded up to the nearest 5` for `-15`.
+- Remainders, powers and square roots work on plain numbers. **The remainder has the sign of the divisor** (it is what is left after taking away the divisor a whole number of times, rounding down): the remainder of `-7` divided by `2` is `1`, and of `7` divided by `-2` is `-1`. So the remainder of a number divided by a positive number is never negative. A remainder of a division by zero is a problem.
+- Rounding works on a number, money or a percentage, with a step of the same type that is more than nothing. Rounding "to the nearest" takes a value exactly halfway away from zero; `up` goes towards more, and `down` towards less.
+- A power with a whole exponent is exact. Any other power, and a square root that does not come out exactly, is worked out to twelve decimal places from the exact fraction (a half away from zero), never through an approximation. A negative number has no square root, and is raised only to a whole power; zero raised to a negative power would divide by zero. Each of these is a problem a `Try` can recover from (section 8.5).
+- `the larger of` and `the smaller of` take two numbers, two amounts of money or two percentages; `the absolute value of` takes one.
+- The words `remainder`, `rounded`, `nearest`, `raised`, `power`, `square`, `root`, `larger`, `smaller` and `absolute` are recognised only in these phrases, and stay free for names. If a worked-out value of the program is called `the remainder`, `the square root`, `the larger`, `the smaller` or `the absolute value`, the phrase could be read two ways, and is refused.
+
+```englishscript
+Say the remainder of 17 divided by 5.      #> 2
+Say the remainder of -7 divided by 2.      #> 1
+Say $3.14159 rounded to the nearest $0.01. #> $3.14
+Say 17 rounded up to the nearest 5.        #> 20
+Say 2 raised to the power of 10.           #> 1,024
+Say the square root of 2.                  #> 1.4142
+Say the larger of $5 and $8.               #> $8
+Say the absolute value of -4.              #> 4
+Try:
+  Say the square root of -1.
+If that fails:
+  Say the problem.                         #> A negative number, -1, has no square root.
 ```
 
 ### 5.4 Percentages
@@ -462,15 +731,17 @@ Say the discount of $50.   #> $10
 A group is some of the things of one kind. It can be written three ways:
 
 ```text
-[all] [<adjective>]... <kinds> [of <thing>] [whose <property> <comparison>]
-its | their [<adjective>]... <kinds> [whose <property> <comparison>]
-<thing>'s [<adjective>]... <kinds> [whose <property> <comparison>]
+[all] [<adjective>]... <kinds> [of <thing>] [whose <property> <comparison> [and whose ...]...]
+its | their [<adjective>]... <kinds> [whose <property> <comparison> [and whose ...]...]
+<thing>'s [<adjective>]... <kinds> [whose <property> <comparison> [and whose ...]...]
 ```
 
 - The kind is plural.
 - Each adjective must be defined for that kind.
 - `of <thing>`, and the two possessive forms, keep the things that belong to the owner. This works only when the kind has **exactly one** property whose type is the owner's kind. With none, or with two, the sentence is refused.
-- `whose` keeps the things that pass a comparison on one of their properties.
+- `whose` keeps the things that pass a comparison on one of their properties. Several filters may be joined with `and whose`, and a thing must pass them all (`For each cell whose row is 1 and whose column is 2:`).
+- Inside a `whose` part of a thing being made (`There is ... whose wage is ...`), a group takes one filter only, because a following `and whose` could belong to the group or to the new thing: such a sentence is refused with both readings, and the correction puts the group in brackets.
+- When a group is part of a value (`the number of ...`, `the total ... of ...`), the value at the end of its last filter may not be followed by `+ - * /` without brackets: `the number of knights whose courage is more than 5 + 1` is refused, with `(the number of knights whose courage is more than 5) + 1` and `the number of knights whose courage is more than (5 + 1)`.
 
 Two expressions take a group:
 
@@ -480,6 +751,8 @@ the total <property> of <group>
 ```
 
 `the total` needs a property that is a number or money.
+
+**Finding without a search.** When the first filter of a group (with no adjective in front of the kind) is a stored property being equal to a value, `whose place is the spot`, the things are found through an index kept for that kind and property, not by looking at every thing. It is built the first time it is needed and kept up to date through every change: to the property, by making and removing things, and when a failed `Try` puts things back. Nothing about the result changes: the same things, in the order they were made. Only the time does: looking up one thing among thousands takes about as long as among ten.
 
 ```englishscript
 Say the number of dragons.                                           #> 2
@@ -504,6 +777,18 @@ Say the number of duels of Smaug.
 ```englishscript
 A duel has a challenger (dragon) and a defender (dragon).
 Say the number of duels whose challenger is Smaug.    #> 0
+Say the number of knights whose courage is more than 1 and whose purse is less than $100.   #> 1
+```
+
+```refused
+Say the number of knights whose courage is more than 5 + 1.
+```
+
+```refused
+A horse has a speed (number).
+A squire has a wage (money) and a speed (number).
+There is a squire called Wat whose wage is $3 and whose speed is 1.
+There is a squire called Sum whose wage is the total wage of squires whose wage is more than $2 and whose speed is 2.
 ```
 
 ### 5.6 Text
@@ -515,7 +800,8 @@ Joining text is done with fill-ins: `"{the first name} {the last name}"`.
 | `the length of <text>` | the number of characters |
 | `<text> in upper case`, `<text> in lower case` | text |
 | `the first <number> letters of <text>`, `the last <number> letters of <text>` | text |
-| `the words of <text>` | a list of text, split at spaces |
+| `the words of <text>` | a list of text, split at any run of spaces, tabs or line breaks, with none empty |
+| `letter <number> of <text>` | text, if any: that letter, numbered from 1; nothing when there is no such letter |
 | `the lines of <text>` | a list of text, split at line breaks, with no empty last line |
 | `<text> as a number` | a number, if any: nothing when the text is not a number written the usual way |
 
@@ -574,14 +860,16 @@ A comparison starts with an expression and continues in one of these ways. `are`
 | `=`, `<`, `>`, `<=`, `>=` | The same comparisons as symbols. |
 | `contains <text>` | The text on the left has the other inside it. Written without `is`. |
 | `starts with <text>`, `ends with <text>` | |
-| `comes before <text>`, `comes after <text>` | Alphabetical order, ignoring capitals. |
+| `comes before <text>`, `comes after <text>` | Order letter by letter, after folding capitals, by each character's code: alphabetical for the unaccented English letters, but not for accented letters, digits and marks, which fall where their codes put them. |
 
 - Ordering comparisons work on numbers, money and percentages, and both sides must be the same type.
 - `is` between two texts is exact, capitals included, and so are `contains`, `starts with` and `ends with`. All five text tests need text on both sides.
+- `does not contain`, `does not start with` and `does not end with` are the opposites of the first three, as `not ... contains` is.
 - A `yes or no` value is tested with `is yes` or `is no` (section 2).
 - Lists cannot be compared yet.
-- Comparisons are joined with `and` or with `or`. `not` in front reverses the comparison, or the bracketed condition, that follows it.
+- Comparisons are joined with `and` or with `or`. `and` and `or` stop as soon as the answer is known: after a false part of `and`, or a true part of `or`, the rest is not worked out (so it may rely on what the earlier parts checked, section 2).
 - **`and` and `or` cannot be mixed** in one condition unless brackets show which belong together.
+- `not` in front reverses the one comparison, or the bracketed condition, that follows it. A `not` followed by `and` or `or` could turn round just its comparison or the whole chain, so it needs brackets: `If not Robin is brave and Gawain is brave:` is refused, with `(not Robin is brave) and Gawain is brave` and `not (Robin is brave and Gawain is brave)`. A `not` in front of the last comparison of a chain needs none: `If A and B and not C:`.
 
 ```englishscript
 If Smaug is ancient and Norbert is not ancient:
@@ -602,6 +890,11 @@ If "apple" comes before "Banana" and "Smaug" starts with "Sm":
 
 ```refused
 If Smaug is ancient and Robin is brave or Gawain is brave:
+  Say "Which way?"
+```
+
+```refused
+If not Robin is brave and Gawain is brave:
   Say "Which way?"
 ```
 
@@ -645,7 +938,7 @@ Divide <target> by <expression>.
 
 A target is a variable made with `Let`, or a stored property of a thing. The new value must have the target's type. These cannot be changed: a worked-out property, a `name`, a role of a verb, the noun of a `For each`, and a variable made with `always`. A stored adjective is changed with `Now` (section 4.3).
 
-`Add <text> to the file <text>.` is a different sentence (section 7.7). Text cannot be added up, so the two are never confused.
+`Add <text> to the file <text>.` is a different sentence (section 7.7). Text cannot be added up, so the two are never confused. When the target is a list, `Add` puts the value at its end, and `Remove <value> from <list>.` takes one out (section 2, "Lists").
 
 ```englishscript
 Let the total be 10.
@@ -707,7 +1000,8 @@ Remove <thing>.
 - `a new <kind>` may only be the whole value of a `Let`. To use a new thing afterwards, make it that way.
 - The name is a text value, so it can be built with fill-ins. If no name is given, it is the kind and a number counting every thing of that kind made so far, such as `dragon 3`. Names of new things need not be different; find one with `the <kind> called` (section 5.7).
 - The `whose` parts follow the rules of section 4.2, and the kind's rules are checked.
-- `Remove` takes a thing out of the world. It leaves every group. A property marked `if any` that pointed at it becomes nothing.
+- `Remove` takes a thing out of the world. It leaves every group and every list property. A property marked `if any` that pointed at it becomes nothing.
+- `Remove <value> from <list>.` is another sentence, told apart by its `from`: it takes an item out of a list (section 2).
 - **`Remove` is refused while a required property of another thing points at the thing.** This is a problem (section 8.5) that names what still depends on it.
 - A removed thing can still be said and compared, but using its properties or adjectives, changing it, making something point at it, or using it as the owner of a group (`the saddles of h`) is a problem.
 - A `For each` that has already started does not visit a thing removed before its turn (section 8.2).
@@ -851,7 +1145,7 @@ Repeat <expression> times:
 While <condition>:
 ```
 
-`Repeat` needs a whole number that is not negative. `While` is stopped after 10,000 rounds.
+`Repeat` needs a whole number that is not negative. `While` is stopped after 1,000,000 rounds.
 
 ```englishscript
 Repeat 2 times:
@@ -879,7 +1173,7 @@ End the program.
 - `Stop repeating.` and `Skip this round.` are refused when more than one loop is around the sentence, because they could mean either. Move the inner loop into its own verb and use `Stop.` there.
 - A loop written outside a verb is not "around" the sentences inside that verb, nor around the sentences of a reaction.
 
-A block that ends in one of these sentences, or in `Fail because` (section 8.5), **always leaves**. An `If` whose block always leaves works as a guard: the sentences after it can rely on its condition having been false (section 2, "Nothing").
+A block that ends in one of these sentences, in `The answer is` (section 9.3), or in `Fail because` (section 8.5), **always leaves**; so does a block that ends in an `If` with an `Otherwise` whose every branch always leaves, or in a `Try` whose two blocks both always leave. An `If` whose block always leaves works as a guard: the sentences after it can rely on its condition having been false (section 2, "Nothing").
 
 A round of a loop can end at a `Skip`, and the loop itself at a `Stop repeating`, part way through the block. A check for nothing is only relied on in the next round, or after the loop, if it held at every such point.
 
@@ -937,9 +1231,9 @@ the problem
 - `Stop.`, `Skip`, `Stop repeating.`, `The answer is` and `End the program.` leaving a `Try` are not failures. They leave as usual, and the changes stay.
 - For checks for nothing, the two blocks count like the branches of an `If`: after the `Try`, nothing that either block may have changed is relied on.
 
-These problems can be recovered from: a broken `never` or `always` rule; a division by zero, or a test for being divisible by zero; a file that cannot be read or written; a `Remove` that is refused; using a removed thing; `Repeat` with a fraction or a negative number; asking for a negative or fractional number of letters; and `Fail because`.
+These problems can be recovered from: a broken `never` or `always` rule; a division by zero, or a test for being divisible by zero; a file that cannot be read or written; a `Remove` that is refused; using a removed thing; `Repeat` with a fraction or a negative number; asking for a negative or fractional number of letters; `Set item` of an item that isn't there; the square root of a negative number, a negative number raised to a power that isn't whole, a remainder of a division by zero, and rounding to a step that is not more than nothing; and `Fail because`.
 
-These always end the program, because they are faults in the program rather than events in the world: a `For example` that does not hold, a `While` passing 10,000 rounds, a verb or worked-out value using itself more than 200 levels deep, and reactions setting off reactions more than 200 levels deep.
+These always end the program, because they are faults in the program rather than events in the world: a `For example` that does not hold, a `While` passing 1,000,000 rounds, a verb or worked-out value using itself more than 200 levels deep, and reactions setting off reactions more than 200 levels deep.
 
 ```englishscript
 To move an amount (money) from a giver (knight) to a taker (knight):
@@ -1128,7 +1422,7 @@ Use the <name> library.
 - When the program ends, for any reason, each library it used is told, so that it can let go of what it holds.
 - A library may go on working after the program's last sentence, as a page does that waits for clicks. It starts only when the sentences ran to their end, not after `End the program.` or a problem. What then happens outside, such as a click, comes in as a change to things, and is treated as one sentence: the rules are checked, and it sets off reactions (section 9.5) as a sentence would. If the change breaks a rule, or a reaction to it meets a problem, all of it is undone, as by a failed `Try`. A reaction that says `End the program.` ends the program, and nothing more comes in.
 - Only the libraries that come with EnglishScript can be used, from the folder `englishscript/libraries`. Naming any other is refused, and the message lists the libraries there are.
-- One library comes with EnglishScript today: `vulkan`, which draws shaded triangles on the graphics card. Its words are described in [VULKAN.md](VULKAN.md), and `examples/gpu_triangle.english` uses it.
+- Two libraries come with EnglishScript today: `vulkan`, which draws shaded triangles on the graphics card (its words are described in [VULKAN.md](VULKAN.md), and `examples/gpu_triangle.english` uses it), and `page`, which shows a program as a web page of panels, fields and buttons that the person can click (its words are described in [PAGE.md](PAGE.md)).
 
 ```text
 Use the paint library.
@@ -1276,6 +1570,40 @@ Whenever Puff becomes ancient:
   Say "Puff is old."
 ```
 
+#### When everything has settled
+
+```text
+Whenever everything has settled:
+```
+
+A reaction to a whole **turn**, rather than to one thing. A turn is one top-level sentence of the program, or of a chapter being read (section 9.6), with everything it sets off: the verbs it uses and the reactions to it. An event a library brings in, such as a click on a page, is a turn of its own (section 9.4).
+
+- This is a definition, allowed only at the top level, and it applies from its sentence on. There may be several; they are carried out in the order written.
+- At the end of a turn in which at least one sentence changed a thing, a top-level variable or a file, each settled block is carried out once. A turn that changed nothing settles nothing.
+- What a settled block changes sets off ordinary reactions as usual, but never another settling: a settled block is carried out at most once in a turn.
+- No thing is in view in the block. `Stop.` leaves it.
+- A problem in a settled block is a problem of the turn. For an event, the whole event is undone, as for any problem in an event. For a top-level sentence, the program stops there, and the message names the settled block and the sentence that formed the turn. A `Try` that formed the turn does not catch it, because the `Try` had already finished.
+- A program with no settled block pays nothing for it.
+
+```englishscript
+Whenever everything has settled:
+  Say "Robin has {Robin's purse}."
+
+Say "Nothing changes here."          #> Nothing changes here.
+Add $5 to Robin's purse.             #> Robin has $25.
+Repeat 3 times:
+  Add $1 to Robin's purse.
+#> Robin has $28.
+```
+
+Refused, because a settled block is a definition:
+
+```refused
+If 1 is 1:
+  Whenever everything has settled:
+    Say "Strange."
+```
+
 ### 9.6 Chapters and books
 
 A program can be split over several files. A **chapter** is a file `<name>.english`, and a **book** is a folder of chapters.
@@ -1301,16 +1629,38 @@ This chapter shares nothing.
 - A chapter is read **once** in a program, at the first `Use` that reaches it. Its sentences are carried out then, in order, before the file that uses it goes on: it is an ordinary program, read aloud once. Its things are made, its variables set, its `Say` and `For example` sentences carried out, and its rules and reactions apply from then on, to the whole world. A later `Use` of the same chapter, by another file, reads nothing again.
 - Chapters that use each other in a circle are refused, and the message names the circle: `calendar -> feasts -> calendar`.
 
-**One world, one meaning for each name.** Every name defined at the top level of any file (a kind, a thing, an adjective of a kind, a property, a verb, a worked-out value, a variable) has one meaning in the whole program. A second file giving it another meaning is refused, as a reused name is (section 3), and the message says which chapter has it.
+**Private names, shared names.** A name a file defines at its top level (a kind, a thing, an adjective of a kind, a worked-out property, a verb, a worked-out value, a variable) is either shared or private.
+
+- A name the file shares (section "What a file may say", below) has one meaning in the whole program: no other file may share the same word, whether or not any one file uses both. The second is refused, and the message names the file that shares it first.
+- A name the file does **not** share is private to it. Another file may give the same word a meaning of its own, so chapters can be written apart, each with its own helpers.
+- In any one file, the names in view are its own, private and shared, and the names shared by the chapters and libraries it uses. Two of those may not be the same word: the file is refused at the `Use` that would bring the second into view, or at the definition, whichever comes second, and the message names both. A private name of a chapter the file uses is never in view there, so it never clashes.
+- A file with no `shares` sentence shares everything, so all its names are shared names. This is the case of most programs.
+
+The world is still one world. Two private kinds spelt the same way in two chapters are two different kinds: their things are made, counted, gone through and found by name separately, each chapter seeing only its own, and a rule or a reaction belongs to the kind it was written for. A message that has to mention a private kind of another file names its file, as in `a cell of the life chapter`. A thing's name need only be new among the names in view in the file that makes it (and among shared names), and `the <kind> called <text>` (section 5.7) looks only among the things of the kind in view.
+
+The calendar chapter keeps its variable `month row` to itself, so this file may have one of its own; but `roman` is shared by the numerals chapter, so it is in view and can't be given another meaning:
+
+```englishscript
+Use the calendar chapter of the almanac book.
+Let the month row be 3.
+Say the month row.                             #> 3
+Say the month title of 3.                      #> March
+```
+
+```refused
+Use the numerals chapter of the almanac book.
+Let the roman be "MMXXVI".
+```
 
 **What a file may say.** In a file, a name may be used if it was defined in that file, or in a chapter that this file itself uses, and that chapter shares it. What a chapter uses is not passed on: a file that wants a chapter's words uses that chapter itself.
 
 - A chapter with no `shares` sentence shares everything it defines.
 - `This chapter shares only A, B and C.` shares just those. `This chapter shares nothing.` shares none. Either must be the first sentence of its file (comments may come before it). A program may say it too, so that one file can be both a program and a chapter.
 - The names are written as they were defined, without an article, separated by commas and `and`. Each must be defined at the top level of the chapter by its end, and must be one thing: a name that is both a kind and a verb, say, is refused, because it would not be clear which is shared.
-- A shared kind brings its properties with it. Its adjectives, its worked-out properties and its things are names of their own, and are shared only if they are listed.
-- A worked-out value that is shared may take or give back a thing of a kind that is not shared. The thing can then be passed around, compared and said, but its kind can't be named, so its properties can't be read and nothing can be made of it.
-- Rules (`never`, `always`) and reactions (`Whenever`) are not names. Those of a chapter hold everywhere.
+- A shared kind brings its stored properties with it. Its adjectives, its worked-out properties and its things are names of their own, and are shared only if they are listed. So two chapters may each give a shared kind a private adjective or worked-out property spelt the same way.
+- A property has one type for each kind: a kind's stored properties are listed once, where it is described, and a worked-out property of a kind may not be defined twice in one file. Another kind may have a property of the same name and another type.
+- A worked-out value that is shared may take or give back a thing of a kind that is not shared. The thing can then be passed around, compared and said, but its kind can't be named, so its properties can't be read, nothing can be made of it, and it can't be removed: `Remove` is refused for a thing whose kind the file cannot name.
+- Rules (`never`, `always`) and reactions (`Whenever`) are not names. They belong to the kind they were written for, and hold wherever things of that kind are changed, from any file.
 - Roles and the variables of a block belong to their block, as always. Another file may use the same names for its own.
 
 A name that exists elsewhere, but may not be said here, is refused with a message that says why: the chapter does not share it, or the file does not use that chapter.
@@ -1383,13 +1733,14 @@ Spelling (line 14):
 - something is divided by zero, or tested for being divisible by zero;
 - `Repeat` is given a fraction or a negative number;
 - a negative or fractional number of letters is asked for;
+- `Set item` names an item that isn't there, or a square root, a power, a remainder or a rounding has no answer (section 5.3);
 - a file cannot be read or written;
 - `Remove` is refused, or a removed thing is used;
 - `Fail because` is reached;
-- a `While` passes 10,000 rounds, a verb or a worked-out value uses itself more than 200 levels deep, or reactions set off reactions more than 200 levels deep;
+- a `While` passes 1,000,000 rounds, a verb or a worked-out value uses itself more than 200 levels deep, or reactions set off reactions more than 200 levels deep (the message then names the reactions that repeat, if they go round in a circle);
 - a library reports a problem, or fails in a way it did not expect (section 9.4).
 
-All of these except a `For example`, the 10,000 rounds, the 200 levels and a library's unexpected failure are problems that a `Try` can recover from (section 8.5). When input runs out during `Ask`, the program ends quietly; that is not a problem.
+All of these except a `For example`, the 1,000,000 rounds, the 200 levels and a library's unexpected failure are problems that a `Try` can recover from (section 8.5). When input runs out during `Ask`, the program ends quietly; that is not a problem.
 
 A sentence of a chapter that can't be read, or a problem while running one, is reported with the chapter's file and line, such as `almanac/calendar.english, line 12`, followed by where the chapter is used from (section 9.6).
 
@@ -1456,11 +1807,12 @@ Words in capitals are names from the program's own vocabulary. Quoted words are 
 sentence    = definition | action | block-opener
 
 definition  = kind | thing | adjective | stored-adj | property | rule | verb | work-out
-            | reaction | library | chapter | shares                    (top level only)
-kind        = article KIND "has" field { sep field } "."
+            | reaction | settled | library | chapter | shares | choices   (top level only)
+choices     = article NAME "is one of" CHOICE { "," CHOICE } [ "," ] "or" CHOICE "."
+kind        = article KIND [ "(" "plural" WORD ")" ] "has" field { sep field } "."
 field       = article NAME "(" type ")"
 thing       = "There is" article { ADJECTIVE } KIND "called" NAME [ whose { sep whose } ] "."
-whose       = "whose" PROPERTY "is" expression
+whose       = "whose" PROPERTY "is" whole
 adjective   = article KIND "is" ADJECTIVE "when" condition "."
 stored-adj  = article KIND "can be" ADJECTIVE "."
 property    = "The" NAME "of" article KIND "is" expression "."
@@ -1468,6 +1820,7 @@ rule        = article KIND "'s" PROPERTY "is" ( "never" | "always" ) tail "."
 verb        = "To" VERB [ role ] { PREPOSITION role } ":"
 work-out    = "To work out the" NAME "(" type ")" { ( PREPOSITION | "of" ) role } ":"
 reaction    = "Whenever" ( article KIND | THING ) "becomes" [ "not" ] ADJECTIVE ":"
+settled     = "Whenever everything has settled" ":"
 library     = "Use the" NAME "library" "."
 chapter     = "Use the" WORDS "chapter" [ "of the" WORDS "book" ] "."    (WORDS: plain words, letters only)
 shares      = "This chapter shares" ( "nothing" | "only" NAME { sep NAME } ) "."
@@ -1478,22 +1831,27 @@ role        = article ( KIND | NAME "(" type ")" )
 article     = "a" | "an"
 sep         = "," | "and" | "," "and"
 type        = base-type [ "," "if any" ]
-base-type   = "number" | "money" | "text" | "percent" | "yes or no" | KIND
-            | "list of" PLURAL-TYPE                                  (not for a property)
+base-type   = "number" | "money" | "text" | "percent" | "yes or no" | KIND | CHOICE-SET
+            | "list of" PLURAL-TYPE
 PLURAL-TYPE = "numbers" | "percentages" | "money" | "text" | KINDS
 
 action      = let | change | say | use | example | answer | leave
             | now | create | remove | ask | write | fail
-let         = "Let" [ "the" ] NAME [ "(" type ")" ] [ "always" ] "be" ( expression | new-thing ) "."
-change      = "Set" target "to" expression "."
-            | "Add" expression "to" target "."
+let         = "Let" [ "the" ] NAME [ "(" type ")" ] [ "always" ] "be" ( whole | new-thing ) "."
+whole       = expression | list-written | group                     (a group becomes a list)
+list-written = "a list of" expression { "," expression } [ [ "," ] "and" expression ]
+            | "an empty list of" PLURAL-TYPE
+change      = "Set" target "to" whole "."
+            | "Set item" value "of" target "to" expression "."
+            | "Add" expression "to" target "."                      (a list target: put at the end)
+            | "Remove" expression "from" target "."                 (target: a list)
             | "Subtract" expression "from" target "."
             | "Multiply" target "by" expression "."
             | "Divide" target "by" expression "."
 say         = "Say" expression "."
 use         = VERB [ expression ] { PREPOSITION expression } "."
 example     = "For example" [ "," ] condition "."
-answer      = "The answer is" expression "."                        (inside To work out)
+answer      = "The answer is" whole "."                             (inside To work out)
 leave       = "Stop." | "Stop repeating." | "Skip this" NOUN "." | "Skip this round."
             | "End the program."
 target      = a variable made with Let | a stored property of a thing
@@ -1521,17 +1879,22 @@ comparison  = ( "is" | "are" ) [ "not" ] tail
             | "has" article PROPERTY | "has no" PROPERTY
             | ( "=" | "<" | ">" | "<=" | ">=" ) expression
             | ( "contains" | "starts with" | "ends with" | "comes before" | "comes after" ) expression
+            | ( "does not contain" | "does not start with" | "does not end with" ) expression
 tail        = "less than" expression | "more than" expression
             | "greater than" expression | "at least" expression
             | "at most" expression | "divisible by" expression
-            | "nothing" | ADJECTIVE | expression
+            | "nothing" | ADJECTIVE | "in" value | expression
 
 expression  = sum { "or else" sum }
 sum         = term { ( "+" | "plus" | "-" | "minus" ) term }
 term        = factor { ( "*" | "times" | "/" | "divided by" ) factor }
 factor      = "-" factor | value { postfix } [ "of" factor ]   ("of" needs a percentage on its left)
-postfix     = "in upper case" | "in lower case" | "as a number"
-value       = NUMBER | MONEY | PERCENT | TEXT | "(" expression ")" | "nothing"
+postfix     = "in upper case" | "in lower case" | "as a number" | "joined with" value
+            | "rounded" [ "up" | "down" ] "to the nearest" value | "raised to the power of" value
+value       = NUMBER | MONEY | PERCENT | TEXT | "(" expression ")" | "nothing" | "-" value | CHOICE
+            | "the remainder of" value "divided by" value | "the square root of" value
+            | "the" ( "larger" | "smaller" ) "of" value "and" value | "the absolute value of" value
+            | "letter" value "of" value
             | "yes" | "no" | "whether" condition
             | "the" WORKED-OUT { ( PREPOSITION | "of" ) value }
             | THING
@@ -1544,6 +1907,8 @@ value       = NUMBER | MONEY | PERCENT | TEXT | "(" expression ")" | "nothing"
             | "the number of" group
             | "the total" PROPERTY "of" group
             | "the number of items in" value
+            | "item" value "of" value
+            | "the" ( "first" | "last" | "total" ) "of" value        (value: a list)
             | "the" ( "length" | "words" | "lines" ) "of" value
             | "the" ( "first" | "last" ) factor "letters of" value
             | "the" ( "text" | "lines" ) "of the file" value
@@ -1750,16 +2115,16 @@ This section gives a syntax to every gap that used to be listed here. Many of it
 |---|---|
 | "Nothing" and optional properties | Built: section 2, "Nothing" |
 | Yes-or-no values | Built: sections 2 and 4.3 |
-| A fixed set of choices | 13.3 |
+| A fixed set of choices | Built: section 4.6 |
 | Constants | Built: section 7.1 |
 | Verbs that give back a value | Built: section 9.3 |
 | Leaving early | Built: section 8.4 |
-| Lists of plain values | Partly built: section 2, "Lists"; the rest in 13.7 |
+| Lists | Partly built: section 2, "Lists"; the rest in 13.7 |
 | Naming a loop's thing | Built: section 8.2 |
 | Picking from a group, and ordering | 13.9 |
 | Asking about a group; averages, largest, smallest | 13.10 |
 | Creating and removing things while running | Built: sections 5.7 and 7.5 |
-| Remainders and mathematical functions | 13.12 |
+| Remainders and mathematical functions | Built: section 5.3 |
 | Text operations, and quotes and braces inside text | Built: sections 2 and 5.6 |
 | More units | 13.14 |
 | Input: a line, a file, the clock | Partly built: sections 7.6 and 7.7; the clock in 13.15 |
@@ -1783,24 +2148,7 @@ A stored adjective works in `Whenever` (section 9.5). One part waits for another
 
 ### 13.3 A fixed set of choices
 
-```text
-A | An <name> is one of <choice>, <choice> ... or <choice>.
-```
-
-- This defines a type, used in brackets like any other. Each choice is one or more words.
-- A choice may belong to only one set, and may not be the name of a kind, a thing or a variable. It may be the same word as an adjective, because the left side of `is` says which is meant.
-- Choices are compared with `is` and `is not` only. A choice is said as its words.
-- Writing a word that is not one of the choices is refused before the program runs.
-
-```text
-A mood is one of sleepy, grumpy or content.
-A dragon has an age (number) and a mood (mood).
-
-There is a dragon called Smaug whose age is 771 and whose mood is sleepy.
-Set Smaug's mood to grumpy.
-If Smaug's mood is grumpy:
-  Say "Tread softly."       #> Tread softly.
-```
+**Built.** See section 4.6. Lists of choices (section 13.7) and asking for a choice (section 13.15) remain proposed.
 
 ### 13.4 Variables that cannot change
 
@@ -1816,57 +2164,21 @@ If Smaug's mood is grumpy:
 
 ### 13.7 Lists
 
-**Partly built.** See "Lists" in section 2. The type `(list of <plural type>)` (for variables, roles and worked-out values), `the number of items in <list>`, and `For each <name> in <list>:` are built, and lists come from `the words of`, `the lines of` and `the lines of the file`. Everything else below remains proposed: writing a list out, an empty list, a group used as a list, lists of choices, lists as properties, the forms in the first table except `the number of items in`, adding to and removing from a list, saying a list, and comparing lists.
-
-```text
-a list of <value>, <value> ... and <value>          a list written out
-an empty list of <plural type>
-```
-
-- The plural type may also be the plural of a set of choices.
-- A list written out may appear only as the whole value of `Let`, `Set`, a `whose` part, or `The answer is`, so its commas cannot be confused with anything else.
-- A group written where a list is expected becomes a list of the things in it at that moment: `Let the suspects be all poor dragons.`
-- A list of things may be used wherever a group may (section 5.5).
-- Items are numbered from 1.
+**Partly built.** See "Lists" in section 2: writing a list out, an empty list, a group given where a list is expected, lists as properties and roles, `item <number> of`, `the first of`, `the last of`, `the total of`, `joined with`, `is in`, and `Add`, `Remove ... from` and `Set item ... of`. What remains proposed:
 
 | Form | Gives |
 |---|---|
-| `the first of <list>`, `the last of <list>`, `item <number> of <list>` | an item, if any |
-| `the total of <list>` | a number or money |
 | `the average of <list>`, `the largest of <list>`, `the smallest of <list>` | a value, if any |
 | `<list> in order`, `<list> in reverse order` | a list, smallest or alphabetically first |
-| `<list> joined with <text>` | text |
-| `<value> is [not] in <list>` | a condition |
 
-| Sentence | Does |
-|---|---|
-| `Add <value> to <list>.` | Puts the value at the end. |
-| `Remove <value> from <list>.` | Takes out the first item equal to it. If there is none, nothing happens. |
+- Saying a whole list, and comparing two lists.
+- Lists of choices (section 13.3): the plural type may then be the plural of a set of choices.
+- A list of things used wherever a group may be used (section 5.5), such as `the number of <list>` or `For each knight in the company whose purse is $0:`.
 
 ```text
 Let the scores be a list of 3, 8 and 5.
-Add 10 to the scores.
-Say the number of items in the scores.         #> 4
-Say the total of the scores.                   #> 26
-Say the largest of the scores or else 0.       #> 10
-Say the scores in order joined with ", ".      #> 3, 5, 8, 10
-For each score in the scores:
-  If the score is more than 7:
-    Say the score.
-#> 8
-#> 10
-```
-
-A property or a role may be a list, which is how a thing holds several things and how a verb takes a group:
-
-```text
-A knight has a purse (money) and a trophy shelf (list of treasures).
-
-To honour a company (list of knights):
-  For each member in the company:
-    Now the member is sworn.
-
-Honour all brave knights.
+Say the largest of the scores or else 0.       #> 8
+Say the scores in order joined with ", ".      #> 3, 5, 8
 ```
 
 ### 13.8 Naming a loop's thing
@@ -1954,23 +2266,7 @@ As built, using a removed thing's properties or adjectives is a problem, and so 
 
 ### 13.12 Remainders and other arithmetic
 
-| Form | Example | Gives |
-|---|---|---|
-| `the remainder of <value> divided by <value>` | `the remainder of 17 divided by 5` | `2` |
-| `<value> rounded to the nearest <value>` | `$3.14159 rounded to the nearest $0.01` | `$3.14` |
-| `<value> rounded up to the nearest <value>` | `17 rounded up to the nearest 5` | `20` |
-| `<value> rounded down to the nearest <value>` | `17 rounded down to the nearest 5` | `15` |
-| `<value> to the power of <value>` | `2 to the power of 10` | `1,024` |
-| `the square root of <value>` | `the square root of 81` | `9` |
-| `the larger of <value> and <value>` | `the larger of $5 and $8` | `$8` |
-| `the smaller of <value> and <value>` | `the smaller of 3 and 7` | `3` |
-| `the absolute value of <value>` | `the absolute value of -4` | `4` |
-
-- Each `<value>` is a single value or a bracketed expression. These forms bind more tightly than multiplying and dividing.
-- Rounding works on a number, money or a measure (section 13.14); both sides must be the same type. A value exactly halfway rounds away from zero.
-- Remainders, powers, roots and absolute values work on plain numbers. `the larger of` and `the smaller of` work on any two values of the same type that can be ordered.
-- A power with a whole-number exponent is exact. Other powers, and square roots that do not come out exactly, are worked out to twelve decimal places.
-- The square root of a negative number is a problem (section 8.5).
+**Built.** See "More arithmetic" in section 5.3. One change from the design: a power is written `<value> raised to the power of <value>`, because `2 to the power of 10` could not be told from the `to` of `Add ... to ...`. Rounding a measure (section 13.14) waits for measures.
 
 ### 13.13 Text
 
@@ -2061,6 +2357,8 @@ If now comes before the deadline:
 A | An <kind> (plural <word>) has ...
 ```
 
+**Built.** See section 4.1.
+
 **A kind can be a kind of another:**
 
 ```text
@@ -2123,11 +2421,10 @@ Until then, `first` and `last` are recognised only in `the first <number> letter
 The grammar still to be built, beyond section 11:
 
 ```text
-base-type    = ... | CHOICE-SET | MEASURE | "moment"
+base-type    = ... | MEASURE | "moment"
 PLURAL-TYPE  = ... | the plural of a CHOICE-SET
 
-definition   = ... | choices | superlative | unit | kind-of
-choices      = article NAME "is one of" CHOICE { "," CHOICE } "or" CHOICE "."
+definition   = ... | superlative | unit | kind-of
 superlative  = "The" WORD KIND "is the one with the" ( "largest" | "smallest" ) PROPERTY "."
 unit         = article UNIT { "(" unit-note ")" } "is a unit of" MEASURE "."
              | article UNIT { "(" unit-note ")" } "is" NUMBER UNITS "."
@@ -2136,18 +2433,12 @@ kind-of      = article KIND [ "(" "plural" WORD ")" ] "is a kind of" KIND "."
 kind         = article KIND [ "(" "plural" WORD ")" ] "has" field { sep field } "."
 verb         = "To" VERB-WORD { VERB-WORD } [ role ] { PREPOSITION role } ":"
 
-action       = ... | add-item | remove-item
-add-item     = "Add" value "to" LIST "."
-remove-item  = "Remove" value "from" LIST "."
-
 test         = ... | "there is" ( article | "no" ) singular-group
              | "every" singular-group "is" [ "not" ] ADJECTIVE
-tail         = ... | article KIND | "in" value
+tail         = ... | article KIND
 
-value        = ... | "now" | CHOICE
+value        = ... | "now"
              | NUMBER UNIT | SYMBOL NUMBER | NUMBER MONTH NUMBER
-             | "a list of" value { "," value } "and" value
-             | "an empty list of" PLURAL-TYPE
              | pick | list-form | number-form | clock-form
 pick         = "the" ( "first" | "last" | SUPERLATIVE ) singular-group
              | "the" singular-group "with the" ( "largest" | "smallest" ) PROPERTY
@@ -2162,9 +2453,9 @@ group        = ... | group "in order of" PROPERTY | group "in reverse order of" 
 Sections 12 and 13 settle most of what used to be listed here. These remain open.
 
 **Programs**
-- Chapters and books (section 9.6) leave two limits. A file can reach only the chapters beside it and the books in its own folder, so a chapter in one book cannot use another book. And a name a chapter keeps to itself still has one meaning in the whole program, so no other file can define that name for its own use.
+- Chapters and books (section 9.6) leave one limit: a file can reach only the chapters beside it and the books in its own folder, so a chapter in one book cannot use another book.
 - Chance: a number or a thing picked at random.
-- Rules that span several things, and rules about worked-out properties.
+- Rules that span several things, rules about worked-out properties or adjectives, and rules that read a variable that can change. Today a rule may read only values written out, variables made with `always`, and its own thing's stored properties (section 4.5), because it is checked only when that thing's stored properties change; a rule that read anything else could be broken without anyone noticing. Checking such rules would mean finding, after every change, every rule whose answer that change could alter.
 - Lookup tables from one value to another. Today the nearest thing is finding a thing by its name.
 
 **Values**

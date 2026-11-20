@@ -258,14 +258,14 @@ To send a knight against a dragon:
   Say "{the knight} rides out against {the dragon}."
 
 Send Smaug against Gawain.</pre>
-<pre class="output refused">Grammar (line 9):
+<pre class="output refused">Kinds of value (line 9):
 
     Send Smaug against Gawain.
          ^^^^^
 
   "Send" wants a knight here, but Smaug is a dragon.
   It goes: Send &lt;a knight&gt; against &lt;a dragon&gt;.
-  The rule: each kind of sentence has a fixed form, word for word. (See section 11.)</pre>
+  The rule: a property, variable, role or answer holds only the kind of value it was described with. (See section 2.)</pre>
 </figure>
 
 <h3>Brackets carry the type, and units do not mix</h3>
@@ -302,7 +302,7 @@ If the day is 1 and the day is 2 or the day is 3:
     (1) (the day is 1 and the day is 2) or the day is 3
     (2) the day is 1 and (the day is 2 or the day is 3)
   Put brackets round the part that belongs together.
-  The rule: "And" and "or" are not mixed without brackets. (See section 6.)</pre>
+  The rule: "And" and "or" are not mixed without brackets, and a "not" before "and" or "or" needs brackets to say how much it turns round. (See section 6.)</pre>
 </figure>
 
 <h3>What may be missing must be checked</h3>
@@ -358,7 +358,7 @@ Subtract $500 from Robin's purse.</pre>
 
   That would break a rule: "A knight's purse is never less than $0."
   (Robin's purse is $20 and would become -$480.)
-  The rule: "Fail because" stops the program, unless a "Try" around it catches the problem. (See section 8.5.)</pre>
+  The rule: a change that would break a "never" or "always" rule is refused, and the program stops unless a "Try" catches it. (See section 4.5.)</pre>
 </figure>
 
 </div>
@@ -432,7 +432,7 @@ Subtract $500 from Robin's purse.</pre>
   <li><strong>You still have to learn which sentences are accepted.</strong> This is the old weakness of English-like languages, and it is not gone. The error messages are the defence against it, and whether they are enough is an open question that only people who did not write the compiler can answer.</li>
   <li><strong>Arithmetic reads worse in words.</strong> For this reason sums are written in symbols, as English writing has done for centuries.</li>
   <li><strong>It is slow.</strong> Each sentence becomes a Python closure and numbers are exact fractions. That suits bookkeeping and teaching, and it does not suit heavy computation.</li>
-  <li><strong>It is not finished.</strong> Lists are only partly there. Dates, units, picking from a group and doing things at the same time have a designed syntax and no implementation.</li>
+  <li><strong>It is not finished.</strong> Lists cannot yet be put in order. Dates, units, picking from a group and doing things at the same time have a designed syntax and no implementation.</li>
   <li><strong>Strictness is sometimes tedious.</strong> In a nested loop the compiler makes you write “the treasure's worth” where a person would have understood “its worth”.</li>
 </ul>
 
@@ -445,7 +445,7 @@ Subtract $500 from Robin's purse.</pre>
 
 <p>That step is not built here. What is built is the half that had to come first: a form of English precise enough to be worth translating into.</p>
 
-<p>There is one more thing to say plainly. Most of this compiler was itself written by language models, under a person's direction, with one model reviewing another's work. That fits the thesis. The models were useful because a strict checker, a test suite of more than 130 tests, stood behind everything they wrote.</p>
+<p>There is one more thing to say plainly. Most of this compiler was itself written by language models, under a person's direction, with one model reviewing another's work. That fits the thesis. The models were useful because a strict checker, a test suite of more than 400 tests, stood behind everything they wrote.</p>
 
 <p class="fleuron" aria-hidden="true">&#10086;</p>
 <h2 id="agents">Agents, and what a program means</h2>
@@ -509,8 +509,9 @@ Ada still has $40.</pre>
   <li><a href="reference.html">The grammar</a>: every sentence the compiler accepts, and the parts that are designed but not built.</li>
   <li><a href="how.html">The machinery</a>: how a compiler written in Python runs in a browser.</li>
   <li><a href="vulkan.html">The vulkan library</a>: each English sentence beside the Vulkan calls it makes.</li>
+  <li><a href="editors.html">In an editor</a>: a language server that marks a program as you write it, and a rename that the compiler checks.</li>
   <li><a href="concerns.html">Risks and open questions</a>: forty-two concerns raised about the language, each measured against the compiler and given a verdict.</li>
-  <li><a href="page.html">The page library</a>: the seven kinds of thing that are elements of a page, and how they are bound.</li>
+  <li><a href="page.html">The page library</a>: the thirteen kinds of thing that are elements of a page, and how they are bound.</li>
   <li><a href="https://github.com/monstercameron/EnglishScript">The source</a>, which needs only Python 3, and <a href="https://github.com/monstercameron/EnglishScript/tree/main/examples">the example programs</a>.</li>
 </ul>
 

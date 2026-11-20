@@ -12,7 +12,8 @@
 #   showing   which cards are in sight, and the counts
 #   keeping   what is remembered between visits
 #
-# This file is what is left: what happens whenever a person does something.
+# This file is what is left: what happens whenever a person does something,
+# and one sentence that tidies the page once everything has settled.
 # Open docs/todo.html to use it. Run from the command line, it sketches the page.
 
 Use the page library.
@@ -28,6 +29,12 @@ To tidy:
   Reckon.
   Keep.
 
+# However much one click changes, the page is tidied once, when everything it
+# set off has finished. Ticking every card at once is one tidying, not one for
+# each card.
+Whenever everything has settled:
+  Tidy.
+
 # Write down what was typed. If it cannot be written down, say why, and leave
 # what was typed where it is: a failed Try puts everything back.
 To take a line (text):
@@ -37,15 +44,16 @@ To take a line (text):
     Set Notice's wording to "".
   If that fails:
     Set Notice's wording to "Not added: {the problem}."
-  Tidy.
 
 # -------------------------------------------------------- as the page opens
 
 Fetch.
 Favour Everything for "all".
-Tidy.
 
 # ------------------------------------------------ what happens from here on
+#
+# A tick, a star and a letter typed in the Find box need no sentence here.
+# The page library changes the thing, and the tidying above does the rest.
 
 Whenever Adder becomes pressed:
   Take Entry's wording.
@@ -53,55 +61,32 @@ Whenever Adder becomes pressed:
 Whenever Entry becomes entered:
   Take Entry's wording.
 
-Whenever a card becomes ticked:
-  Tidy.
-
-Whenever a card becomes not ticked:
-  Tidy.
-
-Whenever a card becomes starred:
-  Tidy.
-
-Whenever a card becomes not starred:
-  Tidy.
-
 # A card's words can be edited where they stand. Rubbing them all out removes it.
 Whenever a card becomes reworded:
   If the card's wording is "":
     Shelve the card.
-  Tidy.
 
 Whenever a card becomes dismissed:
   Set Notice's wording to """{the card's wording}"" was removed."
   Shelve the card.
-  Tidy.
 
 Whenever Restorer becomes pressed:
   Restore.
   Set Notice's wording to "".
-  Tidy.
-
-Whenever Finder becomes changed:
-  Sift.
 
 Whenever Everything becomes pressed:
   Favour Everything for "all".
-  Tidy.
 
 Whenever Waiting becomes pressed:
   Favour Waiting for "open".
-  Tidy.
 
 Whenever Finished becomes pressed:
   Favour Finished for "done".
-  Tidy.
 
 Whenever Finisher becomes pressed:
   For each open card:
     Now the card is ticked.
-  Tidy.
 
 Whenever Sweeper becomes pressed:
   For each ticked card:
     Shelve the card.
-  Tidy.

@@ -133,6 +133,29 @@ class TheInterface(unittest.TestCase):
             with self.subTest(odd=odd[:10]):
                 self.assertIsInstance(lint(odd), list)
 
+    def test_a_sentence_cut_short_is_refused_not_crashed_on(self):
+        # Sentences that stop after the word that should lead on; each was once a crash
+        # of the linter, or could be, whichever examples the random test above picks.
+        stubs = [
+            "A knight is", "A knight can", "A knight can be", "A knight has", "A knight has a",
+            "A knight (plural", "A knight (plural knights)", "A knight (plural knights) has",
+            "A knight is brave when", "A knight's purse is", "A knight's purse is never",
+            "There is", "There is a", "There is a knight", "There is a knight called",
+            "There is a knight called Gawain whose", "There is a knight called Gawain whose purse is",
+            "Let", "Let the", "Let the count", "Let the count be", "Set", "Set the count to",
+            "Add 1 to", "Subtract 1 from", "Multiply the count by", "The hoard of", "The hoard of a",
+            "The hoard of a dragon is", "To", "To work", "To work out", "To work out the",
+            "Use", "Use the", "Whenever", "Whenever a knight becomes", "For each", "Now", "Ask",
+            "This chapter shares", "This chapter shares only",
+        ]
+        prelude = "A knight has a purse (money).\nA dragon has an age (number).\n"
+        for stub in stubs:
+            for source in (stub, stub + ".", stub + ":", prelude + stub, prelude + stub + "."):
+                with self.subTest(source=source):
+                    problems = lint(source)
+                    self.assertFalse(any(p.message.startswith("The linter could not") for p in problems))
+                    self.assertTrue(any(p.kind == "error" for p in problems))
+
 
 class EveryError(unittest.TestCase):
     def test_every_refused_sentence_is_reported(self):
@@ -597,6 +620,272 @@ class Chapters(unittest.TestCase):
         problems = lint("Use the a chapter.\nSay x.\n", self.folder)
         self.assertEqual([p.line for p in problems], [2])
         self.assertIn("does not share it", problems[0].message)
+
+
+class TheTeachersMarks(unittest.TestCase):
+    """Each problem is marked as a teacher marks a paper: category, message, correction, rule, section."""
+
+    WORLD = (
+        "A dragon has an age (number) and a lair (text).\n"
+        "A treasure has a worth (money) and an owner (dragon).\n"
+        "A knight has a purse (money) and a mount (dragon, if any).\n"
+        "A dragon is ancient when its age is at least 500.\n"
+        "The hoard of a dragon is the total worth of its treasures.\n"
+        'There is a dragon called Smaug whose age is 771 and whose lair is "Erebor".\n'
+        'There is a dragon called Glaurung whose age is 300 and whose lair is "Nargothrond".\n'
+        "There is a treasure called Goblet whose worth is $3,000 and whose owner is Smaug.\n"
+        "There is a knight called Gawain whose purse is $300.\n"
+        "To tax a dragon:\n"
+        "  For each treasure of the dragon:\n"
+        "    Subtract 10% of the treasure's worth from the treasure's worth.\n"
+    )
+
+    # (written, category, words the message must contain, the corrected first line or None,
+    #  does the line then read without any error?)
+    CORPUS = [
+        ('Say "{the number of dragns}".', "spelling", '"dragns". Did you mean "dragons"',
+         'Say "{the number of dragons}".', True),
+        ("Say Smuag's age.", "spelling", 'Did you mean "Smaug"', "Say Smaug's age.", True),
+        ("Say Smaug's agee.", "spelling", 'Did you mean "age"', "Say Smaug's age.", True),
+        ("Txa Smaug.", "spelling", 'Did you mean "Tax"', "Tax Smaug.", True),
+        ('Sya "hello".', "spelling", 'Did you mean "Say"', 'Say "hello".', True),
+        ('For each anceint dragon:\n  Say "{the dragon}".', "spelling", 'Did you mean "ancient"',
+         "For each ancient dragon:", True),
+        ("Say 1 + 2", "punctuation", "no period", "Say 1 + 2.", True),
+        ('say "hello".', "capitals", "capital letter", 'Say "hello".', True),
+        ("Is Smaug ancient?", "punctuation", "no questions", None, None),
+        ("Tax Smaug!", "punctuation", "not with an exclamation mark", "Tax Smaug.", True),
+        ("Tax Smaug. Tax Glaurung.", "layout", "two sentences", None, None),
+        ('There is dragon called Fafnir whose age is 5 and whose lair is "x".', "grammar", "article",
+         'There is a dragon called Fafnir whose age is 5 and whose lair is "x".', True),
+        ("Say the number of dragon.", "grammar", 'write "dragons"', "Say the number of dragons.", True),
+        ('For each dragons:\n  Say "{the dragon}".', "grammar", 'write "dragon"', "For each dragon:", True),
+        ("Say its age.", "meaning", "doesn't refer to anything", None, None),
+        ('To duel a dragon against a knight:\n  Say "{its name}".\nDuel Smaug against Gawain.', "meaning",
+         "can be read two ways", None, None),
+        ("Say the dragon's age.", "meaning", "Which dragon?", None, None),
+        ('If Smaug is ancient and Glaurung is ancient or Gawain\'s purse is $0:\n  Say "x".', "meaning",
+         "can be read two ways", None, None),
+        ("Add 5 to Gawain's purse.", "kinds", "plain number to money", None, None),
+        ("Set Smaug's lair to 7.", "kinds", "text", None, None),
+        ("Tax.", "grammar", "Tax what?", None, None),
+        ("Subtract $5 to Gawain's purse.", "grammar", '"Subtract" goes with "from"',
+         "Subtract $5 from Gawain's purse.", True),
+        ("Smaug tax.", "grammar", '"Smaug" is a dragon, not a verb', "Tax Smaug.", True),
+        ("Smaug should be taxed twice.", "grammar", "not a verb", None, None),
+        ("Please tax Smaug.", "grammar", 'no need for "Please"', "Tax Smaug.", True),
+        ("Burn Smaug.", "vocabulary", 'the verb "Burn"', None, None),
+        ("A dragon has a wingspan (number).", "vocabulary", "described only once", None, None),
+        ("Add 1 to the count.", "vocabulary", '"the count"', None, None),
+        ("Let the number be 5.", "vocabulary", "name of a kind of value", None, None),
+        ('If Smaug is ancient:\nSay "old".', "layout", "nothing is indented", None, None),
+        ('If Smaug is ancient.\n  Say "old".', "punctuation", "ends with a colon",
+         "If Smaug is ancient:", True),
+        ('Say "hello.', "punctuation", "no closing quote", 'Say "hello."', True),
+        ("Say 'hello'.", "punctuation", "double quotes", 'Say "hello".', True),
+        ('If Smaug\'s age is bigger than 5:\n  Say "x".', "grammar", '"more than"',
+         "If Smaug's age is more than 5:", True),
+        ('If Smaug\'s age is equal to 5:\n  Say "x".', "grammar", 'just "is"', "If Smaug's age is 5:", True),
+        ('If Smaug\'s age is at lest 5:\n  Say "x".', "spelling", '"at least"', "If Smaug's age is at least 5:", True),
+        ('Otherwise:\n  Say "x".', "layout", "straight after", None, None),
+        ("The answer is 5.", "meaning", "To work out", None, None),
+        ("There is a dragon called Fafnir whose age is 5.", "grammar", "also needs a lair", None, None),
+        ("Say Smaug's age if it isn't 5.", "grammar", "contractions", None, None),
+        ("x = 5", "borrowed", '"Let"', "Let x be 5.", True),
+        ("Var y = 5.", "borrowed", '"Let"', "Let y be 5.", True),
+        ('print("Hello")', "borrowed", '"Say"', 'Say "Hello".', True),
+        ("else:\n  Say 1.", "borrowed", '"Otherwise"', "Otherwise:", None),
+        ("If 1 == 1:\n  Say 1.", "borrowed", '"=="', "If 1 is 1:", True),
+        ("Let total = 5.", "grammar", '"Let ... be"', "Let total be 5.", True),
+        ("Let x be true.", "borrowed", '"true"', "Let x be yes.", True),
+        ("Use the a.b chapter.", "vocabulary", "plain words", None, None),
+        ("Use the ../secret chapter.", "vocabulary", "a path to it can't be given", None, None),
+        ("Use the paint.x library.", "vocabulary", "one word of letters", None, None),
+        ("For each ancient rival in dragons:\n  Say 1.", "vocabulary", "begins with the adjective",
+         "For each ancient dragon:", True),
+        ("Repeat 3 time:\n  Say 1.", "spelling", 'Did you mean "times"', "Repeat 3 times:", True),
+    ]
+
+    def lint_case(self, text):
+        return lint(self.WORLD + text + "\n")
+
+    def first_line(self):
+        return self.WORLD.count("\n") + 1
+
+    def test_the_corpus_reads_like_a_teacher(self):
+        for written, category, words, fixed, clean in self.CORPUS:
+            with self.subTest(written):
+                problems = [p for p in self.lint_case(written) if p.kind == "error" or p.category in ("capitals",)]
+                self.assertTrue(problems, "nothing was said")
+                first = problems[0]
+                self.assertEqual(first.category, category, first.message)
+                self.assertIn(words, first.message + " " + (first.hint or ""))
+                self.assertTrue(first.rule and first.see)
+                if fixed is not None:
+                    self.assertIsNotNone(first.fix, first.message)
+                    self.assertEqual(first.fix["text"], fixed)
+
+    def test_every_fix_mends_its_problem(self):
+        """Apply each fix and lint again: the problem is gone from that line; for the
+        cases marked clean, every error is gone from it. And mending again and again ends."""
+        checked = 0
+        for written, _, _, _, clean in self.CORPUS:
+            source = self.WORLD + written + "\n"
+            for problem in lint(source):
+                if problem.fix is None:
+                    continue
+                lines = source.splitlines()
+                lines[problem.fix["line"] - 1] = problem.fix["text"]
+                after = lint("\n".join(lines) + "\n")
+                with self.subTest(written=written, message=problem.message):
+                    same = [p for p in after if p.line == problem.line and p.message == problem.message]
+                    self.assertEqual(same, [])
+                    if clean and problem.line == self.first_line():
+                        self.assertEqual([p.message for p in after if p.line == problem.line and p.kind == "error"],
+                                         [])
+                    checked += 1
+            # Mending everything, again and again, comes to an end.
+            for _ in range(20):
+                fixes = [p.fix for p in lint(source) if p.fix is not None]
+                if not fixes:
+                    break
+                lines = source.splitlines()
+                lines[fixes[0]["line"] - 1] = fixes[0]["text"]
+                source = "\n".join(lines) + "\n"
+            else:
+                self.fail(f"mending {written!r} never ends")
+        self.assertGreater(checked, 25)
+
+    def test_a_fix_never_doubles_the_period(self):
+        problems = errors("x = 5\n")
+        self.assertEqual(problems[0].fix["text"], "Let x be 5.")
+        self.assertEqual(lint(problems[0].fix["text"] + "\n"), [warnings("Let x be 5.\n")[0]])
+
+    BANNED = ("token", "syntax", "parse", "invalid", "illegal", "unexpected", "identifier", "expression",
+              "statement", "operator", "string", "boolean", "null", "exception", "eof")
+
+    def test_no_compiler_words_in_any_message(self):
+        import ast
+        pattern = re.compile(r"\b(" + "|".join(self.BANNED) + r")s?\b", re.I)
+        allowed = {'EnglishScript has no "{tok.text}".', "null"}  # "null" is quoted back to the writer
+        for name in ("compiler", "lexer", "runtime", "linter"):
+            tree = ast.parse((ROOT / "englishscript" / f"{name}.py").read_text(encoding="utf-8"))
+            docstrings = {id(node.body[0].value) for node in ast.walk(tree)
+                          if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef))
+                          and node.body and isinstance(node.body[0], ast.Expr)
+                          and isinstance(node.body[0].value, ast.Constant)}
+            for node in ast.walk(tree):
+                if (isinstance(node, ast.Constant) and isinstance(node.value, str) and " " in node.value
+                        and "(?" not in node.value
+                        and id(node) not in docstrings and node.value not in allowed):
+                    with self.subTest(module=name, text=node.value[:60]):
+                        self.assertIsNone(pattern.search(node.value))
+        for written, *_ in self.CORPUS:
+            for problem in self.lint_case(written):
+                for text in (problem.message, problem.hint or "", problem.rule or ""):
+                    without_quotes = re.sub(r'"[^"]*"', "", text)
+                    with self.subTest(written=written, text=text[:60]):
+                        self.assertIsNone(pattern.search(without_quotes))
+
+    def test_every_rule_names_a_real_section(self):
+        from englishscript.lexer import CATEGORIES, RULES
+        text = (ROOT / "docs" / "SYNTAX.md").read_text(encoding="utf-8")
+        sections = set(re.findall(r"^#{2,4} (\d+(?:\.\d+)*)\.? ", text, re.M))
+        for key, (category, rule, see) in RULES.items():
+            with self.subTest(key):
+                self.assertIn(see, sections)
+                self.assertIn(category, CATEGORIES)
+                self.assertTrue(rule.endswith((".", '."', ":\"")), rule)
+        for written, *_ in self.CORPUS:
+            for problem in self.lint_case(written):
+                self.assertIn(problem.see, sections)
+
+    def test_a_mark_has_a_heading_a_correction_and_a_rule(self):
+        problem = errors(self.WORLD + 'Say "{the number of dragns}".\n')[0]
+        self.assertEqual(problem.render(), "\n".join([
+            f"Spelling (line {self.first_line()}):",
+            "",
+            '    Say "{the number of dragns}".',
+            "                        ^^^^^^",
+            "                        dragons",
+            "",
+            '  I don\'t know the word "dragns". Did you mean "dragons"?',
+            '  The rule: a kind is described with "A ... has ..." before it is used. (See section 4.1.)',
+        ]))
+        warning = warnings("say 1.\n")[0]
+        self.assertTrue(warning.render().startswith("Capital letters, a suggestion (line 1):"))
+        # A correction that is more than the underlined words is written out.
+        problem = errors("Please say 1.\n")[0]
+        self.assertIn("  Write: Say 1.", problem.render())
+
+    def test_a_problem_while_running_has_the_same_shape(self):
+        with self.assertRaises(EnglishError) as caught:
+            compile_source("Let x be 0.\nSay 1 / x.\n").run(lambda text: None)
+        error = caught.exception
+        self.assertEqual((error.category, error.see), ("running", "5.3"))
+        self.assertEqual(error.rule, "Nothing can be divided by zero.")
+        rendered = error.render("demo.english")
+        self.assertTrue(rendered.startswith("While running (demo.english, line 2):"))
+        self.assertIn("x was 0. Check it first: If x is not 0:", rendered)
+        self.assertTrue(rendered.endswith("The rule: nothing can be divided by zero. (See section 5.3.)"))
+
+
+class TheSpellingHelper(unittest.TestCase):
+    def test_one_close_word_is_suggested(self):
+        from englishscript.compiler import close_words, distance
+        self.assertEqual(distance("anceint", "ancient"), 1)  # two neighbours swapped count as one
+        self.assertEqual(close_words("dragns", ["dragons", "knights"]), ["dragons"])
+        self.assertEqual(close_words("agee", ["age", "name"]), ["age"])
+        self.assertEqual(close_words("sat", ["say", "set"]), ["say", "set"])  # a tie: no single guess
+        self.assertEqual(close_words("ag", ["age"]), [])  # one or two letters: no guess
+        self.assertEqual(close_words("abcd", ["abxy"]), [])  # four letters: one change at most
+        self.assertEqual(close_words("SMUAG", ["Smaug"]), ["Smaug"])  # capitals don't count
+
+    def test_a_tie_lists_the_words_that_would_fit(self):
+        problem = errors("Sat 1.\n")[0]
+        self.assertNotIn("Did you mean", problem.message)
+        self.assertIn("Say", problem.hint)
+        self.assertIn("Set", problem.hint)
+        self.assertIsNone(problem.fix)
+
+    def test_only_words_of_the_right_sort_are_offered(self):
+        world = "A dragon has an age (number).\nThere is a dragon called Smaug whose age is 1.\n"
+        problem = errors(world + "Say the number of drakes.\n")[0]
+        self.assertNotIn("Smaug", problem.hint)  # a kind was wanted, not a thing
+        self.assertIn("dragons", problem.hint)
+        problem = errors(world + "Say Smaug's wing.\n")[0]
+        self.assertIn("A dragon has: name, age.", problem.hint)
+
+
+class TheNewWarnings(unittest.TestCase):
+    def test_a_or_an(self):
+        found = warnings("A egg has an weight (number).\nA egg is big when its weight is more than 1.\n"
+                         "There is a big egg called Ova whose weight is 2.\n")
+        texts = [(p.line, p.message, p.fix["text"]) for p in found if p.category == "grammar"]
+        self.assertIn((1, 'Write "An egg": "egg" starts with a vowel sound.',
+                       "An egg has an weight (number)."), texts)
+        self.assertIn((1, 'Write "a weight": "weight" starts with the sound of a consonant.',
+                       "A egg has a weight (number)."), texts)
+        self.assertEqual(lint("A egg has an weight (number).\n")[0].kind, "warning")
+        compile_source("A egg has an weight (number).\n")  # a warning never stops a program
+
+    def test_a_or_an_is_silent_when_unsure(self):
+        for source in ("A unit has a size (number).\n", "An hour has a length (number).\n",
+                       "An umbrella has a size (number).\n", "A user has an age (number).\n",
+                       "A unicorn has a horn (number).\n", "An unifier has a horn (number).\n",
+                       "A one has a size (number).\n", "A FBI has a size (number).\n"):
+            with self.subTest(source):
+                self.assertEqual([p for p in warnings(source) if p.category == "grammar"], [])
+
+    def test_are_after_one_thing(self):
+        world = "A knight has a purse (money).\nThere is a knight called Gawain whose purse is $300.\n"
+        found = [p for p in warnings(world + "If Gawain's purse are $300:\n  Say 1.\n") if p.category == "grammar"]
+        self.assertEqual(len(found), 1)
+        self.assertEqual(found[0].fix["text"], "If Gawain's purse is $300:")
+        self.assertEqual(run_said(world + "If Gawain's purse are $300:\n  Say 1.\n"), ["1"])
+        # Silent when the last word looks plural: "the totals" may be one thing's name.
+        self.assertEqual([p for p in warnings("Let the totals be 1.\nIf the totals are 1:\n  Say 1.\n")
+                          if p.category == "grammar"], [])
 
 
 class TheSyntaxDocument(unittest.TestCase):

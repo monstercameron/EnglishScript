@@ -52,6 +52,10 @@ EXAMPLES = [
     ("life", "The Game of Life", "Forty-nine cells, each a thing, and a glider that walks."),
     ("almanac", "An almanac, from the chapters of a book",
      "It uses three chapters of the almanac book: a calendar, Roman numerals and the feasts of the year."),
+    ("web_counters", "Three counters for the web",
+     "One thing made three times: a kind that holds its own note and buttons, a verb that builds it, and one answer for them all."),
+    ("web_almanac", "An almanac for the web",
+     "A menu, a table and a link over the chapters of the almanac book. Run it, and its page appears under what it says."),
     ("web_todo", "A to-do list for the web",
      "The program behind “A page”, in four chapters of the tasks book. Run it, and its page appears under what it says."),
 ]
@@ -145,7 +149,9 @@ def phrases_text():
 def package_files():
     """(name inside the zip, bytes) for every Python file of the package, in a fixed order."""
     package = ROOT / "englishscript"
-    files = sorted(path for path in package.rglob("*.py") if "__pycache__" not in path.parts)
+    # The language server and the rename tool are for an editor. A browser has no use for them.
+    files = sorted(path for path in package.rglob("*.py")
+                   if "__pycache__" not in path.parts and path.name not in ("server.py", "rename.py"))
     return [(path.relative_to(ROOT).as_posix(), path.read_bytes().replace(b"\r\n", b"\n")) for path in files]
 
 
@@ -285,9 +291,27 @@ def concerns_page():
     )
 
 
+def editors_page():
+    """docs/editors.html: using EnglishScript from an editor, printed from docs/EDITORS.md."""
+    import pages
+
+    source = pages.Markdown((ROOT / "docs" / "EDITORS.md").read_text(encoding="utf-8"))
+    return pages.document(
+        title="EnglishScript in an editor",
+        description="A language server and a rename tool for EnglishScript: marks as you type, corrections, hover, completion and safe renaming.",
+        current="",
+        heading="In an Editor",
+        standfirst="A language server that marks a program as you write it, and a rename that the compiler checks.",
+        body=source.render(),
+        runnable=False,
+        colophon='Printed from <a href="' + pages.SOURCE + '/blob/main/docs/EDITORS.md">docs/EDITORS.md</a> by '
+                 "<code>tools/build_site.py</code>.",
+    )
+
+
 #: The pages printed from Markdown: (file in docs/, the function that makes it).
 PRINTED = [("reference.html", reference_page), ("vulkan.html", vulkan_page), ("page.html", page_library_page),
-           ("concerns.html", concerns_page)]
+           ("concerns.html", concerns_page), ("editors.html", editors_page)]
 
 
 def main():
