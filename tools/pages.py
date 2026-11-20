@@ -23,7 +23,8 @@ FONTS = (
 )
 PAGES = [
     ("./", "The treatise"), ("playground.html", "The playground"), ("todo.html", "A page"), ("compare.html", "Compared"), ("opposition.html", "The opposition"), ("systems.html", "Three systems"),
-    ("reference.html", "The grammar"), ("how.html", "The machinery"), (SOURCE, "The source"),
+    ("reference.html", "The grammar"), ("how.html", "The machinery"), ("red/index.html", "Pokémon Red"),
+    (SOURCE, "The source"),
 ]
 # Where a link to another document of the repository goes on the site.
 LINKS = {"SYNTAX.md": "reference.html", "VULKAN.md": "vulkan.html", "PAGE.md": "page.html", "CONCERNS.md": "concerns.html", "EDITORS.md": "editors.html", "OPPOSITION.md": "opposition.html",
