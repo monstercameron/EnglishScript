@@ -1,7 +1,8 @@
-This chapter shares only Score, soundtrack, play and sound.
+This chapter shares only Score, soundtrack, cued, play and sound.
 
 A soundtrack has a music (text), a melody (text), a harmony (text), a bass (text), a percussion (text), an intro melody (text), an intro harmony (text), an intro bass (text), an intro percussion (text), an effect priority (number), a cry (text), a cry count (number), a tempo (number), an effect (text) and an effect count (number).
 There is a soundtrack called Score whose music is "" and whose melody is "" and whose harmony is "" and whose bass is "" and whose percussion is "" and whose intro melody is "" and whose intro harmony is "" and whose intro bass is "" and whose intro percussion is "" and whose effect priority is 0 and whose cry is "" and whose cry count is 0 and whose tempo is 144 and whose effect is "" and whose effect count is 0.
+A soundtrack can be cued.
 
 The scores are tempo, melody, intro melody, harmony, intro harmony, bass, intro bass, intro percussion and percussion, in that order:
   "opening" has:
@@ -178,3 +179,4 @@ To sound a title (text):
   Set Score's effect to the effect sheet's notes or else "".
   Set Score's effect priority to the effect sheet's priority or else 1.
   Add 1 to Score's effect count.
+  Now Score is cued.

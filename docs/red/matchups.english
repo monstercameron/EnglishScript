@@ -1,0 +1,133 @@
+This chapter shares only types and effectiveness.
+
+The species types are first type and second type, in that order:
+  "Bulbasaur" has "grass" and "poison".
+  "Ivysaur" has "grass" and "poison".
+  "Charmander" has "fire" and "".
+  "Charmeleon" has "fire" and "".
+  "Squirtle" has "water" and "".
+  "Wartortle" has "water" and "".
+  "Caterpie" has "bug" and "".
+  "Metapod" has "bug" and "".
+  "Butterfree" has "bug" and "flying".
+  "Weedle" has "bug" and "poison".
+  "Kakuna" has "bug" and "poison".
+  "Beedrill" has "bug" and "poison".
+  "Pidgey" has "normal" and "flying".
+  "Pidgeotto" has "normal" and "flying".
+  "Pidgeot" has "normal" and "flying".
+  "Spearow" has "normal" and "flying".
+  "Fearow" has "normal" and "flying".
+  "Rattata" has "normal" and "".
+  "Raticate" has "normal" and "".
+  "Nidoran F" has "poison" and "".
+  "Nidorina" has "poison" and "".
+  "Nidoran M" has "poison" and "".
+  "Nidorino" has "poison" and "".
+  "Pikachu" has "electric" and "".
+  "Geodude" has "rock" and "ground".
+  "Onix" has "rock" and "ground".
+  "Diglett" has "ground" and "".
+  "Sandshrew" has "ground" and "".
+
+The type matchups are multiplier, in that order:
+  "normal rock" has 0.5.
+  "normal ghost" has 0.
+  "fire fire" has 0.5.
+  "fire water" has 0.5.
+  "fire grass" has 2.
+  "fire ice" has 2.
+  "fire bug" has 2.
+  "fire rock" has 0.5.
+  "fire dragon" has 0.5.
+  "water fire" has 2.
+  "water water" has 0.5.
+  "water grass" has 0.5.
+  "water ground" has 2.
+  "water rock" has 2.
+  "water dragon" has 0.5.
+  "electric water" has 2.
+  "electric electric" has 0.5.
+  "electric grass" has 0.5.
+  "electric ground" has 0.
+  "electric flying" has 2.
+  "electric dragon" has 0.5.
+  "grass fire" has 0.5.
+  "grass water" has 2.
+  "grass grass" has 0.5.
+  "grass poison" has 0.5.
+  "grass ground" has 2.
+  "grass flying" has 0.5.
+  "grass bug" has 0.5.
+  "grass rock" has 2.
+  "grass dragon" has 0.5.
+  "ice water" has 0.5.
+  "ice grass" has 2.
+  "ice ice" has 0.5.
+  "ice ground" has 2.
+  "ice flying" has 2.
+  "ice dragon" has 2.
+  "fighting normal" has 2.
+  "fighting ice" has 2.
+  "fighting poison" has 0.5.
+  "fighting flying" has 0.5.
+  "fighting psychic" has 0.5.
+  "fighting bug" has 0.5.
+  "fighting rock" has 2.
+  "fighting ghost" has 0.
+  "poison grass" has 2.
+  "poison poison" has 0.5.
+  "poison ground" has 0.5.
+  "poison bug" has 2.
+  "poison rock" has 0.5.
+  "poison ghost" has 0.5.
+  "ground fire" has 2.
+  "ground electric" has 2.
+  "ground grass" has 0.5.
+  "ground poison" has 2.
+  "ground flying" has 0.
+  "ground bug" has 0.5.
+  "ground rock" has 2.
+  "flying electric" has 0.5.
+  "flying grass" has 2.
+  "flying fighting" has 2.
+  "flying bug" has 2.
+  "flying rock" has 0.5.
+  "psychic fighting" has 2.
+  "psychic poison" has 2.
+  "psychic psychic" has 0.5.
+  "bug fire" has 0.5.
+  "bug grass" has 2.
+  "bug fighting" has 0.5.
+  "bug poison" has 2.
+  "bug flying" has 0.5.
+  "bug psychic" has 2.
+  "bug ghost" has 0.5.
+  "rock fire" has 2.
+  "rock ice" has 2.
+  "rock fighting" has 0.5.
+  "rock ground" has 0.5.
+  "rock flying" has 2.
+  "rock bug" has 2.
+  "ghost normal" has 0.
+  "ghost psychic" has 0.
+  "ghost ghost" has 2.
+  "dragon dragon" has 2.
+
+To work out the types (list of text) of a species (text):
+  Let the entry be the species types for the species.
+  If the entry is nothing:
+    Fail because "No types for {the species}.".
+  If the entry's second type is "":
+    The answer is a list of the entry's first type.
+  The answer is a list of the entry's first type and the entry's second type.
+
+To work out the type factor (number) of an attacking type (text) against a defending type (text):
+  Let the matchup be the type matchups for "{the attacking type} {the defending type}".
+  The answer is the matchup's multiplier or else 1.
+
+To work out the effectiveness (number) of an attacking type (text) against a species (text):
+  Let the result be 1.
+  For each defending type in the types of the species:
+    Set the result to the result * (the type factor of the attacking type against the defending type).
+  The answer is the result.

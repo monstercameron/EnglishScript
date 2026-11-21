@@ -105,7 +105,44 @@ class RedPeople(unittest.TestCase):
         self.assertIn("own", rival)
         self.assertNotEqual(oak, talk("Oak", "Tell me about your starter")[0])
 
-    def test_overlapping_topics_use_the_last_matching_response(self):
+    def test_topics_match_whole_words_only(self):
+        brock_default = "BROCK: Training takes patience. Learn what your Pokemon can do and stand by them."
+        self.assertEqual(talk("Brock", "Hi Brock, how are you today?")[0], brock_default)
+        self.assertEqual(talk("Brock", "What do you do in the winter?")[0], brock_default)
+        self.assertIn("badge is earned", talk("Brock", "Can I win your badges?")[0])
+        self.assertEqual(talk("Mom", "What do you do all day?", 'Set Journey\'s trainer to "RED".')[0],
+                         "MOM: It's good to see you, RED. Take care of yourself out there.")
+        self.assertIn("Home is always here", talk("Mom", "Do you miss me?")[0])
+        self.assertIn("Squirtle", talk("Mom", "How is my Pokémon?", 'Set Journey\'s starter to "Squirtle".')[0])
+        self.assertIn("Rock-type", talk("Gym Guide", "What about Brock's team?")[0])
+        self.assertIn("Rock-type", talk("Gym Guide", "Any tips for the rocks?")[0])
+
+    def test_tone_allows_intensifiers_and_ignores_kind_of(self):
+        def mom(question):
+            source = f'''Use the foundation chapter.
+Use the maps chapter.
+Use the people chapter.
+Set Journey's place to "Home".
+Set Journey's column to 5.
+Set Journey's row to 5.
+Set Journey's facing to "north".
+Converse with "Mom" about "{question}".
+Say Speaker's response.
+'''
+            output = []
+            compile_source(source, folder=RED).run(out=output.append)
+            return output[0]
+
+        firm = "Mom: Please speak kindly in our home. I worry enough when my child is on the road."
+        warm = "Mom: A kind word means a lot when your child is away. Come in and rest."
+        self.assertEqual(mom("You are so mean!"), firm)
+        self.assertEqual(mom("You're really mean"), firm)
+        self.assertNotIn(mom("You are not so mean"), (firm, warm))
+        self.assertNotIn(mom("What kind of Pokemon should I pick?"), (firm, warm))
+        self.assertNotIn(mom("I don't really love you"), (firm, warm))
+        self.assertEqual(mom("You are kind"), warm)
+
+    def test_overlapping_topics_follow_each_persons_priority(self):
         self.assertEqual(talk("Oak", "wild starter parcel pokedex")[0],
                          "OAK: I study Pokemon, but I have more work to do before I can tell you about that.")
         self.assertEqual(talk("Mom", "home oak starter")[0],
@@ -121,7 +158,7 @@ Set Journey's objective to "Deliver it".
 Set Journey's parcel to 1.
 Set Journey's dex to 0.
 Set Journey's badge to 0.
-Set Journey's mode to "walk".'''
+Set Journey's mode to walk.'''
         answer = talk("Oak", "parcel", setup)
         self.assertIn("normally", answer[0])
         self.assertEqual(answer[1:7], ["parcel", "Deliver it", "1", "0", "0", "walk"])
@@ -139,7 +176,7 @@ Set Journey's mode to "walk".'''
         source = ["Use the foundation chapter.", "Use the maps chapter.", "Use the people chapter.",
                   "Set Journey's stage to \"parcel\".", "Set Journey's objective to \"Deliver it\".",
                   "Set Journey's parcel to 1.", "Set Journey's dex to 0.", "Set Journey's badge to 0.",
-                  "Set Journey's mode to \"walk\"."]
+                  "Set Journey's mode to walk."]
         for place, column, row, name, walking in placements:
             source.extend([f"Set Journey's daisy walking to {walking or 0}.",
                            f"Set Journey's place to \"{place}\".",
@@ -158,6 +195,10 @@ Set Journey's mode to "walk".'''
         replies = []
         identities = []
         profiles = []
+        returning_characters = {
+            "Blue's House:6,4:Daisy": "Blue's House:2,3:Daisy",
+            "Route 22:25,5:Route 22 Rival": "Oak's Lab:4,3:Rival",
+        }
         for index, (place, column, row, name, walking) in enumerate(placements):
             result = output[index * 12:index * 12 + 12]
             self.assertEqual(result.pop(0), name, (place, column, row, walking))
@@ -165,12 +206,13 @@ Set Journey's mode to "walk".'''
             self.assertNotIn("don't know enough", result[1])
             self.assertEqual(result[5:], ["parcel", "Deliver it", "1", "0", "0", "walk"])
             self.assertTrue(result[2] and result[3] and result[4], (place, column, row, name, result))
-            self.assertEqual(result[2], f"{place}:{column},{row}:{name}")
+            address = f"{place}:{column},{row}:{name}"
+            self.assertEqual(result[2], returning_characters.get(address, address))
             identities.append(result[2])
             profiles.append(result[3])
             replies.append(result[1])
         self.assertEqual(len(replies) - 1, len(set(replies)))
-        self.assertEqual(len(identities), len(set(identities)))
+        self.assertEqual(len(identities) - len(set(identities)), len(returning_characters))
         self.assertEqual(len(profiles) - len(set(profiles)), 2)
 
     def test_original_backstories_and_perception_are_specific_to_placement(self):

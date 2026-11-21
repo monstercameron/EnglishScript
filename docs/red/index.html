@@ -25,9 +25,9 @@
   <meta name="twitter:description" content="Choose a starter in Pallet Town and challenge Brock for the Boulder Badge in this playable EnglishScript recreation of Pokémon Red.">
   <meta name="twitter:image" content="https://monstercameron.github.io/EnglishScript/assets/red-preview.png">
   <meta name="twitter:image:alt" content="The EnglishScript Pokémon Red demo shows Bulbasaur facing Brock’s Geodude.">
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="source.css">
-  <link rel="stylesheet" href="keys.css">
+  <link rel="stylesheet" href="style.css?v=e8a43ace4c36">
+  <link rel="stylesheet" href="source.css?v=e8a43ace4c36">
+  <link rel="stylesheet" href="keys.css?v=e8a43ace4c36">
 </head>
 <body>
   <main class="page">
@@ -45,6 +45,10 @@
               <input id="question" name="question" type="text" maxlength="200" placeholder="What do you say?" required>
               <div><button type="submit">Ask</button><button id="talk-cancel" type="button">Cancel</button></div>
             </form>
+            <div id="save-choice" class="talk-overlay" role="alertdialog" aria-labelledby="save-choice-text" hidden>
+              <p id="save-choice-text"></p>
+              <div><button id="save-keep" type="button">Continue anyway</button><button id="save-fresh" type="button">Start fresh</button></div>
+            </div>
             <p id="talk-reply" class="visually-hidden" role="status"></p>
           </div>
         </div>
@@ -60,7 +64,7 @@
           <div class="track"><span class="track-label">Soundtrack</span><span id="music-title"></span></div>
           <button type="button" id="sound-toggle" disabled>Enable sound</button>
         </div>
-        <div id="watch-controls" hidden><button id="watch-toggle" type="button">Pause run</button> <a href="./">Play yourself</a></div><p id="connection" class="connection" role="status">Connecting to the game…</p><dl><div><dt>Location</dt><dd id="location">—</dd></div><div><dt>Objective</dt><dd id="objective">—</dd></div><div><dt>Partner</dt><dd id="starter">—</dd></div><div><dt>Badge</dt><dd id="badge">—</dd></div></dl><p id="message" class="message" aria-live="polite"></p><div class="companion"><h3>Companion replies</h3>
+        <div id="watch-controls" hidden><button id="watch-toggle" type="button">Pause run</button> <a href="./">Play yourself</a></div><p id="connection" class="connection" role="status">Connecting to the game…</p><p id="save-warning" class="connection" role="alert" hidden></p><dl><div><dt>Location</dt><dd id="location">—</dd></div><div><dt>Objective</dt><dd id="objective">—</dd></div><div><dt>Partner</dt><dd id="starter">—</dd></div><div><dt>Badge</dt><dd id="badge">—</dd></div></dl><p id="message" class="message" aria-live="polite"></p><div class="companion"><h3>Companion replies</h3>
           <div class="talk-controls" role="group" aria-label="Conversation controls">
             <div class="talk-actions">
               <button id="talk-open" type="button">Talk</button>
@@ -97,10 +101,10 @@
       if (feature) featureUnavailable({ audio: 'Sound', 'save-cache': 'Backup saves', source: 'Source reader', keys: 'Companion settings' }[feature[1]]);
     });
   </script>
-  <script src="audio.js" defer onerror="featureUnavailable('Sound')"></script>
-  <script src="save-cache.js" defer onerror="featureUnavailable('Backup saves')"></script>
-  <script src="main.js" defer onerror="gameUnavailable(true)"></script>
-  <script src="source.js" defer onerror="featureUnavailable('Source reader')"></script>
-  <script src="keys.js" defer onerror="featureUnavailable('Companion settings')"></script>
+  <script src="audio.js?v=e8a43ace4c36" defer onerror="featureUnavailable('Sound')"></script>
+  <script src="save-cache.js?v=e8a43ace4c36" defer onerror="featureUnavailable('Backup saves')"></script>
+  <script src="main.js?v=e8a43ace4c36" defer onerror="gameUnavailable(true)"></script>
+  <script src="source.js?v=e8a43ace4c36" defer onerror="featureUnavailable('Source reader')"></script>
+  <script src="keys.js?v=e8a43ace4c36" defer onerror="featureUnavailable('Companion settings')"></script>
 </body>
 </html>

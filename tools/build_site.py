@@ -18,6 +18,7 @@ page. A test compares all three with the source and fails if one is out of date.
 """
 from __future__ import annotations
 
+import hashlib
 import html
 import io
 import json
@@ -385,11 +386,30 @@ def red_chapters():
     return [unit.file for unit in program.compiler.chapters.values()]
 
 
+RED_HOST = ["main.js", "worker.js", "audio.js", "save-cache.js", "source.js", "keys.js",
+            "style.css", "source.css", "keys.css", "bridge.py"]
+
+
+def red_host_version():
+    digest = hashlib.sha256()
+    for path in [ROOT / "docs" / "red" / name for name in RED_HOST] + [PLAY / "worker-start.js"]:
+        digest.update(path.read_bytes().replace(b"\r\n", b"\n"))
+    return digest.hexdigest()[:12]
+
+
+def stamp_red_page():
+    page = ROOT / "docs" / "red" / "index.html"
+    text = page.read_text(encoding="utf-8")
+    stamped = re.sub(r'((?:src|href)="[\w-]+\.(?:js|css))(?:\?v=[0-9a-f]+)?"', rf'\1?v={red_host_version()}"', text)
+    page.write_text(stamped, encoding="utf-8", newline="\n")
+
+
 def main():
     sys.path.insert(0, str(ROOT / "tools"))
     PLAY.mkdir(parents=True, exist_ok=True)
     (ROOT / "docs" / "red" / "chapters.json").write_text(
         json.dumps(red_chapters(), indent=2) + "\n", encoding="utf-8")
+    stamp_red_page()
     (PLAY / "englishscript.zip").write_bytes(build_zip())
     (PLAY / "examples.json").write_text(examples_text(), encoding="utf-8", newline="\n")
     (PLAY / "phrases.json").write_text(phrases_text(), encoding="utf-8", newline="\n")

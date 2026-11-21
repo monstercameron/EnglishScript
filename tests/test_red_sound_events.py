@@ -24,24 +24,22 @@ class RedSoundEvents(unittest.TestCase):
 
     def test_encounter_and_damaging_turn(self):
         world = self.run_scene('''Use the battle chapter.
-Set Combat's starter to "Bulbasaur".
-Enlist.
-Challenge "wild".
-Set Combat's enemy health to 100.
-Set Combat's enemy speed to 0.
-Fight "a".
+Enlist "Bulbasaur".
+Confront "Pidgey" at 3.
+Set Combat's foe's health to 100.
+Set Combat's foe's speed to 0.
+Fight.
 ''')
         self.assertEqual(world.named["score"].fields["effect"], "noise:2 45:1 38:2")
         self.assertEqual(world.named["score"].fields["effect count"], 2)
 
     def test_victory_takes_precedence_over_hit(self):
         world = self.run_scene('''Use the battle chapter.
-Set Combat's starter to "Bulbasaur".
-Enlist.
-Challenge "wild".
-Set Combat's enemy health to 1.
-Set Combat's enemy speed to 0.
-Fight "a".
+Enlist "Bulbasaur".
+Confront "Pidgey" at 3.
+Set Combat's foe's health to 1.
+Set Combat's foe's speed to 0.
+Fight.
 ''')
         self.assertEqual(world.named["combat"].fields["outcome"], "win")
         self.assertEqual(world.named["score"].fields["effect"], "72:1 72:1 72:1 72:3 68:3 70:3 72:1 0:1 70:1 72:5")
@@ -83,11 +81,10 @@ Meet "Clerk".
 
     def test_wild_cry_matches_final_encounter_species(self):
         world = self.run_scene('''Use the battle chapter.
-Set Combat's starter to "Bulbasaur".
-Enlist.
+Enlist "Bulbasaur".
 Encounter "Route 22".
 ''')
-        species = world.named["combat"].fields["opponent"]
+        species = world.named["combat"].fields["foe"].fields["species"]
         self.assertEqual(species, "Nidoran M")
         reference = self.run_scene(f'Use the cries chapter.\nCry "{species}".\n')
         self.assertEqual(world.named["score"].fields["cry"], reference.named["score"].fields["cry"])
@@ -97,14 +94,13 @@ Encounter "Route 22".
 
     def test_trainer_replacement_cry_preserves_faint_and_victory(self):
         world = self.run_scene('''Use the battle chapter.
-Set Combat's starter to "Bulbasaur".
-Enlist.
+Enlist "Bulbasaur".
 Challenge "brock".
-Set Combat's enemy health to 1.
-Set Combat's enemy speed to 0.
-Fight "a".
+Set Combat's foe's health to 1.
+Set Combat's foe's speed to 0.
+Fight.
 ''')
-        self.assertEqual(world.named["combat"].fields["opponent"], "Onix")
+        self.assertEqual(world.named["combat"].fields["foe"].fields["species"], "Onix")
         reference = self.run_scene('Use the cries chapter.\nCry "Onix".\n')
         self.assertEqual(world.named["score"].fields["cry"], reference.named["score"].fields["cry"])
         self.assertEqual(world.named["score"].fields["cry count"], 2)
@@ -113,15 +109,14 @@ Fight "a".
 
     def test_final_victory_does_not_repeat_a_cry(self):
         world = self.run_scene('''Use the battle chapter.
-Set Combat's starter to "Bulbasaur".
-Enlist.
+Enlist "Bulbasaur".
 Challenge "brock".
-Set Combat's enemy health to 1.
-Set Combat's enemy speed to 0.
-Fight "a".
-Set Combat's enemy health to 1.
-Set Combat's enemy speed to 0.
-Fight "a".
+Set Combat's foe's health to 1.
+Set Combat's foe's speed to 0.
+Fight.
+Set Combat's foe's health to 1.
+Set Combat's foe's speed to 0.
+Fight.
 ''')
         self.assertEqual(world.named["combat"].fields["outcome"], "win")
         self.assertEqual(world.named["score"].fields["cry count"], 2)

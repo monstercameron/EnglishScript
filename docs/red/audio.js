@@ -116,11 +116,22 @@
       });
     }
 
+    function moveSongTo(start) {
+      const playing = tracks.filter((track) => track.notes.length);
+      if (!playing.length) return;
+      const shift = start - Math.min(...playing.map((track) => track.time));
+      for (const track of tracks) track.time += shift;
+    }
+
+    function catchUp(now) {
+      if (tracks.some((track) => track.notes.length && track.time < now - 0.2)) moveSongTo(now + 0.02);
+    }
+
     function schedule() {
       if (!context || context.state !== "running" || muted || paused) return;
       const now = context.currentTime;
+      catchUp(now);
       for (const track of tracks) {
-        if (track.time < now - 0.2) track.time = now + 0.02;
         while (track.notes.length && track.time < now + 0.15) {
           const item = track.notes[track.index];
           const duration = item.duration * track.unit;
@@ -191,7 +202,7 @@
 
     function resumeTracks() {
       if (!context) return;
-      for (const track of tracks) track.time = context.currentTime + 0.03;
+      moveSongTo(context.currentTime + 0.03);
       schedule();
     }
 

@@ -1,4 +1,4 @@
-This chapter shares only discussion, commanded, open, Talk, settle and portray.
+This chapter shares only discussion, commanded, open, Talk, heed and portray.
 
 Use the page library.
 Use the foundation, maps, people and lettering chapters.
@@ -10,40 +10,40 @@ A discussion is commanded when its command is not "".
 A discussion is open when its phase is not closed.
 There is a discussion called Talk whose command is "" and whose phase is closed and whose actor is "" and whose question is "" and whose wording is "" and whose transcript is "" and whose page is "" and whose remainder is "".
 
-To settle:
-  Let the command be Talk's command.
-  Set Talk's command to "".
+To heed a discussion:
+  Let the command be the discussion's command.
+  Set the discussion's command to "".
   If the command is "open":
-    If Talk's phase is closed and Journey's mode is one of "walk" or "dialogue":
+    If the discussion's phase is closed and Journey's mode is one of walk or dialogue:
       Let the nearby person be the person ahead.
       If the nearby person is not "":
-        Set Talk's actor to the nearby person.
-        Set Talk's phase to composing.
+        Set the discussion's actor to the nearby person.
+        Set the discussion's phase to composing.
     Stop.
   If the command is "close":
-    Set Talk's phase to closed.
-    Set Talk's actor to "".
-    Set Talk's question to "".
-    Set Talk's wording to "".
-    Set Talk's transcript to "".
-    Set Talk's page to "".
-    Set Talk's remainder to "".
+    Set the discussion's phase to closed.
+    Set the discussion's actor to "".
+    Set the discussion's question to "".
+    Set the discussion's wording to "".
+    Set the discussion's transcript to "".
+    Set the discussion's page to "".
+    Set the discussion's remainder to "".
     Stop.
-  If the command is "ask" and Talk's phase is composing:
-    Converse with Talk's actor about Talk's question.
-    Set Talk's phase to waiting.
+  If the command is "ask" and the discussion's phase is composing:
+    Converse with the discussion's actor about the discussion's question.
+    Set the discussion's phase to waiting.
     Stop.
-  If the command is "reply" and Talk's phase is waiting:
-    Set Talk's page to Talk's wording.
-    Set Talk's remainder to the caption remainder for Talk's page.
-    Set Talk's phase to answering.
+  If the command is "reply" and the discussion's phase is waiting:
+    Set the discussion's page to the discussion's wording.
+    Set the discussion's remainder to the caption remainder for the discussion's page.
+    Set the discussion's phase to answering.
     Stop.
-  If the command is "page" and Talk's phase is answering:
-    If Talk's remainder is "":
-      Set Talk's phase to composing.
+  If the command is "page" and the discussion's phase is answering:
+    If the discussion's remainder is "":
+      Set the discussion's phase to composing.
     Otherwise:
-      Set Talk's page to Talk's remainder.
-      Set Talk's remainder to the caption remainder for Talk's page.
+      Set the discussion's page to the discussion's remainder.
+      Set the discussion's remainder to the caption remainder for the discussion's page.
 
 To portray:
   Fill Screen from 0 by 80 with 160 over 16 as 3.

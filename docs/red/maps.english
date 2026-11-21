@@ -1,39 +1,43 @@
-This chapter shares only terrain, map width, map height, person, person ahead, feature, feature ahead, counter, column ahead, row ahead, conversation column, conversation row and travel.
+This chapter shares only terrain, map width, map height, map blockset, person, person ahead, feature, feature ahead, counter, column ahead, row ahead, conversation column, conversation row and travel.
 
 Use the foundation chapter.
 
-The map dimensions are width and height, in that order:
-  "Bedroom" has 8 and 8.
-  "Home" has 8 and 8.
-  "Pallet Town" has 20 and 18.
-  "Oak's Lab" has 10 and 12.
-  "Route 1" has 20 and 36.
-  "Viridian City" has 40 and 36.
-  "Viridian Mart" has 8 and 8.
-  "Viridian Center" has 14 and 8.
-  "Route 2" has 20 and 72.
-  "Forest South Gate" has 10 and 8.
-  "Viridian Forest" has 34 and 48.
-  "Forest North Gate" has 10 and 8.
-  "Pewter City" has 40 and 36.
-  "Pewter Gym" has 10 and 14.
-  "Route 22" has 40 and 18.
-  "Route 22 Gate" has 10 and 8.
-  "Pewter Center" has 14 and 8.
-  "Pewter Mart" has 8 and 8.
-  "Blue's House" has 8 and 8.
-  "Viridian School" has 8 and 8.
-  "Viridian House" has 8 and 8.
-  "Pewter House" has 8 and 8.
-  "Nidoran House" has 8 and 8.
+The map layouts are width, height and blockset, in that order:
+  "Bedroom" has 8, 8 and "red's house".
+  "Home" has 8, 8 and "red's house".
+  "Pallet Town" has 20, 18 and "overworld".
+  "Oak's Lab" has 10, 12 and "gym".
+  "Route 1" has 20, 36 and "overworld".
+  "Viridian City" has 40, 36 and "overworld".
+  "Viridian Mart" has 8, 8 and "pokecenter".
+  "Viridian Center" has 14, 8 and "pokecenter".
+  "Route 2" has 20, 72 and "overworld".
+  "Forest South Gate" has 10, 8 and "gate".
+  "Viridian Forest" has 34, 48 and "forest".
+  "Forest North Gate" has 10, 8 and "gate".
+  "Pewter City" has 40, 36 and "overworld".
+  "Pewter Gym" has 10, 14 and "gym".
+  "Route 22" has 40, 18 and "overworld".
+  "Route 22 Gate" has 10, 8 and "gate".
+  "Pewter Center" has 14, 8 and "pokecenter".
+  "Pewter Mart" has 8, 8 and "pokecenter".
+  "Blue's House" has 8, 8 and "house".
+  "Viridian School" has 8, 8 and "house".
+  "Viridian House" has 8, 8 and "house".
+  "Pewter House" has 8, 8 and "house".
+  "Nidoran House" has 8, 8 and "house".
 
 To work out the map width (number):
-  Let the dimension be the map dimensions for Journey's place.
-  The answer is the dimension's width or else 0.
+  Let the layout be the map layouts for Journey's place.
+  The answer is the layout's width or else 0.
 
 To work out the map height (number):
-  Let the dimension be the map dimensions for Journey's place.
-  The answer is the dimension's height or else 0.
+  Let the layout be the map layouts for Journey's place.
+  The answer is the layout's height or else 0.
+
+To work out the map blockset (text):
+  Let the layout be the map layouts for Journey's place.
+  The answer is the layout's blockset or else "".
 
 To work out the raw tiles (text):
   Choose the answer by Journey's place:
@@ -63,28 +67,44 @@ To work out the tile mark (text) at a column (number) by a row (number):
     The answer is "".
   Let the marks be the raw tiles.
   Let the position be (the row * the map width + the column) * 2.
-  The answer is the first 2 letters of the last (the length of the marks - the position) letters of the marks.
+  Let the high digit be letter (the position + 1) of the marks or else "".
+  Let the low digit be letter (the position + 2) of the marks or else "".
+  The answer is "{the high digit}{the low digit}".
+
+The tile meanings are meaning, in that order:
+  "gym:3a" has "counter".
+  "pokecenter:18" has "counter".
+  "pokecenter:19" has "counter".
+  "pokecenter:1e" has "counter".
+  "gate:17" has "counter".
+  "gate:32" has "counter".
+  "overworld:2c" has "ground".
+  "overworld:39" has "lawn".
+  "overworld:37" has "ledge".
+  "overworld:36" has "ledge edge".
+  "overworld:27" has "west ledge".
+  "overworld:0d" has "east ledge".
+  "overworld:1d" has "east ledge edge".
+
+To work out the tile meaning (text) at a column (number) by a row (number):
+  Let the mark be the tile mark at the column by the row.
+  Let the tile be the tile meanings for "{the map blockset}:{the mark}".
+  The answer is the tile's meaning or else "".
 
 To work out the counter (yes or no) at a column (number) by a row (number):
-  Let the mark be the tile mark at the column by the row.
-  If Journey's place is one of "Oak's Lab" or "Pewter Gym" and the mark is "3a":
-    The answer is yes.
-  If Journey's place is one of "Viridian Mart", "Viridian Center", "Pewter Center" or "Pewter Mart" and the mark is one of "18", "19" or "1e":
-    The answer is yes.
-  If Journey's place is one of "Forest South Gate", "Forest North Gate" or "Route 22 Gate" and the mark is one of "17" or "32":
+  If the tile meaning at the column by the row is "counter":
     The answer is yes.
   The answer is no.
 
-To work out the ledge (yes or no) at a column (number) by a row (number):
-  Let the origin be the tile mark at Journey's column by Journey's row.
-  Let the destination be the tile mark at the column by the row.
-  If Journey's facing is "south" and ((the origin is "2c" and the destination is "37") or (the origin is "39" and (the destination is "36" or the destination is "37"))):
-    The answer is yes.
-  If Journey's facing is "west" and (the origin is "2c" or the origin is "39") and the destination is "27":
-    The answer is yes.
-  If Journey's facing is "east" and ((the origin is "2c" and (the destination is "0d" or the destination is "1d")) or (the origin is "39" and the destination is "0d")):
-    The answer is yes.
-  The answer is no.
+The ledge hops are across and down, in that order:
+  "south ground to ledge" has 0 and 1.
+  "south lawn to ledge edge" has 0 and 1.
+  "south lawn to ledge" has 0 and 1.
+  "west ground to west ledge" has -1 and 0.
+  "west lawn to west ledge" has -1 and 0.
+  "east ground to east ledge" has 1 and 0.
+  "east ground to east ledge edge" has 1 and 0.
+  "east lawn to east ledge" has 1 and 0.
 
 To work out the map tiles (text):
   Choose the answer by Journey's place:
@@ -114,7 +134,7 @@ To work out the terrain (text) at a column (number) by a row (number):
     The answer is "wall".
   Let the tiles be the map tiles.
   Let the position be the row * the map width + the column.
-  Let the mark be the first 1 letters of the last (the length of the tiles - the position) letters of the tiles.
+  Let the mark be letter (the position + 1) of the tiles or else "".
   If the mark is "#":
     The answer is "wall".
   If the mark is "g":
@@ -320,6 +340,57 @@ To cross:
   Set Journey's column to the doorway's arrival column.
   Set Journey's row to the doorway's arrival row.
 
+The borders are neighbour and shift, in that order:
+  "Pallet Town:north" has "Route 1" and 0.
+  "Route 1:south" has "Pallet Town" and 0.
+  "Route 1:north" has "Viridian City" and 10.
+  "Viridian City:south" has "Route 1" and -10.
+  "Viridian City:north" has "Route 2" and -10.
+  "Route 2:south" has "Viridian City" and 10.
+  "Route 2:north" has "Pewter City" and 10.
+  "Pewter City:south" has "Route 2" and -10.
+  "Viridian City:west" has "Route 22" and -8.
+  "Route 22:east" has "Viridian City" and 8.
+
+To work out the side crossed (text) at a column (number) by a row (number):
+  If the row is less than 0:
+    The answer is "north".
+  If the row is at least the map height:
+    The answer is "south".
+  If the column is less than 0:
+    The answer is "west".
+  If the column is at least the map width:
+    The answer is "east".
+  The answer is "".
+
+To depart at a column (number) by a row (number):
+  Let the side be the side crossed at the column by the row.
+  Let the border be the borders for "{Journey's place}:{the side}".
+  If the border is nothing:
+    Stop.
+  Let the old place be Journey's place.
+  Let the landing column be the column.
+  Let the landing row be the row.
+  Set Journey's place to the border's neighbour.
+  Depending on the side:
+    For "north":
+      Set the landing row to the map height - 1.
+      Add the border's shift to the landing column.
+    For "south":
+      Set the landing row to 0.
+      Add the border's shift to the landing column.
+    For "west":
+      Set the landing column to the map width - 1.
+      Add the border's shift to the landing row.
+    For "east":
+      Set the landing column to 0.
+      Add the border's shift to the landing row.
+  If the terrain at the landing column by the landing row is "wall" or the person at the landing column by the landing row is not "":
+    Set Journey's place to the old place.
+    Stop.
+  Set Journey's column to the landing column.
+  Set Journey's row to the landing row.
+
 To travel a direction (text):
   Let the column be Journey's column.
   Let the row be Journey's row.
@@ -337,72 +408,16 @@ To travel a direction (text):
     Add 1 to the column.
   Otherwise:
     Stop.
-  If Journey's place is "Pallet Town" and the row is less than 0 and ((the column is at least 0 and the column is at most 2) or (the column is at least 4 and the column is at most 8) or (the column is at least 10 and the column is at most 11) or (the column is at least 13 and the column is at most 17) or (the column is at least 19 and the column is at most 19)):
-    Set Journey's place to "Route 1".
-    Set Journey's column to the column.
-    Set Journey's row to the map height - 1.
+  If the side crossed at the column by the row is not "":
+    Depart at the column by the row.
     Stop.
-  If Journey's place is "Route 1" and the row is at least the map height and ((the column is at least 0 and the column is at most 2) or (the column is at least 4 and the column is at most 8) or (the column is at least 10 and the column is at most 11) or (the column is at least 13 and the column is at most 17) or (the column is at least 19 and the column is at most 19)):
-    Set Journey's place to "Pallet Town".
-    Set Journey's column to the column.
-    Set Journey's row to 0.
-    Stop.
-  If Journey's place is "Route 1" and the row is less than 0 and ((the column is at least 0 and the column is at most 2) or (the column is at least 4 and the column is at most 8) or (the column is at least 10 and the column is at most 11) or (the column is at least 13 and the column is at most 17) or (the column is at least 19 and the column is at most 19)):
-    Set Journey's place to "Viridian City".
-    Add 10 to the column.
-    Set Journey's column to the column.
-    Set Journey's row to the map height - 1.
-    Stop.
-  If Journey's place is "Viridian City" and the row is at least the map height and ((the column is at least 10 and the column is at most 12) or (the column is at least 14 and the column is at most 18) or (the column is at least 20 and the column is at most 21) or (the column is at least 23 and the column is at most 27) or (the column is at least 29 and the column is at most 29)):
-    Set Journey's place to "Route 1".
-    Subtract 10 from the column.
-    Set Journey's column to the column.
-    Set Journey's row to 0.
-    Stop.
-  If Journey's place is "Viridian City" and the row is less than 0 and the column is at least 17 and the column is at most 19:
-    Set Journey's place to "Route 2".
-    Subtract 10 from the column.
-    Set Journey's column to the column.
-    Set Journey's row to the map height - 1.
-    Stop.
-  If Journey's place is "Route 2" and the row is at least the map height and the column is at least 7 and the column is at most 9:
-    Set Journey's place to "Viridian City".
-    Add 10 to the column.
-    Set Journey's column to the column.
-    Set Journey's row to 0.
-    Stop.
-  If Journey's place is "Route 2" and the row is less than 0 and ((the column is at least 0 and the column is at most 1) or (the column is at least 8 and the column is at most 9) or (the column is at least 16 and the column is at most 19)):
-    Set Journey's place to "Pewter City".
-    Add 10 to the column.
-    Set Journey's column to the column.
-    Set Journey's row to the map height - 1.
-    Stop.
-  If Journey's place is "Pewter City" and the row is at least the map height and the column is at least 18 and the column is at most 19:
-    Set Journey's place to "Route 2".
-    Subtract 10 from the column.
-    Set Journey's column to the column.
-    Set Journey's row to 0.
-    Stop.
-  If Journey's place is "Viridian City" and the column is less than 0 and the row is at least 14 and the row is at most 17:
-    Set Journey's place to "Route 22".
-    Subtract 8 from the row.
-    Set Journey's row to the row.
-    Set Journey's column to the map width - 1.
-    Stop.
-  If Journey's place is "Route 22" and the column is at least the map width and the row is at least 6 and the row is at most 9:
-    Set Journey's place to "Viridian City".
-    Add 8 to the row.
-    Set Journey's row to the row.
-    Set Journey's column to 0.
-    Stop.
-  If Journey's place is "Route 1" or Journey's place is "Route 22":
-    If the ledge at the column by the row is yes:
-      If Journey's facing is "south":
-        Add 1 to the row.
-      If Journey's facing is "west":
-        Subtract 1 from the column.
-      If Journey's facing is "east":
-        Add 1 to the column.
+  If Journey's place is one of "Route 1" or "Route 22":
+    Let the origin be the tile meaning at Journey's column by Journey's row.
+    Let the destination be the tile meaning at the column by the row.
+    Let the hop be the ledge hops for "{Journey's facing} {the origin} to {the destination}".
+    If the hop is not nothing:
+      Add the hop's across to the column.
+      Add the hop's down to the row.
   If the terrain at the column by the row is "wall":
     Stop.
   If the person at the column by the row is not "":

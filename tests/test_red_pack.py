@@ -22,10 +22,9 @@ class RedPack(unittest.TestCase):
             (root / "main.english").write_text('''Use the foundation chapter.
 Use the battle chapter.
 Use the pack chapter.
-Set Journey's mode to "walk".
-Set Combat's starter to "Bulbasaur".
-Enlist.
-Set Combat's health to 1.
+Set Journey's mode to walk.
+Enlist "Bulbasaur".
+Set Combat's ally's health to 1.
 Set Stock's potions to 1.
 Inventory "start".
 Inventory "down".
@@ -41,7 +40,8 @@ Catalogue.
             world = compile_file(root / "main.english").run(out=lambda text="": None)
             stock = world.named["stock"].fields
             combat = world.named["combat"].fields
-            self.assertEqual(combat["health"], combat["maximum health"])
+            ally = combat["ally"].fields
+            self.assertEqual(ally["health"], ally["maximum health"])
             self.assertEqual(stock["potions"], 0)
             self.assertEqual(stock["save request"], 1)
 
@@ -51,7 +51,7 @@ Catalogue.
             copy_chapters(root)
             (root / "main.english").write_text('''Use the foundation chapter.
 Use the pack chapter.
-Set Journey's mode to "shop".
+Set Journey's mode to shop.
 Set Journey's wallet to 300.
 Inventory "a".
 Inventory "a".
@@ -74,12 +74,12 @@ Set Journey's column to 12.
 Set Journey's row to 30.
 Set Journey's facing to "north".
 Examine.
-Set Journey's mode to "walk".
+Set Journey's mode to walk.
 Examine.
 ''', encoding="utf-8")
             world = compile_file(root / "main.english").run(out=lambda text="": None)
             self.assertEqual(world.named["stock"].fields["potions"], 1)
-            self.assertEqual(world.named["stock"].fields["forest potion"], 1)
+            self.assertEqual(world.named["stock"].fields["found"], ("Potion",))
             self.assertEqual(world.named["journey"].fields["mode"], "walk")
 
     def test_battle_potion_only_spends_turn_on_use(self):
@@ -89,13 +89,12 @@ Examine.
             (root / "main.english").write_text('''Use the foundation chapter.
 Use the battle chapter.
 Use the pack chapter.
-Set Combat's starter to "Bulbasaur".
-Enlist.
-Challenge "wild".
+Enlist "Bulbasaur".
+Confront "Pidgey" at 5.
 Set Stock's potions to 1.
-Set Journey's mode to "battle bag".
+Set Journey's mode to battle bag.
 Inventory "a".
-Set Combat's health to 1.
+Set Combat's ally's health to 1.
 Inventory "a".
 ''', encoding="utf-8")
             world = compile_file(root / "main.english").run(out=lambda text="": None)
@@ -111,23 +110,15 @@ Inventory "a".
 Use the battle chapter.
 Use the party chapter.
 Use the pack chapter.
-Set Combat's starter to "Bulbasaur".
-Enlist.
-Record.
-Set Team's count to 2.
-Set Second's starter to "Pidgey".
-Set Second's species to "Pidgey".
-Set Second's health to 20.
-Set Second's maximum health to 20.
-Set Second's defense to 10.
-Challenge "wild".
-Set Journey's mode to "battle party".
-Inventory "down".
+Enlist "Bulbasaur".
+Enlist "Pidgey".
+Confront "Pidgey" at 5.
+Set Journey's mode to battle party.
 Inventory "a".
 ''', encoding="utf-8")
             world = compile_file(root / "main.english").run(out=lambda text="": None)
-            self.assertEqual(world.named["team"].fields["selected"], 2)
-            self.assertEqual(world.named["combat"].fields["starter"], "Pidgey")
+            self.assertEqual(world.named["team"].fields["selected"], 1)
+            self.assertEqual(world.named["combat"].fields["ally"].fields["species"], "Bulbasaur")
             self.assertEqual(world.named["combat"].fields["turn"], 1)
             self.assertEqual(world.named["journey"].fields["mode"], "battle")
 
@@ -138,12 +129,12 @@ Inventory "a".
             (root / "main.english").write_text('''Use the foundation chapter.
 Use the battle chapter.
 Use the pack chapter.
-Set Combat's starter to "Bulbasaur".
-Enlist.
+Enlist "Bulbasaur".
+Set Journey's rival starter to "Charmander".
 Challenge "rival".
 Set Stock's balls to 1.
 Set Stock's cursor to 1.
-Set Journey's mode to "battle bag".
+Set Journey's mode to battle bag.
 Inventory "a".
 ''', encoding="utf-8")
             world = compile_file(root / "main.english").run(out=lambda text="": None)

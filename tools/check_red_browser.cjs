@@ -30,6 +30,7 @@ async function main() {
     edge,
     [
       "--headless=new",
+      "--mute-audio",
       "--disable-gpu",
       "--no-first-run",
       "--remote-debugging-port=0",
@@ -292,7 +293,12 @@ async function main() {
     browser.kill();
     if (browser.exitCode === null)
       await new Promise((r) => browser.once("exit", r));
-    fs.rmSync(profile, { recursive: true, force: true });
+    try {
+      fs.rmSync(profile, { recursive: true, force: true, maxRetries: 8, retryDelay: 200 });
+    } catch (error) {
+      if (error.code !== "EPERM" && error.code !== "EBUSY") throw error;
+      console.warn("Edge still holds its temporary test profile:", profile);
+    }
   }
 }
 main().catch((e) => {

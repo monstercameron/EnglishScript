@@ -19,10 +19,13 @@ function createRedSaveCache(valid) {
     } catch { }
     return null;
   }
+  async function prune(cache, newest) {
+    for (const key of (await keysFor(cache)).slice(2)) if (key.url !== newest) await cache.delete(key);
+  }
   function write(saved) {
     const snapshot = JSON.stringify(saved);
     writes = writes.catch(() => {}).then(async () => {
-      const locked = !!globalThis.navigator?.locks;
+      const locks = globalThis.navigator?.locks;
       const store = async () => {
         const cache = await caches.open(cacheName);
         const keys = await keysFor(cache);
@@ -31,13 +34,10 @@ function createRedSaveCache(valid) {
         const unique = globalThis.crypto?.randomUUID?.() || `${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
         const url = `${prefix}${String(sequence).padStart(16, '0')}-${unique}`;
         await cache.put(url, new Response(snapshot, { headers: { 'Content-Type': 'application/json' } }));
-        if (locked) {
-          const current = await keysFor(cache);
-          for (const key of current.slice(2)) if (key.url !== url) await cache.delete(key);
-        }
+        await prune(cache, url);
         return true;
       };
-      return locked ? await navigator.locks.request(lockName, store) : await store();
+      return locks ? await locks.request(lockName, store) : await store();
     }).catch(() => false);
     return writes;
   }

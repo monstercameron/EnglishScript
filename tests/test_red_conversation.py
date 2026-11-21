@@ -62,7 +62,7 @@ class RedConversation(unittest.IsolatedAsyncioTestCase):
         self.bridge.talk_ask(session, 1, "Hello")
         raw = "“Hello”—it’s café time…\n" + "Keep going! " * 180
         self.bridge.talk_reply(session, 1, raw)
-        self.assertEqual(self.states[-1]["talkRawReply"], raw)
+        self.assertEqual(self.states[-1]["talkRawReply"], raw[:self.bridge.REPLY_LIMIT])
         self.assertTrue(self.bridge.world.named["talk"].fields["wording"].startswith("'Hello'-it's cafe time..."))
         self.assertEqual(len(self.bridge.world.named["talk"].fields["wording"]), 2000)
         self.bridge.talk_close(session)
@@ -72,6 +72,7 @@ class RedConversation(unittest.IsolatedAsyncioTestCase):
     async def test_counter_conversations_use_the_persons_actual_location(self):
         for place, column, row, facing, person, identity in [
             ("Viridian Center", 3, 3, "north", "Nurse", "Viridian Center:3,1:Nurse"),
+            ("Pewter Center", 3, 3, "north", "Nurse", "Pewter Center:3,1:Nurse"),
             ("Viridian Mart", 2, 5, "west", "Clerk", "Viridian Mart:0,5:Clerk"),
         ]:
             self.journey.fields.update({"place": place, "column": column, "row": row, "facing": facing, "mode": "walk"})
@@ -82,6 +83,47 @@ class RedConversation(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(result["identity"], identity)
             self.assertTrue(result["profile"] and result["voice"])
             self.bridge.talk_close(session)
+
+    async def test_daisy_keeps_identity_after_moving(self):
+        for column, row, walking in [(2, 4, 0), (6, 5, 1)]:
+            with self.subTest(walking=walking):
+                self.journey.fields.update({"place": "Blue's House", "column": column, "row": row,
+                                            "facing": "north", "mode": "walk", "daisy walking": walking})
+                self.bridge.talk_open()
+                result = json.loads(self.bridge.talk_ask(self.bridge.talk_session, 1, "Hello"))
+                self.assertEqual(result["person"], "Daisy")
+                self.assertEqual(result["identity"], "Blue's House:2,3:Daisy")
+                self.bridge.talk_close(self.bridge.talk_session)
+
+    async def test_offline_tone_uses_words_and_context(self):
+        firm = "Mom: Please speak kindly in our home. I worry enough when my child is on the road."
+        warm = "Mom: A kind word means a lot when your child is away. Come in and rest."
+        for question, expected in [
+            ("What is the meaning of kindness?", "neither"),
+            ("What do you mean?", "neither"),
+            ("You are mean!", firm),
+            ("Thanks, tell me about yourself", "Mom: I raised you here in Pallet. I keep your room ready and hope you and your partner come home safe."),
+            ("I do not hate you.", "neither"),
+            ('Someone said "you are stupid".', "neither"),
+            ("You are stupid!", firm),
+            ("I HATE you.", firm),
+            ("Thank you, friend!", warm),
+            ("You are nice.", warm),
+        ]:
+            with self.subTest(question=question):
+                self.bridge.talk_open()
+                result = json.loads(self.bridge.talk_ask(self.bridge.talk_session, 1, question))
+                if expected == "neither":
+                    self.assertNotIn(result["response"], (firm, warm))
+                else:
+                    self.assertEqual(result["response"], expected)
+                self.bridge.talk_close(self.bridge.talk_session)
+
+    async def test_offline_firm_response_uses_character_voice(self):
+        self.journey.fields.update({"place": "Oak's Lab", "column": 5, "row": 3, "facing": "north", "mode": "walk"})
+        self.bridge.talk_open()
+        result = json.loads(self.bridge.talk_ask(self.bridge.talk_session, 1, "You are stupid!"))
+        self.assertEqual(result["response"], "Oak: That tone won't help us understand Pokemon. Let's start again calmly.")
 
     async def test_empty_space_and_stale_replies_are_ignored(self):
         self.journey.fields["facing"] = "south"

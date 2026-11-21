@@ -1,5 +1,5 @@
 const PYODIDE = 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/';
-let python, act, replay, talkOpen, talkAsk, talkReply, talkPage, talkClose, started = false, accepting = false;
+let python, act, replay, talkOpen, talkAsk, talkReply, talkPage, talkClose, content, started = false, accepting = false, choosing = false;
 function report(error) { self.postMessage({ type: 'error', message: String(error && error.message || error) }); }
 self.redFrame = (width, height, pixels) => {
   let view;
@@ -13,14 +13,24 @@ self.redFrame = (width, height, pixels) => {
   }
 };
 self.redState = state => self.postMessage({ type: 'state', state: JSON.parse(state) });
-self.redOutput = text => self.postMessage({ type: 'output', text });
 self.redError = message => report(message);
 self.redReady = () => { accepting = true; };
-async function start(history) {
+function fingerprint(paths, texts) {
+  let low = 0x811c9dc5, high = 0x01000193;
+  for (let i = 0; i < paths.length; i++) {
+    const text = `${paths[i]}\u0000${texts[i]}\u0000`;
+    for (let j = 0; j < text.length; j++) {
+      low = Math.imul(low ^ text.charCodeAt(j), 0x01000193);
+      high = Math.imul(high ^ text.charCodeAt(j), 0x5bd1e995);
+    }
+  }
+  return (low >>> 0).toString(16).padStart(8, '0') + (high >>> 0).toString(16).padStart(8, '0');
+}
+async function start({ history = [], content: savedContent, offersChoice = false }) {
   if (started) return;
   started = true;
   try {
-    importScripts(new URL("../play/worker-start.js", self.location.href).href);
+    importScripts(new URL("../play/worker-start.js" + new URL(self.location.href).search, self.location.href).href);
   } catch (_) {
     throw new Error("Could not load startup helper worker-start.js. Check your connection and site files, then reload.");
   }
@@ -32,6 +42,7 @@ async function start(history) {
     self.workerStart.download("bridge.py", "bridge", "text"),
     ...paths.map(path => self.workerStart.download(path, "chapter", "text"))
   ]);
+  content = fingerprint(paths, files);
   python.FS.mkdirTree('/site');
   python.FS.mkdirTree('/work');
   self.workerStart.unpack(python, archive);
@@ -52,11 +63,25 @@ async function start(history) {
   const run = python.globals.get('start');
   try { await run(); } catch (error) { throw new Error('Could not compile or start the adventure chapters. Check the diagnostic below and reload after fixing the problem. ' + String(error && error.message || error)); } finally { run.destroy(); }
   if (!accepting) return;
-  if (history.length) replay(JSON.stringify(history));
-  self.postMessage({ type: 'ready' });
+  choosing = offersChoice && history.length > 0 && savedContent !== content;
+  if (choosing) self.postMessage({ type: 'changed', content });
+  else restore(history);
+}
+function restore(history) {
+  try {
+    if (history.length) replay(JSON.stringify(history));
+  } catch (error) {
+    self.postMessage({ type: 'restore-failed', message: String(error && error.message || error) });
+    return;
+  }
+  self.postMessage({ type: 'ready', content });
 }
 self.onmessage = ({ data: message }) => {
-  if (message.type === 'start') start(message.history || []).catch(report);
+  if (message.type === 'start') start(message).catch(report);
+  else if (message.type === 'restore' && choosing) {
+    choosing = false;
+    restore(Array.isArray(message.history) ? message.history : []);
+  }
   else if (accepting && ['talk-open','talk-ask','talk-reply','talk-page','talk-close'].includes(message.type)) {
     const operation = message.type.slice(5);
     try {
@@ -75,4 +100,3 @@ self.onmessage = ({ data: message }) => {
     try { act(message.action); self.postMessage({ type: 'ack', action: message.action }); } catch (error) { report(error); }
   }
 };
-

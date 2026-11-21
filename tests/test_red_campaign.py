@@ -66,10 +66,10 @@ class RedCampaign(unittest.IsolatedAsyncioTestCase):
     async def test_brocks_portraits_stay_above_the_player_status(self):
         campaign = await Campaign.start()
         campaign.journey.fields["mode"] = "battle"
-        campaign.combat.fields["species"] = "Bulbasaur"
+        campaign.combat.fields["ally"].fields["species"] = "Bulbasaur"
 
         def draw(opponent):
-            campaign.combat.fields["opponent"] = opponent
+            campaign.combat.fields["foe"].fields["species"] = opponent
             campaign.press("noop")
             page.sync(campaign.world)
             return campaign.frames[-1][3]
@@ -115,7 +115,7 @@ class RedCampaign(unittest.IsolatedAsyncioTestCase):
                     if state["dex"] == 1:
                         observed.add("dex")
                     if state["mode"] == "battle":
-                        observed.add(combat.fields["opponent"])
+                        observed.add(combat.fields["foe"].fields["species"])
                     if state["badge"] == 1 and state["tm34"] == 1 and reward is None:
                         reward = (state["badge"], state["tm34"], state["wallet"])
                 self.assertEqual(state["starter"], starter)

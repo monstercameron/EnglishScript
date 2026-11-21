@@ -1,4 +1,4 @@
-This chapter shares only scenery.
+This chapter shares only landmark.
 
 Use the foundation and maps chapters.
 
@@ -23,6 +23,30 @@ To work out the scenery tiles (text):
     For "Viridian School", use ".I.II..I.......I...........II......II......I....I......II.II...I".
     Otherwise, use "".
 
+The landmark words are word, in that order:
+  "T" has "tree".
+  "G" has "meadow".
+  "R" has "roof".
+  "W" has "window".
+  "D" has "doorway".
+  "S" has "signpost".
+  "F" has "fence".
+  "L" has "ledge".
+  "A" has "water".
+  "H" has "panel".
+  "V" has "staircase".
+  "N" has "television".
+  "C" has "dark cabinet".
+  "K" has "light cabinet".
+  "X" has "console".
+  "Y" has "mattress".
+  "Z" has "flowerpot".
+  "Q" has "bed".
+  "P" has "plant".
+  "E" has "stairs".
+  "I" has "furnishing".
+  "B" has "boulder".
+
 To work out the scenery (text) at a column (number) by a row (number):
   If the column is less than 0 or the row is less than 0:
     The answer is ".".
@@ -30,4 +54,9 @@ To work out the scenery (text) at a column (number) by a row (number):
     The answer is ".".
   Let the tiles be the scenery tiles.
   Let the position be the row * the map width + the column.
-  The answer is the first 1 letters of the last (the length of the tiles - the position) letters of the tiles.
+  The answer is letter (the position + 1) of the tiles or else ".".
+
+To work out the landmark (text) at a column (number) by a row (number):
+  Let the code be the scenery at the column by the row.
+  Let the entry be the landmark words for the code.
+  The answer is the entry's word or else "".

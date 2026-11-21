@@ -2652,6 +2652,9 @@ This section gives a syntax to every gap that used to be listed here. Many of it
 | Recovering from a problem | Built: section 8.5 |
 | Irregular plurals, multi-word verbs, kinds that extend kinds | 13.17 |
 | Time and concurrency | 12, with 13.18 |
+| Copying the properties of a named kind | Proposed in section 13.20 |
+| Starting values for a kind's properties | Proposed in section 13.21 |
+| Fact tables with two typed key parts | Proposed in section 13.22 |
 
 ### 13.1 Nothing, and properties that may be absent
 
@@ -2966,6 +2969,70 @@ group        = ... | group "in order of" PROPERTY | group "in reverse order of" 
 
 `list-form`, `number-form` and `clock-form` are the forms in the tables of sections 13.7, 13.10, 13.12 and 13.15 that are not built yet.
 
+Sections 13.20 to 13.22 add these proposed forms. Their words are recognised in context.
+
+```text
+action       = ... | "Copy the" KIND "properties from" value "to" value "."
+definition   = ... | article KIND "starts with" initial { sep initial } "." | keyed-table
+initial      = PROPERTY "set to" literal
+keyed-table  = "The" NAME "give" NAME { sep NAME } "for each" key-part "and" key-part ":"
+               (indented rows: "For" NAME literal "and" NAME literal "," field-value { sep field-value } ".")
+key-part     = NAME "(" type ")"
+field-value  = "the" NAME "is" literal
+value        = ... | "the" TABLE "for" NAME value "and" NAME value
+```
+
+### 13.20 Copying the properties of a named kind
+
+**Proposed.** In the Pokémon party, storing a teammate and restoring one copy the same 19 properties in opposite directions. Naming the kind gives both verbs one definition of what to copy.
+
+```text
+To store a member (teammate):
+  Copy the teammate properties from Combat to the member.
+
+To restore a member (teammate):
+  Copy the teammate properties from the member to Combat.
+```
+
+The compiler takes the stored properties declared on `teammate`, in declaration order. For each one, both things must have a property of that name and type, and the destination must allow `Set`. A missing or incompatible property is a compile-time error that names the property and the affected kind. Combat's opponent and random seed belong only to the battle.
+
+The first version covers stored scalar values such as the member's species, health and remaining uses of each move. Each assignment behaves like the corresponding `Set` in section 7.2. A rule is checked and any reactions run before the next property is copied. A failed enclosing `Try` rolls back the changes as usual (section 8.5).
+
+### 13.21 Starting values for a kind's properties
+
+**Proposed.** A kind can give a stored property a starting value once, before any things of that kind are made. A `whose` clause can override it for one thing.
+
+```text
+A teammate has a species (text) and a health (number).
+A teammate starts with species set to "" and health set to 0.
+
+There is a teammate called First.
+There is a teammate called Second whose species is "Squirtle" and whose health is 7.
+Say First's health.       #> 0
+Say Second's health.      #> 7
+```
+
+Each starting value must be a literal of the property's declared type. Giving the same property two starting values is a compile-time error. Both named things (section 4.2) and things made while the program runs (section 7.5) use these values at creation. Each thing can then change independently. A required property without a starting value still needs a value when the thing is made.
+
+### 13.22 Fact tables with two typed key parts
+
+**Proposed.** A place and a slot together identify a wild encounter. Naming and typing both parts lets the compiler check the lookup.
+
+```text
+The wild encounters give species and level for each place (text) and slot (number):
+  For place "Route 1" and slot 3, the species is "Rattata" and the level is 3.
+  For place "Route 2" and slot 3, the species is "Pidgey" and the level is 4.
+
+Let the meeting be the wild encounters for place "Route 1" and slot 3.
+Say the meeting's species or else "none".       #> Rattata
+Let the missing be the wild encounters for place "Route 1" and slot 11.
+Say the missing's species or else "none".       #> none
+```
+
+Each row and lookup supplies both named key parts exactly once. The pair must match exactly, including capitalisation in text. An absent pair gives `nothing`, even when a lower-numbered slot exists. Section 4.7 describes the separate threshold form for finding the nearest qualifying row.
+
+A duplicate pair is a compile-time error that points to both rows. Passing `slot "3"` would point to `"3"` and say that `slot` needs a number. The value columns follow the existing fact-table rules in section 4.7.
+
 ## 14. Not defined yet
 
 Sections 12 and 13 settle most of what used to be listed here. These remain open.
@@ -2974,7 +3041,7 @@ Sections 12 and 13 settle most of what used to be listed here. These remain open
 - Chapters and books (section 9.6) reach only the chapters beside a file, and the books beside it or beside the program: there is no shelf of books shared by programs.
 - Chance: a number or a thing picked at random.
 - Rules that span several things, rules about worked-out properties or adjectives, and rules that read a variable that can change. Today a rule may read only values written out, variables made with `always`, and its own thing's stored properties (section 4.5), because it is checked only when that thing's stored properties change; a rule that read anything else could be broken without anyone noticing. Checking such rules would mean finding, after every change, every rule whose answer that change could alter.
-- Lookup tables keyed by values other than text, or containing values other than number, money, percent and text literals (section 4.7).
+- Fact-table keys beyond the existing text and threshold forms (section 4.7) and the proposed two-part keys (section 13.22). Value columns beyond number, money, percent and text literals also remain open.
 - Asking a model (section 7.8) for a thing of a kind, for a list of things or of choices, or for several values in one reply; a limit on how long a model may take; and handing a model a group of things, or a thing's adjectives and worked-out properties, other than by filling them into the question.
 
 **Values**

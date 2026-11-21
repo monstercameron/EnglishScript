@@ -22,15 +22,42 @@ The starter pairs are chosen starter and chosen rival starter, in that order:
   "1" has "Charmander" and "Squirtle".
   "2" has "Squirtle" and "Bulbasaur".
 
+The parting words are victory line and defeat line, in that order:
+  "wild" has "The wild POKEMON fainted!" and "".
+  "rival" has "RIVAL: WHAT? Unbelievable! I picked the wrong POKEMON!" and "RIVAL: Yeah! Am I great or what?".
+  "route rival" has "RIVAL: What? I was just careless!" and "RIVAL: You have to work harder than that!".
+  "gym trainer" has "GYM TRAINER: Darn! Light years isn't time, it measures distance!" and "".
+  "forest one" has "BUG CATCHER: You're a POKEMON trainer too!" and "".
+  "forest two" has "BUG CATCHER: I give up! You're good at this!" and "".
+  "forest three" has "BUG CATCHER: No! Caterpie can't hack it!" and "".
+
+The forest bouts are challenger and challenge, in that order:
+  "Bug Catcher 1" has "forest one" and "BUG CATCHER: Hey! You have POKEMON! Come on! Let's battle 'em!".
+  "Bug Catcher 2" has "forest two" and "BUG CATCHER: Yo! You can't jam out if you're a POKEMON trainer!".
+  "Bug Catcher 3" has "forest three" and "BUG CATCHER: Hey, wait up! What's the hurry?".
+
+The recovery spots are column and row, in that order:
+  "Home" has 2 and 6.
+  "Viridian Center" has 3 and 6.
+  "Pewter Center" has 3 and 6.
+
+Let the brock prize always be 99 * 14.
+Let the opening length always be 144.
+Let the naming width always be 6.
+Let the naming cells always be 30.
+Let the letter cells always be 26.
+Let the erase cell always be 28.
+Let the done cell always be 29.
+Let the inscription limit always be 7.
+
 To speak a line (text):
   Set Journey's message to the line.
-  Set Journey's mode to "dialogue".
+  Set Journey's mode to dialogue.
 
 To engage:
   Challenge Story's challenger.
-  Set Orders's phase to "commands".
-  Set Orders's cursor to 1.
-  Set Journey's mode to "battle".
+  Reset Orders.
+  Set Journey's mode to battle.
 
 To finish:
   Let the transition be the dialogue transitions for Story's scene.
@@ -88,24 +115,76 @@ To finish:
         Engage.
       Otherwise:
         Set Story's scene to "".
-        Set Journey's mode to "walk".
+        Set Journey's mode to walk.
         Set Journey's message to "".
 
+To decline:
+  Set Journey's mode to walk.
+  Set Journey's message to "".
+
 To choose:
-  If Journey's selection is divisible by 1:
-    Let the pair be the starter pairs for "{Journey's selection}".
-    If the pair is not nothing:
-      Set Journey's starter to the pair's chosen starter.
-      Set Journey's rival starter to the pair's chosen rival starter.
-  Set Combat's starter to Journey's starter.
-  Enlist.
-  Record.
+  Let the pair be the starter pairs for "{Journey's selection}".
+  If the pair is nothing:
+    Decline.
+    Stop.
+  Set Journey's starter to the pair's chosen starter.
+  Set Journey's rival starter to the pair's chosen rival starter.
+  Enlist Journey's starter.
   Set Journey's stage to "rival battle".
   Set Story's scene to "starter chosen".
   Speak "OAK: This POKEMON is really energetic! {Journey's trainer} received {Journey's starter}!".
 
+To beat a challenger (text):
+  Depending on the challenger:
+    For "route rival":
+      Set Story's route rival beaten to 1.
+      Set Journey's route rival beaten to 1.
+    For "gym trainer":
+      Set Story's gym trainer beaten to 1.
+    For "forest one":
+      Set Story's forest one beaten to 1.
+    For "forest two":
+      Set Story's forest two beaten to 1.
+    For "forest three":
+      Set Story's forest three beaten to 1.
+    For "brock":
+      If Journey's badge is 0:
+        Set Journey's badge to 1.
+        Add the brock prize to Journey's wallet.
+        Set Journey's stage to "boulder badge".
+        Set Journey's objective to "Receive the BOULDERBADGE and TM34 from BROCK.".
+        Set Story's scene to "brock cash".
+        Speak "{Journey's trainer} got {the brock prize} for winning!".
+      Stop.
+  Let the parting be the parting words for the challenger.
+  If the parting is not nothing:
+    Speak the parting's victory line.
+
+To recover:
+  Revive.
+  Set Journey's wallet to (Journey's wallet / 2) rounded down to the nearest 1.
+  Set Journey's place to Story's recovery place.
+  Let the spot be the recovery spots for Story's recovery place.
+  If the spot is not nothing:
+    Set Journey's column to the spot's column.
+    Set Journey's row to the spot's row.
+  Set Journey's facing to "north".
+
+To lose to a challenger (text):
+  Let the parting be the parting words for the challenger.
+  Let the taunt be the parting's defeat line or else "".
+  If the challenger is "rival":
+    Speak the taunt.
+    Stop.
+  Recover.
+  Let the blackout be "{Journey's trainer} is out of usable POKEMON! {Journey's trainer} blacked out!".
+  If the taunt is "":
+    Speak the blackout.
+  Otherwise:
+    Speak "{the taunt} {the blackout}".
+
 To resolve:
-  If Combat's outcome is "":
+  If Combat's outcome is "" or Combat is reporting:
     Stop.
   If Combat's outcome is "fainted":
     Replace.
@@ -114,168 +193,116 @@ To resolve:
   If Combat's outcome is one of "escaped" or "caught":
     Set Combat's outcome to "".
     Set Story's challenger to "".
-    Set Journey's mode to "walk".
+    Set Journey's mode to walk.
     Stop.
-  If Story's challenger is "wild":
-    If Combat's outcome is "win":
-      Speak "The wild POKEMON fainted!".
-    Otherwise:
-      Speak "You blacked out! Your POKEMON was restored.".
   If Story's challenger is "rival":
     Set Journey's stage to "parcel".
     Set Journey's objective to "Visit the Viridian City MART.".
-    If Combat's outcome is "win":
-      Speak "RIVAL: WHAT? Unbelievable! I picked the wrong POKEMON!".
-    Otherwise:
-      Speak "RIVAL: Yeah! Am I great or what?".
-  If Story's challenger is "route rival":
-    If Combat's outcome is "win":
-      Set Story's route rival beaten to 1.
-      Set Journey's route rival beaten to 1.
-      Speak "RIVAL: What? I was just careless!".
-    Otherwise:
-      Speak "RIVAL: You have to work harder than that!".
-  If Story's challenger is "brock":
-    If Combat's outcome is "win" and Journey's badge is 0:
-      Set Journey's badge to 1.
-      Add 1386 to Journey's wallet.
-      Set Journey's stage to "boulder badge".
-      Set Journey's objective to "Receive the BOULDERBADGE and TM34 from BROCK.".
-      Set Story's scene to "brock cash".
-      Speak "{Journey's trainer} got 1386 for winning!".
-    Otherwise if Combat's outcome is "loss":
-      Speak "You blacked out! Heal your POKEMON and challenge BROCK again.".
-  If Story's challenger is "gym trainer":
-    If Combat's outcome is "win":
-      Set Story's gym trainer beaten to 1.
-      Speak "GYM TRAINER: Darn! Light years isn't time, it measures distance!".
-    Otherwise:
-      Speak "You blacked out! Heal your POKEMON before trying again.".
-  If Story's challenger is "forest one":
-    If Combat's outcome is "win":
-      Set Story's forest one beaten to 1.
-    Speak "BUG CATCHER: You're a POKEMON trainer too!".
-  If Story's challenger is "forest two":
-    If Combat's outcome is "win":
-      Set Story's forest two beaten to 1.
-    Speak "BUG CATCHER: I give up! You're good at this!".
-  If Story's challenger is "forest three":
-    If Combat's outcome is "win":
-      Set Story's forest three beaten to 1.
-    Speak "BUG CATCHER: No! Caterpie can't hack it!".
-  If Combat's outcome is "loss" and Story's challenger is not "rival":
-    Revive.
-    Set Journey's wallet to (Journey's wallet / 2) rounded down to the nearest 1.
-    Set Journey's place to Story's recovery place.
-    Set Journey's column to 3.
-    Set Journey's row to 6.
-    If Story's recovery place is "Home":
-      Set Journey's column to 2.
-    Set Journey's facing to "north".
-    Speak "{Journey's trainer} is out of usable POKEMON! {Journey's trainer} blacked out!".
+  Depending on Combat's outcome:
+    For "win":
+      Beat Story's challenger.
+    For "loss":
+      Lose to Story's challenger.
   Set Combat's outcome to "".
   Set Story's challenger to "".
 
+To work out the defeats (number) of a challenger (text):
+  Choose the answer by the challenger:
+    For "forest one", use Story's forest one beaten.
+    For "forest two", use Story's forest two beaten.
+    For "forest three", use Story's forest three beaten.
+    Otherwise, use 0.
+
+To work out the starter slot (number) of a species (text):
+  Choose the answer by the species:
+    For "Charmander", use 1.
+    For "Squirtle", use 2.
+    Otherwise, use 0.
+
 To meet a visitor (text):
-  If the visitor is "Oak":
-    If Journey's stage is "choose starter":
-      Speak "OAK: Go on! Choose a POKEMON!".
-      Stop.
-    If Journey's parcel is 1 and Journey's dex is 0:
-      Set Story's scene to "deliver parcel".
-      Speak "OAK: Ah! This is the custom POKE BALL I ordered! Thank you!".
-      Stop.
-    If Journey's dex is 1:
-      Speak "OAK: You can't get detailed data on POKEMON by just seeing them. You must catch them!".
-      Stop.
-    Speak "OAK: How is my old POKEMON? Go to VIRIDIAN CITY for me.".
-    Stop.
-  If the visitor is one of "Bulbasaur", "Charmander" or "Squirtle":
-    If Journey's stage is "choose starter":
-      Set Journey's selection to 0.
-      If the visitor is "Charmander":
-        Set Journey's selection to 1.
-      If the visitor is "Squirtle":
-        Set Journey's selection to 2.
-      Set Journey's mode to "starter".
-      Set Journey's message to "Choose {the visitor}? A: yes  B: no".
-    Otherwise:
-      Speak "OAK: Don't be greedy!".
-    Stop.
-  If the visitor is "Route 22 Rival":
-    If Story's route rival beaten is 1 or Journey's badge is 1:
+  Depending on the visitor:
+    For "Oak":
+      If Journey's stage is "choose starter":
+        Speak "OAK: Go on! Choose a POKEMON!".
+      Otherwise if Journey's parcel is 1 and Journey's dex is 0:
+        Set Story's scene to "deliver parcel".
+        Speak "OAK: Ah! This is the custom POKE BALL I ordered! Thank you!".
+      Otherwise if Journey's dex is 1:
+        Speak "OAK: You can't get detailed data on POKEMON by just seeing them. You must catch them!".
+      Otherwise:
+        Speak "OAK: How is my old POKEMON? Go to VIRIDIAN CITY for me.".
+    For "Bulbasaur", "Charmander" or "Squirtle":
+      If Journey's stage is "choose starter":
+        Set Journey's selection to the starter slot of the visitor.
+        Set Journey's mode to starter.
+        Set Journey's message to "Choose {the visitor}? A: yes  B: no".
+      Otherwise:
+        Speak "OAK: Don't be greedy!".
+    For "Route 22 Rival":
+      If Story's route rival beaten is 1 or Journey's badge is 1:
+        Speak "RIVAL: Smell ya later!".
+      Otherwise:
+        Set Story's scene to "route rival challenge".
+        Speak "RIVAL: Hey! You're going to POKEMON LEAGUE? Forget it! You probably don't have any BADGES!".
+    For "Rival":
       Speak "RIVAL: Smell ya later!".
+    For "Nurse":
+      Set Story's recovery place to Journey's place.
+      Revive.
+      Sound "heal".
+      Speak "NURSE: We've healed your POKEMON back to perfect health!".
+    For "Daisy":
+      If Journey's town map is 1:
+        Speak "DAISY: Use the TOWN MAP to find out where you are.".
+      Otherwise if Journey's dex is 1:
+        Set Journey's town map to 1.
+        Sound "item".
+        Speak "DAISY: This will help you! {Journey's trainer} got a TOWN MAP!".
+      Otherwise:
+        Speak "DAISY: My brother is at Grandpa's lab.".
+    For "Mom":
+      Revive.
+      Speak "MOM: Right. All boys leave home someday. It said so on TV. OAK, next door, is looking for you.".
+    For "Clerk":
+      If Journey's stage is "parcel" and Journey's parcel is 0 and Journey's dex is 0:
+        Set Journey's parcel to 1.
+        Sound "item".
+        Set Journey's objective to "Deliver OAK's PARCEL to his lab in PALLET TOWN.".
+        Speak "CLERK: You came from PALLET TOWN? Please take OAK's PARCEL to him!".
+      Otherwise if Journey's dex is 0:
+        Speak "CLERK: Say hi to PROFESSOR OAK for me!".
+      Otherwise:
+        Set Journey's mode to shop.
+        Set Journey's message to "CLERK: Welcome!".
+    For "Brock":
+      If Journey's badge is 1:
+        Speak "BROCK: There are all kinds of trainers in the world!".
+      Otherwise:
+        Set Story's scene to "brock challenge".
+        Speak "I'm BROCK! I'm PEWTER's GYM LEADER! I believe in rock hard defense and determination! That's why my POKEMON are all the rock-type! Do you still want to challenge me? Fine then! Show me your best!".
+    For "Gym Trainer":
+      If Story's gym trainer beaten is 1 or Journey's badge is 1:
+        Speak "GYM TRAINER: Light years measures distance!".
+      Otherwise:
+        Set Story's scene to "trainer challenge".
+        Set Story's challenger to "gym trainer".
+        Speak "Stop right there, kid! You're 10,000 light years from facing BROCK!".
+    For "Bug Catcher 1", "Bug Catcher 2" or "Bug Catcher 3":
+      Let the bout be the forest bouts for the visitor.
+      If the bout is not nothing and the defeats of the bout's challenger is 0:
+        Set Story's scene to "trainer challenge".
+        Set Story's challenger to the bout's challenger.
+        Speak the bout's challenge.
+      Otherwise:
+        Speak "Hello! Good luck on your journey!".
     Otherwise:
-      Set Story's scene to "route rival challenge".
-      Speak "RIVAL: Hey! You're going to POKEMON LEAGUE? Forget it! You probably don't have any BADGES!".
-    Stop.
-  If the visitor is "Rival":
-    Speak "RIVAL: Smell ya later!".
-    Stop.
-  If the visitor is "Nurse":
-    Set Story's recovery place to Journey's place.
-    Revive.
-    Sound "heal".
-    Speak "NURSE: We've healed your POKEMON back to perfect health!".
-    Stop.
-  If the visitor is "Daisy":
-    If Journey's town map is 1:
-      Speak "DAISY: Use the TOWN MAP to find out where you are.".
-    Otherwise if Journey's dex is 1:
-      Set Journey's town map to 1.
-      Sound "item".
-      Speak "DAISY: This will help you! {Journey's trainer} got a TOWN MAP!".
-    Otherwise:
-      Speak "DAISY: My brother is at Grandpa's lab.".
-    Stop.
-  If the visitor is "Mom":
-    Revive.
-    Speak "MOM: Right. All boys leave home someday. It said so on TV. OAK, next door, is looking for you.".
-    Stop.
-  If the visitor is "Clerk":
-    If Journey's stage is "parcel" and Journey's parcel is 0 and Journey's dex is 0:
-      Set Journey's parcel to 1.
-      Sound "item".
-      Set Journey's objective to "Deliver OAK's PARCEL to his lab in PALLET TOWN.".
-      Speak "CLERK: You came from PALLET TOWN? Please take OAK's PARCEL to him!".
-    Otherwise if Journey's dex is 0:
-      Speak "CLERK: Say hi to PROFESSOR OAK for me!".
-    Otherwise:
-      Set Journey's mode to "shop".
-      Set Journey's message to "CLERK: Welcome!".
-    Stop.
-  If the visitor is "Brock":
-    If Journey's badge is 1:
-      Speak "BROCK: There are all kinds of trainers in the world!".
-    Otherwise:
-      Set Story's scene to "brock challenge".
-      Speak "I'm BROCK! I'm PEWTER's GYM LEADER! I believe in rock hard defense and determination! That's why my POKEMON are all the rock-type! Do you still want to challenge me? Fine then! Show me your best!".
-    Stop.
-  If the visitor is "Gym Trainer":
-    If Story's gym trainer beaten is 1 or Journey's badge is 1:
-      Speak "GYM TRAINER: Light years measures distance!".
-    Otherwise:
-      Set Story's scene to "trainer challenge".
-      Set Story's challenger to "gym trainer".
-      Speak "Stop right there, kid! You're 10,000 light years from facing BROCK!".
-    Stop.
-  If the visitor is "Bug Catcher 1" and Story's forest one beaten is 0:
-    Set Story's scene to "trainer challenge".
-    Set Story's challenger to "forest one".
-    Speak "BUG CATCHER: Hey! You have POKEMON! Come on! Let's battle 'em!".
-    Stop.
-  If the visitor is "Bug Catcher 2" and Story's forest two beaten is 0:
-    Set Story's scene to "trainer challenge".
-    Set Story's challenger to "forest two".
-    Speak "BUG CATCHER: Yo! You can't jam out if you're a POKEMON trainer!".
-    Stop.
-  If the visitor is "Bug Catcher 3" and Story's forest three beaten is 0:
-    Set Story's scene to "trainer challenge".
-    Set Story's challenger to "forest three".
-    Speak "BUG CATCHER: Hey, wait up! What's the hurry?".
-    Stop.
-  If the visitor is not "":
-    Speak "Hello! Good luck on your journey!".
+      If the visitor is not "":
+        Speak "Hello! Good luck on your journey!".
+
+To return to a place (text) at a column (number) by a row (number):
+  Set Journey's place to the place.
+  Set Journey's column to the column.
+  Set Journey's row to the row.
 
 To walk toward a direction (text):
   Let the old place be Journey's place.
@@ -287,15 +314,11 @@ To walk toward a direction (text):
   If Journey's place is "Blue's House" and the old place is not "Blue's House":
     Set Journey's blue house entered to 1.
   If the old place is "Oak's Lab" and Journey's place is "Pallet Town" and Journey's stage is "choose starter":
-    Set Journey's place to the old place.
-    Set Journey's column to the old column.
-    Set Journey's row to the old row.
+    Return to the old place at the old column by the old row.
     Speak "OAK: Hey! Don't go away yet!".
     Stop.
   If the old place is "Oak's Lab" and Journey's place is "Pallet Town" and Journey's stage is "rival battle":
-    Set Journey's place to the old place.
-    Set Journey's column to the old column.
-    Set Journey's row to the old row.
+    Return to the old place at the old column by the old row.
     Set Story's scene to "rival challenge".
     Speak "{Journey's rival}: Wait {Journey's trainer}! Let's check out our POKEMON! Come on, I'll take you on!".
     Stop.
@@ -304,16 +327,12 @@ To walk toward a direction (text):
     Speak "CLERK: Hey! You came from PALLET TOWN?".
     Stop.
   If Journey's place is "Route 1" and Journey's starter is "":
-    Set Journey's place to the old place.
-    Set Journey's column to the old column.
-    Set Journey's row to the old row.
+    Return to the old place at the old column by the old row.
     Set Story's scene to "oak warning".
     Speak "OAK: Hey! Wait! Don't go out! It's unsafe! Wild POKEMON live in tall grass!".
     Stop.
   If Journey's place is "Route 2" and Journey's dex is 0:
-    Set Journey's place to the old place.
-    Set Journey's column to the old column.
-    Set Journey's row to the old row.
+    Return to the old place at the old column by the old row.
     Speak "The road is closed. First help PROFESSOR OAK with his parcel.".
     Stop.
   If Journey's place is "Viridian Forest" and (Journey's column is not the old column or Journey's row is not the old row):
@@ -333,13 +352,12 @@ To walk toward a direction (text):
         Set Story's grass steps to 0.
         Set Story's challenger to "wild".
         Encounter Journey's place.
-        Set Orders's phase to "commands".
-        Set Orders's cursor to 1.
-        Set Journey's mode to "battle".
+        Reset Orders.
+        Set Journey's mode to battle.
 
 To nominate:
   Set Journey's selection to 0.
-  Set Journey's mode to "rival naming".
+  Set Journey's mode to rival naming.
   Set Journey's message to "OAK: This is my grandson. What was his name?".
 
 To begin:
@@ -349,167 +367,160 @@ To begin:
   Set Journey's facing to "north".
   Set Journey's stage to "find oak".
   Set Journey's objective to "Find PROFESSOR OAK in PALLET TOWN.".
-  Set Journey's mode to "walk".
+  Set Journey's mode to walk.
   Set Journey's message to "".
 
 To enter a key (text):
   If the key is "left":
     Subtract 1 from Journey's selection.
     If Journey's selection is less than 0:
-      Set Journey's selection to 29.
+      Set Journey's selection to the done cell.
   If the key is "right":
     Add 1 to Journey's selection.
-    If Journey's selection is more than 29:
+    If Journey's selection is more than the done cell:
       Set Journey's selection to 0.
   If the key is "up":
-    Subtract 6 from Journey's selection.
+    Subtract the naming width from Journey's selection.
     If Journey's selection is less than 0:
-      Add 30 to Journey's selection.
+      Add the naming cells to Journey's selection.
   If the key is "down":
-    Add 6 to Journey's selection.
-    If Journey's selection is more than 29:
-      Subtract 30 from Journey's selection.
+    Add the naming width to Journey's selection.
+    If Journey's selection is at least the naming cells:
+      Subtract the naming cells from Journey's selection.
   Let the inscription be Journey's trainer.
-  If Journey's mode is "custom rival naming":
+  If Journey's mode is custom rival naming:
     Set the inscription to Journey's rival.
-  If the key is "b" or (the key is "a" and Journey's selection is 28):
+  If the key is "b" or (the key is "a" and Journey's selection is the erase cell):
     If the length of the inscription is more than 0:
       Set the inscription to the first (the length of the inscription - 1) letters of the inscription.
-  If the key is "a" and Journey's selection is less than 26 and the length of the inscription is less than 7:
-    Let the alphabet be "ABCDEFGHIJKLMNOPQRSTUVWXYZ".
-    Let the letter be the first 1 letters of the last (26 - Journey's selection) letters of the alphabet.
+  If the key is "a" and Journey's selection is less than the letter cells and the length of the inscription is less than the inscription limit:
+    Let the letter be letter (Journey's selection + 1) of "ABCDEFGHIJKLMNOPQRSTUVWXYZ" or else "".
     Set the inscription to "{the inscription}{the letter}".
-  If Journey's mode is "custom naming":
+  If Journey's mode is custom naming:
     Set Journey's trainer to the inscription.
   Otherwise:
     Set Journey's rival to the inscription.
-  If the key is "start" or (the key is "a" and Journey's selection is 29):
+  If the key is "start" or (the key is "a" and Journey's selection is the done cell):
     If the inscription is not "":
-      If Journey's mode is "custom naming":
+      If Journey's mode is custom naming:
         Nominate.
       Otherwise:
         Begin.
+
+To direct with a key (text):
+  Command the key.
+  Resolve.
+
+To unveil with a key (text):
+  If (the key is one of "start" or "a") or Journey's animation is at least the opening length:
+    Set Journey's mode to title.
+    Set Journey's animation to 0.
+
+To dismiss with a key (text):
+  If the key is one of "start" or "a":
+    Set Journey's mode to main menu.
+
+To embark with a key (text):
+  If the key is one of "start" or "a":
+    Set Journey's mode to intro.
+    Set Journey's selection to 0.
+    Set Journey's message to "OAK: Hello there! Welcome to the world of POKEMON! My name is OAK! People call me the POKEMON PROF!".
+
+To introduce with a key (text):
+  If the key is one of "a" or "start":
+    Let the intro remainder be the caption remainder for Journey's message.
+    If the intro remainder is not "":
+      Set Journey's message to the intro remainder.
+      Stop.
+    If Journey's selection is 0:
+      Set Journey's selection to 1.
+      Set Journey's message to "OAK: This world is inhabited by creatures called POKEMON! For some people, POKEMON are pets. Others use them for fights.".
+    Otherwise:
+      Set Journey's selection to 0.
+      Set Journey's mode to naming.
+      Set Journey's message to "OAK: First, what is your name? Choose a name.".
+
+To designate with a key (text):
+  If the key is one of "up" or "left":
+    Subtract 1 from Journey's selection.
+    If Journey's selection is less than 0:
+      Set Journey's selection to 3.
+  If the key is one of "down" or "right":
+    Add 1 to Journey's selection.
+    If Journey's selection is more than 3:
+      Set Journey's selection to 0.
+  If the key is one of "a" or "start":
+    If Journey's mode is naming:
+      If Journey's selection is 0:
+        Set Journey's trainer to "".
+        Set Journey's mode to custom naming.
+        Stop.
+      Set Journey's trainer to "RED".
+      If Journey's selection is 2:
+        Set Journey's trainer to "ASH".
+      If Journey's selection is 3:
+        Set Journey's trainer to "JACK".
+      Nominate.
+    Otherwise:
+      If Journey's selection is 0:
+        Set Journey's rival to "".
+        Set Journey's mode to custom rival naming.
+        Stop.
+      Set Journey's rival to "BLUE".
+      If Journey's selection is 2:
+        Set Journey's rival to "GARY".
+      If Journey's selection is 3:
+        Set Journey's rival to "JOHN".
+      Begin.
+
+To page with a key (text):
+  If the key is one of "a", "b" or "start":
+    Let the remainder be the caption remainder for Journey's message.
+    If the remainder is not "":
+      Set Journey's message to the remainder.
+    Otherwise:
+      Finish.
+
+To adopt with a key (text):
+  If the key is "a":
+    Choose.
+  If the key is "b":
+    Decline.
+
+To explore with a key (text):
+  If the key is one of "up", "down", "left" or "right":
+    Walk toward the key.
+  If the key is "a":
+    If Journey's place is "Bedroom" and Journey's row is 2 and Journey's column is 3 and Journey's facing is "north" and "PC Potion" is not in Stock's found:
+      Add "PC Potion" to Stock's found.
+      Add 1 to Stock's potions.
+      Sound "item".
+      Speak "Withdrew a POTION from the PC!".
+    Otherwise:
+      If the person ahead is not "":
+        Meet the person ahead.
+      Otherwise:
+        Examine.
 
 To advance a key (text):
-  If Journey's mode is "battle":
-    Command the key.
-    Resolve.
-    Stop.
-  If Journey's mode is "opening":
-    If (the key is one of "start" or "a") or Journey's animation is at least 144:
-      Set Journey's mode to "title".
-      Set Journey's animation to 0.
-    Stop.
-  If Journey's mode is "title":
-    If the key is one of "start" or "a":
-      Set Journey's mode to "menu".
-    Stop.
-  If Journey's mode is "menu":
-    If the key is one of "start" or "a":
-      Set Journey's mode to "intro".
-      Set Journey's selection to 0.
-      Set Journey's message to "OAK: Hello there! Welcome to the world of POKEMON! My name is OAK! People call me the POKEMON PROF!".
-    Stop.
-  If Journey's mode is "intro":
-    If the key is one of "a" or "start":
-      Let the intro remainder be the caption remainder for Journey's message.
-      If the intro remainder is not "":
-        Set Journey's message to the intro remainder.
-        Stop.
-      If Journey's selection is 0:
-        Set Journey's selection to 1.
-        Set Journey's message to "OAK: This world is inhabited by creatures called POKEMON! For some people, POKEMON are pets. Others use them for fights.".
-      Otherwise:
-        Set Journey's selection to 0.
-        Set Journey's mode to "naming".
-        Set Journey's message to "OAK: First, what is your name? Choose a name.".
-    Stop.
-  If Journey's mode is one of "naming" or "rival naming":
-    If the key is one of "up" or "left":
-      Subtract 1 from Journey's selection.
-      If Journey's selection is less than 0:
-        Set Journey's selection to 3.
-    If the key is one of "down" or "right":
-      Add 1 to Journey's selection.
-      If Journey's selection is more than 3:
-        Set Journey's selection to 0.
-    If the key is one of "a" or "start":
-      If Journey's mode is "naming":
-        If Journey's selection is 0:
-          Set Journey's trainer to "".
-          Set Journey's mode to "custom naming".
-          Stop.
-        Set Journey's trainer to "RED".
-        If Journey's selection is 2:
-          Set Journey's trainer to "ASH".
-        If Journey's selection is 3:
-          Set Journey's trainer to "JACK".
-        Nominate.
-      Otherwise:
-        If Journey's selection is 0:
-          Set Journey's rival to "".
-          Set Journey's mode to "custom rival naming".
-          Stop.
-        Set Journey's rival to "BLUE".
-        If Journey's selection is 2:
-          Set Journey's rival to "GARY".
-        If Journey's selection is 3:
-          Set Journey's rival to "JOHN".
-        Begin.
-    Stop.
-  If Journey's mode is one of "custom naming" or "custom rival naming":
-    Enter the key.
-    Stop.
-  If Journey's mode is "dialogue":
-    If the key is one of "a", "b" or "start":
-      Let the remainder be the caption remainder for Journey's message.
-      If the remainder is not "":
-        Set Journey's message to the remainder.
-      Otherwise:
-        Finish.
-    Stop.
-  If Journey's mode is "starter":
-    If the key is "a":
-      Choose.
-    If the key is "b":
-      Set Journey's mode to "walk".
-      Set Journey's message to "".
-    Stop.
-  If Journey's mode is "walk":
-    If the key is one of "up", "down", "left" or "right":
-      Walk toward the key.
-    If the key is "a":
-      If Journey's place is "Bedroom" and Journey's row is 2 and Journey's column is 3 and Journey's facing is "north" and Stock's pc taken is 0:
-        Set Stock's pc taken to 1.
-        Add 1 to Stock's potions.
-        Sound "item".
-        Speak "Withdrew a POTION from the PC!".
-      Otherwise:
-        If the person ahead is not "":
-          Meet the person ahead.
-        Otherwise:
-          Examine.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Depending on Journey's mode:
+    For battle:
+      Direct with the key.
+    For opening:
+      Unveil with the key.
+    For title:
+      Dismiss with the key.
+    For main menu:
+      Embark with the key.
+    For intro:
+      Introduce with the key.
+    For naming or rival naming:
+      Designate with the key.
+    For custom naming or custom rival naming:
+      Enter the key.
+    For dialogue:
+      Page with the key.
+    For starter:
+      Adopt with the key.
+    For walk:
+      Explore with the key.

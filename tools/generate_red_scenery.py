@@ -68,7 +68,7 @@ def classify(tileset, t):
         return 'I'
     return '.'
 
-lines = ['This chapter shares only scenery.', '', 'Use the foundation and maps chapters.', '', 'To work out the scenery tiles (text):', "  Choose the answer by Journey's place:"]
+lines = ['This chapter shares only landmark.', '', 'Use the foundation and maps chapters.', '', 'To work out the scenery tiles (text):', "  Choose the answer by Journey's place:"]
 groups = {}
 for name, map_name, tileset in maps:
     header = (reference / f'data/maps/headers/{map_name}.asm').read_text()
@@ -88,5 +88,44 @@ for tiles, names in groups.items():
     quoted = [f'"{name}"' for name in names]
     choices = quoted[0] if len(quoted) == 1 else ', '.join(quoted[:-1]) + ' or ' + quoted[-1]
     lines.append(f'    For {choices}, use "{tiles}".')
-lines.extend(['    Otherwise, use "".', '', 'To work out the scenery (text) at a column (number) by a row (number):', '  If the column is less than 0 or the row is less than 0:', '    The answer is ".".', '  If the column is at least the map width or the row is at least the map height:', '    The answer is ".".', '  Let the tiles be the scenery tiles.', '  Let the position be the row * the map width + the column.', '  The answer is the first 1 letters of the last (the length of the tiles - the position) letters of the tiles.', ''])
+lines.extend(['    Otherwise, use "".', ''])
+lines.extend("""The landmark words are word, in that order:
+  "T" has "tree".
+  "G" has "meadow".
+  "R" has "roof".
+  "W" has "window".
+  "D" has "doorway".
+  "S" has "signpost".
+  "F" has "fence".
+  "L" has "ledge".
+  "A" has "water".
+  "H" has "panel".
+  "V" has "staircase".
+  "N" has "television".
+  "C" has "dark cabinet".
+  "K" has "light cabinet".
+  "X" has "console".
+  "Y" has "mattress".
+  "Z" has "flowerpot".
+  "Q" has "bed".
+  "P" has "plant".
+  "E" has "stairs".
+  "I" has "furnishing".
+  "B" has "boulder".
+
+To work out the scenery (text) at a column (number) by a row (number):
+  If the column is less than 0 or the row is less than 0:
+    The answer is ".".
+  If the column is at least the map width or the row is at least the map height:
+    The answer is ".".
+  Let the tiles be the scenery tiles.
+  Let the position be the row * the map width + the column.
+  The answer is letter (the position + 1) of the tiles or else ".".
+
+To work out the landmark (text) at a column (number) by a row (number):
+  Let the code be the scenery at the column by the row.
+  Let the entry be the landmark words for the code.
+  The answer is the entry's word or else "".
+""".splitlines())
+lines.append('')
 out.write_text('\n'.join(lines), encoding='utf-8')

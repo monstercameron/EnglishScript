@@ -22,8 +22,8 @@ const navigator = { locks: { request(name, run) {
   return next;
 } } };
 const code = fs.readFileSync(require('node:path').join(__dirname, '../docs/red/save-cache.js'), 'utf8');
-function instance(path = '/red/') {
-  const context = { caches, navigator, location: { href: `https://example.com${path}` }, URL, Response, crypto: webcrypto };
+function instance(path = '/red/', withLocks = true) {
+  const context = { caches, navigator: withLocks ? navigator : {}, location: { href: `https://example.com${path}` }, URL, Response, crypto: webcrypto };
   vm.createContext(context);
   vm.runInContext(code, context);
   return context.createRedSaveCache(saved => saved && saved.version === 2 && Array.isArray(saved.actions));
@@ -42,6 +42,10 @@ function instance(path = '/red/') {
   assert.equal(entries.size, 2);
   assert([...entries.keys()].every(url => url.startsWith('https://example.com/red/.englishscript-red-saves/v2/')));
   assert.equal(await instance('/other/').read(), null);
+  const lockless = instance('/lockless/', false);
+  for (const action of ['a', 'b', 'up', 'down', 'left']) assert(await lockless.write({ version: 2, actions: [action] }));
+  assert.equal((await instance('/lockless/').read()).actions[0], 'left');
+  assert.equal([...entries.keys()].filter(url => url.includes('/lockless/')).length, 2);
   denied = true;
   assert.equal(await first.read(), null);
   assert.equal(await first.write({ version: 2, actions: ['a'] }), false);

@@ -13,6 +13,13 @@ from englishscript.libraries import page
 RED = Path(__file__).resolve().parents[1] / "docs" / "red"
 
 
+def snapshot(world):
+    state = {name: dict(world.named[name].fields) for name in ("journey", "controls", "stock", "combat")}
+    for side in ("ally", "foe"):
+        state["combat"][side] = dict(state["combat"][side].fields)
+    return state
+
+
 class RedReplay(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         self.frames = []
@@ -37,11 +44,11 @@ class RedReplay(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.bridge.world.named["journey"].fields["place"], "")
         for action in actions:
             self.bridge.act(action)
-        expected = {name: dict(self.bridge.world.named[name].fields) for name in ("journey", "controls", "stock", "combat")}
+        expected = snapshot(self.bridge.world)
         pixels = self.frames[-1]
         await self.start_world()
         self.bridge.replay(json.dumps(actions))
-        self.assertEqual({name: dict(self.bridge.world.named[name].fields) for name in expected}, expected)
+        self.assertEqual(snapshot(self.bridge.world), expected)
         self.assertEqual(self.frames[-1], pixels)
         self.assertEqual(len(self.frames), 1)
         self.assertEqual(len(self.states), 1)

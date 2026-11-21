@@ -1,6 +1,7 @@
 This chapter shares only wild encounters and wild slot.
 
 The wild encounters are species and level, in that order:
+  "Pallet Town" has "Pidgey" and 3.
   "Route 1 1" has "Pidgey" and 3.
   "Route 1 2" has "Rattata" and 3.
   "Route 1 3" has "Rattata" and 3.
@@ -42,13 +43,18 @@ The wild encounters are species and level, in that order:
   "Viridian Forest 9" has "Pikachu" and 3.
   "Viridian Forest 10" has "Pikachu" and 5.
 
+The grass slots are slot, in that order:
+  "grass" from 0 has 1.
+  "grass" from 51 has 2.
+  "grass" from 102 has 3.
+  "grass" from 141 has 4.
+  "grass" from 166 has 5.
+  "grass" from 191 has 6.
+  "grass" from 216 has 7.
+  "grass" from 229 has 8.
+  "grass" from 242 has 9.
+  "grass" from 253 has 10.
+
 To work out the wild slot (number) for a roll (number):
-  If the roll is less than 0 or the roll is at least 256:
-    The answer is 0.
-  Let the cutoffs be a list of 51, 102, 141, 166, 191, 216, 229, 242, 253 and 256.
-  Let the slot be 0.
-  For each cutoff in the cutoffs:
-    Add 1 to the slot.
-    If the roll is less than the cutoff:
-      The answer is the slot.
-  The answer is 0.
+  Let the match be the grass slots for "grass" at the roll.
+  The answer is the match's slot or else 0.

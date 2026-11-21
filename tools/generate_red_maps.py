@@ -223,7 +223,7 @@ def choices(subject, entries):
 
 
 lines = [
-    "This chapter shares only terrain, map width, map height, person, person ahead, feature, feature ahead, counter, column ahead, row ahead, conversation column, conversation row and travel.",
+    "This chapter shares only terrain, map width, map height, map blockset, person, person ahead, feature, feature ahead, counter, column ahead, row ahead, conversation column, conversation row and travel.",
     "",
     "Use the foundation chapter.",
     "",
@@ -253,18 +253,24 @@ for place, map_id, blockset_name, collision_name in map_specs:
             tiles.append(terrain)
     map_data[place] = (width, height, "".join(tiles))
     raw_tiles[place] = "".join(raw)
-lines += ["The map dimensions are width and height, in that order:"]
+blockset_words = {"reds_house": "red's house"}
+blockset_of = {place: blockset_words.get(blockset_name, blockset_name) for place, _, blockset_name, _ in map_specs}
+lines += ["The map layouts are width, height and blockset, in that order:"]
 for place, (width, height, encoded_tiles) in map_data.items():
-    lines += [f'  "{place}" has {width} and {height}.']
+    lines += [f'  "{place}" has {width}, {height} and "{blockset_of[place]}".']
 lines += [
     "",
     "To work out the map width (number):",
-    "  Let the dimension be the map dimensions for Journey's place.",
-    "  The answer is the dimension's width or else 0.",
+    "  Let the layout be the map layouts for Journey's place.",
+    "  The answer is the layout's width or else 0.",
     "",
     "To work out the map height (number):",
-    "  Let the dimension be the map dimensions for Journey's place.",
-    "  The answer is the dimension's height or else 0.",
+    "  Let the layout be the map layouts for Journey's place.",
+    "  The answer is the layout's height or else 0.",
+    "",
+    "To work out the map blockset (text):",
+    "  Let the layout be the map layouts for Journey's place.",
+    '  The answer is the layout\'s blockset or else "".',
     "",
     "To work out the raw tiles (text):",
 ]
@@ -278,35 +284,45 @@ lines += [
     '    The answer is "".',
     "  Let the marks be the raw tiles.",
     "  Let the position be (the row * the map width + the column) * 2.",
-    "  The answer is the first 2 letters of the last (the length of the marks - the position) letters of the marks.",
+    '  Let the high digit be letter (the position + 1) of the marks or else "".',
+    '  Let the low digit be letter (the position + 2) of the marks or else "".',
+    '  The answer is "{the high digit}{the low digit}".',
+    "",
+    "The tile meanings are meaning, in that order:",
+]
+counter_tiles = {}
+for place, map_id, blockset_name, collision_name in map_specs:
+    for tile in sorted(counter_sets[collision_name]):
+        counter_tiles[blockset_of[place], tile] = "counter"
+lines += [f'  "{blockset}:{tile:02x}" has "{meaning}".' for (blockset, tile), meaning in counter_tiles.items()]
+lines += [
+    '  "overworld:2c" has "ground".',
+    '  "overworld:39" has "lawn".',
+    '  "overworld:37" has "ledge".',
+    '  "overworld:36" has "ledge edge".',
+    '  "overworld:27" has "west ledge".',
+    '  "overworld:0d" has "east ledge".',
+    '  "overworld:1d" has "east ledge edge".',
+    "",
+    "To work out the tile meaning (text) at a column (number) by a row (number):",
+    "  Let the mark be the tile mark at the column by the row.",
+    '  Let the tile be the tile meanings for "{the map blockset}:{the mark}".',
+    '  The answer is the tile\'s meaning or else "".',
     "",
     "To work out the counter (yes or no) at a column (number) by a row (number):",
-    "  Let the mark be the tile mark at the column by the row.",
-]
-counter_groups = {}
-for place, map_id, blockset_name, collision_name in map_specs:
-    counters = tuple(sorted(counter_sets[collision_name]))
-    if counters:
-        counter_groups.setdefault(counters, []).append(place)
-for counters, places in counter_groups.items():
-    names = [f'"{place}"' for place in places]
-    marks = [f'"{tile:02x}"' for tile in counters]
-    place_test = f"Journey's place is {english_list(names)}" if len(names) == 1 else f"Journey's place is one of {english_list(names)}"
-    mark_test = f"the mark is {english_list(marks)}" if len(marks) == 1 else f"the mark is one of {english_list(marks)}"
-    lines += [f"  If {place_test} and {mark_test}:", "    The answer is yes."]
-lines += [
+    '  If the tile meaning at the column by the row is "counter":',
+    "    The answer is yes.",
     "  The answer is no.",
     "",
-    "To work out the ledge (yes or no) at a column (number) by a row (number):",
-    "  Let the origin be the tile mark at Journey's column by Journey's row.",
-    "  Let the destination be the tile mark at the column by the row.",
-    '  If Journey\'s facing is "south" and ((the origin is "2c" and the destination is "37") or (the origin is "39" and (the destination is "36" or the destination is "37"))):',
-    "    The answer is yes.",
-    '  If Journey\'s facing is "west" and (the origin is "2c" or the origin is "39") and the destination is "27":',
-    "    The answer is yes.",
-    '  If Journey\'s facing is "east" and ((the origin is "2c" and (the destination is "0d" or the destination is "1d")) or (the origin is "39" and the destination is "0d")):',
-    "    The answer is yes.",
-    "  The answer is no.",
+    "The ledge hops are across and down, in that order:",
+    '  "south ground to ledge" has 0 and 1.',
+    '  "south lawn to ledge edge" has 0 and 1.',
+    '  "south lawn to ledge" has 0 and 1.',
+    '  "west ground to west ledge" has -1 and 0.',
+    '  "west lawn to west ledge" has -1 and 0.',
+    '  "east ground to east ledge" has 1 and 0.',
+    '  "east ground to east ledge edge" has 1 and 0.',
+    '  "east lawn to east ledge" has 1 and 0.',
     "",
     "To work out the map tiles (text):",
 ]
@@ -320,7 +336,7 @@ lines += [
     '    The answer is "wall".',
     "  Let the tiles be the map tiles.",
     "  Let the position be the row * the map width + the column.",
-    "  Let the mark be the first 1 letters of the last (the length of the tiles - the position) letters of the tiles.",
+    '  Let the mark be letter (the position + 1) of the tiles or else "".',
     '  If the mark is "#":',
     '    The answer is "wall".',
     '  If the mark is "g":',
@@ -415,23 +431,7 @@ lines += [
 ]
 lines += [
     "",
-    "To travel a direction (text):",
-    "  Let the column be Journey's column.",
-    "  Let the row be Journey's row.",
-    '  If the direction is "north" or the direction is "up":',
-    '    Set Journey\'s facing to "north".',
-    "    Subtract 1 from the row.",
-    '  Otherwise if the direction is "south" or the direction is "down":',
-    '    Set Journey\'s facing to "south".',
-    "    Add 1 to the row.",
-    '  Otherwise if the direction is "west" or the direction is "left":',
-    '    Set Journey\'s facing to "west".',
-    "    Subtract 1 from the column.",
-    '  Otherwise if the direction is "east" or the direction is "right":',
-    '    Set Journey\'s facing to "east".',
-    "    Add 1 to the column.",
-    "  Otherwise:",
-    "    Stop.",
+    "The borders are neighbour and shift, in that order:",
 ]
 for old, new, edge, offset in [
     ("Pallet Town", "Route 1", "north", 0),
@@ -445,80 +445,74 @@ for old, new, edge, offset in [
     ("Viridian City", "Route 22", "west", -8),
     ("Route 22", "Viridian City", "east", 8),
 ]:
-    old_width, old_height, _ = map_data[old]
-    new_width, new_height, new_tiles = map_data[new]
-    vertical = edge in ("north", "south")
-    source_limit = old_width if vertical else old_height
-    valid = []
-    for coordinate in range(source_limit):
-        target = coordinate + offset
-        if vertical:
-            column, row = target, (new_height - 1 if edge == "north" else 0)
-        else:
-            column, row = (new_width - 1 if edge == "west" else 0), target
-        if (
-            0 <= column < new_width
-            and 0 <= row < new_height
-            and new_tiles[row * new_width + column] != "#"
-            and (new, column, row) not in npcs
-        ):
-            valid.append(coordinate)
-    groups = []
-    for coordinate in valid:
-        if groups and coordinate == groups[-1][-1] + 1:
-            groups[-1].append(coordinate)
-        else:
-            groups.append([coordinate])
-    if groups:
-        dimension = "column" if vertical else "row"
-        boundary = {
-            "north": "the row is less than 0",
-            "south": "the row is at least the map height",
-            "west": "the column is less than 0",
-            "east": "the column is at least the map width",
-        }[edge]
-        ranges = [f"the {dimension} is at least {group[0]} and the {dimension} is at most {group[-1]}" for group in groups]
-        range_condition = ranges[0] if len(ranges) == 1 else " or ".join(f"({item})" for item in ranges)
-        if len(ranges) > 1:
-            range_condition = f"({range_condition})"
-        condition = f"{boundary} and {range_condition}"
-        lines += [
-            f'  If Journey\'s place is "{old}" and {condition}:',
-            f'    Set Journey\'s place to "{new}".',
-        ]
-        if offset > 0:
-            lines += [f"    Add {offset} to the {dimension}."]
-        if offset < 0:
-            lines += [f"    Subtract {-offset} from the {dimension}."]
-        if vertical:
-            lines += [
-                "    Set Journey's column to the column.",
-                (
-                    "    Set Journey's row to the map height - 1."
-                    if edge == "north"
-                    else "    Set Journey's row to 0."
-                ),
-            ]
-        else:
-            lines += [
-                "    Set Journey's row to the row.",
-                (
-                    "    Set Journey's column to the map width - 1."
-                    if edge == "west"
-                    else "    Set Journey's column to 0."
-                ),
-            ]
-        lines += ["    Stop."]
-lines += [
-    '  If Journey\'s place is "Route 1" or Journey\'s place is "Route 22":',
-    "    If the ledge at the column by the row is yes:",
-    '      If Journey\'s facing is "south":',
-    "        Add 1 to the row.",
-    '      If Journey\'s facing is "west":',
-    "        Subtract 1 from the column.",
-    '      If Journey\'s facing is "east":',
-    "        Add 1 to the column.",
-]
+    lines += [f'  "{old}:{edge}" has "{new}" and {offset}.']
+lines += """
+To work out the side crossed (text) at a column (number) by a row (number):
+  If the row is less than 0:
+    The answer is "north".
+  If the row is at least the map height:
+    The answer is "south".
+  If the column is less than 0:
+    The answer is "west".
+  If the column is at least the map width:
+    The answer is "east".
+  The answer is "".
+
+To depart at a column (number) by a row (number):
+  Let the side be the side crossed at the column by the row.
+  Let the border be the borders for "{Journey's place}:{the side}".
+  If the border is nothing:
+    Stop.
+  Let the old place be Journey's place.
+  Let the landing column be the column.
+  Let the landing row be the row.
+  Set Journey's place to the border's neighbour.
+  Depending on the side:
+    For "north":
+      Set the landing row to the map height - 1.
+      Add the border's shift to the landing column.
+    For "south":
+      Set the landing row to 0.
+      Add the border's shift to the landing column.
+    For "west":
+      Set the landing column to the map width - 1.
+      Add the border's shift to the landing row.
+    For "east":
+      Set the landing column to 0.
+      Add the border's shift to the landing row.
+  If the terrain at the landing column by the landing row is "wall" or the person at the landing column by the landing row is not "":
+    Set Journey's place to the old place.
+    Stop.
+  Set Journey's column to the landing column.
+  Set Journey's row to the landing row.
+
+To travel a direction (text):
+  Let the column be Journey's column.
+  Let the row be Journey's row.
+  If the direction is "north" or the direction is "up":
+    Set Journey's facing to "north".
+    Subtract 1 from the row.
+  Otherwise if the direction is "south" or the direction is "down":
+    Set Journey's facing to "south".
+    Add 1 to the row.
+  Otherwise if the direction is "west" or the direction is "left":
+    Set Journey's facing to "west".
+    Subtract 1 from the column.
+  Otherwise if the direction is "east" or the direction is "right":
+    Set Journey's facing to "east".
+    Add 1 to the column.
+  Otherwise:
+    Stop.
+  If the side crossed at the column by the row is not "":
+    Depart at the column by the row.
+    Stop.
+  If Journey's place is one of "Route 1" or "Route 22":
+    Let the origin be the tile meaning at Journey's column by Journey's row.
+    Let the destination be the tile meaning at the column by the row.
+    Let the hop be the ledge hops for "{Journey's facing} {the origin} to {the destination}".
+    If the hop is not nothing:
+      Add the hop's across to the column.
+      Add the hop's down to the row.""".splitlines()
 lines += [
     '  If the terrain at the column by the row is "wall":',
     "    Stop.",

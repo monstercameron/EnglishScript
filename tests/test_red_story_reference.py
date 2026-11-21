@@ -27,7 +27,7 @@ class RedStoryReference(unittest.TestCase):
 Set Journey's place to "Viridian City".
 Set Journey's column to 29.
 Set Journey's row to 20.
-Set Journey's mode to "walk".
+Set Journey's mode to walk.
 Advance "up".
 Finish.
 ''')
@@ -54,7 +54,7 @@ Meet "Clerk".
 Set Journey's place to "Oak's Lab".
 Set Journey's column to 4.
 Set Journey's row to 10.
-Set Journey's mode to "walk".
+Set Journey's mode to walk.
 Advance "down".
 ''')
         journey = world.named["journey"].fields
@@ -75,7 +75,7 @@ Meet "Daisy".
         world = self.run_story('''Set Journey's place to "Blue's House".
 Set Journey's column to 2.
 Set Journey's row to 6.
-Set Journey's mode to "walk".
+Set Journey's mode to walk.
 Set Journey's town map to 1.
 Set Journey's blue house entered to 1.
 Advance "down".

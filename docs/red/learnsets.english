@@ -1,46 +1,67 @@
-This chapter shares only move sets, first move, second move, third move and fourth move.
+This chapter shares only lessons and moves known.
 
-The move sets are first, second, second level, third, third level, fourth and fourth level in that order:
-  "Charmander" has "Scratch", "Growl", 0, "Ember", 9, "Leer" and 15.
-  "Squirtle" has "Tackle", "Tail Whip", 0, "Bubble", 8, "Water Gun" and 15.
-  "Bulbasaur" has "Tackle", "Growl", 0, "Leech Seed", 7, "Vine Whip" and 13.
-  "Caterpie" has "Tackle", "String Shot", 0, "Confusion", 12, "" and 0.
-  "Pidgey" has "Gust", "Sand Attack", 5, "Quick Attack", 12, "" and 0.
-  "Rattata" has "Tackle", "Tail Whip", 0, "Quick Attack", 7, "Hyper Fang" and 14.
-  "Nidoran F" has "Growl", "Tackle", 0, "Scratch", 8, "Poison Sting" and 14.
-  "Nidoran M" has "Leer", "Tackle", 0, "Horn Attack", 8, "Poison Sting" and 14.
-  "Metapod" has "Harden", "Confusion", 12, "", 0, "" and 0.
-  "Weedle" has "Poison Sting", "String Shot", 0, "Fury Attack", 12, "" and 0.
-  "Kakuna" has "Harden", "Fury Attack", 12, "", 0, "" and 0.
-  "Pikachu" has "Thundershock", "Growl", 0, "Thunder Wave", 9, "Quick Attack" and 16.
-  "Spearow" has "Peck", "Growl", 0, "Leer", 9, "Fury Attack" and 15.
+The lessons are move and level, in that order:
+  "Charmander 1" has "Scratch" and 1.
+  "Charmander 2" has "Growl" and 1.
+  "Charmander 3" has "Ember" and 9.
+  "Charmander 4" has "Leer" and 15.
+  "Squirtle 1" has "Tackle" and 1.
+  "Squirtle 2" has "Tail Whip" and 1.
+  "Squirtle 3" has "Bubble" and 8.
+  "Squirtle 4" has "Water Gun" and 15.
+  "Bulbasaur 1" has "Tackle" and 1.
+  "Bulbasaur 2" has "Growl" and 1.
+  "Bulbasaur 3" has "Leech Seed" and 7.
+  "Bulbasaur 4" has "Vine Whip" and 13.
+  "Caterpie 1" has "Tackle" and 1.
+  "Caterpie 2" has "String Shot" and 1.
+  "Caterpie 3" has "Confusion" and 12.
+  "Metapod 1" has "Harden" and 1.
+  "Metapod 2" has "Confusion" and 12.
+  "Weedle 1" has "Poison Sting" and 1.
+  "Weedle 2" has "String Shot" and 1.
+  "Weedle 3" has "Fury Attack" and 12.
+  "Kakuna 1" has "Harden" and 1.
+  "Kakuna 2" has "Fury Attack" and 12.
+  "Pidgey 1" has "Gust" and 1.
+  "Pidgey 2" has "Sand Attack" and 5.
+  "Pidgey 3" has "Quick Attack" and 12.
+  "Rattata 1" has "Tackle" and 1.
+  "Rattata 2" has "Tail Whip" and 1.
+  "Rattata 3" has "Quick Attack" and 7.
+  "Rattata 4" has "Hyper Fang" and 14.
+  "Nidoran F 1" has "Growl" and 1.
+  "Nidoran F 2" has "Tackle" and 1.
+  "Nidoran F 3" has "Scratch" and 8.
+  "Nidoran F 4" has "Poison Sting" and 14.
+  "Nidoran M 1" has "Leer" and 1.
+  "Nidoran M 2" has "Tackle" and 1.
+  "Nidoran M 3" has "Horn Attack" and 8.
+  "Nidoran M 4" has "Poison Sting" and 14.
+  "Pikachu 1" has "Thundershock" and 1.
+  "Pikachu 2" has "Growl" and 1.
+  "Pikachu 3" has "Thunder Wave" and 9.
+  "Pikachu 4" has "Quick Attack" and 16.
+  "Spearow 1" has "Peck" and 1.
+  "Spearow 2" has "Growl" and 1.
+  "Spearow 3" has "Leer" and 9.
+  "Spearow 4" has "Fury Attack" and 15.
+  "Geodude 1" has "Tackle" and 1.
+  "Geodude 2" has "Defense Curl" and 1.
+  "Onix 1" has "Tackle" and 1.
+  "Onix 2" has "Screech" and 1.
+  "Diglett 1" has "Scratch" and 1.
+  "Sandshrew 1" has "Scratch" and 1.
+  "Sandshrew 2" has "Sand Attack" and 10.
 
-To work out the first move (text) for a starter (text):
-  Let the lesson be the move sets for the starter.
-  If the lesson is nothing:
-    The answer is "Tackle".
-  The answer is the lesson's first.
-
-To work out the second move (text) for a starter (text) at a level (number):
-  Let the lesson be the move sets for the starter.
-  If the lesson is nothing:
-    The answer is "Growl".
-  If the lesson's second level is 0 or the level is at least the lesson's second level:
-    The answer is the lesson's second.
-  The answer is "".
-
-To work out the third move (text) for a starter (text) at a level (number):
-  Let the lesson be the move sets for the starter.
-  If the lesson is nothing:
-    The answer is "".
-  If the level is at least the lesson's third level:
-    The answer is the lesson's third.
-  The answer is "".
-
-To work out the fourth move (text) for a starter (text) at a level (number):
-  Let the lesson be the move sets for the starter.
-  If the lesson is nothing:
-    The answer is "".
-  If the level is at least the lesson's fourth level:
-    The answer is the lesson's fourth.
-  The answer is "".
+To work out the moves known (list of text) by a first form (text) at a level (number):
+  If the lessons for "{the first form} 1" is nothing:
+    Fail because "No move set for {the first form}.".
+  Let the moves be an empty list of text.
+  Let the slot be 1.
+  While the slot is at most 4:
+    Let the lesson be the lessons for "{the first form} {the slot}".
+    If the lesson is not nothing and the level is at least the lesson's level:
+      Add the lesson's move to the moves.
+    Add 1 to the slot.
+  The answer is the moves.

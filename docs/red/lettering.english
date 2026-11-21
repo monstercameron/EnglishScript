@@ -302,7 +302,7 @@ To inscribe a wording (text) at a left (number) by a top (number):
   Let the column be the left.
   Repeat the size times:
     Add 1 to the position.
-    Let the mark be the first 1 letters of the last (the size - the position + 1) letters of the wording.
+    Let the mark be letter the position of the wording or else "".
     Draw the mark at the column by the top.
     Add 6 to the column.
 
@@ -310,14 +310,14 @@ To work out the caption line (text) of a wording (text):
   Let the size be the length of the wording.
   If the size is at most 19:
     The answer is the wording.
-  Let the next be the first 1 letters of the last (the size - 19) letters of the wording.
+  Let the next be letter 20 of the wording or else "".
   If the next is " ":
     The answer is the first 19 letters of the wording.
   Let the position be 0.
   Let the break be 0.
   Repeat 19 times:
     Add 1 to the position.
-    Let the mark be the first 1 letters of the last (the size - the position + 1) letters of the wording.
+    Let the mark be letter the position of the wording or else "".
     If the mark is " ":
       Set the break to the position.
   If the break is 0:

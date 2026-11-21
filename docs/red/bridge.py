@@ -13,6 +13,55 @@ world = None
 quiet = False
 talk_session = 0
 talk_request = 0
+REPLY_LIMIT = 2000
+
+PAGE_MODES = {"opening": "opening", "title": "title", "main menu": "menu", "intro": "intro", "naming": "naming",
+              "custom naming": "custom naming", "rival naming": "rival naming",
+              "custom rival naming": "custom rival naming", "walk": "walk", "dialogue": "dialogue",
+              "starter": "starter", "battle": "battle", "battle party": "battle party", "battle bag": "battle bag",
+              "field menu": "field menu", "party": "party", "bag": "bag", "trainer card": "card",
+              "town map": "town map", "shop": "shop"}
+
+CONTRACT = {
+    "journey": {"mode": "mode", "place": str, "objective": str, "starter": str,
+                "trainer": str, "message": str, "badge": "number", "tm34": "number"},
+    "controls": {"action": str, "rendering": "number"},
+    "stock": {"save request": "number"},
+    "speaker": {name: str for name in ("actor", "question", "response", "identity", "profile", "voice")},
+    "talk": {name: str for name in ("command", "phase", "actor", "question", "wording", "transcript", "page", "remainder")},
+    "score": {**{name: str for name in ("music", "melody", "harmony", "bass", "percussion",
+                                        "intro melody", "intro harmony", "intro bass", "intro percussion", "effect", "cry")},
+              **{name: "number" for name in ("tempo", "effect priority", "effect count", "cry count")}},
+}
+
+
+class ContractError(ValueError):
+    pass
+
+
+def described(expected):
+    return "text" if expected is str else "a mode" if expected == "mode" else expected
+
+
+def fits(value, expected):
+    if expected is str:
+        return isinstance(value, str)
+    if expected == "mode":
+        return value in PAGE_MODES
+    return isinstance(value, (int, float, Fraction)) and not isinstance(value, bool)
+
+
+def validate_contract(current):
+    for name, fields in CONTRACT.items():
+        entity = current.named.get(name)
+        if entity is None:
+            raise ContractError(f"Red bridge requires an object named '{name}'.")
+        for field, expected in fields.items():
+            if field not in entity.fields:
+                raise ContractError(f"Red bridge requires '{name}.{field}' ({described(expected)}).")
+            value = entity.fields[field]
+            if not fits(value, expected):
+                raise ContractError(f"Red bridge requires '{name}.{field}' to be {described(expected)}; got {type(value).__name__}.")
 
 
 def frame(serial, name, width, height, pixels):
@@ -20,31 +69,31 @@ def frame(serial, name, width, height, pixels):
         js.redFrame(int(width), int(height), pixels)
 
 
+def plain(value):
+    return float(value) if isinstance(value, Fraction) else value
+
+
+def plain_fields(entity):
+    return {str(key): plain(value) for key, value in entity.fields.items()
+            if value is None or isinstance(value, (str, int, float, bool, Fraction))}
+
+
 def state():
-    if world is None:
-        return
-    journey = world.named.get("journey")
-    if journey is None:
-        return
-    values = {str(key): float(value) if isinstance(value, Fraction) else value for key, value in journey.fields.items() if isinstance(value, (str, int, float, bool, Fraction)) or value is None}
-    score = world.named.get("score")
-    if score is not None:
-        values.update({("effectCount" if key == "effect count" else str(key)): float(value) if isinstance(value, Fraction) else value for key, value in score.fields.items() if isinstance(value, (str, int, float, bool, Fraction)) or value is None})
-    stock = world.named.get("stock")
-    if stock is not None:
-        request = stock.fields.get("save request", 0)
-        values["save request"] = float(request) if isinstance(request, Fraction) else request
-    speaker = world.named.get("speaker")
-    if speaker is not None:
-        values["speaker"] = str(speaker.fields.get("actor", ""))
-        values["response"] = str(speaker.fields.get("response", ""))
-    talk = world.named.get("talk")
-    if talk is not None:
-        values.update({"talkPhase": "reply" if talk.fields["phase"] == "answering" else talk.fields["phase"], "talkSession": talk_session,
-                       "talkRequest": talk_request, "talkPerson": talk.fields["actor"],
-                       "talkHasMore": bool(talk.fields["remainder"]),
-                       "talkPage": visible_page(talk.fields["page"]),
-                       "talkRawReply": talk.fields["transcript"]})
+    values = plain_fields(world.named["journey"])
+    values["mode"] = PAGE_MODES[values["mode"]]
+    score = plain_fields(world.named["score"])
+    score["effectCount"] = score.pop("effect count")
+    values.update(score)
+    values["save request"] = plain(world.named["stock"].fields["save request"])
+    speaker = world.named["speaker"].fields
+    values["speaker"] = str(speaker["actor"])
+    values["response"] = str(speaker["response"])
+    talk = world.named["talk"].fields
+    values.update({"talkPhase": "reply" if talk["phase"] == "answering" else talk["phase"], "talkSession": talk_session,
+                   "talkRequest": talk_request, "talkPerson": talk["actor"],
+                   "talkHasMore": bool(talk["remainder"]),
+                   "talkPage": visible_page(talk["page"]),
+                   "talkRawReply": talk["transcript"]})
     js.redState(json.dumps(values))
 
 
@@ -61,45 +110,42 @@ async def model(question, context, shape, complaint):
 async def start():
     try:
         program = compile_file("/work/main.english")
-        await program.run_async(out=lambda text: js.redOutput(str(text)), model=model, on_world=remember)
+        await program.run_async(out=print, model=model, on_world=remember)
+        validate_contract(world)
         page.sync(world)
         state()
         js.redReady()
     except EnglishError as error:
         js.redError(error.render())
+    except ContractError as error:
+        js.redError(str(error))
 
 
 def act(action):
     if world is None or world.ended:
         return
-    controls = world.named.get("controls")
-    if controls is None:
-        return
-    world.event(lambda: controls.fields.__setitem__("action", action))
+    controls = world.named["controls"].fields
+    world.event(lambda: controls.__setitem__("action", action))
     if not quiet:
-        page.sync(world)
-        state()
+        publish()
 
 
 def replay(actions):
     global quiet
     history = json.loads(actions)
-    controls = world.named.get("controls") if world is not None else None
-    if controls is None:
-        return
+    controls = world.named["controls"].fields
     quiet = True
-    controls.fields["rendering"] = 0
+    controls["rendering"] = 0
     try:
         for action in history[:-1]:
             act(action)
     finally:
-        controls.fields["rendering"] = 1
+        controls["rendering"] = 1
         quiet = False
     if history:
         act(history[-1])
     else:
-        page.sync(world)
-        state()
+        publish()
 
 
 def visible_page(text):
@@ -118,16 +164,17 @@ def visible_page(text):
 
 
 def command(name, **fields):
-    if world is None or world.ended:
-        return False
-    talk = world.named.get("talk")
-    if talk is None:
-        return False
+    talk = world.named["talk"].fields
     def update():
-        talk.fields.update(fields)
-        talk.fields["command"] = name
+        talk.update(fields)
+        talk["command"] = name
     world.event(update)
-    return True
+
+
+def current_talk():
+    if world is None or world.ended:
+        return None
+    return world.named["talk"].fields
 
 
 def publish():
@@ -137,13 +184,11 @@ def publish():
 
 def talk_open():
     global talk_session, talk_request
-    if world is None or world.ended:
-        return
-    talk = world.named.get("talk")
-    if talk is None or talk.fields["phase"] != "closed":
+    talk = current_talk()
+    if talk is None or talk["phase"] != "closed":
         return
     command("open")
-    if talk.fields["phase"] == "composing":
+    if talk["phase"] == "composing":
         talk_session += 1
         talk_request = 0
     publish()
@@ -151,10 +196,8 @@ def talk_open():
 
 def talk_ask(session, request, question):
     global talk_request
-    if world is None or world.ended:
-        return ""
-    talk = world.named.get("talk")
-    if talk is None or talk.fields["phase"] != "composing" or session != talk_session or request <= talk_request or not question.strip():
+    talk = current_talk()
+    if talk is None or talk["phase"] != "composing" or session != talk_session or request <= talk_request or not question.strip():
         return ""
     talk_request = request
     command("ask", question=question[:200])
@@ -174,30 +217,25 @@ def display_text(text):
 
 
 def talk_reply(session, request, response):
-    if world is None or world.ended:
+    talk = current_talk()
+    if talk is None or talk["phase"] != "waiting" or session != talk_session or request != talk_request:
         return
-    talk = world.named.get("talk")
-    if talk is None or talk.fields["phase"] != "waiting" or session != talk_session or request != talk_request:
-        return
-    command("reply", wording=display_text(response)[:2000], transcript=response)
+    response = response[:REPLY_LIMIT]
+    command("reply", wording=display_text(response)[:REPLY_LIMIT], transcript=response)
     publish()
 
 
 def talk_page(session):
-    if world is None or world.ended:
-        return
-    talk = world.named.get("talk")
-    if talk is None or talk.fields["phase"] != "answering" or session != talk_session:
+    talk = current_talk()
+    if talk is None or talk["phase"] != "answering" or session != talk_session:
         return
     command("page")
     publish()
 
 
 def talk_close(session):
-    if world is None or world.ended:
-        return
-    talk = world.named.get("talk")
-    if talk is None or talk.fields["phase"] == "closed" or session != talk_session:
+    talk = current_talk()
+    if talk is None or talk["phase"] == "closed" or session != talk_session:
         return
     command("close")
     publish()

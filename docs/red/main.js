@@ -14,11 +14,13 @@ if (typeof ResizeObserver === 'function') new ResizeObserver(resizeScreen).obser
 else { resizeScreen(); window.addEventListener('resize', resizeScreen); }
 const palette = [[224,248,208],[136,192,112],[52,104,86],[8,24,32]];
 const saveVersion = 2;
+const replyLimit = 2000;
 const storageKey = 'englishscript-red-adventure-v2';
 const manualKey = 'englishscript-red-manual-save-v2';
 const allowed = new Set(['up','down','left','right','a','b','start','select','tick']);
 const watching = new URLSearchParams(location.search).get('watch') === 'badge';
-const validSave = saved => saved && saved.version === saveVersion && Array.isArray(saved.actions) && saved.actions.every(action => allowed.has(action));
+const scriptVersion = document.currentScript ? new URL(document.currentScript.src).search : '';
+const validSave = saved => saved && saved.version === saveVersion && Array.isArray(saved.actions) && saved.actions.every(action => allowed.has(action)) && (saved.content === undefined || typeof saved.content === 'string');
 let manualCache = { read: async () => null, write: async () => false };
 let audio = null;
 try { if (typeof createRedSaveCache === 'function') manualCache = createRedSaveCache(validSave); }
@@ -60,28 +62,72 @@ soundButton.addEventListener('click', () => {
   mutedByPlayer = false;
   enableSound();
 });
-let worker, generation = 0, ready = false, busy = false, queue = [], history = [], state = {}, image;
+let worker, generation = 0, ready = false, choosing = false, busy = false, queue = [], history = [], content, state = {}, image;
 let storageAvailable = true, lastSaveRequest = 0, manualPending = false, cosmeticTick = false;
-let conversationRevision = 0, currentJob, liveAvailable = false, talkPending = false, capabilityRevision = 0;
+let conversationRevision = 0, liveAvailable = false, talkPending = false, capabilityRevision = 0;
 const livePreferenceKey = 'englishscript-red-live-companion';
-let heldDirection, heldTimer, transcript = [], announcedReply = "", judgeSource = "";
+let heldDirection, heldTimer, conversations = new Map(), pendingConversation, announcedReply = "", judgeSource = "";
+function cancelConversation() {
+  conversationRevision++;
+  if (pendingConversation) pendingConversation.abort();
+  pendingConversation = undefined;
+}
+function deadline(seconds) {
+  return typeof AbortSignal === 'function' && typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(seconds * 1000) : undefined;
+}
+function downloadFailure(url, seconds, error, otherwise) {
+  const timedOut = error?.name === 'TimeoutError';
+  return Object.assign(new Error(timedOut ? `Could not download ${url}: it did not arrive within ${seconds} seconds. Check your connection.` : otherwise), { timedOut });
+}
+async function downloadJson(url, seconds, options = {}) {
+  let response;
+  try { response = await fetch(url, { ...options, signal: deadline(seconds) }); }
+  catch (error) { throw downloadFailure(url, seconds, error, `Could not download ${url}. Check your connection.`); }
+  if (!response.ok) throw new Error(`Could not download ${url} (HTTP ${response.status}).`);
+  try { return await response.json(); }
+  catch (error) { throw downloadFailure(url, seconds, error, `${url} could not be read.`); }
+}
 
-function savedHistory(key = storageKey) {
+function warnAboutSaves(text) {
+  const warning = document.querySelector('#save-warning');
+  warning.textContent = text;
+  warning.hidden = false;
+}
+function readSave(key) {
+  let text = null;
+  try { text = localStorage.getItem(key); } catch { }
+  if (text === null) return { saved: null, damaged: false };
   try {
-    const saved = JSON.parse(localStorage.getItem(key) || 'null');
-    return validSave(saved) ? saved.actions : [];
-  } catch { storageAvailable = false; return []; }
+    const saved = JSON.parse(text);
+    if (validSave(saved)) return { saved, damaged: false };
+  } catch { }
+  return { saved: null, damaged: true };
 }
-async function manualHistory() {
-  let local = null;
-  try { local = JSON.parse(localStorage.getItem(manualKey) || 'null'); } catch { }
+function readAutosave() {
+  const { saved, damaged } = readSave(storageKey);
+  if (damaged) warnAboutSaves('Your autosaved adventure in this browser is damaged and could not be loaded, so a new adventure began. Choose Continue last SAVE if you saved in the game.');
+  return saved;
+}
+async function latestManualSave() {
+  const local = readSave(manualKey);
   const cached = await manualCache.read();
-  if (!validSave(local)) local = null;
-  return (cached && (!local || (cached.savedAt || 0) > (local.savedAt || 0)) ? cached : local)?.actions || [];
+  if (local.damaged && !cached) warnAboutSaves('Your last SAVE in this browser is damaged and could not be loaded.');
+  return cached && (!local.saved || (cached.savedAt || 0) > (local.saved.savedAt || 0)) ? cached : local.saved;
 }
-function save() {
-  try { localStorage.setItem(storageKey, JSON.stringify({ version: saveVersion, actions: history })); }
-  catch { storageAvailable = false; document.querySelector('#connection').textContent = 'Playing · browser save unavailable'; }
+function store(key, saved) {
+  try { localStorage.setItem(key, JSON.stringify(saved)); return true; }
+  catch { return false; }
+}
+function autosave() {
+  storageAvailable = store(storageKey, { version: saveVersion, content, actions: history });
+  if (!storageAvailable) warnAboutSaves('This browser could not store your autosave, so reloading may lose recent progress. Use SAVE in the game menu to keep your progress.');
+}
+async function keepManualSave() {
+  const saved = { version: saveVersion, content, savedAt: Date.now(), actions: [...history] };
+  const stored = store(manualKey, saved);
+  if (stored) document.querySelector('#continue-save').disabled = false;
+  if (await manualCache.write(saved)) document.querySelector('#continue-save').disabled = false;
+  else if (!stored) warnAboutSaves('Your SAVE could not be stored in this browser. Free some browser storage, then save again.');
 }
 function draw(frame) {
   const pixels = new Uint8Array(frame.pixels);
@@ -114,9 +160,13 @@ function display(next) {
   musicTitle.textContent = trackNames[state.music] || '';
   if (audio) audio.update(state);
 }
-function fail(message) {
+function reloadAdvice(message) {
+  return (/reload/i.test(message) ? '' : 'Reload the page to try again. ') + 'Reloading keeps your saved progress.';
+}
+function fail(message, advice = reloadAdvice(message)) {
   generation++;
-  conversationRevision++;
+  cancelConversation();
+  closeChoice();
   clearTimeout(showTimer);
   stopHeldDirection();
   if (audio) audio.setPaused(true);
@@ -127,77 +177,116 @@ function fail(message) {
   document.querySelector('#display-status').textContent = 'STOPPED';
   document.querySelector('#watch-controls').hidden = true;
   document.querySelector('#talk-open').disabled = true;
-  const recovery = /reload/i.test(message) ? '' : ' Reload the page to try again.';
-  document.querySelector('#connection').textContent = message + recovery + ' Reloading keeps your saved progress.';
+  document.querySelector('#connection').textContent = `${message} ${advice}`;
   document.querySelector('#loading').textContent = 'The adventure could not continue.';
 }
-function startGame(resume, restoredHistory) {
+function failRestore(message) {
+  const manualSaveExists = !document.querySelector('#continue-save').disabled;
+  fail(`Your saved adventure could not be restored: ${message}`, manualSaveExists
+    ? 'Choose New adventure to start over, or Continue last SAVE to try your last in-game save.'
+    : 'Choose New adventure to start over.');
+}
+function offerChoice() {
+  choosing = true;
+  document.querySelector('#save-choice-text').textContent = (content === undefined
+    ? 'This save is from an older version of the game and may not match it.'
+    : 'The game has changed since this save was made.') + ' Continuing may put you somewhere unexpected or stop the game.';
+  document.querySelector('#save-choice').hidden = false;
+  document.querySelector('#loading').textContent = '';
+  document.querySelector('#connection').textContent = 'Choose whether to continue your saved adventure.';
+  document.querySelector('#save-keep').focus();
+}
+function closeChoice() {
+  choosing = false;
+  document.querySelector('#save-choice').hidden = true;
+}
+function restoreWith(actions) {
+  if (!choosing || !worker) return;
+  closeChoice();
+  history = actions;
+  document.querySelector('#loading').textContent = history.length ? 'Continuing your adventure…' : 'Preparing your adventure…';
+  document.querySelector('#connection').textContent = history.length ? 'Restoring your adventure…' : 'Connecting to the game…';
+  worker.postMessage({ type: 'restore', history });
+  canvas.focus();
+}
+function begin(data) {
+  ready = true;
+  content = data.content;
+  if (!watching) {
+    autosave();
+    document.querySelectorAll('[data-action]').forEach(button => button.disabled = false);
+  }
+  document.querySelector('#connection').textContent = storageAvailable ? 'Playing · progress saved in this browser' : 'Playing · browser save unavailable';
+  const current = generation;
+  if (watching) startShow(current).catch(error => { if (current === generation) fail(error.message); });
+  pump();
+}
+function acknowledgeTalk(data) {
+  busy = false;
+  talkPending = false;
+  if (data.operation === 'open' && (!state.talkPhase || state.talkPhase === 'closed')) {
+    document.querySelector('#talk-status').textContent = 'Stand next to a person and face them to talk.';
+  }
+  pump();
+}
+function acknowledgeAction(data) {
+  if (!watching && !cosmeticTick) { history.push(data.action); autosave(); }
+  if (manualPending) {
+    manualPending = false;
+    keepManualSave();
+  }
+  busy = false;
+  if (watching) showNext();
+  else pump();
+}
+const workerMessages = {
+  frame: draw,
+  state: data => display(data.state),
+  changed: offerChoice,
+  'restore-failed': data => failRestore(data.message || 'the game stopped.'),
+  ready: begin,
+  'talk-asked': replyTo,
+  'talk-ack': acknowledgeTalk,
+  ack: acknowledgeAction,
+  error: data => fail(data.message || 'The game stopped.'),
+};
+function startGame(resume, restored) {
   stopHeldDirection();
   if (audio) audio.setPaused(false);
   generation++;
-  conversationRevision++;
+  cancelConversation();
+  closeChoice();
   const current = generation;
   if (worker) worker.terminate();
   ready = false; busy = false; queue = []; state = {}; lastSaveRequest = 0; manualPending = false; cosmeticTick = false;
   document.querySelector('#question').value = '';
-  talkPending = false; transcript = []; announcedReply = "";
+  talkPending = false; conversations.clear(); announcedReply = "";
   document.querySelector('#talk-reply').textContent = '';
   document.querySelector('#companion').hidden = true;
-  history = watching ? [] : restoredHistory || (resume ? savedHistory() : []);
-  if (!watching && (!resume || restoredHistory)) save();
+  const saved = watching ? null : restored || (resume ? readAutosave() : null);
+  history = saved ? [...saved.actions] : [];
+  content = saved ? saved.content : undefined;
+  if (!watching && (!resume || restored)) autosave();
   document.querySelector('#loading').textContent = history.length ? 'Continuing your adventure…' : 'Preparing your adventure…';
   document.querySelector('#connection').textContent = history.length ? 'Restoring your adventure…' : 'Connecting to the game…';
   document.querySelector('#display-status').textContent = 'STARTING';
   document.querySelectorAll('[data-action]').forEach(button => button.disabled = true);
   try {
-    worker = new Worker('worker.js');
+    worker = new Worker(`worker.js${scriptVersion}`);
     worker.onmessage = ({ data }) => {
-      if (current !== generation) return;
-      try {
-        if (data.type === 'frame') draw(data);
-        if (data.type === 'state') display(data.state);
-        if (data.type === 'ready') {
-          ready = true;
-          if (!watching) document.querySelectorAll('[data-action]').forEach(button => button.disabled = false);
-          document.querySelector('#connection').textContent = storageAvailable ? 'Playing · progress saved in this browser' : 'Playing · browser save unavailable';
-          if (watching) startShow(current).catch(error => { if (current === generation) fail(error.message); });
-          pump();
-        }
-        if (data.type === 'talk-asked') replyTo(data);
-        if (data.type === 'talk-ack') {
-          busy = false;
-          talkPending = false;
-          if (data.operation === 'open' && (!state.talkPhase || state.talkPhase === 'closed')) {
-            document.querySelector('#talk-status').textContent = 'Stand next to a person and face them to talk.';
-          }
-          pump();
-        }
-        if (data.type === 'ack') {
-          if (!watching && !cosmeticTick) { history.push(data.action); save(); }
-          if (manualPending) {
-            const saved = { version: saveVersion, savedAt: Date.now(), actions: [...history] };
-            try { localStorage.setItem(manualKey, JSON.stringify(saved)); document.querySelector('#continue-save').disabled = false; }
-            catch { storageAvailable = false; document.querySelector('#connection').textContent = 'Playing · browser save unavailable'; }
-            manualCache.write(saved).then(stored => { if (stored) document.querySelector('#continue-save').disabled = false; });
-            manualPending = false;
-          }
-          busy = false;
-          if (watching) showNext();
-          else pump();
-        }
-        if (data.type === 'error') fail(data.message || 'The game stopped.');
-      } catch (error) { fail(error.message); }
+      if (current !== generation || !Object.hasOwn(workerMessages, data.type)) return;
+      try { workerMessages[data.type](data); }
+      catch (error) { fail(error.message); }
     };
     worker.onerror = () => { if (current === generation) fail('The game worker (worker.js) could not load or stopped unexpectedly. Check your connection.'); };
     worker.onmessageerror = () => { if (current === generation) fail('The game worker sent an unreadable message.'); };
-    worker.postMessage({ type: 'start', history });
+    worker.postMessage({ type: 'start', history, content, offersChoice: true });
   } catch (error) { fail(`The game worker could not start: ${error.message || 'unknown error'}.`); }
 }
 function pump() {
   if (!ready || busy || !worker || !queue.length) return;
   busy = true;
   const item = queue.shift();
-  currentJob = typeof item === 'object' ? item : null;
   cosmeticTick = item === 'tick' && state.mode === 'title';
   try { worker.postMessage(typeof item === 'string' ? { type: 'action', action: item } : item); }
   catch (error) { fail(`Could not send input to the game: ${error.message || 'unknown error'}.`); }
@@ -219,7 +308,7 @@ function input(action) {
 function talkAction(operation, extra = {}) {
   if (watching || !ready || talkPending || busy || queue.length) return false;
   talkPending = true;
-  if (operation === 'close') { conversationRevision++; transcript = []; announcedReply = ''; }
+  if (operation === 'close') { cancelConversation(); announcedReply = ''; }
   queue.push({ type: `talk-${operation}`, session: state.talkSession, ...extra });
   pump();
   return true;
@@ -252,6 +341,7 @@ function updateTalk(previousPhase) {
     }
   }
   if (phase === 'closed' && previousPhase && previousPhase !== 'closed') {
+    cancelConversation();
     document.querySelector('#talk-reply').textContent = '';
     document.querySelector('#talk-status').textContent = 'Stand next to a person, face them, and press Talk or Select.';
     canvas.focus();
@@ -303,27 +393,29 @@ async function checkLiveCompanion() {
     liveStatus.textContent = 'Local replies active. Live companion requires the local host.';
     return;
   }
+  let unavailable = 'Local replies active. Live companion is unavailable.';
   try {
-    const response = await fetch('/api/companion', { cache: 'no-store' });
-    const capability = response.ok ? await response.json() : null;
+    const capability = await downloadJson('/api/companion', 10, { cache: 'no-store' });
     if (revision !== capabilityRevision) return;
     liveAvailable = capability?.available === true;
-    judgeSource = capability?.judge === 'jev' ? 'Jev' : capability?.judge === 'anthropic' ? 'Anthropic' : ''; 
-  } catch {
+    judgeSource = capability?.judge === 'jev' ? 'Jev' : capability?.judge === 'anthropic' ? 'Anthropic' : '';
+  } catch (error) {
     if (revision !== capabilityRevision) return;
     liveAvailable = false;
+    if (error.timedOut) unavailable = 'Local replies active. The live companion service did not answer in time.';
   }
   liveOption.disabled = !liveAvailable || watching;
   liveOption.checked = liveAvailable && preferredLive();
-  liveStatus.textContent = liveAvailable ? (liveOption.checked ? 'Live companion selected. Questions and game context are sent to the local service.' : 'Local replies selected.') : 'Local replies active. Live companion is unavailable.';
+  liveStatus.textContent = liveAvailable ? (liveOption.checked ? 'Live companion selected. Questions and game context are sent to the local service.' : 'Local replies selected.') : unavailable;
 }
 liveOption.addEventListener('change', () => {
+  if (!liveOption.checked && pendingConversation) pendingConversation.abort();
   try { localStorage.setItem(livePreferenceKey, liveOption.checked ? 'live' : 'local'); } catch { }
   liveStatus.textContent = liveOption.checked ? 'Live companion selected. Questions and game context are sent to the local service.' : 'Local replies selected.';
 });
-function companionContext(fallback) {
+function companionContext(fallback, identity) {
   const short = value => String(value ?? '').slice(0, 80);
-  const data = { place: short(state.place), objective: short(state.objective), starter: short(state.starter), trainer: short(state.trainer), badge: short(state.badge), localResponse: fallback.slice(0, 500), conversation: transcript.slice(-2).map(pair => ({ question: pair.question.slice(0, 500), reply: pair.reply.slice(0, 500) })) };
+  const data = { place: short(state.place), objective: short(state.objective), starter: short(state.starter), trainer: short(state.trainer), badge: short(state.badge), localResponse: fallback.slice(0, 500), conversation: (conversations.get(identity) || []).map(pair => ({ question: pair.question.slice(0, 500), reply: pair.reply.slice(0, 500) })) };
   let result = JSON.stringify(data);
   while (result.length > 4000 && data.conversation.length) {
     const pair = data.conversation[0];
@@ -335,15 +427,18 @@ function companionContext(fallback) {
   return result;
 }
 async function replyTo(job) {
-  const revision = ++conversationRevision;
+  cancelConversation();
+  const revision = conversationRevision;
+  const identity = typeof job.identity === 'string' && job.identity.length <= 100 ? job.identity.trim() : '';
   const fallback = String(job.response || '');
   let reply = fallback;
   let source = 'Local reply';
   if (liveAvailable && liveOption.checked && job.person) {
     source = 'Live companion thinking…';
     document.querySelector('#talk-status').textContent = source;
-    const context = companionContext(fallback);
+    const context = companionContext(fallback, identity);
     const controller = new AbortController();
+    pendingConversation = controller;
     const timeout = setTimeout(() => controller.abort(), 20000);
     try {
       const response = await fetch('/api/companion', {
@@ -353,26 +448,32 @@ async function replyTo(job) {
       if (!response.ok) throw Error('Live companion unavailable');
       const result = await response.json();
       if (typeof result.reply !== 'string' || !result.reply.trim()) throw Error('Empty reply');
-      if (liveOption.checked) {
+      if (liveOption.checked && !controller.signal.aborted) {
         reply = result.reply.trim();
         const perceptions = ['neutral', 'friendly', 'rude', 'cruel', 'flirting', 'uncertain'];
         source = perceptions.includes(result.perception) ? `${judgeSource || 'Companion'} heard this as ${result.perception} · GPT-6 Luna` : 'Live companion reply · GPT-6 Luna';
       } else { source = 'Local reply'; }
-    } catch { source = 'Live companion unavailable · local reply'; }
-    finally { clearTimeout(timeout); }
+    } catch { source = controller.signal.aborted && !liveOption.checked ? 'Local reply' : 'Live companion unavailable · local reply'; }
+    finally { clearTimeout(timeout); if (pendingConversation === controller) pendingConversation = undefined; }
   }
   if (revision !== conversationRevision || state.talkSession !== job.session || state.talkRequest !== job.request || state.talkPhase !== 'waiting') return;
   document.querySelector('#talk-status').textContent = source;
-  transcript.push({ question: job.question, reply });
-  transcript = transcript.slice(-2);
-  queue.push({ type: 'talk-reply', session: job.session, request: job.request, response: reply });
+  if (identity) {
+    const exchanges = conversations.get(identity) || [];
+    exchanges.push({ question: String(job.question || '').slice(0, 500), reply: reply.slice(0, 500) });
+    conversations.delete(identity);
+    conversations.set(identity, exchanges.slice(-2));
+    if (conversations.size > 32) conversations.delete(conversations.keys().next().value);
+  }
+  queue.push({ type: 'talk-reply', session: job.session, request: job.request, response: reply.slice(0, replyLimit) });
   pump();
 }
 checkLiveCompanion();
 window.addEventListener('red-companion-settings', checkLiveCompanion);
 
-document.querySelector('#continue-save').disabled = savedHistory(manualKey).length === 0;
-manualHistory().then(saved => { if (saved.length) document.querySelector('#continue-save').disabled = false; });
+latestManualSave().then(saved => { if (saved?.actions.length) document.querySelector('#continue-save').disabled = false; });
+document.querySelector('#save-keep').addEventListener('click', () => restoreWith(history));
+document.querySelector('#save-fresh').addEventListener('click', () => restoreWith([]));
 document.querySelector('#talk-open').addEventListener('click', openTalk);
 document.querySelector('#talk-next').addEventListener('click', () => talkAction('page'));
 document.querySelector('#talk-close').addEventListener('click', () => talkAction('close'));
@@ -386,8 +487,8 @@ document.querySelector('#companion').addEventListener('submit', event => {
   }
 });
 document.querySelector('#continue-save').addEventListener('click', async () => {
-  const saved = await manualHistory();
-  if (!saved.length || !confirm('Continue from your last in-game SAVE? Current progress will be replaced.')) return;
+  const saved = await latestManualSave();
+  if (!saved?.actions.length || !confirm('Continue from your last in-game SAVE? Current progress will be replaced.')) return;
   startGame(true, saved); canvas.focus();
 });
 document.querySelector('#restart').addEventListener('click', () => {
@@ -400,13 +501,7 @@ setInterval(() => {
 let recording = [], cursor = 0, paused = false, showTimer;
 async function startShow(current) {
   document.querySelector('#connection').textContent = 'Loading the Boulder Badge run…';
-  let response;
-  try { response = await fetch('replay.json'); }
-  catch { throw Error('Could not download replay.json. Check your connection.'); }
-  if (!response.ok) throw Error(`Could not download replay.json (HTTP ${response.status}).`);
-  let loaded;
-  try { loaded = await response.json(); }
-  catch { throw Error('The recording in replay.json could not be read.'); }
+  const loaded = await downloadJson('replay.json', 30, { cache: 'no-cache' });
   if (current !== generation) return;
   recording = loaded;
   if (!Array.isArray(recording) || !recording.length || !recording.every(key => allowed.has(key))) throw Error('The recording is incomplete.');

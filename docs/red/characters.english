@@ -1,4 +1,4 @@
-This chapter shares only character portraits.
+This chapter shares only character portraits and topic replies.
 
 The character portraits are background, voice, firm response, warm response and story, in that order:
   "Home:5,4:Mom" has:
@@ -385,3 +385,102 @@ The character portraits are background, voice, firm response, warm response and 
     Firm response is "Please do not frighten the Pokemon. They need space to settle.".
     Warm response is "Thanks! Patient observation can tell us so much about Pokemon.".
     Story is "I study Pokemon behavior here at Oak's lab. I want to understand how partners communicate. One quiet afternoon watching the starters taught me to give Pokemon space.".
+
+The topic replies are line, in that order:
+  "Oak's Lab:1,9:Girl:greeting" has "GIRL: I help Professor Oak keep his notes organized. There is always something new to learn here.".
+  "Oak's Lab:2,10:Scientist:greeting" has "SCIENTIST: I check the lab records carefully. Good observations are useful to every trainer.".
+  "Oak's Lab:8,10:Scientist:greeting" has "SCIENTIST: I watch how Pokemon behave around trainers. Patience helps them feel at ease.".
+  "Pallet Town:3,8:Girl:greeting" has "GIRL: I like watching trainers set out from Pallet. Every trip starts with one step.".
+  "Pallet Town:11,14:Fisher:greeting" has "FISHER: The water is peaceful today. I could watch it for hours.".
+  "Route 1:5,24:Youngster:greeting" has "YOUNGSTER: The grass here is full of surprises. I keep an eye on my Pokemon as we travel.".
+  "Route 1:15,13:Youngster:greeting" has "YOUNGSTER: I like taking the path between Pallet and Viridian. You meet all kinds of trainers.".
+  "Viridian City:13,20:Youngster:greeting" has "YOUNGSTER: Viridian is a nice place to stop and catch your breath.".
+  "Viridian City:30,8:Man:greeting" has "MAN: This city has roads leading in several directions. Read the signs before setting out.".
+  "Viridian City:30,25:Youngster:greeting" has "YOUNGSTER: I like looking around the city before heading back out on the road.".
+  "Viridian City:17,9:Girl:greeting" has "GIRL: That old man can be quite a character. I hope he is feeling better.".
+  "Viridian City:18,9:Old Man:greeting" has "OLD MAN: A little patience goes a long way, young trainer. Take your time.".
+  "Viridian City:6,23:Fisher:greeting" has "FISHER: I enjoy a quiet spot near the water. The city sounds softer from here.".
+  "Viridian City:17,5:Old Man:greeting" has "OLD MAN: I have seen many trainers pass through Viridian. Each has their own way of learning.".
+  "Viridian Mart:5,5:Youngster:greeting" has "YOUNGSTER: I like checking what a Mart has before a long trip.".
+  "Viridian Mart:3,3:Customer:greeting" has "CUSTOMER: A little preparation makes a journey easier. I always check my supplies.".
+  "Viridian Center:10,5:Gentleman:greeting" has "GENTLEMAN: A Pokemon Center is a welcome place to rest after the road.".
+  "Viridian Center:4,3:Visitor:greeting" has "VISITOR: It feels good to take a break here before going outside again.".
+  "Viridian Center:11,2:Receptionist:greeting" has "RECEPTIONIST: Welcome to the Center. Please make yourself comfortable while you visit.".
+  "Forest South Gate:8,4:Girl:greeting" has "GIRL: The forest can be confusing. I like to pay attention to where I have been.".
+  "Forest South Gate:2,4:Girl:greeting" has "GIRL: I look forward to seeing what Pokemon live among the trees.".
+  "Viridian Forest:16,43:Youngster:greeting" has "YOUNGSTER: These trees make the forest feel enormous! I try to remember my route.".
+  "Viridian Forest:27,40:Youngster:greeting" has "YOUNGSTER: There are so many places for Pokemon to hide here. I keep looking.".
+  "Forest North Gate:3,2:Visitor:greeting" has "VISITOR: The forest trail takes some patience. It is nice to see a gate again.".
+  "Forest North Gate:2,5:Gramps:greeting" has "GRAMPS: A steady pace will get you through the woods. No need to rush.".
+  "Pewter City:8,15:Visitor:greeting" has "VISITOR: Pewter has a quiet, solid feel to it. I like wandering its streets.".
+  "Pewter City:17,25:Visitor:greeting" has "VISITOR: There is plenty to see in Pewter. Take a little time to look around.".
+  "Pewter City:27,17:Visitor:greeting" has "VISITOR: I have been thinking about the stones around this city. They all look different up close.".
+  "Pewter City:26,25:Visitor:greeting" has "VISITOR: Trainers come to Pewter with all sorts of teams. It is fun to see their partners.".
+  "Pewter City:35,16:Youngster:greeting" has "YOUNGSTER: I want to grow stronger with my Pokemon. Practice takes time, though!".
+  "Route 22 Gate:6,2:Guard:greeting" has "GUARD: The road ahead has its own requirements. Pay attention to the guards along the way.".
+  "Pewter Center:11,7:Gentleman:greeting" has "GENTLEMAN: Pewter draws trainers from far away. A comfortable rest does wonders after a journey.".
+  "Pewter Center:1,3:Jigglypuff:greeting" has "JIGGLYPUFF: Jiggly! Jigglypuff sings a little tune.".
+  "Pewter Center:11,2:Receptionist:greeting" has "RECEPTIONIST: Welcome to the Pewter Center. I hope you and your Pokemon enjoy your visit.".
+  "Pewter Mart:0,5:Clerk:greeting" has "CLERK: Welcome to the Pewter Mart! It is a good idea to check your supplies before traveling.".
+  "Pewter Mart:3,3:Youngster:greeting" has "YOUNGSTER: I always wonder what to bring on a trip. There is so much to choose from!".
+  "Pewter Mart:5,5:Visitor:greeting" has "VISITOR: I stopped in to look over the supplies before continuing my journey.".
+  "Viridian School:3,5:Girl:greeting" has "GIRL: There is so much to learn about Pokemon. I like sharing what I discover in class.".
+  "Viridian School:4,1:Teacher:greeting" has "TEACHER: A thoughtful trainer learns from every encounter. Ask questions and observe your Pokemon.".
+  "Viridian House:5,3:Man:greeting" has "MAN: Our home is lively with Pokemon around. They each have their own personality.".
+  "Viridian House:1,4:Girl:greeting" has "GIRL: Speary is such a fun companion! I like spending time together at home.".
+  "Viridian House:5,5:Speary:greeting" has "SPEARY: Spear! Speary looks at you with bright eyes.".
+  "Pewter House:2,3:Man:greeting" has "MAN: Pewter is a good place to slow down and talk with neighbors.".
+  "Pewter House:4,5:Youngster:greeting" has "YOUNGSTER: I like hearing stories about Pokemon from people who visit our house.".
+  "Nidoran House:4,5:Nidoran:greeting" has "NIDORAN: Nido! Nidoran watches you curiously.".
+  "Nidoran House:3,5:Boy:greeting" has "BOY: Nidoran is my friend. I like spending time together at home.".
+  "Nidoran House:1,2:Man:greeting" has "MAN: It is nice to see how much the boy cares for Nidoran.".
+  "Bulbasaur:greeting" has "BULBASAUR: Bulba! The Pokemon watches you quietly.".
+  "Charmander:greeting" has "CHARMANDER: Char! Its tail flame flickers as it looks your way.".
+  "Squirtle:greeting" has "SQUIRTLE: Squirtle! It peeks at you with curiosity.".
+  "Bug Catcher 1:greeting" has "BUG CATCHER: I love finding Pokemon in the forest. There's always another patch of grass to explore!".
+  "Bug Catcher 2:greeting" has "BUG CATCHER: The forest is a great place to train. I like seeing what other trainers bring!".
+  "Bug Catcher 3:greeting" has "BUG CATCHER: Slow down and look around! You might spot a Pokemon you've never seen before.".
+  "Route 22:25,5:Route 22 Rival:greeting" has "ROUTE 22 RIVAL: Still keeping up, [trainer]? My team and I are training hard!".
+  "Blue's House:2,3:Daisy:greeting" has "DAISY: Hello, [trainer]! My brother can be competitive, but I hope you both enjoy your journeys.".
+  "Nurse:greeting" has "NURSE: Welcome! Taking care of your Pokemon is an important part of a journey.".
+  "Pewter Center:3,1:Nurse:greeting" has "NURSE: Welcome to Pewter! I hope your Pokemon are feeling well after the road.".
+  "Oak:greeting" has "OAK: A good researcher observes carefully and treats Pokemon with respect. What would you like to know?".
+  "Oak:pokedex" has "OAK: I study Pokemon, but I have more work to do before I can tell you about that.".
+  "Oak:pokedex:delivered" has "OAK: The Pokedex records data on Pokemon you encounter. Catch them to learn more.".
+  "Oak:parcel" has "OAK: The Viridian City Mart may have something for me. Please check there.".
+  "Oak:parcel:carried" has "OAK: You have my parcel? Please speak to me normally so I can receive it.".
+  "Oak:parcel:delivered" has "OAK: Thank you for delivering my parcel. Your Pokedex can record Pokemon you encounter.".
+  "Oak:starter" has "OAK: I have three Pokemon at the lab. Choosing a partner is an important decision.".
+  "Oak:starter:chosen" has "OAK: You chose [starter]. Spend time with your partner and learn what it can do.".
+  "Oak:wild" has "OAK: Wild Pokemon live in tall grass. Don't venture in without a Pokemon to protect you.".
+  "Oak:pokemon" has "OAK: Pokemon are remarkable creatures. Some people keep them as companions, and others battle alongside them.".
+  "Mom:greeting" has "MOM: It's good to see you, [trainer]. Take care of yourself out there.".
+  "Mom:starter" has "MOM: I wonder what Pokemon you'll meet on your journey. Be kind to them.".
+  "Mom:starter:chosen" has "MOM: How is [starter]? Remember to look after your partner as well as yourself.".
+  "Mom:pokemon" has "MOM: I wonder what Pokemon you'll meet on your journey. Be kind to them.".
+  "Mom:pokemon:chosen" has "MOM: How is [starter]? Remember to look after your partner as well as yourself.".
+  "Mom:oak" has "MOM: Professor Oak lives next door. He knows so much about Pokemon.".
+  "Mom:home" has "MOM: Home is always here for you. I'm cheering you on, even when you're far away.".
+  "Rival:greeting" has "RIVAL: Hey, [trainer]! Don't expect me to wait around while you make up your mind.".
+  "Rival:starter" has "RIVAL: I'm ready to get a Pokemon of my own. Grandpa is taking his time!".
+  "Rival:starter:chosen" has "RIVAL: My [rival starter] and I will make a great team. Just you watch!".
+  "Rival:pokemon" has "RIVAL: I'm ready to get a Pokemon of my own. Grandpa is taking his time!".
+  "Rival:pokemon:chosen" has "RIVAL: My [rival starter] and I will make a great team. Just you watch!".
+  "Rival:oak" has "RIVAL: Grandpa's always studying Pokemon. I want to get out there and prove myself!".
+  "Rival:battle" has "RIVAL: I'm going to train hard and get stronger. You'd better keep up!".
+  "Clerk:greeting" has "CLERK: Welcome to the Viridian Mart! Can I help with something?".
+  "Clerk:parcel" has "CLERK: I have a delivery for Professor Oak. Speak to me normally and I'll give it to you.".
+  "Clerk:parcel:carried" has "CLERK: Please take Oak's parcel back to his lab in Pallet Town.".
+  "Clerk:parcel:delivered" has "CLERK: Thanks for helping get that delivery to Professor Oak.".
+  "Clerk:oak" has "CLERK: I have a delivery for Professor Oak. Speak to me normally and I'll give it to you.".
+  "Clerk:oak:carried" has "CLERK: Please take Oak's parcel back to his lab in Pallet Town.".
+  "Clerk:oak:delivered" has "CLERK: Thanks for helping get that delivery to Professor Oak.".
+  "Brock:greeting" has "BROCK: Training takes patience. Learn what your Pokemon can do and stand by them.".
+  "Brock:badge" has "BROCK: A badge is earned in battle. Face me when you're ready.".
+  "Brock:badge:earned" has "BROCK: You earned the Boulderbadge. Your team proved its strength.".
+  "Brock:rock" has "BROCK: I'm Pewter's Gym Leader. My Pokemon are rock hard and have true grit.".
+  "Gym Trainer:greeting" has "GYM TRAINER: Brock is tough. Don't underestimate the trainers in this gym, either!".
+  "Gym Trainer:light" has "GYM TRAINER: A light year measures distance. I should have remembered that!".
+  "Gym Guide:greeting" has "GYM GUIDE: Take a look at your team's moves and prepare before you challenge Brock.".
+  "Gym Guide:rock" has "GYM GUIDE: Brock uses Rock-type Pokemon. Think carefully about which moves to bring.".
+  "Gym Guide:brock" has "GYM GUIDE: Brock uses Rock-type Pokemon. Think carefully about which moves to bring.".

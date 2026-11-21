@@ -1,17 +1,25 @@
-This chapter shares only battle, Combat, enlist, heal, challenge, fight, recalculate, respond and encounter.
+This chapter shares only duel, Combat, fighter, roster, Team, count, reporting, decided, seeded, biding, enlist, heal, calm, recalculate, teach, challenge, confront, encounter, fight, respond, roll, announce, report, proceed, experience needed and capacity.
 
-Use the sound, cries, learnsets and encounters chapters.
+Use the foundation, sound, cries, learnsets, encounters and matchups chapters.
 
-A battle has a starter (text), an original (text), a species (text), an opponent (text), a message (text), a move one (text), a move two (text), a move three (text), a move four (text), an outcome (text), a foe (text), a level (number), an enemy level (number), a health (number), a maximum health (number), an enemy health (number), an enemy maximum health (number), a choice (number), a pp one (number), a pp two (number), a pp three (number), a pp four (number), a base speed (number), an enemy base speed (number), an active (number), an experience (number), an attack (number), a defense (number), a special (number), a speed (number), an enemy attack (number), an enemy defense (number), an enemy special (number), an enemy speed (number), a base experience (number), a turn (number), a seed (number), a bide (number), a stored damage (number), a enemy status (text), a full heals (number), an accuracy stage (number), a seeded (number), an attack stage (number), an enemy attack stage (number), a defense stage (number), an enemy defense stage (number), a second (number).
-There is a battle called Combat whose starter is "", whose original is "", whose species is "", whose opponent is "", whose message is "", whose move one is "", whose move two is "", whose move three is "", whose move four is "", whose outcome is "", whose foe is "", whose level is 5, whose enemy level is 5, whose health is 1, whose maximum health is 1, whose enemy health is 1, whose enemy maximum health is 1, whose choice is 1, whose pp one is 35, whose pp two is 40, whose pp three is 0, whose pp four is 0, whose base speed is 45, whose enemy base speed is 45, whose active is 0, whose experience is 0, whose attack is 1, whose defense is 1, whose special is 1, whose speed is 1, whose enemy attack is 1, whose enemy defense is 1, whose enemy special is 1, whose enemy speed is 1, whose base experience is 1, whose turn is 0, whose seed is 47, whose bide is 0, whose stored damage is 0, whose enemy status is "", whose full heals is 0, whose accuracy stage is 0, whose seeded is 0, whose attack stage is 0, whose enemy attack stage is 0, whose defense stage is 0, whose enemy defense stage is 0, and whose second is 0.
+A fighter has a first form (text), a species (text), a level (number), an experience (number), a health (number), a maximum health (number), an attack (number), a defense (number), a special (number), a speed (number), a moves (list of text), a pp (list of numbers), a status (text), an attack stage (number), a defense stage (number), a speed stage (number), an accuracy stage (number), a bide turns (number) and a stored damage (number).
+A fighter can be seeded.
+A fighter is biding when its bide turns is more than 0.
+Let the statuses always be a list of "", "poisoned", "burned" and "paralyzed".
+A fighter's status is always in the statuses.
+There is a fighter called Empty Ally whose first form is "", whose species is "", whose level is 0, whose experience is 0, whose health is 0, whose maximum health is 1, whose attack is 1, whose defense is 1, whose special is 1, whose speed is 1, whose status is "", whose attack stage is 0, whose defense stage is 0, whose speed stage is 0, whose accuracy stage is 0, whose bide turns is 0 and whose stored damage is 0.
+There is a fighter called Empty Foe whose first form is "", whose species is "", whose level is 0, whose experience is 0, whose health is 0, whose maximum health is 1, whose attack is 1, whose defense is 1, whose special is 1, whose speed is 1, whose status is "", whose attack stage is 0, whose defense stage is 0, whose speed stage is 0, whose accuracy stage is 0, whose bide turns is 0 and whose stored damage is 0.
 
-To work out the stat (number) from a base (number) at a level (number):
-  Let the result be (((the base + 8) * 2 * the level / 100) rounded down to the nearest 1) + 5.
-  The answer is the result.
+A side is one of ally or foe.
 
-To work out the health stat (number) from a base (number) at a level (number):
-  Let the result be (((the base + 8) * 2 * the level / 100) rounded down to the nearest 1) + the level + 10.
-  The answer is the result.
+A duel has an ally (fighter), a foe (fighter), a challenger (text), a trainer (text), a foe position (number), a trainer full heals (number), an active (number), an outcome (text), a message (text), a later lines (list of text), a choice (number), a turn (number) and a seed (number).
+There is a duel called Combat whose ally is Empty Ally, whose foe is Empty Foe, whose challenger is "", whose trainer is "", whose foe position is 0, whose trainer full heals is 0, whose active is 0, whose outcome is "", whose message is "", whose choice is 1, whose turn is 0 and whose seed is 47.
+A roster has a members (list of fighters), a selected (number), a result (text) and a notice (text).
+There is a roster called Team whose selected is 1 and whose result is "" and whose notice is "".
+The count of a roster is the number of items in its members.
+
+A duel is reporting when the number of items in its later lines is more than 0.
+A duel is decided when its ally's health is less than 1 or its foe's health is less than 1.
 
 The base stats are health, attack, defense, special and speed, in that order:
   "Bulbasaur" has 45, 49, 49, 65 and 45.
@@ -43,24 +51,35 @@ The base stats are health, attack, defense, special and speed, in that order:
   "Diglett" has 10, 55, 25, 45 and 95.
   "Sandshrew" has 50, 75, 85, 30 and 40.
 
-The battle rewards are experience, in that order:
-  "Bulbasaur" has 64.
-  "Charmander" has 65.
-  "Squirtle" has 66.
-  "Geodude" has 86.
-  "Onix" has 108.
-  "Caterpie" has 53.
-  "Weedle" has 52.
-  "Pidgey" has 55.
-  "Kakuna" has 71.
-  "Diglett" has 81.
-  "Sandshrew" has 93.
-  "Metapod" has 72.
-  "Rattata" has 57.
-  "Nidoran F" has 59.
-  "Nidoran M" has 60.
-  "Pikachu" has 82.
-  "Spearow" has 58.
+The species traits are experience yield and growth, in that order:
+  "Bulbasaur" has 64 and "medium slow".
+  "Ivysaur" has 141 and "medium slow".
+  "Charmander" has 65 and "medium slow".
+  "Charmeleon" has 142 and "medium slow".
+  "Squirtle" has 66 and "medium slow".
+  "Wartortle" has 143 and "medium slow".
+  "Caterpie" has 53 and "medium fast".
+  "Metapod" has 72 and "medium fast".
+  "Butterfree" has 160 and "medium fast".
+  "Pidgey" has 55 and "medium slow".
+  "Pidgeotto" has 113 and "medium slow".
+  "Pidgeot" has 172 and "medium slow".
+  "Rattata" has 57 and "medium fast".
+  "Raticate" has 116 and "medium fast".
+  "Nidoran F" has 59 and "medium slow".
+  "Nidorina" has 117 and "medium slow".
+  "Nidoran M" has 60 and "medium slow".
+  "Nidorino" has 118 and "medium slow".
+  "Weedle" has 52 and "medium fast".
+  "Kakuna" has 71 and "medium fast".
+  "Beedrill" has 159 and "medium fast".
+  "Pikachu" has 82 and "medium fast".
+  "Spearow" has 58 and "medium fast".
+  "Fearow" has 162 and "medium fast".
+  "Geodude" has 86 and "medium slow".
+  "Onix" has 108 and "medium fast".
+  "Diglett" has 81 and "medium fast".
+  "Sandshrew" has 93 and "medium fast".
 
 The evolutions are species, in that order:
   "Bulbasaur" from 16 has "Ivysaur".
@@ -79,150 +98,126 @@ The evolutions are species, in that order:
   "Kakuna" from 10 has "Beedrill".
   "Spearow" from 20 has "Fearow".
 
-To recalculate:
-  Let the evolution be the evolutions for Combat's starter at Combat's level.
-  Set Combat's species to the evolution's species or else Combat's starter.
-  Let the profile be the base stats for "Bulbasaur".
-  If the move sets for Combat's starter is not nothing:
-    Set the profile to the base stats for Combat's species.
-  If the profile is not nothing:
-    Set Combat's base speed to the profile's speed.
-    Set Combat's maximum health to the health stat from the profile's health at Combat's level.
-    Set Combat's attack to the stat from the profile's attack at Combat's level.
-    Set Combat's defense to the stat from the profile's defense at Combat's level.
-    Set Combat's special to the stat from the profile's special at Combat's level.
-    Set Combat's speed to the stat from the profile's speed at Combat's level.
-  Set Combat's move one to the first move for Combat's starter.
-  Set Combat's move two to the second move for Combat's starter at Combat's level.
-  Set Combat's move three to the third move for Combat's starter at Combat's level.
-  Set Combat's move four to the fourth move for Combat's starter at Combat's level.
+The battle moves are pp, power, type, accuracy, effect and chance, in that order:
+  "Tackle" has 35, 35, "normal", 242, "" and 0.
+  "Scratch" has 35, 40, "normal", 255, "" and 0.
+  "Gust" has 35, 40, "normal", 255, "" and 0.
+  "Peck" has 35, 35, "flying", 255, "" and 0.
+  "Horn Attack" has 25, 65, "normal", 255, "" and 0.
+  "Hyper Fang" has 15, 80, "normal", 230, "" and 0.
+  "Fury Attack" has 20, 15, "normal", 216, "" and 0.
+  "Quick Attack" has 30, 40, "normal", 255, "strike first" and 0.
+  "Struggle" has 10, 50, "normal", 255, "recoil" and 0.
+  "Poison Sting" has 35, 15, "poison", 255, "poison" and 52.
+  "Ember" has 25, 40, "fire", 255, "burn" and 26.
+  "Thundershock" has 30, 40, "electric", 255, "paralyze" and 26.
+  "Vine Whip" has 10, 35, "grass", 255, "" and 0.
+  "Water Gun" has 25, 40, "water", 255, "" and 0.
+  "Bubble" has 30, 20, "water", 255, "" and 0.
+  "Confusion" has 25, 50, "psychic", 255, "" and 0.
+  "Growl" has 40, 0, "normal", 255, "lower attack" and 0.
+  "Tail Whip" has 30, 0, "normal", 255, "lower defense" and 0.
+  "Leer" has 30, 0, "normal", 255, "lower defense" and 0.
+  "Screech" has 40, 0, "normal", 216, "sharply lower defense" and 0.
+  "String Shot" has 40, 0, "bug", 242, "lower speed" and 0.
+  "Sand Attack" has 15, 0, "normal", 255, "lower accuracy" and 0.
+  "Harden" has 30, 0, "normal", 255, "raise defense" and 0.
+  "Defense Curl" has 40, 0, "normal", 255, "raise defense" and 0.
+  "Leech Seed" has 10, 0, "grass", 230, "seed" and 0.
+  "Thunder Wave" has 20, 0, "electric", 255, "paralyze" and 0.
+  "Bide" has 10, 0, "normal", 255, "bide" and 0.
 
-The move capacities are pp, in that order:
-  "" has 0.
-  "Growl" has 40.
-  "String Shot" has 40.
-  "Tail Whip" has 40.
-  "Harden" has 40.
-  "Leech Seed" has 10.
-  "Vine Whip" has 10.
-  "Ember" has 25.
-  "Water Gun" has 25.
-  "Confusion" has 25.
-  "Horn Attack" has 25.
-  "Thunder Wave" has 25.
-  "Bubble" has 30.
-  "Leer" has 30.
-  "Quick Attack" has 30.
-  "Thundershock" has 30.
-  "Sand Attack" has 15.
-  "Hyper Fang" has 15.
-  "Fury Attack" has 15.
+The trainer teams are species, level, trainer and taught move, in that order:
+  "rival 1" has "rival starter", 5, "RIVAL" and "".
+  "route rival 1" has "Pidgey", 9, "RIVAL" and "".
+  "route rival 2" has "rival starter", 8, "RIVAL" and "".
+  "forest one 1" has "Weedle", 6, "BUG CATCHER" and "".
+  "forest one 2" has "Caterpie", 6, "BUG CATCHER" and "".
+  "forest two 1" has "Weedle", 7, "BUG CATCHER" and "".
+  "forest two 2" has "Kakuna", 7, "BUG CATCHER" and "".
+  "forest two 3" has "Weedle", 7, "BUG CATCHER" and "".
+  "forest three 1" has "Weedle", 9, "BUG CATCHER" and "".
+  "gym trainer 1" has "Diglett", 11, "JR.TRAINER" and "".
+  "gym trainer 2" has "Sandshrew", 11, "JR.TRAINER" and "".
+  "brock 1" has "Geodude", 12, "BROCK" and "".
+  "brock 2" has "Onix", 14, "BROCK" and "Bide".
+
+The trainer supplies are full heals, in that order:
+  "brock" has 5.
+
+The effect immunities are immune type, in that order:
+  "poison" has "poison".
+  "burn" has "fire".
+  "paralyze" has "ground".
+  "seed" has "grass".
+
+To work out the stat (number) from a base (number) at a level (number):
+  Let the result be (((the base + 8) * 2 * the level / 100) rounded down to the nearest 1) + 5.
+  The answer is the result.
+
+To work out the health stat (number) from a base (number) at a level (number):
+  Let the result be (((the base + 8) * 2 * the level / 100) rounded down to the nearest 1) + the level + 10.
+  The answer is the result.
+
+To work out the experience needed (number) for a species (text) at a level (number):
+  Let the traits be the species traits for the species.
+  If the traits is nothing:
+    Fail because "No growth rate for {the species}.".
+  If the traits's growth is "medium slow":
+    The answer is ((6 * the level * the level * the level / 5) rounded down to the nearest 1) - 15 * the level * the level + 100 * the level - 140.
+  The answer is the level * the level * the level.
 
 To work out the capacity (number) of a move (text):
-  Let the entry be the move capacities for the move.
-  The answer is the entry's pp or else 35.
+  Let the entry be the battle moves for the move.
+  If the entry is nothing:
+    Fail because "No PP capacity for {the move}.".
+  The answer is the entry's pp.
 
-To heal:
-  Set Combat's health to Combat's maximum health.
-  Set Combat's pp one to the capacity of Combat's move one.
-  Set Combat's pp two to the capacity of Combat's move two.
-  Set Combat's pp three to the capacity of Combat's move three.
-  Set Combat's pp four to the capacity of Combat's move four.
-
-To enlist:
-  Set Combat's original to Combat's starter.
-  Set Combat's level to 5.
-  Set Combat's experience to 135.
-  Recalculate.
-  Heal.
-
-To prepare:
-  Let the profile be the base stats for "Bulbasaur".
-  Let the reward be the battle rewards for Combat's opponent.
-  Set Combat's base experience to the reward's experience or else 64.
-  If the reward is not nothing:
-    Set the profile to the base stats for Combat's opponent.
-  If the profile is not nothing:
-    Set Combat's enemy base speed to the profile's speed.
-    Set Combat's enemy maximum health to the health stat from the profile's health at Combat's enemy level.
-    Set Combat's enemy health to Combat's enemy maximum health.
-    Set Combat's enemy attack to the stat from the profile's attack at Combat's enemy level.
-    Set Combat's enemy defense to the stat from the profile's defense at Combat's enemy level.
-    Set Combat's enemy special to the stat from the profile's special at Combat's enemy level.
-    Set Combat's enemy speed to the stat from the profile's speed at Combat's enemy level.
-  Set Combat's bide to 0.
-  Set Combat's stored damage to 0.
-  Set Combat's seeded to 0.
-  Set Combat's enemy status to "".
-  Set Combat's accuracy stage to 0.
-  Set Combat's enemy attack stage to 0.
-  Set Combat's enemy defense stage to 0.
-
-The opening opponents are species, level and trainer, in that order:
-  "wild" has "Pidgey", 3 and "BUG CATCHER".
-  "forest" has "Weedle", 6 and "BUG CATCHER".
-  "forest one" has "Weedle", 6 and "BUG CATCHER".
-  "forest two" has "Weedle", 7 and "BUG CATCHER".
-  "forest three" has "Weedle", 9 and "BUG CATCHER".
-  "rival" has "Caterpie", 5 and "RIVAL".
-  "route rival" has "Pidgey", 9 and "RIVAL".
-  "gym trainer" has "Diglett", 11 and "JR.TRAINER".
-  "brock" has "Geodude", 12 and "BROCK".
-
-To work out the rival species (text) from an original (text) with a fallback (text):
-  Choose the answer by the original:
-    For "Bulbasaur", use "Charmander".
-    For "Charmander", use "Squirtle".
-    For "Squirtle", use "Bulbasaur".
-    Otherwise, use the fallback.
-
-To challenge a foe (text):
-  Sound "encounter".
-  Set Combat's foe to the foe.
-  Set Combat's active to 1.
-  Set Combat's outcome to "".
-  Set Combat's choice to 1.
-  Set Combat's turn to 0.
-  Set Combat's second to 0.
-  Set Combat's full heals to 5.
-  Set Combat's attack stage to 0.
-  Set Combat's defense stage to 0.
-  Set Combat's opponent to "Caterpie".
-  Set Combat's enemy level to 4.
-  Let the trainer be "BUG CATCHER".
-  Let the opening be the opening opponents for the foe.
-  If the opening is not nothing:
-    Set Combat's opponent to the opening's species.
-    Set Combat's enemy level to the opening's level.
-    Set the trainer to the opening's trainer.
-  If the foe is "rival":
-    Set Combat's opponent to the rival species from Combat's original with Combat's opponent.
-  Prepare.
-  If the foe is "wild":
-    Set Combat's message to "A wild {Combat's opponent} appeared!".
-  Otherwise:
-    Set Combat's message to "{the trainer} sent out {Combat's opponent}!".
-    Cry Combat's opponent.
-
-To encounter a place (text):
-  Challenge "wild".
-  Set Combat's seed to the remainder of (Combat's seed * 109 + 89) divided by 256.
-  Let the slot be the wild slot for Combat's seed.
-  Let the meeting be the wild encounters for "{the place} {the slot}".
-  If the meeting is not nothing:
-    Set Combat's opponent to the meeting's species.
-    Set Combat's enemy level to the meeting's level.
-  Prepare.
-  Set Combat's message to "A wild {Combat's opponent} appeared!".
-  Cry Combat's opponent.
+To work out the category (text) of a move (text):
+  Let the entry be the battle moves for the move.
+  If the entry is nothing:
+    Fail because "No battle data for {the move}.".
+  If the entry's power is 0:
+    The answer is "status".
+  If the entry's type is one of "fire", "water", "grass", "electric", "psychic", "ice" or "dragon":
+    The answer is "special".
+  The answer is "physical".
 
 To work out the adjusted (number) of a value (number) at a stage (number):
   Let the result be (the value * (2 + the stage) / 2) rounded down to the nearest 1.
   If the stage is less than 0:
     Set the result to (the value * 2 / (2 - the stage)) rounded down to the nearest 1.
-  If the result is less than 1:
-    Set the result to 1.
+  The answer is the larger of 1 and the result.
+
+To work out the clamped stage (number) from a stage (number) by a change (number):
+  The answer is the larger of -6 and (the smaller of 6 and (the stage + the change)).
+
+To work out the effective attack (number) of a fighter:
+  Let the result be the adjusted of the fighter's attack at the fighter's attack stage.
+  If the fighter's status is "burned":
+    Set the result to the larger of 1 and ((the result / 2) rounded down to the nearest 1).
   The answer is the result.
+
+To work out the effective defense (number) of a fighter:
+  The answer is the adjusted of the fighter's defense at the fighter's defense stage.
+
+To work out the effective speed (number) of a fighter:
+  Let the result be the adjusted of the fighter's speed at the fighter's speed stage.
+  If the fighter's status is "paralyzed":
+    Set the result to the larger of 1 and ((the result / 4) rounded down to the nearest 1).
+  The answer is the result.
+
+To work out the hit chance (number) of a move (text) for an attacker (fighter):
+  Let the entry be the battle moves for the move.
+  If the entry is nothing:
+    Fail because "No battle data for {the move}.".
+  The answer is the adjusted of the entry's accuracy at the attacker's accuracy stage.
+
+To work out the critical chance (number) of a fighter:
+  Let the profile be the base stats for the fighter's species.
+  If the profile is nothing:
+    Fail because "No base stats for {the fighter's species}.".
+  The answer is the profile's speed / 2.
 
 To work out the damage (number) from a level (number) with a power (number) by an attack (number) against a defense (number):
   Let the step be (2 * the level / 5) rounded down to the nearest 1.
@@ -231,445 +226,456 @@ To work out the damage (number) from a level (number) with a power (number) by a
   Set the step to (the step / 50) rounded down to the nearest 1.
   The answer is the step + 2.
 
-To triumph:
-  Let the reward be (Combat's base experience * Combat's enemy level / 7) rounded down to the nearest 1.
-  If Combat's foe is not "wild":
-    Set the reward to (the reward * 3 / 2) rounded down to the nearest 1.
-  Add the reward to Combat's experience.
-  Let the next be Combat's level + 1.
-  Let the threshold be (6 * the next * the next * the next / 5) rounded down to the nearest 1.
-  Set the threshold to the threshold - 15 * the next * the next + 100 * the next - 140.
-  If Combat's starter is one of "Caterpie", "Metapod", "Weedle", "Kakuna", "Rattata", "Pikachu" or "Spearow":
-    Set the threshold to the next * the next * the next.
-  If Combat's experience is at least the threshold:
-    Let the old maximum be Combat's maximum health.
-    Let the old second be Combat's move two.
-    Let the old third be Combat's move three.
-    Let the old fourth be Combat's move four.
-    Add 1 to Combat's level.
-    Recalculate.
-    If Combat's move two is not the old second:
-      Set Combat's pp two to the capacity of Combat's move two.
-    If Combat's move three is not the old third:
-      Set Combat's pp three to the capacity of Combat's move three.
-    If Combat's move four is not the old fourth:
-      Set Combat's pp four to the capacity of Combat's move four.
-    Add Combat's maximum health - the old maximum to Combat's health.
-  Let the reinforcement be 0.
-  Let the trainer be "The trainer".
-  If Combat's foe is "route rival" and Combat's second is 0:
-    Set the reinforcement to 1.
-    Set Combat's second to 1.
-    Set Combat's enemy level to 8.
-    Set Combat's opponent to the rival species from Combat's original with Combat's opponent.
-    Set the trainer to "The rival".
-  If Combat's foe is "brock" and Combat's second is 0:
-    Set the reinforcement to 1.
-    Set Combat's second to 1.
-    Set Combat's opponent to "Onix".
-    Set Combat's enemy level to 14.
-    Set the trainer to "Brock".
-  If Combat's foe is "forest one" and Combat's second is 0:
-    Set the reinforcement to 1.
-    Set Combat's second to 1.
-    Set Combat's opponent to "Caterpie".
-  If Combat's foe is "forest two" and Combat's second is less than 2:
-    Set the reinforcement to 1.
-    Add 1 to Combat's second.
-    Set Combat's opponent to "Kakuna".
-    If Combat's second is 2:
-      Set Combat's opponent to "Weedle".
-  If Combat's foe is "gym trainer" and Combat's second is 0:
-    Set the reinforcement to 1.
-    Set Combat's second to 1.
-    Set Combat's opponent to "Sandshrew".
-  If the reinforcement is 1:
-    Prepare.
-    Set Combat's message to "{the trainer} sent out {Combat's opponent}!".
-    Sound "faint".
-    Cry Combat's opponent.
-    Stop.
-  Set Combat's active to 0.
-  Sound "victory".
-  Set Combat's outcome to "win".
-  Set Combat's message to "You won the battle!".
-
-The move powers are power and category, in that order:
-  "Scratch" has 40 and "physical".
-  "Ember" has 40 and "special".
-  "Water Gun" has 40 and "special".
-  "Bubble" has 20 and "special".
-  "Gust" has 40 and "physical".
-  "Quick Attack" has 40 and "physical".
-  "Thundershock" has 40 and "special".
-  "Confusion" has 50 and "special".
-  "Struggle" has 50 and "physical".
-  "Horn Attack" has 65 and "physical".
-  "Hyper Fang" has 80 and "physical".
-  "Poison Sting" has 15 and "physical".
-  "Fury Attack" has 15 and "physical".
-  "Vine Whip" has 35 and "special".
-
-To attack with a move (text):
-  If the move is "":
-    Stop.
-  Set Combat's seed to the remainder of (Combat's seed * 109 + 89) divided by 256.
-  If Combat's seed is 255:
-    Set Combat's message to "The attack missed!".
-    Stop.
-  If the move is "Tackle" and Combat's seed is at least 242:
-    Set Combat's message to "The attack missed!".
-    Stop.
-  If the move is "Leech Seed" and Combat's seed is at least 230:
-    Set Combat's message to "Leech Seed missed!".
-    Stop.
-  Depending on the move:
-    For "Harden":
-      If Combat's defense stage is less than 6:
-        Add 1 to Combat's defense stage.
-      Set Combat's message to "Defense rose!".
-      Stop.
-    For "String Shot":
-      Set Combat's enemy speed to (Combat's enemy speed * 2 / 3) rounded down to the nearest 1.
-      If Combat's enemy speed is less than 1:
-        Set Combat's enemy speed to 1.
-      Set Combat's message to "The enemy's Speed fell!".
-      Stop.
-    For "Sand Attack":
-      If Combat's accuracy stage is more than -6:
-        Subtract 1 from Combat's accuracy stage.
-      Set Combat's message to "The enemy's accuracy fell!".
-      Stop.
-    For "Thunder Wave":
-      If Combat's enemy status is "":
-        If Combat's opponent is not one of "Geodude", "Onix", "Diglett" or "Sandshrew":
-          Set Combat's enemy status to "paralyzed".
-          Set Combat's enemy speed to (Combat's enemy speed / 4) rounded down to the nearest 1.
-          If Combat's enemy speed is less than 1:
-            Set Combat's enemy speed to 1.
-      Set Combat's message to "Thunder Wave was used!".
-      Stop.
-    For "Growl":
-      If Combat's enemy attack stage is more than -6:
-        Subtract 1 from Combat's enemy attack stage.
-      Set Combat's message to "Growl lowered the enemy's Attack!".
-      Stop.
-    For "Tail Whip" or "Leer":
-      If Combat's enemy defense stage is more than -6:
-        Subtract 1 from Combat's enemy defense stage.
-      Set Combat's message to "The enemy's Defense fell!".
-      Stop.
-    For "Leech Seed":
-      Set Combat's seeded to 1.
-      Set Combat's message to "The enemy was seeded!".
-      Stop.
-  Let the entry be the move powers for the move.
-  Let the power be the entry's power or else 35.
-  Let the category be the entry's category or else "physical".
-  Let the strength be the adjusted of Combat's attack at Combat's attack stage.
-  Let the guard be the adjusted of Combat's enemy defense at Combat's enemy defense stage.
-  Set Combat's seed to the remainder of (Combat's seed * 109 + 89) divided by 256.
-  Let the strike level be Combat's level.
-  If Combat's seed is less than Combat's base speed / 2:
-    Set the strike level to Combat's level * 2.
-    Set the strength to Combat's attack.
-    Set the guard to Combat's enemy defense.
-  If the category is "special":
-    Set the strength to Combat's special.
-    Set the guard to Combat's enemy special.
-  Let the hit be the damage from the strike level with the power by the strength against the guard.
-  If the move is one of "Ember", "Bubble", "Water Gun", "Vine Whip" or "Thundershock":
+To work out the base damage (number) of a move (text) from an attacker (fighter) against a defender (fighter) with a critical (yes or no):
+  Let the entry be the battle moves for the move.
+  If the entry is nothing:
+    Fail because "No battle data for {the move}.".
+  Let the strike level be the attacker's level.
+  Let the strength be the effective attack of the attacker.
+  Let the guard be the effective defense of the defender.
+  If the critical is yes:
+    Set the strike level to the attacker's level * 2.
+    Set the strength to the attacker's attack.
+    Set the guard to the defender's defense.
+  If the category of the move is "special":
+    Set the strength to the attacker's special.
+    Set the guard to the defender's special.
+  Let the hit be the damage from the strike level with the entry's power by the strength against the guard.
+  If the entry's type is in the types of the attacker's species:
     Set the hit to (the hit * 3 / 2) rounded down to the nearest 1.
-  If the move is "Poison Sting" and Combat's starter is not "Caterpie":
-    Set the hit to (the hit * 3 / 2) rounded down to the nearest 1.
-  If the move is one of "Peck", "Gust", "Quick Attack" or "Hyper Fang":
-    If Combat's starter is one of "Pidgey", "Spearow" or "Rattata":
-      Set the hit to (the hit * 3 / 2) rounded down to the nearest 1.
-  If the move is "Tackle" and Combat's starter is "Rattata":
-    Set the hit to (the hit * 3 / 2) rounded down to the nearest 1.
-  If Combat's opponent is one of "Geodude" or "Onix":
-    If the move is one of "Tackle", "Scratch", "Ember", "Gust", "Peck", "Quick Attack", "Hyper Fang", "Horn Attack" or "Fury Attack":
-      Set the hit to (the hit / 2) rounded down to the nearest 1.
-    If the move is "Poison Sting":
-      Set the hit to (the hit / 4) rounded down to the nearest 1.
-    If the move is one of "Bubble", "Water Gun" or "Vine Whip":
-      Set the hit to the hit * 4.
-  If Combat's opponent is one of "Diglett" or "Sandshrew":
-    If the move is one of "Bubble", "Water Gun" or "Vine Whip":
-      Set the hit to the hit * 2.
-  If Combat's opponent is one of "Caterpie", "Weedle" or "Kakuna":
-    If the move is "Ember":
-      Set the hit to the hit * 2.
-    If the move is "Vine Whip":
-      Set the hit to (the hit / 2) rounded down to the nearest 1.
-  If Combat's opponent is "Bulbasaur":
-    If the move is "Ember":
-      Set the hit to the hit * 2.
-    If the move is one of "Bubble" or "Water Gun":
-      Set the hit to (the hit / 2) rounded down to the nearest 1.
-    If the move is "Vine Whip":
-      Set the hit to (the hit / 4) rounded down to the nearest 1.
-  If Combat's opponent is "Charmander":
-    If the move is one of "Bubble" or "Water Gun":
-      Set the hit to the hit * 2.
-    If the move is one of "Ember" or "Vine Whip":
-      Set the hit to (the hit / 2) rounded down to the nearest 1.
-  If Combat's opponent is "Squirtle":
-    If the move is "Vine Whip":
-      Set the hit to the hit * 2.
-    If the move is one of "Ember", "Bubble" or "Water Gun":
-      Set the hit to (the hit / 2) rounded down to the nearest 1.
-  If Combat's opponent is one of "Weedle" or "Kakuna":
-    If the move is "Vine Whip":
-      Set the hit to (the hit / 2) rounded down to the nearest 1.
-  If Combat's opponent is "Pidgey" and the move is "Vine Whip":
-    Set the hit to (the hit / 2) rounded down to the nearest 1.
-  If the move is "Thundershock":
-    If Combat's opponent is one of "Geodude", "Onix", "Diglett" or "Sandshrew":
-      Set Combat's message to "It doesn't affect the enemy!".
-      Stop.
-    If Combat's opponent is "Pidgey":
-      Set the hit to the hit * 2.
-  If the move is "Confusion":
-    If Combat's opponent is one of "Bulbasaur", "Weedle" or "Kakuna":
-      Set the hit to the hit * 2.
-  If the move is "Peck":
-    If Combat's opponent is one of "Bulbasaur", "Caterpie" or "Weedle":
-      Set the hit to the hit * 2.
+  The answer is (the hit * (the effectiveness of the entry's type against the defender's species)) rounded down to the nearest 1.
+
+To work out the varied damage (number) from a hit (number) with a seed (number):
+  Let the variation be 217 + the remainder of the seed divided by 39.
+  Let the result be (the hit * the variation / 255) rounded down to the nearest 1.
+  The answer is the larger of 1 and the result.
+
+To work out the immunity (yes or no) of a fighter to an effect (text):
+  Let the protection be the effect immunities for the effect.
+  If the protection is nothing:
+    The answer is no.
+  The answer is whether (the protection's immune type is in the types of the fighter's species).
+
+To work out the move picked (text) by a fighter with a roll (number):
+  Let the count be the number of items in the fighter's moves.
+  If the count is 0:
+    The answer is "Struggle".
+  The answer is item (the remainder of the roll divided by the count + 1) of the fighter's moves or else "Struggle".
+
+To work out the move priority (number) of a move (text):
+  Let the entry be the battle moves for the move.
+  If the entry is not nothing and the entry's effect is "strike first":
+    The answer is 1.
+  The answer is 0.
+
+To work out the ally strikes first (yes or no) with a move (text) against a counter move (text):
+  If the move priority of the move is not the move priority of the counter move:
+    The answer is whether (the move priority of the move is more than the move priority of the counter move).
+  The answer is whether (the effective speed of Combat's foe is not more than the effective speed of Combat's ally).
+
+To work out the experience reward (number):
+  Let the traits be the species traits for Combat's foe's species.
+  If the traits is nothing:
+    Fail because "No experience yield for {Combat's foe's species}.".
+  Let the reward be (the traits's experience yield * Combat's foe's level / 7) rounded down to the nearest 1.
+  If Combat's challenger is "wild":
+    The answer is the reward.
+  The answer is (the reward * 3 / 2) rounded down to the nearest 1.
+
+To clear a duel:
+  Set the duel's message to "".
+  Set the duel's later lines to an empty list of text.
+
+To announce a line (text):
+  If Combat's message is "":
+    Set Combat's message to the line.
+  Otherwise:
+    Add the line to Combat's later lines.
+
+To report a line (text):
+  Clear Combat.
+  Announce the line.
+
+To proceed with a duel:
+  Let the next line be the first of the duel's later lines or else "".
+  If the duel is reporting:
+    Remove the next line from the duel's later lines.
+    Set the duel's message to the next line.
+
+To roll:
   Set Combat's seed to the remainder of (Combat's seed * 109 + 89) divided by 256.
-  Let the variation be 217 + the remainder of Combat's seed divided by 39.
-  Set the hit to (the hit * the variation / 255) rounded down to the nearest 1.
-  If the hit is less than 1:
-    Set the hit to 1.
-  Subtract the hit from Combat's enemy health.
-  If the move is "Struggle":
-    Let the recoil be (the hit / 2) rounded down to the nearest 1.
-    If the recoil is less than 1:
-      Set the recoil to 1.
-    Subtract the recoil from Combat's health.
-  If Combat's bide is more than 0:
-    Add the hit to Combat's stored damage.
-  Set Combat's message to "{Combat's species} used {the move}!".
-  If Combat's enemy health is more than 0 and Combat's enemy status is "":
-    If the move is "Poison Sting" and Combat's opponent is not one of "Bulbasaur", "Weedle", "Kakuna", "Nidoran F" or "Nidoran M":
-      Set Combat's seed to the remainder of (Combat's seed * 109 + 89) divided by 256.
-      If Combat's seed is less than 52:
-        Set Combat's enemy status to "poisoned".
-        Set Combat's message to "{Combat's opponent} was poisoned!".
-    If the move is "Ember" and Combat's opponent is not "Charmander":
-      Set Combat's seed to the remainder of (Combat's seed * 109 + 89) divided by 256.
-      If Combat's seed is less than 26:
-        Set Combat's enemy status to "burned".
-        Set Combat's enemy attack to (Combat's enemy attack / 2) rounded down to the nearest 1.
-        If Combat's enemy attack is less than 1:
-          Set Combat's enemy attack to 1.
-        Set Combat's message to "{Combat's opponent} was burned!".
 
-To suffer:
-  If Combat's enemy status is one of "poisoned" or "burned":
-    Let the harm be (Combat's enemy maximum health / 16) rounded down to the nearest 1.
-    If the harm is less than 1:
-      Set the harm to 1.
-    Subtract the harm from Combat's enemy health.
-    Set Combat's message to "{Combat's opponent} was hurt by poison!".
-    If Combat's enemy status is "burned":
-      Set Combat's message to "{Combat's opponent} was hurt by its burn!".
+To recalculate a fighter:
+  Let the profile be the base stats for the fighter's species.
+  If the profile is nothing:
+    Fail because "No base stats for {the fighter's species}.".
+  Set the fighter's maximum health to the health stat from the profile's health at the fighter's level.
+  Set the fighter's attack to the stat from the profile's attack at the fighter's level.
+  Set the fighter's defense to the stat from the profile's defense at the fighter's level.
+  Set the fighter's special to the stat from the profile's special at the fighter's level.
+  Set the fighter's speed to the stat from the profile's speed at the fighter's level.
 
-To counter:
-  If Combat's foe is "brock" and Combat's enemy status is not "" and Combat's full heals is more than 0:
-    Subtract 1 from Combat's full heals.
-    Set Combat's enemy status to "".
-    Set Combat's message to "Brock used Full Heal on {Combat's opponent}!".
-    Stop.
-  If Combat's bide is more than 0:
-    Subtract 1 from Combat's bide.
-    If Combat's bide is 0:
-      Let the hit be Combat's stored damage * 2.
-      If the hit is more than 0:
-        Subtract the hit from Combat's health.
-        Set Combat's message to "{Combat's opponent} unleashed Bide!".
-      Otherwise:
-        Set Combat's message to "{Combat's opponent}'s Bide failed!".
-      Set Combat's stored damage to 0.
+To teach a fighter:
+  Let the known moves be the moves known by the fighter's first form at the fighter's level.
+  Let the refilled pp be an empty list of numbers.
+  Let the slot be 0.
+  For each move in the known moves:
+    Add 1 to the slot.
+    If (item the slot of the fighter's moves or else "") is the move:
+      Add (item the slot of the fighter's pp or else 0) to the refilled pp.
     Otherwise:
-      Set Combat's message to "{Combat's opponent} is storing energy!".
-    Stop.
-  Set Combat's seed to the remainder of (Combat's seed * 109 + 89) divided by 256.
-  If Combat's enemy status is "paralyzed" and Combat's seed is less than 64:
-    Set Combat's message to "The enemy is fully paralyzed!".
-    Stop.
-  If Combat's opponent is "Kakuna":
-    If Combat's enemy defense stage is less than 6:
-      Add 1 to Combat's enemy defense stage.
-    Set Combat's message to "Kakuna used Harden!".
-    Stop.
-  If Combat's foe is "brock" and Combat's opponent is "Geodude" and Combat's seed is less than 128:
-    If Combat's enemy defense stage is less than 6:
-      Add 1 to Combat's enemy defense stage.
-    Set Combat's message to "Geodude used Defense Curl!".
-    Stop.
-  If Combat's foe is "brock" and Combat's opponent is "Onix":
-    If Combat's seed is less than 85:
-      Set Combat's bide to 2 + the remainder of Combat's seed divided by 2.
-      Set Combat's stored damage to 0.
-      Set Combat's message to "Onix began to Bide!".
-      Stop.
-    If Combat's seed is less than 170:
-      Set Combat's seed to the remainder of (Combat's seed * 109 + 89) divided by 256.
-      If Combat's seed is less than 216:
-        Subtract 2 from Combat's defense stage.
-        If Combat's defense stage is less than -6:
-          Set Combat's defense stage to -6.
-        Set Combat's message to "Onix used Screech!".
-      Otherwise:
-        Set Combat's message to "Onix's Screech missed!".
-      Stop.
-  Set Combat's seed to the remainder of (Combat's seed * 109 + 89) divided by 256.
-  Let the accuracy be the adjusted of 242 at Combat's accuracy stage.
-  If Combat's seed is at least the accuracy:
-    Set Combat's message to "The enemy's attack missed!".
-    Stop.
-  Let the strength be the adjusted of Combat's enemy attack at Combat's enemy attack stage.
-  Let the guard be the adjusted of Combat's defense at Combat's defense stage.
-  Set Combat's seed to the remainder of (Combat's seed * 109 + 89) divided by 256.
-  Let the strike level be Combat's enemy level.
-  If Combat's seed is less than Combat's enemy base speed / 2:
-    Set the strike level to Combat's enemy level * 2.
-    Set the strength to Combat's enemy attack.
-    Set the guard to Combat's defense.
-  Let the hit be the damage from the strike level with 35 by the strength against the guard.
-  If Combat's opponent is "Pidgey":
-    Set the hit to (the hit * 3 / 2) rounded down to the nearest 1.
-  Set Combat's seed to the remainder of (Combat's seed * 109 + 89) divided by 256.
-  Let the variation be 217 + the remainder of Combat's seed divided by 39.
-  Set the hit to (the hit * the variation / 255) rounded down to the nearest 1.
-  If the hit is less than 1:
-    Set the hit to 1.
-  Subtract the hit from Combat's health.
-  Set Combat's message to "{Combat's opponent} used Tackle!".
+      Add the capacity of the move to the refilled pp.
+  Set the fighter's moves to the known moves.
+  Set the fighter's pp to the refilled pp.
 
-To settle:
-  If Combat's health is less than 1:
-    Set Combat's health to 0.
-    Set Combat's active to 0.
-    Set Combat's outcome to "fainted".
-    Set Combat's message to "Your Pokemon fainted!".
-    Sound "faint".
+To heal a fighter:
+  Set the fighter's health to the fighter's maximum health.
+  Set the fighter's status to "".
+  Let the full pp be an empty list of numbers.
+  For each move in the fighter's moves:
+    Add the capacity of the move to the full pp.
+  Set the fighter's pp to the full pp.
+
+To calm a fighter:
+  Set the fighter's attack stage to 0.
+  Set the fighter's defense stage to 0.
+  Set the fighter's speed stage to 0.
+  Set the fighter's accuracy stage to 0.
+  Set the fighter's bide turns to 0.
+  Set the fighter's stored damage to 0.
+  Now the fighter is not seeded.
+
+To raise a species (text) at a level (number) as a side (side):
+  Let the newcomer be a new fighter whose first form is the species, whose species is the species, whose level is the level, whose experience is 0, whose health is 0, whose maximum health is 1, whose attack is 1, whose defense is 1, whose special is 1, whose speed is 1, whose status is "", whose attack stage is 0, whose defense stage is 0, whose speed stage is 0, whose accuracy stage is 0, whose bide turns is 0 and whose stored damage is 0.
+  Recalculate the newcomer.
+  Teach the newcomer.
+  Heal the newcomer.
+  Depending on the side:
+    For ally:
+      Set the newcomer's experience to the experience needed for the species at the level.
+      Set Combat's ally to the newcomer.
+    For foe:
+      Set Combat's foe to the newcomer.
+
+To enlist a species (text):
+  If Team's count is at least 6:
+    Fail because "The team is full, so {the species} cannot join.".
+  Raise the species at 5 as ally.
+  Add Combat's ally to Team's members.
+  Set Team's selected to Team's count.
+
+To prepare for a challenger (text):
+  Sound "encounter".
+  Set Combat's challenger to the challenger.
+  Set Combat's trainer to "".
+  Set Combat's foe position to 0.
+  Let the supplies be the trainer supplies for the challenger.
+  Set Combat's trainer full heals to the supplies's full heals or else 0.
+  Set Combat's active to 1.
+  Set Combat's outcome to "".
+  Set Combat's choice to 1.
+  Set Combat's turn to 0.
+  Calm Combat's ally.
+  Clear Combat.
+
+To work out the reserve (yes or no):
+  If Combat's challenger is "wild":
+    The answer is no.
+  The answer is whether (the trainer teams for "{Combat's challenger} {Combat's foe position + 1}" is not nothing).
+
+To summon:
+  Add 1 to Combat's foe position.
+  Let the member be the trainer teams for "{Combat's challenger} {Combat's foe position}".
+  If the member is nothing:
+    Fail because "No trainer team member {Combat's foe position} for {Combat's challenger}.".
+  Let the species be the member's species.
+  If the species is "rival starter":
+    Set the species to Journey's rival starter.
+  If the species is "":
+    Fail because "The rival has not chosen a starter yet.".
+  Raise the species at the member's level as foe.
+  If the member's taught move is not "" and the number of items in Combat's foe's moves is less than 4:
+    Add the member's taught move to Combat's foe's moves.
+    Add the capacity of the member's taught move to Combat's foe's pp.
+  Set Combat's trainer to the member's trainer.
+  Announce "{Combat's trainer} sent out {Combat's foe's species}!".
+  Cry Combat's foe's species.
+
+To challenge a challenger (text):
+  Prepare for the challenger.
+  Summon.
+
+To confront a species (text) at a level (number):
+  Prepare for "wild".
+  Raise the species at the level as foe.
+  Announce "A wild {Combat's foe's species} appeared!".
+  Cry Combat's foe's species.
+
+To encounter a place (text):
+  Roll.
+  Let the slot be the wild slot for Combat's seed.
+  Let the meeting be the wild encounters for "{the place} {the slot}" or else the wild encounters for the place.
+  If the meeting is nothing:
+    Fail because "No wild encounter for {the place} in slot {the slot}.".
+  Confront the meeting's species at the meeting's level.
+
+To wound a fighter by an amount (number):
+  Set the fighter's health to the larger of 0 and (the fighter's health - the amount).
+  If the fighter is biding:
+    Add the amount to the fighter's stored damage.
+
+To afflict a fighter with an effect (text):
+  Depending on the effect:
+    For "poison":
+      Set the fighter's status to "poisoned".
+      Announce "{the fighter's species} was poisoned!".
+    For "burn":
+      Set the fighter's status to "burned".
+      Announce "{the fighter's species} was burned!".
+    For "paralyze":
+      Set the fighter's status to "paralyzed".
+      Announce "{the fighter's species} is paralyzed!".
+
+To bring about an effect (text) from an attacker (fighter) on a defender (fighter):
+  Depending on the effect:
+    For "poison", "burn" or "paralyze":
+      Afflict the defender with the effect.
+    For "seed":
+      Now the defender is seeded.
+      Announce "{the defender's species} was seeded!".
+    For "lower attack":
+      Set the defender's attack stage to the clamped stage from the defender's attack stage by -1.
+      Announce "{the defender's species}'s Attack fell!".
+    For "lower defense":
+      Set the defender's defense stage to the clamped stage from the defender's defense stage by -1.
+      Announce "{the defender's species}'s Defense fell!".
+    For "sharply lower defense":
+      Set the defender's defense stage to the clamped stage from the defender's defense stage by -2.
+      Announce "{the defender's species}'s Defense greatly fell!".
+    For "lower speed":
+      Set the defender's speed stage to the clamped stage from the defender's speed stage by -1.
+      Announce "{the defender's species}'s Speed fell!".
+    For "lower accuracy":
+      Set the defender's accuracy stage to the clamped stage from the defender's accuracy stage by -1.
+      Announce "{the defender's species}'s accuracy fell!".
+    For "raise defense":
+      Set the attacker's defense stage to the clamped stage from the attacker's defense stage by 1.
+      Announce "{the attacker's species}'s Defense rose!".
+    For "bide":
+      Set the attacker's bide turns to 2 + the remainder of Combat's seed divided by 2.
+      Set the attacker's stored damage to 0.
+      Announce "{the attacker's species} began to Bide!".
+
+To work out the blocked (yes or no) of an effect (text) on a defender (fighter):
+  If the immunity of the defender to the effect is yes:
+    The answer is yes.
+  If the effect is one of "poison", "burn" or "paralyze":
+    The answer is whether (the defender's status is not "").
+  If the effect is "seed":
+    The answer is whether (the defender is seeded).
+  The answer is no.
+
+To complete a move (text) from an attacker (fighter) on a defender (fighter) with a hit (number):
+  Let the entry be the battle moves for the move.
+  If the entry is nothing:
+    Fail because "No battle data for {the move}.".
+  If the entry's effect is "recoil":
+    Wound the attacker by the larger of 1 and ((the hit / 2) rounded down to the nearest 1).
+    Announce "{the attacker's species} is hit with recoil!".
+  If the entry's chance is 0 or the defender's health is less than 1:
     Stop.
-  If Combat's seeded is 1:
-    Let the drain be (Combat's enemy maximum health / 16) rounded down to the nearest 1.
-    If the drain is less than 1:
-      Set the drain to 1.
-    Subtract the drain from Combat's enemy health.
-    Add the drain to Combat's health.
-    If Combat's health is more than Combat's maximum health:
-      Set Combat's health to Combat's maximum health.
-  If Combat's health is less than 1:
-    Set Combat's health to 0.
-    Set Combat's active to 0.
-    Set Combat's outcome to "fainted".
-    Set Combat's message to "Your Pokemon fainted!".
-    Sound "faint".
+  If the blocked of the entry's effect on the defender is yes:
     Stop.
-  If Combat's enemy health is less than 1:
-    Set Combat's enemy health to 0.
-    Triumph.
+  Roll.
+  If Combat's seed is less than the entry's chance:
+    Bring about the entry's effect from the attacker on the defender.
+
+To strike a defender (fighter) with a move (text) from an attacker (fighter):
+  Let the entry be the battle moves for the move.
+  If the entry is nothing:
+    Fail because "No battle data for {the move}.".
+  Let the multiplier be the effectiveness of the entry's type against the defender's species.
+  If the multiplier is 0:
+    Announce "It doesn't affect {the defender's species}!".
+    Stop.
+  Roll.
+  Let the critical be whether (Combat's seed is less than the critical chance of the attacker).
+  Let the hit be the base damage of the move from the attacker against the defender with the critical.
+  Roll.
+  Set the hit to the varied damage from the hit with Combat's seed.
+  Wound the defender by the hit.
+  If the critical is yes:
+    Announce "A critical hit!".
+  If the multiplier is more than 1:
+    Announce "It's super effective!".
+  If the multiplier is less than 1:
+    Announce "It's not very effective...".
+  Complete the move from the attacker on the defender with the hit.
+
+To perform a move (text) from an attacker (fighter) against a defender (fighter):
+  Let the entry be the battle moves for the move.
+  If the entry is nothing:
+    Fail because "No battle data for {the move}.".
+  Announce "{the attacker's species} used {the move}!".
+  Roll.
+  If Combat's seed is at least the hit chance of the move for the attacker:
+    Announce "But it missed!".
+    Stop.
+  If the category of the move is not "status":
+    Strike the defender with the move from the attacker.
+  Otherwise if the blocked of the entry's effect on the defender is yes:
+    Announce "But it failed!".
+  Otherwise:
+    Bring about the entry's effect from the attacker on the defender.
+
+To bide for an attacker (fighter) against a defender (fighter):
+  Subtract 1 from the attacker's bide turns.
+  If the attacker is biding:
+    Announce "{the attacker's species} is storing energy!".
+    Stop.
+  If the attacker's stored damage is more than 0:
+    Set the defender's health to the larger of 0 and (the defender's health - the attacker's stored damage * 2).
+    Announce "{the attacker's species} unleashed Bide!".
+  Otherwise:
+    Announce "{the attacker's species}'s Bide failed!".
+  Set the attacker's stored damage to 0.
+
+To work out the ailment harm (number) of a fighter:
+  The answer is the larger of 1 and ((the fighter's maximum health / 16) rounded down to the nearest 1).
+
+To harm a fighter:
+  If the fighter's status is "poisoned":
+    Wound the fighter by the ailment harm of the fighter.
+    Announce "{the fighter's species} was hurt by poison!".
+  If the fighter's status is "burned":
+    Wound the fighter by the ailment harm of the fighter.
+    Announce "{the fighter's species} was hurt by its burn!".
+
+To sap a fighter for a seeder (fighter):
+  Let the drain be the ailment harm of the fighter.
+  Wound the fighter by the drain.
+  Set the seeder's health to the smaller of the seeder's maximum health and (the seeder's health + the drain).
+  Announce "Leech Seed saps {the fighter's species}!".
+
+To act with a move (text) from an attacker (fighter) against a defender (fighter):
+  If the attacker is biding:
+    Bide for the attacker against the defender.
+  Otherwise if the attacker's status is "paralyzed":
+    Roll.
+    If Combat's seed is less than 64:
+      Announce "{the attacker's species} is fully paralyzed!".
+    Otherwise:
+      Perform the move from the attacker against the defender.
+  Otherwise:
+    Perform the move from the attacker against the defender.
+  If Combat is not decided:
+    Harm the attacker.
+  If Combat is not decided and the attacker is seeded:
+    Sap the attacker for the defender.
+
+To counter with a move (text):
+  If Combat's foe's status is not "" and Combat's trainer full heals is more than 0:
+    Subtract 1 from Combat's trainer full heals.
+    Set Combat's foe's status to "".
+    Announce "{Combat's trainer} used Full Heal on {Combat's foe's species}!".
+    Stop.
+  Act with the move from Combat's foe against Combat's ally.
+
+To grow a fighter:
+  Let the former species be the fighter's species.
+  Let the former maximum be the fighter's maximum health.
+  Add 1 to the fighter's level.
+  Let the evolution be the evolutions for the fighter's first form at the fighter's level.
+  Set the fighter's species to the evolution's species or else the fighter's species.
+  Recalculate the fighter.
+  Teach the fighter.
+  Add the fighter's maximum health - the former maximum to the fighter's health.
+  Announce "{the former species} grew to level {the fighter's level}!".
+  If the fighter's species is not the former species:
+    Announce "{the former species} evolved into {the fighter's species}!".
+
+To reward a fighter with an amount (number):
+  Add the amount to the fighter's experience.
+  Announce "{the fighter's species} gained {the amount} EXP. Points!".
+  While the fighter's level is less than 100 and the fighter's experience is at least the experience needed for the fighter's species at (the fighter's level + 1):
+    Grow the fighter.
+
+To win:
+  Set Combat's active to 0.
+  Set Combat's outcome to "win".
+  Sound "victory".
+  Announce "You won the battle!".
+
+To defeat a fighter:
+  Set the fighter's health to 0.
+  Announce "{the fighter's species} fainted!".
+  If Combat's ally's health is more than 0:
+    Reward Combat's ally with the experience reward.
+  If the reserve is yes:
+    Summon.
+    Sound "faint".
+  Otherwise:
+    Win.
+
+To faint a fighter:
+  Set the fighter's health to 0.
+  Set Combat's active to 0.
+  Set Combat's outcome to "fainted".
+  Announce "{the fighter's species} fainted!".
+  Sound "faint".
+
+To settle a duel:
+  If the duel's foe's health is less than 1:
+    Defeat the duel's foe.
+  If the duel's ally's health is less than 1 and the duel's active is 1:
+    Faint the duel's ally.
 
 To respond:
   If Combat's active is 0:
     Stop.
-  Let the old health be Combat's health.
-  Let the old effect count be Score's effect count.
+  Let the old health be Combat's ally's health.
+  Clear Combat.
   Add 1 to Combat's turn.
-  Counter.
-  If Combat's health is more than 0:
-    Suffer.
-  Settle.
-  If Combat's health is less than the old health and Score's effect count is the old effect count:
+  Roll.
+  Counter with the move picked by Combat's foe with Combat's seed.
+  If Combat is decided:
+    Settle Combat.
+  Otherwise if Combat's ally's health is less than the old health:
     Sound "hit".
 
-To fight a key (text):
+To clash with a move (text) against a counter move (text):
+  If the ally strikes first with the move against the counter move is yes:
+    Act with the move from Combat's ally against Combat's foe.
+    If Combat is not decided:
+      Counter with the counter move.
+  Otherwise:
+    Counter with the counter move.
+    If Combat is not decided:
+      Act with the move from Combat's ally against Combat's foe.
+
+To fight:
   If Combat's active is 0:
     Stop.
-  If the key is one of "left" or "up":
-    Subtract 1 from Combat's choice.
-    If Combat's choice is less than 1:
-      Set Combat's choice to 4.
-    Stop.
-  If the key is one of "right" or "down":
-    Add 1 to Combat's choice.
-    If Combat's choice is more than 4:
-      Set Combat's choice to 1.
-    Stop.
-  If the key is not one of "a", "enter" or "z":
-    Stop.
-  Let the move be Combat's move one.
-  If Combat's choice is 2:
-    Set the move to Combat's move two.
-  If Combat's choice is 3:
-    Set the move to Combat's move three.
-  If Combat's choice is 4:
-    Set the move to Combat's move four.
-  If the move is "" and Combat's pp one + Combat's pp two + Combat's pp three + Combat's pp four is more than 0:
-    Set Combat's message to "Choose a learned move.".
-    Stop.
-  Let the remaining be Combat's pp one.
-  If Combat's choice is 2:
-    Set the remaining to Combat's pp two.
-  If Combat's choice is 3:
-    Set the remaining to Combat's pp three.
-  If Combat's choice is 4:
-    Set the remaining to Combat's pp four.
-  If Combat's pp one + Combat's pp two + Combat's pp three + Combat's pp four is 0:
+  Let the ally be Combat's ally.
+  Let the move be item Combat's choice of the ally's moves or else "".
+  Let the remaining be item Combat's choice of the ally's pp or else 0.
+  If the total of the ally's pp is 0:
     Set the move to "Struggle".
+  Otherwise if the move is "":
+    Report "Choose a learned move.".
+    Stop.
   Otherwise if the remaining is less than 1:
-    Set Combat's message to "That move has no PP left!".
+    Report "That move has no PP left!".
     Stop.
-  If Combat's choice is 1 and the move is not "Struggle":
-    Subtract 1 from Combat's pp one.
-  If Combat's choice is 2 and the move is not "Struggle":
-    Subtract 1 from Combat's pp two.
-  If Combat's choice is 3 and the move is not "Struggle":
-    Subtract 1 from Combat's pp three.
-  If Combat's choice is 4 and the move is not "Struggle":
-    Subtract 1 from Combat's pp four.
-  Let the old health be Combat's health.
-  Let the old enemy health be Combat's enemy health.
-  Let the old effect count be Score's effect count.
+  Otherwise:
+    Set item Combat's choice of the ally's pp to the remaining - 1.
+  Let the old health be the ally's health.
+  Let the old foe health be Combat's foe's health.
+  Clear Combat.
   Add 1 to Combat's turn.
-  If Combat's enemy speed is more than Combat's speed and the move is not "Quick Attack":
-    Counter.
-    If Combat's health is more than 0:
-      Suffer.
-    If Combat's enemy health is less than 1:
-      Set Combat's enemy health to 0.
-      Triumph.
-      Stop.
-    If Combat's health is less than 1:
-      Set Combat's health to 0.
-      Set Combat's active to 0.
-      Set Combat's outcome to "fainted".
-      Set Combat's message to "Your Pokemon fainted!".
-      Sound "faint".
-      Stop.
-  Attack with the move.
-  If Combat's health is less than 1:
-    Set Combat's health to 0.
-    Set Combat's active to 0.
-    Set Combat's outcome to "fainted".
-    Set Combat's message to "Your Pokemon fainted!".
-    Sound "faint".
-    Stop.
-  If Combat's enemy health is less than 1:
-    Set Combat's enemy health to 0.
-    Triumph.
-    Stop.
-  If Combat's enemy speed is not more than Combat's speed or the move is "Quick Attack":
-    Counter.
-    If Combat's health is more than 0:
-      Suffer.
-  Settle.
-  If (Combat's health is less than the old health or Combat's enemy health is less than the old enemy health) and Score's effect count is the old effect count:
+  Roll.
+  Clash with the move against the move picked by Combat's foe with Combat's seed.
+  If Combat is decided:
+    Settle Combat.
+  Otherwise if the ally's health is less than the old health or Combat's foe's health is less than the old foe health:
     Sound "hit".
-
-

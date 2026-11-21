@@ -8,9 +8,11 @@
   "cries.english",
   "learnsets.english",
   "encounters.english",
+  "matchups.english",
   "pack.english",
   "party.english",
   "lettering.english",
+  "town_map.english",
   "commands.english",
   "people.english",
   "characters.english",
@@ -23,6 +25,5 @@
   "rock_portraits.english",
   "starter_fronts.english",
   "starter_backs.english",
-  "arena.english",
-  "town_map.english"
+  "arena.english"
 ]

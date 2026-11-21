@@ -1,18 +1,27 @@
-This chapter shares only command, Orders, commandboard.
+This chapter shares only command, Orders, commandboard, reset and move menu.
 
 Use the foundation, battle and pack chapters.
 
-A commandboard has a phase (text) and a cursor (number).
-There is a commandboard called Orders whose phase is "commands" and whose cursor is 1.
+A view is one of commands or moves.
+
+A commandboard has a phase (view) and a cursor (number).
+There is a commandboard called Orders whose phase is commands and whose cursor is 1.
+
+To reset a commandboard (commandboard):
+  Set the commandboard's phase to commands.
+  Set the commandboard's cursor to 1.
+
+To work out the move menu (yes or no):
+  The answer is whether Orders's phase is moves.
 
 An intent is one of back, horizontal, vertical, confirm or ignore.
 
 To work out the intent (intent) for a key (text):
   Choose the answer by the key:
-    For "b", "x" or "escape", use back.
+    For "b", use back.
     For "left" or "right", use horizontal.
     For "up" or "down", use vertical.
-    For "a", "enter" or "z", use confirm.
+    For "a", use confirm.
     Otherwise, use ignore.
 
 To work out the next position (number) from a position (number) for an action (intent):
@@ -25,22 +34,26 @@ To work out the next position (number) from a position (number) for an action (i
   The answer is the position - 2.
 
 To command a key (text):
+  Let the action be the intent for the key.
+  If Combat is reporting:
+    If the action is confirm or the action is back:
+      Proceed with Combat.
+    Stop.
   If Combat's active is 0:
     Stop.
-  Let the action be the intent for the key.
   If the action is back:
-    If Orders's phase is "moves":
-      Set Orders's phase to "commands".
+    If Orders's phase is moves:
+      Set Orders's phase to commands.
     Stop.
-  If Orders's phase is "moves":
+  If Orders's phase is moves:
     If the action is horizontal or the action is vertical:
       Set Combat's choice to the next position from Combat's choice for the action.
       Stop.
     If the action is confirm:
       Let the previous turn be Combat's turn.
-      Fight "a".
+      Fight.
       If Combat's turn is more than the previous turn or Combat's active is 0:
-        Set Orders's phase to "commands".
+        Set Orders's phase to commands.
     Stop.
   If the action is horizontal or the action is vertical:
     Set Orders's cursor to the next position from Orders's cursor for the action.
@@ -48,25 +61,22 @@ To command a key (text):
   If the action is not confirm:
     Stop.
   If Orders's cursor is 1:
-    Set Orders's phase to "moves".
+    Set Orders's phase to moves.
     Set Combat's choice to 1.
     Stop.
   If Orders's cursor is 2:
     Set Stock's cursor to 0.
     Set Stock's notice to "".
-    Set Journey's mode to "battle party".
+    Set Journey's mode to battle party.
     Stop.
   If Orders's cursor is 3:
     Set Stock's cursor to 0.
     Set Stock's notice to "".
-    Set Journey's mode to "battle bag".
+    Set Journey's mode to battle bag.
     Stop.
-  If Combat's foe is not "wild":
-    Set Combat's message to "No running from a trainer battle!".
+  If Combat's challenger is not "wild":
+    Report "No running from a trainer battle!".
     Stop.
   Set Combat's active to 0.
   Set Combat's outcome to "escaped".
-  Set Combat's message to "Got away safely!".
-
-
-
+  Report "Got away safely!".

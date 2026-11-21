@@ -51,4 +51,4 @@ class RedShell(unittest.TestCase):
         sidebar_controls = {"sound-toggle", "music-title", "talk-open", "talk-next", "talk-close", "talk-status"}
         self.assertTrue(sidebar_controls <= elements.sidebar_ids)
         for asset in elements.scripts + elements.links:
-            self.assertTrue((RED / asset).is_file(), asset)
+            self.assertTrue((RED / asset.split("?")[0]).is_file(), asset)

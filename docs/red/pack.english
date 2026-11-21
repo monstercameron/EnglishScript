@@ -1,26 +1,52 @@
 This chapter shares only pack, Stock, inventory, catalogue, examine and available feature.
 
 Use the page library.
-Use the foundation, battle, party, maps, lettering and sound chapters.
+Use the foundation, battle, party, maps, lettering, sound and town map chapters.
 
-A pack has a potions (number), a cursor (number), a notice (text), a save request (number) and a pc taken (number), a antidotes (number), a balls (number), a moon stones (number), a hp ups (number), a forest antidote (number), a forest potion (number), a forest ball (number), a route stone (number) and a route hp (number) and a shop item (number).
-There is a pack called Stock whose potions is 0 and whose cursor is 0 and whose notice is "" and whose save request is 0 and whose pc taken is 0 and whose antidotes is 0 and whose balls is 0 and whose moon stones is 0 and whose hp ups is 0 and whose forest antidote is 0 and whose forest potion is 0 and whose forest ball is 0 and whose route stone is 0 and whose route hp is 0 and whose shop item is 0.
+A pack has a potions (number), a cursor (number), a notice (text), a save request (number), an antidotes (number), a balls (number), a moon stones (number), a hp ups (number), a found (list of text) and a shop item (number).
+There is a pack called Stock whose potions is 0 and whose cursor is 0 and whose notice is "" and whose save request is 0 and whose antidotes is 0 and whose balls is 0 and whose moon stones is 0 and whose hp ups is 0 and whose shop item is 0.
+
+The field finds are place and found message, in that order:
+  "Potion" has "Viridian Forest" and "Found a POTION!".
+  "Antidote" has "Viridian Forest" and "Found an ANTIDOTE!".
+  "Poke Ball" has "Viridian Forest" and "Found a POKE BALL!".
+  "Moon Stone" has "Route 2" and "Found a MOON STONE!".
+  "HP Up" has "Route 2" and "Found an HP UP!".
+
+To collect an item (text) into a pack:
+  Add the item to the pack's found.
+  Depending on the item:
+    For "Potion":
+      Add 1 to the pack's potions.
+    For "Antidote":
+      Add 1 to the pack's antidotes.
+    For "Poke Ball":
+      Add 1 to the pack's balls.
+    For "Moon Stone":
+      Add 1 to the pack's moon stones.
+    For "HP Up":
+      Add 1 to the pack's hp ups.
 
 To work out the available feature (text) at a column (number) by a map row (number):
   Let the item be the feature at the column by the map row.
-  If Journey's place is "Viridian Forest":
-    If the item is "Antidote" and Stock's forest antidote is 1:
-      The answer is "".
-    If the item is "Potion" and Stock's forest potion is 1:
-      The answer is "".
-    If the item is "Poke Ball" and Stock's forest ball is 1:
-      The answer is "".
-  If Journey's place is "Route 2":
-    If the item is "Moon Stone" and Stock's route stone is 1:
-      The answer is "".
-    If the item is "HP Up" and Stock's route hp is 1:
-      The answer is "".
+  Let the discovery be the field finds for the item.
+  If the discovery is not nothing and Journey's place is the discovery's place and the item is in Stock's found:
+    The answer is "".
   The answer is the item.
+
+Let the pokemon entry be 0.
+Let the item entry be 1.
+Let the trainer entry be 2.
+Let the save entry be 3.
+Let the last field entry be 4.
+
+Let the shop goods be a list of "POTION", "POKE BALL" and "ANTIDOTE".
+Let the last shop good be (the number of items in the shop goods) - 1.
+
+The shop prices are price, in that order:
+  "POTION" has 300.
+  "POKE BALL" has 200.
+  "ANTIDOTE" has 100.
 
 The field signs are wording, in that order:
   "TEXT_REDSHOUSE1F_TV" has "There's a movie on TV. Four boys are walking on railroad tracks.".
@@ -55,248 +81,248 @@ To examine:
   Let the item be the available feature at the column ahead by the row ahead.
   If the item is "":
     Stop.
-  Set Journey's mode to "dialogue".
-  If the item is "Potion":
-    Set Stock's forest potion to 1.
-    Add 1 to Stock's potions.
-    Sound "item".
-    Set Journey's message to "Found a POTION!".
+  Set Journey's mode to dialogue.
+  Let the discovery be the field finds for the item.
+  If the discovery is nothing:
+    Set Journey's message to the inscription for the item.
     Stop.
-  If the item is "Antidote":
-    Set Stock's forest antidote to 1.
-    Add 1 to Stock's antidotes.
-    Sound "item".
-    Set Journey's message to "Found an ANTIDOTE!".
-    Stop.
-  If the item is "Poke Ball":
-    Set Stock's forest ball to 1.
-    Add 1 to Stock's balls.
-    Sound "item".
-    Set Journey's message to "Found a POKE BALL!".
-    Stop.
-  If the item is "Moon Stone":
-    Set Stock's route stone to 1.
-    Add 1 to Stock's moon stones.
-    Sound "item".
-    Set Journey's message to "Found a MOON STONE!".
-    Stop.
-  If the item is "HP Up":
-    Set Stock's route hp to 1.
-    Add 1 to Stock's hp ups.
-    Sound "item".
-    Set Journey's message to "Found an HP UP!".
-    Stop.
-  Set Journey's message to the inscription for the item.
+  Collect the item into Stock.
+  Sound "item".
+  Set Journey's message to the discovery's found message.
 
-The town map selections are selection, in that order:
-  "Route 1" has 1.
-  "Viridian City" has 2.
-  "Viridian Mart" has 2.
-  "Viridian Center" has 2.
-  "Viridian School" has 2.
-  "Route 22" has 3.
-  "Route 22 Gate" has 3.
-  "Route 2" has 4.
-  "Forest South Gate" has 4.
-  "Forest North Gate" has 4.
-  "Viridian Forest" has 5.
-  "Pewter City" has 6.
-  "Pewter Gym" has 6.
-  "Pewter Mart" has 6.
-  "Pewter Center" has 6.
-  "Pewter Museum" has 6.
+To treat a fighter with a pack:
+  If the pack's potions is less than 1:
+    Set the pack's notice to "NO POTIONS".
+  Otherwise if the fighter's species is "":
+    Set the pack's notice to "NO POKEMON".
+  Otherwise if the fighter's health is less than 1:
+    Set the pack's notice to "CANNOT USE".
+  Otherwise if the fighter's health is at least the fighter's maximum health:
+    Set the pack's notice to "HP IS FULL".
+  Otherwise:
+    Set the fighter's health to the smaller of the fighter's maximum health and (the fighter's health + 20).
+    Subtract 1 from the pack's potions.
+    Set the pack's notice to "HP RESTORED".
+    If Journey's mode is battle bag:
+      Set Journey's mode to battle.
+      Now Score is not cued.
+      Respond.
+      If Score is not cued:
+        Sound "heal".
+    Otherwise:
+      Sound "heal".
+
+To cure a fighter with a pack:
+  If the pack's antidotes is less than 1:
+    Set the pack's notice to "NO ANTIDOTES".
+  Otherwise if the fighter's status is not "poisoned":
+    Set the pack's notice to "NO POISON TO CURE".
+  Otherwise:
+    Set the fighter's status to "".
+    Subtract 1 from the pack's antidotes.
+    Set the pack's notice to "POISON CURED".
+    Sound "heal".
+    If Journey's mode is battle bag:
+      Set Journey's mode to battle.
+      Respond.
+
+To toss with a pack:
+  If the pack's balls is less than 1:
+    Set the pack's notice to "NO POKE BALLS".
+  Otherwise if Journey's mode is not battle bag:
+    Set the pack's notice to "USE IN BATTLE".
+  Otherwise:
+    Capture.
+    If Team's result is "caught" or Team's result is "escaped":
+      Subtract 1 from the pack's balls.
+      Set Journey's mode to battle.
+      If Team's result is "escaped":
+        Respond.
+    Otherwise:
+      If Team's result is "full":
+        Set the pack's notice to "PARTY IS FULL".
+      Otherwise:
+        Set the pack's notice to "TRAINER'S POKEMON".
+
+To check an adventure with a pack:
+  If the adventure's parcel is 1:
+    Set the pack's notice to "OAK'S PARCEL".
+  Otherwise if the adventure's tm34 is 1:
+    Set the pack's notice to "TM34 BIDE".
+  Otherwise:
+    Set the pack's notice to "NO KEY ITEM".
+
+To map a place (text) with a pack:
+  If Journey's mode is battle bag:
+    Set the pack's notice to "NOT IN BATTLE".
+  Otherwise:
+    Set Journey's mode to town map.
+    Set Journey's selection to the town pin for the place.
+    Set the pack's notice to "".
+
+To unpack a pack:
+  If the pack's cursor is 0:
+    Treat Combat's ally with the pack.
+  Otherwise if the pack's cursor is 1:
+    Toss with the pack.
+  Otherwise if the pack's cursor is 2:
+    Cure Combat's ally with the pack.
+  Otherwise if the pack's cursor is 3:
+    Set the pack's notice to "MOON STONE".
+  Otherwise if the pack's cursor is 4:
+    Set the pack's notice to "HP UP".
+  Otherwise if the pack's cursor is 5:
+    Check Journey with the pack.
+  Otherwise if the pack's cursor is 6 and Journey's town map is 1:
+    Map Journey's place with the pack.
+  Otherwise:
+    If Journey's mode is battle bag:
+      Set Journey's mode to battle.
+    Otherwise:
+      Set Journey's mode to field menu.
+      Set the pack's cursor to 1.
+
+To pause an adventure for a pack with a key (text):
+  If the key is "start":
+    Set the adventure's mode to field menu.
+    Set the pack's cursor to the pokemon entry.
+    Set the pack's notice to "".
+
+To close an adventure for a pack with a key (text):
+  If the key is "b" or the key is "a" or the key is "start":
+    Set the adventure's mode to field menu.
+    Set the pack's cursor to the trainer entry.
+
+To arrange a roster for a pack with a key (text):
+  If the key is "b":
+    If Journey's mode is battle party:
+      Set Journey's mode to battle.
+    Otherwise:
+      Set Journey's mode to field menu.
+    Set the pack's cursor to 0.
+    Stop.
+  If the key is "up":
+    Subtract 1 from the pack's cursor.
+    If the pack's cursor is less than 0:
+      Set the pack's cursor to the roster's count - 1.
+  If the key is "down":
+    Add 1 to the pack's cursor.
+    If the pack's cursor is at least the roster's count:
+      Set the pack's cursor to 0.
+  If the key is "a" and the roster's count is more than 0:
+    Let the slot be the pack's cursor + 1.
+    Let the former be the roster's selected.
+    Switch to the slot.
+    Set the pack's notice to the roster's notice.
+    If Journey's mode is battle party and the roster's selected is not the former:
+      Set Journey's mode to battle.
+      Respond.
+
+To scroll a pack with a key (text):
+  If the key is "b" or the key is "start":
+    Set Journey's mode to walk.
+    Stop.
+  If the key is "up":
+    Subtract 1 from the pack's cursor.
+    If the pack's cursor is less than the pokemon entry:
+      Set the pack's cursor to the last field entry.
+  If the key is "down":
+    Add 1 to the pack's cursor.
+    If the pack's cursor is more than the last field entry:
+      Set the pack's cursor to the pokemon entry.
+  If the key is "a":
+    If the pack's cursor is the pokemon entry:
+      Set Journey's mode to party.
+      Set the pack's cursor to 0.
+      Set the pack's notice to "".
+    Otherwise if the pack's cursor is the item entry:
+      Set Journey's mode to bag.
+      Set the pack's cursor to 0.
+      Set the pack's notice to "".
+    Otherwise if the pack's cursor is the trainer entry:
+      Set Journey's mode to trainer card.
+    Otherwise if the pack's cursor is the save entry:
+      Add 1 to the pack's save request.
+      Set the pack's notice to "SAVE REQUESTED".
+    Otherwise:
+      Set Journey's mode to walk.
+
+To browse a pack with a key (text):
+  If the key is "b":
+    If Journey's mode is battle bag:
+      Set Journey's mode to battle.
+    Otherwise:
+      Set Journey's mode to field menu.
+      Set the pack's cursor to 1.
+    Set the pack's notice to "".
+    Stop.
+  If the key is "up":
+    Subtract 1 from the pack's cursor.
+    If the pack's cursor is less than 0:
+      Set the pack's cursor to 6.
+      If Journey's town map is 1:
+        Set the pack's cursor to 7.
+  If the key is "down":
+    Add 1 to the pack's cursor.
+    Let the last item be 6.
+    If Journey's town map is 1:
+      Set the last item to 7.
+    If the pack's cursor is more than the last item:
+      Set the pack's cursor to 0.
+  If the key is "a":
+    Unpack the pack.
+
+To shop a pack with a key (text):
+  If the key is "b":
+    Set Journey's mode to walk.
+    Set the pack's notice to "".
+    Stop.
+  If the key is "up":
+    Subtract 1 from the pack's shop item.
+    If the pack's shop item is less than 0:
+      Set the pack's shop item to the last shop good.
+  If the key is "down":
+    Add 1 to the pack's shop item.
+    If the pack's shop item is more than the last shop good:
+      Set the pack's shop item to 0.
+  If the key is "a":
+    Let the good be (item (the pack's shop item + 1) of the shop goods) or else "".
+    Let the offer be the shop prices for the good.
+    Let the price be the offer's price or else 0.
+    If Journey's wallet is at least the price:
+      Subtract the price from Journey's wallet.
+      Depending on the good:
+        For "POTION":
+          Add 1 to the pack's potions.
+        For "POKE BALL":
+          Add 1 to the pack's balls.
+        For "ANTIDOTE":
+          Add 1 to the pack's antidotes.
+      Sound "item".
+      Set the pack's notice to "ITEM BOUGHT".
+    Otherwise:
+      Set the pack's notice to "NOT ENOUGH MONEY".
 
 To inventory a key (text):
   Depending on Journey's mode:
-    For "walk":
-      If the key is "start":
-        Set Journey's mode to "field menu".
-        Set Stock's cursor to 0.
-        Set Stock's notice to "".
-        Stop.
-    For "card":
-      If the key is "b" or the key is "a" or the key is "start":
-        Set Journey's mode to "field menu".
-        Set Stock's cursor to 0.
-      Stop.
-    For "party" or "battle party":
-      Record.
-      If the key is "b":
-        If Journey's mode is "battle party":
-          Set Journey's mode to "battle".
-        Otherwise:
-          Set Journey's mode to "field menu".
-        Set Stock's cursor to 0.
-        Stop.
-      If the key is "up":
-        Subtract 1 from Stock's cursor.
-        If Stock's cursor is less than 0:
-          Set Stock's cursor to Team's count - 1.
-      If the key is "down":
-        Add 1 to Stock's cursor.
-        If Stock's cursor is at least Team's count:
-          Set Stock's cursor to 0.
-      If the key is "a" and Team's count is more than 0:
-        Let the slot be Stock's cursor + 1.
-        Let the former be Team's selected.
-        Switch to the slot.
-        Set Stock's notice to Team's notice.
-        If Journey's mode is "battle party" and Team's selected is not the former:
-          Set Journey's mode to "battle".
-          Respond.
-      Stop.
-    For "field menu":
-      If the key is "b" or the key is "start":
-        Set Journey's mode to "walk".
-        Stop.
-      If the key is "up":
-        Subtract 1 from Stock's cursor.
-        If Stock's cursor is less than 0:
-          Set Stock's cursor to 4.
-      If the key is "down":
-        Add 1 to Stock's cursor.
-        If Stock's cursor is more than 4:
-          Set Stock's cursor to 0.
-      If the key is "a":
-        If Stock's cursor is 0:
-          Set Journey's mode to "party".
-          Set Stock's cursor to 0.
-          Set Stock's notice to "".
-        Otherwise if Stock's cursor is 1:
-          Set Journey's mode to "bag".
-          Set Stock's cursor to 0.
-          Set Stock's notice to "".
-        Otherwise if Stock's cursor is 2:
-          Set Journey's mode to "card".
-        Otherwise if Stock's cursor is 3:
-          Add 1 to Stock's save request.
-          Set Stock's notice to "SAVE REQUESTED".
-        Otherwise:
-          Set Journey's mode to "walk".
-      Stop.
-    For "bag" or "battle bag":
-      If the key is "b":
-        If Journey's mode is "battle bag":
-          Set Journey's mode to "battle".
-        Otherwise:
-          Set Journey's mode to "field menu".
-          Set Stock's cursor to 1.
-        Set Stock's notice to "".
-        Stop.
-      If the key is "up":
-        Subtract 1 from Stock's cursor.
-        If Stock's cursor is less than 0:
-          Set Stock's cursor to 6.
-          If Journey's town map is 1:
-            Set Stock's cursor to 7.
-      If the key is "down":
-        Add 1 to Stock's cursor.
-        Let the last item be 6.
-        If Journey's town map is 1:
-          Set the last item to 7.
-        If Stock's cursor is more than the last item:
-          Set Stock's cursor to 0.
-      If the key is "a":
-        If Stock's cursor is 0:
-          If Stock's potions is less than 1:
-            Set Stock's notice to "NO POTIONS".
-          Otherwise if Combat's starter is "":
-            Set Stock's notice to "NO POKEMON".
-          Otherwise if Combat's health is less than 1:
-            Set Stock's notice to "CANNOT USE".
-          Otherwise if Combat's health is at least Combat's maximum health:
-            Set Stock's notice to "HP IS FULL".
-          Otherwise:
-            Add 20 to Combat's health.
-            If Combat's health is more than Combat's maximum health:
-              Set Combat's health to Combat's maximum health.
-            Subtract 1 from Stock's potions.
-            Set Stock's notice to "HP RESTORED".
-            If Journey's mode is "battle bag":
-              Let the old effect count be Score's effect count.
-              Set Journey's mode to "battle".
-              Respond.
-              If Score's effect count is the old effect count:
-                Sound "heal".
-            Otherwise:
-              Sound "heal".
-        Otherwise if Stock's cursor is 1:
-          If Stock's balls is less than 1:
-            Set Stock's notice to "NO POKE BALLS".
-          Otherwise if Journey's mode is not "battle bag":
-            Set Stock's notice to "USE IN BATTLE".
-          Otherwise:
-            Capture.
-            If Team's result is "caught" or Team's result is "escaped":
-              Subtract 1 from Stock's balls.
-              Set Journey's mode to "battle".
-              If Team's result is "escaped":
-                Respond.
-            Otherwise:
-              If Team's result is "full":
-                Set Stock's notice to "PARTY IS FULL".
-              Otherwise:
-                Set Stock's notice to "TRAINER'S POKEMON".
-        Otherwise if Stock's cursor is 2:
-          Set Stock's notice to "NO POISON TO CURE".
-        Otherwise if Stock's cursor is 3:
-          Set Stock's notice to "MOON STONE".
-        Otherwise if Stock's cursor is 4:
-          Set Stock's notice to "HP UP".
-        Otherwise if Stock's cursor is 5:
-          If Journey's parcel is 1:
-            Set Stock's notice to "OAK'S PARCEL".
-          Otherwise if Journey's tm34 is 1:
-            Set Stock's notice to "TM34 BIDE".
-          Otherwise:
-            Set Stock's notice to "NO KEY ITEM".
-        Otherwise if Stock's cursor is 6 and Journey's town map is 1:
-          If Journey's mode is "battle bag":
-            Set Stock's notice to "NOT IN BATTLE".
-          Otherwise:
-            Set Journey's mode to "town map".
-            Let the location be the town map selections for Journey's place.
-            Set Journey's selection to the location's selection or else 0.
-            Set Stock's notice to "".
-        Otherwise:
-          If Journey's mode is "battle bag":
-            Set Journey's mode to "battle".
-          Otherwise:
-            Set Journey's mode to "field menu".
-            Set Stock's cursor to 1.
-      Stop.
-    For "shop":
-      If the key is "b":
-        Set Journey's mode to "walk".
-        Set Stock's notice to "".
-        Stop.
-      If the key is "up" or the key is "down":
-        Add 1 to Stock's shop item.
-        If Stock's shop item is more than 2:
-          Set Stock's shop item to 0.
-      If the key is "a":
-        Let the price be 300.
-        If Stock's shop item is 1:
-          Set the price to 200.
-        If Stock's shop item is 2:
-          Set the price to 100.
-        If Journey's wallet is at least the price:
-          Subtract the price from Journey's wallet.
-          If Stock's shop item is 0:
-            Add 1 to Stock's potions.
-          If Stock's shop item is 1:
-            Add 1 to Stock's balls.
-          If Stock's shop item is 2:
-            Add 1 to Stock's antidotes.
-          Sound "item".
-          Set Stock's notice to "ITEM BOUGHT".
-        Otherwise:
-          Set Stock's notice to "NOT ENOUGH MONEY".
+    For walk:
+      Pause Journey for Stock with the key.
+    For trainer card:
+      Close Journey for Stock with the key.
+    For party or battle party:
+      Arrange Team for Stock with the key.
+    For field menu:
+      Scroll Stock with the key.
+    For bag or battle bag:
+      Browse Stock with the key.
+    For shop:
+      Shop Stock with the key.
+
 To catalogue:
   Fill Screen from 0 by 0 with 160 over 144 as 3.
   Fill Screen from 3 by 3 with 154 over 138 as 0.
   Depending on Journey's mode:
-    For "field menu":
+    For field menu:
       Inscribe "MENU" at 12 by 10.
       Inscribe "POKEMON" at 25 by 27.
       Inscribe "ITEM" at 25 by 43.
@@ -306,23 +332,20 @@ To catalogue:
       Let the y be 27 + Stock's cursor * 16.
       Inscribe ">" at 12 by the y.
       Inscribe Stock's notice at 12 by 119.
-    For "party" or "battle party":
-      Record.
+    For party or battle party:
       Inscribe "POKEMON" at 12 by 8.
       If Team's count is 0:
         Inscribe "NO POKEMON" at 12 by 28.
-      Let the party members be a list of First, Second, Third, Fourth, Fifth and Sixth.
       Let the slot be 1.
-      For each member in the party members:
-        If Team's count is at least the slot:
-          Let the height be 22 + (the slot - 1) * 14.
-          Inscribe "{the member's species} L{the member's level} {the member's health}/{the member's maximum health}" at 22 by the height.
+      For each member in Team's members:
+        Let the height be 22 + (the slot - 1) * 14.
+        Inscribe "{the member's species} L{the member's level} {the member's health}/{the member's maximum health}" at 22 by the height.
         Add 1 to the slot.
       Let the y be 22 + Stock's cursor * 14.
       Inscribe ">" at 10 by the y.
       Inscribe Stock's notice at 12 by 110.
       Inscribe "A SWITCH B BACK" at 12 by 128.
-    For "bag" or "battle bag":
+    For bag or battle bag:
       Inscribe "ITEM" at 12 by 8.
       Inscribe "POTION X{Stock's potions}" at 22 by 19.
       Inscribe "POKE BALL X{Stock's balls}" at 22 by 30.
@@ -344,7 +367,7 @@ To catalogue:
       Inscribe ">" at 10 by the y.
       Inscribe Stock's notice at 10 by 114.
       Inscribe "B BACK" at 10 by 130.
-    For "card":
+    For trainer card:
       Inscribe "TRAINER CARD" at 12 by 10.
       Inscribe "NAME {Journey's trainer}" at 12 by 32.
       Inscribe "MONEY {Journey's wallet}" at 12 by 49.
@@ -353,11 +376,13 @@ To catalogue:
       Otherwise:
         Inscribe "NO BADGES" at 12 by 70.
       Inscribe "B BACK" at 12 by 125.
-    For "shop":
+    For shop:
       Inscribe "POKE MART" at 12 by 8.
-      Inscribe "POTION 300" at 22 by 26.
-      Inscribe "POKE BALL 200" at 22 by 42.
-      Inscribe "ANTIDOTE 100" at 22 by 58.
+      Let the position be 0.
+      For each good in the shop goods:
+        Let the offer be the shop prices for the good.
+        Inscribe "{the good} {the offer's price or else 0}" at 22 by (26 + the position * 16).
+        Add 1 to the position.
       Let the y be 26 + Stock's shop item * 16.
       Inscribe ">" at 10 by the y.
       Inscribe "MONEY {Journey's wallet}" at 12 by 80.

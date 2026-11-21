@@ -19,3 +19,4 @@
 
 - Astra reads every changed EnglishScript passage as ordinary English. If the logic is too complex or the wording obscures who acts, what changes, or when a condition holds, Astra identifies the passage and asks the subagent that wrote it to simplify it. The author revises it and reruns the behavior checks. Astra reviews the revision and repeats this loop until the passage reads clearly and the checks pass.
 - Astra reviews the combined diff and handles Git integration. When shared generated files need updating, Astra runs `python tools/build_site.py` once after the source edits settle. Run `python -m unittest discover -s tests` against the integrated checkout.
+- Play the Pokémon campaign in the existing visible in-app browser tab so the user can watch, pause, and mute it. Run one game instance at a time and leave the sound setting to the user.

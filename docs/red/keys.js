@@ -23,9 +23,30 @@
   const controls = [jev, openai, form.querySelector('button[type="submit"]'), forget];
   const local = ['localhost', '127.0.0.1', '[::1]', '::1'].includes(location.hostname) && ['http:', 'https:'].includes(location.protocol);
   const unavailable = 'API keys are available when this page is opened through the local game server on your computer.';
+  const patience = 10;
 
   function enabled(value) {
     controls.forEach(control => { control.disabled = !value; });
+  }
+
+  function deadline() {
+    return typeof AbortSignal === 'function' && typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(patience * 1000) : undefined;
+  }
+
+  async function ask(path, options = {}) {
+    const response = await fetch(path, { ...options, signal: deadline() });
+    if (!response.ok) throw new Error();
+    return response;
+  }
+
+  function timedOut(error) {
+    return error && error.name === 'TimeoutError';
+  }
+
+  function problem(action, error) {
+    return timedOut(error)
+      ? `Could not ${action}: the local game server did not answer within ${patience} seconds. Try again.`
+      : `Could not ${action}. Check that the local game server is running and try again.`;
   }
 
   async function refresh() {
@@ -35,17 +56,15 @@
       return;
     }
     try {
-      const response = await fetch('/api/companion', { cache: 'no-store' });
-      if (!response.ok) throw new Error();
-      const data = await response.json();
+      const data = await (await ask('/api/companion', { cache: 'no-store' })).json();
       if (typeof data.jev !== 'boolean' || typeof data.openai !== 'boolean' || typeof data.sessionKeys !== 'boolean') throw new Error();
       root.querySelector('#jev-key-state').textContent = data.jev ? 'Configured' : 'Missing';
       root.querySelector('#openai-key-state').textContent = data.openai ? 'Configured' : 'Missing';
       enabled(true);
       status.textContent = data.sessionKeys ? 'Session keys are saved.' : 'No session keys saved.';
-    } catch (_) {
-      enabled(false);
-      status.textContent = unavailable;
+    } catch (error) {
+      enabled(timedOut(error));
+      status.textContent = timedOut(error) ? problem('check the API keys', error) : unavailable;
     }
   }
 
@@ -62,13 +81,12 @@
     }
     enabled(false);
     try {
-      const response = await fetch('/api/companion/keys', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(keys) });
-      if (!response.ok) throw new Error();
+      await ask('/api/companion/keys', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(keys) });
       await refresh();
       window.dispatchEvent(new Event('red-companion-settings'));
-    } catch (_) {
+    } catch (error) {
       enabled(true);
-      status.textContent = 'Could not save keys. Check that the local game server is running and try again.';
+      status.textContent = problem('save keys', error);
     }
   });
 
@@ -77,13 +95,12 @@
     openai.value = '';
     enabled(false);
     try {
-      const response = await fetch('/api/companion/keys', { method: 'DELETE' });
-      if (!response.ok) throw new Error();
+      await ask('/api/companion/keys', { method: 'DELETE' });
       await refresh();
       window.dispatchEvent(new Event('red-companion-settings'));
-    } catch (_) {
+    } catch (error) {
       enabled(true);
-      status.textContent = 'Could not forget keys. Check that the local game server is running and try again.';
+      status.textContent = problem('forget keys', error);
     }
   });
 

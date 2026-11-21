@@ -7,64 +7,201 @@ There is a companion called Speaker whose actor is "" and whose question is "" a
 
 Use the maps and characters chapters.
 
-The local greetings are greeting, in that order:
-  "Oak's Lab:1,9:Girl" has "GIRL: I help Professor Oak keep his notes organized. There is always something new to learn here.".
-  "Oak's Lab:2,10:Scientist" has "SCIENTIST: I check the lab records carefully. Good observations are useful to every trainer.".
-  "Oak's Lab:8,10:Scientist" has "SCIENTIST: I watch how Pokemon behave around trainers. Patience helps them feel at ease.".
-  "Pallet Town:3,8:Girl" has "GIRL: I like watching trainers set out from Pallet. Every trip starts with one step.".
-  "Pallet Town:11,14:Fisher" has "FISHER: The water is peaceful today. I could watch it for hours.".
-  "Route 1:5,24:Youngster" has "YOUNGSTER: The grass here is full of surprises. I keep an eye on my Pokemon as we travel.".
-  "Route 1:15,13:Youngster" has "YOUNGSTER: I like taking the path between Pallet and Viridian. You meet all kinds of trainers.".
-  "Viridian City:13,20:Youngster" has "YOUNGSTER: Viridian is a nice place to stop and catch your breath.".
-  "Viridian City:30,8:Man" has "MAN: This city has roads leading in several directions. Read the signs before setting out.".
-  "Viridian City:30,25:Youngster" has "YOUNGSTER: I like looking around the city before heading back out on the road.".
-  "Viridian City:17,9:Girl" has "GIRL: That old man can be quite a character. I hope he is feeling better.".
-  "Viridian City:18,9:Old Man" has "OLD MAN: A little patience goes a long way, young trainer. Take your time.".
-  "Viridian City:6,23:Fisher" has "FISHER: I enjoy a quiet spot near the water. The city sounds softer from here.".
-  "Viridian City:17,5:Old Man" has "OLD MAN: I have seen many trainers pass through Viridian. Each has their own way of learning.".
-  "Viridian Mart:5,5:Youngster" has "YOUNGSTER: I like checking what a Mart has before a long trip.".
-  "Viridian Mart:3,3:Customer" has "CUSTOMER: A little preparation makes a journey easier. I always check my supplies.".
-  "Viridian Center:10,5:Gentleman" has "GENTLEMAN: A Pokemon Center is a welcome place to rest after the road.".
-  "Viridian Center:4,3:Visitor" has "VISITOR: It feels good to take a break here before going outside again.".
-  "Viridian Center:11,2:Receptionist" has "RECEPTIONIST: Welcome to the Center. Please make yourself comfortable while you visit.".
-  "Forest South Gate:8,4:Girl" has "GIRL: The forest can be confusing. I like to pay attention to where I have been.".
-  "Forest South Gate:2,4:Girl" has "GIRL: I look forward to seeing what Pokemon live among the trees.".
-  "Viridian Forest:16,43:Youngster" has "YOUNGSTER: These trees make the forest feel enormous! I try to remember my route.".
-  "Viridian Forest:27,40:Youngster" has "YOUNGSTER: There are so many places for Pokemon to hide here. I keep looking.".
-  "Forest North Gate:3,2:Visitor" has "VISITOR: The forest trail takes some patience. It is nice to see a gate again.".
-  "Forest North Gate:2,5:Gramps" has "GRAMPS: A steady pace will get you through the woods. No need to rush.".
-  "Pewter City:8,15:Visitor" has "VISITOR: Pewter has a quiet, solid feel to it. I like wandering its streets.".
-  "Pewter City:17,25:Visitor" has "VISITOR: There is plenty to see in Pewter. Take a little time to look around.".
-  "Pewter City:27,17:Visitor" has "VISITOR: I have been thinking about the stones around this city. They all look different up close.".
-  "Pewter City:26,25:Visitor" has "VISITOR: Trainers come to Pewter with all sorts of teams. It is fun to see their partners.".
-  "Pewter City:35,16:Youngster" has "YOUNGSTER: I want to grow stronger with my Pokemon. Practice takes time, though!".
-  "Route 22 Gate:6,2:Guard" has "GUARD: The road ahead has its own requirements. Pay attention to the guards along the way.".
-  "Pewter Center:11,7:Gentleman" has "GENTLEMAN: Pewter draws trainers from far away. A comfortable rest does wonders after a journey.".
-  "Pewter Center:1,3:Jigglypuff" has "JIGGLYPUFF: Jiggly! Jigglypuff sings a little tune.".
-  "Pewter Center:11,2:Receptionist" has "RECEPTIONIST: Welcome to the Pewter Center. I hope you and your Pokemon enjoy your visit.".
-  "Pewter Mart:0,5:Clerk" has "CLERK: Welcome to the Pewter Mart! It is a good idea to check your supplies before traveling.".
-  "Pewter Mart:3,3:Youngster" has "YOUNGSTER: I always wonder what to bring on a trip. There is so much to choose from!".
-  "Pewter Mart:5,5:Visitor" has "VISITOR: I stopped in to look over the supplies before continuing my journey.".
-  "Viridian School:3,5:Girl" has "GIRL: There is so much to learn about Pokemon. I like sharing what I discover in class.".
-  "Viridian School:4,1:Teacher" has "TEACHER: A thoughtful trainer learns from every encounter. Ask questions and observe your Pokemon.".
-  "Viridian House:5,3:Man" has "MAN: Our home is lively with Pokemon around. They each have their own personality.".
-  "Viridian House:1,4:Girl" has "GIRL: Speary is such a fun companion! I like spending time together at home.".
-  "Viridian House:5,5:Speary" has "SPEARY: Spear! Speary looks at you with bright eyes.".
-  "Pewter House:2,3:Man" has "MAN: Pewter is a good place to slow down and talk with neighbors.".
-  "Pewter House:4,5:Youngster" has "YOUNGSTER: I like hearing stories about Pokemon from people who visit our house.".
-  "Nidoran House:4,5:Nidoran" has "NIDORAN: Nido! Nidoran watches you curiously.".
-  "Nidoran House:3,5:Boy" has "BOY: Nidoran is my friend. I like spending time together at home.".
-  "Nidoran House:1,2:Man" has "MAN: It is nice to see how much the boy cares for Nidoran.".
+To work out the spoken words (text) of a question (text):
+  Let the wording be the question in lower case.
+  Let the spoken be "".
+  Let the quoted be no.
+  Let the position be 0.
+  Repeat the length of the wording times:
+    Add 1 to the position.
+    Let the mark be letter the position of the wording or else "".
+    If the mark is one of """", "“" or "”":
+      If the quoted is yes:
+        Set the quoted to no.
+      Otherwise:
+        Set the quoted to yes.
+      Set the spoken to "{the spoken} ".
+    Otherwise if the quoted is no:
+      If the mark is "’":
+        Set the mark to "'".
+      If "abcdefghijklmnopqrstuvwxyz'" contains the mark:
+        Set the spoken to "{the spoken}{the mark}".
+      Otherwise:
+        Set the spoken to "{the spoken} ".
+  The answer is the spoken.
 
-To work out the familiar greeting (text) for a guest (text):
-  Choose the answer by the guest:
-    For "Bulbasaur", use "BULBASAUR: Bulba! The Pokemon watches you quietly.".
-    For "Charmander", use "CHARMANDER: Char! Its tail flame flickers as it looks your way.".
-    For "Squirtle", use "SQUIRTLE: Squirtle! It peeks at you with curiosity.".
-    For "Bug Catcher 1", use "BUG CATCHER: I love finding Pokemon in the forest. There's always another patch of grass to explore!".
-    For "Bug Catcher 2", use "BUG CATCHER: The forest is a great place to train. I like seeing what other trainers bring!".
-    For "Bug Catcher 3", use "BUG CATCHER: Slow down and look around! You might spot a Pokemon you've never seen before.".
-    Otherwise, use "".
+Let the intensifiers always be a list of "so", "really", "very", "truly", "too" and "extremely".
+Let the denials always be a list of "not", "never", "don't", "dont" and "no".
+
+The tone cues are tone, in that order:
+  "hate" has "firm".
+  "stupid" has "firm".
+  "idiot" has "firm".
+  "kill" has "firm".
+  "ugly" has "firm".
+  "loser" has "firm".
+  "rude" has "firm".
+  "are mean" has "firm".
+  "you're mean" has "firm".
+  "youre mean" has "firm".
+  "shut up" has "firm".
+  "hurt you" has "firm".
+  "love you" has "warm".
+  "date me" has "warm".
+  "thank" has "warm".
+  "thanks" has "warm".
+  "kind" has "warm".
+  "kind of" has "".
+  "friend" has "warm".
+  "nice" has "warm".
+  "flirt" has "warm".
+  "kiss" has "warm".
+  "beautiful" has "warm".
+  "cute" has "warm".
+
+To work out the telling words (list of text) of a question (text):
+  Let the telling (list of text) be an empty list of text.
+  For each word in the words of (the spoken words of the question):
+    If the word is not in the intensifiers:
+      Add the word to the telling.
+  The answer is the telling.
+
+To work out the cue (text) of a sentence (list of text) at a place (number):
+  Let the word be item the place of the sentence or else "".
+  Let the following be item (the place + 1) of the sentence or else "".
+  Let the before be item (the place - 1) of the sentence or else "".
+  If the before is in the denials:
+    The answer is "".
+  Let the phrase cue be the tone cues for "{the word} {the following}".
+  If the phrase cue is not nothing:
+    The answer is the phrase cue's tone.
+  Let the word cue be the tone cues for the word.
+  If the word cue is not nothing:
+    The answer is the word cue's tone.
+  The answer is "".
+
+To work out the attitude (text) of a question (text):
+  Let the telling be the telling words of the question.
+  Let the mood be "".
+  Let the place be 0.
+  Repeat the number of items in the telling times:
+    Add 1 to the place.
+    Depending on the cue of the telling at the place:
+      For "firm":
+        The answer is "firm".
+      For "warm":
+        Set the mood to "warm".
+  The answer is the mood.
+
+To work out the plain wording (text) of a question (text):
+  Let the wording be the question in lower case.
+  Let the plain be "".
+  Let the position be 0.
+  Repeat the length of the wording times:
+    Add 1 to the position.
+    Let the mark be letter the position of the wording or else " ".
+    If the mark is "é":
+      Set the mark to "e".
+    If "abcdefghijklmnopqrstuvwxyz" does not contain the mark:
+      Set the mark to " ".
+    Set the plain to "{the plain}{the mark}".
+  The answer is the plain.
+
+To work out the topic words (list of text) of a question (text):
+  Let the topics (list of text) be the words of (the plain wording of the question).
+  For each word in the words of (the plain wording of the question):
+    If the word ends with "s" and the length of the word is more than 3:
+      Add the first (the length of the word - 1) letters of the word to the topics.
+  The answer is the topics.
+
+To work out the topic phrasing (text) of a question (text):
+  Let the joined be (the words of (the plain wording of the question)) joined with " ".
+  The answer is " {the joined} ".
+
+The keywords are topic, in that order:
+  "pokedex" has "pokedex".
+  "parcel" has "parcel".
+  "badge" has "badge".
+  "win" has "badge".
+  "starter" has "starter".
+  "partner" has "starter".
+  "grass" has "wild".
+  "wild" has "wild".
+  "pokemon" has "pokemon".
+  "oak" has "oak".
+  "professor" has "oak".
+  "grandpa" has "oak".
+  "home" has "home".
+  "miss" has "home".
+  "missed" has "home".
+  "battle" has "battle".
+  "strong" has "battle".
+  "rock" has "rock".
+  "gym" has "rock".
+  "brock" has "brock".
+  "light" has "light".
+  "year" has "light".
+
+Let the topic order always be a list of "pokedex", "parcel", "badge", "starter", "wild", "pokemon", "oak", "home", "battle", "rock", "brock", "light" and "greeting".
+
+To work out the topics raised (list of text) by a question (text):
+  Let the raised (list of text) be an empty list of text.
+  For each word in the topic words of the question:
+    Let the keyword be the keywords for the word.
+    If the keyword is not nothing:
+      Add the keyword's topic to the raised.
+  Add "greeting" to the raised.
+  The answer is the raised.
+
+To work out the progress (text) on a topic (text):
+  If the topic is one of "parcel", "pokedex" or "oak":
+    If Journey's dex is 1:
+      The answer is "delivered".
+    If Journey's parcel is 1:
+      The answer is "carried".
+  If the topic is one of "starter" or "pokemon" and Journey's starter is not "":
+    The answer is "chosen".
+  If the topic is "badge" and Journey's badge is 1:
+    The answer is "earned".
+  The answer is "".
+
+To work out the topic line (text) of a speaker (text) on a topic (text):
+  Let the progressed be the topic replies for "{the speaker}:{the topic}:{the progress on the topic}".
+  If the progressed is not nothing:
+    The answer is the progressed's line.
+  Let the general be the topic replies for "{the speaker}:{the topic}".
+  If the general is not nothing:
+    The answer is the general's line.
+  The answer is "".
+
+To work out the fitting line (text) of a speaker (text) for a raised (list of text):
+  For each topic in the topic order:
+    If the topic is in the raised:
+      Let the line be the topic line of the speaker on the topic.
+      If the line is not "":
+        The answer is the line.
+  The answer is "".
+
+To work out the filled line (text) of a template (text):
+  Let the filled be "".
+  Let the rest be the template.
+  While the rest is not "":
+    Let the mark be letter 1 of the rest or else "".
+    Let the value be the mark.
+    If the rest starts with "[trainer]":
+      Set the mark to "[trainer]".
+      Set the value to Journey's trainer.
+    Otherwise if the rest starts with "[starter]":
+      Set the mark to "[starter]".
+      Set the value to Journey's starter.
+    Otherwise if the rest starts with "[rival starter]":
+      Set the mark to "[rival starter]".
+      Set the value to Journey's rival starter.
+    Set the filled to "{the filled}{the value}".
+    Set the rest to the last (the length of the rest - the length of the mark) letters of the rest.
+  The answer is the filled.
+
+Let the story requests always be a list of "your story", "about yourself", "who are you", "your past", "your background" and "tell me about you".
 
 To converse with a guest (text) about a question (text):
   Set Speaker's actor to the guest.
@@ -73,7 +210,6 @@ To converse with a guest (text) about a question (text):
   Set Speaker's voice to "".
   Set Speaker's question to the question.
   Set Speaker's response to "I don't know enough about that to say. What else would you like to talk about?".
-  Let the topic be the question in lower case.
   Let the nearby column be the conversation column.
   Let the nearby row be the conversation row.
   If the guest is "":
@@ -85,115 +221,29 @@ To converse with a guest (text) about a question (text):
     Set the character address to "Blue's House:2,3:Daisy".
   Let the character be the character portraits for the character address.
   If the character is not nothing:
-    Set Speaker's identity to the address.
+    Set Speaker's identity to the character address, except:
+      Use "Oak's Lab:4,3:Rival" for "Route 22:25,5:Route 22 Rival".
     Set Speaker's profile to the character's background.
     Set Speaker's voice to the character's voice.
     If the address is "Home:5,4:Mom":
       Set Speaker's profile to "Mom raised {Journey's trainer} {the character's background}".
     If the character address is "Blue's House:2,3:Daisy":
       Set Speaker's profile to "Daisy knows her brother and {Journey's trainer} {the character's background}".
-    If the topic contains "hate" or the topic contains "stupid" or the topic contains "idiot" or the topic contains "shut up" or the topic contains "kill" or the topic contains "hurt you" or the topic contains "ugly" or the topic contains "loser" or the topic contains "rude" or the topic contains "mean":
+    Let the mood be the attitude of the question.
+    If the mood is "firm":
       Set Speaker's response to "{the guest}: {the character's firm response}".
       Stop.
-    If the topic contains "love you" or the topic contains "date me" or the topic contains "flirt" or the topic contains "kiss" or the topic contains "beautiful" or the topic contains "cute":
+    Let the phrasing be the topic phrasing of the question.
+    For each phrase in the story requests:
+      If the phrasing contains " {the phrase} ":
+        Set Speaker's response to "{the guest}: {the character's story}".
+        Stop.
+    If the mood is "warm":
       Set Speaker's response to "{the guest}: {the character's warm response}".
       Stop.
-    If the topic contains "your story" or the topic contains "about yourself" or the topic contains "who are you" or the topic contains "your past" or the topic contains "your background" or the topic contains "tell me about you":
-      Set Speaker's response to "{the guest}: {the character's story}".
-      Stop.
-    If the topic contains "thank" or the topic contains "kind" or the topic contains "friend" or the topic contains "nice":
-      Set Speaker's response to "{the guest}: {the character's warm response}".
-      Stop.
-  Let the local greeting be the local greetings for the address.
-  If the local greeting is not nothing:
-    Set Speaker's response to the local greeting's greeting.
-    Stop.
-  If the address is "Route 22:25,5:Route 22 Rival":
-    Set Speaker's response to "ROUTE 22 RIVAL: Still keeping up, {Journey's trainer}? My team and I are training hard!".
-    Stop.
-  If the address is one of "Blue's House:2,3:Daisy" or "Blue's House:6,4:Daisy":
-    Set Speaker's response to "DAISY: Hello, {Journey's trainer}! My brother can be competitive, but I hope you both enjoy your journeys.".
-    Stop.
-  If the guest is "Clerk" and Journey's place is "Pewter Mart":
-    Set Speaker's response to "CLERK: Welcome to the Pewter Mart! Check your supplies before traveling.".
-    Stop.
-  Depending on the guest:
-    For "Nurse":
-      Set Speaker's response to "NURSE: Welcome! Taking care of your Pokemon is an important part of a journey.".
-      If Journey's place is "Pewter Center":
-        Set Speaker's response to "NURSE: Welcome to Pewter! I hope your Pokemon are feeling well after the road.".
-    For "Oak":
-      Set Speaker's response to "OAK: A good researcher observes carefully and treats Pokemon with respect. What would you like to know?".
-      If the topic contains "pokemon" or the topic contains "pokémon":
-        Set Speaker's response to "OAK: Pokemon are remarkable creatures. Some people keep them as companions, and others battle alongside them.".
-      If the topic contains "grass" or the topic contains "wild":
-        Set Speaker's response to "OAK: Wild Pokemon live in tall grass. Don't venture in without a Pokemon to protect you.".
-      If the topic contains "starter" or the topic contains "partner":
-        If Journey's starter is "":
-          Set Speaker's response to "OAK: I have three Pokemon at the lab. Choosing a partner is an important decision.".
-        Otherwise:
-          Set Speaker's response to "OAK: You chose {Journey's starter}. Spend time with your partner and learn what it can do.".
-      If the topic contains "parcel":
-        If Journey's parcel is 1 and Journey's dex is 0:
-          Set Speaker's response to "OAK: You have my parcel? Please speak to me normally so I can receive it.".
-        Otherwise if Journey's dex is 1:
-          Set Speaker's response to "OAK: Thank you for delivering my parcel. Your Pokedex can record Pokemon you encounter.".
-        Otherwise:
-          Set Speaker's response to "OAK: The Viridian City Mart may have something for me. Please check there.".
-      If the topic contains "pokedex" or the topic contains "pokédex":
-        If Journey's dex is 1:
-          Set Speaker's response to "OAK: The Pokedex records data on Pokemon you encounter. Catch them to learn more.".
-        Otherwise:
-          Set Speaker's response to "OAK: I study Pokemon, but I have more work to do before I can tell you about that.".
-    For "Mom":
-      Set Speaker's response to "MOM: It's good to see you, {Journey's trainer}. Take care of yourself out there.".
-      If the topic contains "home" or the topic contains "miss" or the topic contains "you":
-        Set Speaker's response to "MOM: Home is always here for you. I'm cheering you on, even when you're far away.".
-      If the topic contains "oak" or the topic contains "professor":
-        Set Speaker's response to "MOM: Professor Oak lives next door. He knows so much about Pokemon.".
-      If the topic contains "pokemon" or the topic contains "pokémon" or the topic contains "starter":
-        If Journey's starter is "":
-          Set Speaker's response to "MOM: I wonder what Pokemon you'll meet on your journey. Be kind to them.".
-        Otherwise:
-          Set Speaker's response to "MOM: How is {Journey's starter}? Remember to look after your partner as well as yourself.".
-    For "Rival":
-      Set Speaker's response to "RIVAL: Hey, {Journey's trainer}! Don't expect me to wait around while you make up your mind.".
-      If the topic contains "battle" or the topic contains "strong":
-        Set Speaker's response to "RIVAL: I'm going to train hard and get stronger. You'd better keep up!".
-      If the topic contains "oak" or the topic contains "grandpa":
-        Set Speaker's response to "RIVAL: Grandpa's always studying Pokemon. I want to get out there and prove myself!".
-      If the topic contains "starter" or the topic contains "pokemon" or the topic contains "pokémon":
-        If Journey's rival starter is "":
-          Set Speaker's response to "RIVAL: I'm ready to get a Pokemon of my own. Grandpa is taking his time!".
-        Otherwise:
-          Set Speaker's response to "RIVAL: My {Journey's rival starter} and I will make a great team. Just you watch!".
-    For "Clerk":
-      Set Speaker's response to "CLERK: Welcome to the Viridian Mart! Can I help with something?".
-      If the topic contains "parcel" or the topic contains "oak":
-        If Journey's parcel is 1 and Journey's dex is 0:
-          Set Speaker's response to "CLERK: Please take Oak's parcel back to his lab in Pallet Town.".
-        Otherwise if Journey's dex is 1:
-          Set Speaker's response to "CLERK: Thanks for helping get that delivery to Professor Oak.".
-        Otherwise:
-          Set Speaker's response to "CLERK: I have a delivery for Professor Oak. Speak to me normally and I'll give it to you.".
-    For "Brock":
-      Set Speaker's response to "BROCK: Training takes patience. Learn what your Pokemon can do and stand by them.".
-      If the topic contains "rock" or the topic contains "gym":
-        Set Speaker's response to "BROCK: I'm Pewter's Gym Leader. My Pokemon are rock hard and have true grit.".
-      If the topic contains "badge" or the topic contains "win":
-        If Journey's badge is 1:
-          Set Speaker's response to "BROCK: You earned the Boulderbadge. Your team proved its strength.".
-        Otherwise:
-          Set Speaker's response to "BROCK: A badge is earned in battle. Face me when you're ready.".
-    For "Gym Trainer":
-      Set Speaker's response to "GYM TRAINER: Brock is tough. Don't underestimate the trainers in this gym, either!".
-      If the topic contains "light" or the topic contains "year":
-        Set Speaker's response to "GYM TRAINER: A light year measures distance. I should have remembered that!".
-    For "Gym Guide":
-      Set Speaker's response to "GYM GUIDE: Take a look at your team's moves and prepare before you challenge Brock.".
-      If the topic contains "rock" or the topic contains "brock":
-        Set Speaker's response to "GYM GUIDE: Brock uses Rock-type Pokemon. Think carefully about which moves to bring.".
-    Otherwise:
-      Let the guest greeting be the familiar greeting for the guest.
-      If the guest greeting is not "":
-        Set Speaker's response to the guest greeting.
+  Let the raised be the topics raised by the question.
+  Let the line be the fitting line of the character address for the raised.
+  If the line is "":
+    Set the line to the fitting line of the guest for the raised.
+  If the line is not "":
+    Set Speaker's response to the filled line of the line.

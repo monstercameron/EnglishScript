@@ -1,152 +1,160 @@
-import shutil
-import tempfile
 import unittest
 from pathlib import Path
 
-from englishscript import compile_file
+from englishscript import compile_source
 
 
 RED = Path(__file__).resolve().parents[1] / "docs" / "red"
 
 
-class RedParty(unittest.TestCase):
-    def run_story(self, text):
-        with tempfile.TemporaryDirectory() as folder:
-            root = Path(folder)
-            for chapter in RED.glob("*.english"):
-                shutil.copy(chapter, root / chapter.name)
-            (root / "main.english").write_text(
-                "Use the battle chapter.\nUse the party chapter.\n" + text,
-                encoding="utf-8",
-            )
-            return compile_file(root / "main.english").run(out=lambda text="": None)
+def run(source):
+    world = compile_source("Use the foundation chapter.\nUse the battle chapter.\nUse the party chapter.\n" + source,
+                           folder=RED).run(out=lambda text="": None)
+    combat = world.named["combat"].fields
+    team = world.named["team"].fields
+    members = [member.fields for member in team["members"]]
+    return combat, combat["ally"].fields, team, members
 
-    def test_capture_and_switch_preserves_each_member(self):
-        world = self.run_story('''Set Combat's starter to "Charmander".
-Enlist.
-Set Combat's health to 7.
-Set Combat's pp one to 11.
-Challenge "wild".
-Set Combat's opponent to "Caterpie".
-Set Combat's enemy level to 3.
-Set Combat's enemy health to 1.
+
+class RedParty(unittest.TestCase):
+    def test_capture_and_switch_keep_each_member_by_reference(self):
+        combat, ally, team, members = run('''Enlist "Charmander".
+Set Combat's ally's health to 7.
+Set item 1 of Combat's ally's pp to 11.
+Confront "Caterpie" at 3.
+Set Combat's foe's health to 1.
 Capture.
 Switch to 2.
-Set Combat's health to 5.
-Set Combat's pp one to 12.
+Set Combat's ally's health to 5.
+Set item 1 of Combat's ally's pp to 12.
 Switch to 1.
 ''')
-        team = world.named["team"].fields
-        combat = world.named["combat"].fields
-        second = world.named["second"].fields
-        self.assertEqual((team["count"], team["selected"], team["result"]), (2, 1, "caught"))
-        self.assertEqual((combat["starter"], combat["health"], combat["pp one"]), ("Charmander", 7, 11))
-        self.assertEqual((second["species"], second["health"], second["pp one"]), ("Caterpie", 5, 12))
+        self.assertEqual((team["selected"], team["result"], len(members)), (1, "caught", 2))
+        self.assertEqual((ally["species"], ally["health"], ally["pp"][0]), ("Charmander", 7, 11))
+        self.assertEqual((members[1]["species"], members[1]["health"], members[1]["pp"][0]), ("Caterpie", 5, 12))
         self.assertEqual(combat["outcome"], "caught")
+        self.assertEqual(combat["message"], "Caught Caterpie!")
+
+    def test_caught_member_gets_experience_for_its_growth_rate(self):
+        _, _, _, members = run('''Enlist "Charmander".
+Confront "Nidoran F" at 4.
+Set Combat's foe's health to 1.
+Set Combat's seed to 0.
+Capture.
+Confront "Rattata" at 4.
+Set Combat's foe's health to 1.
+Set Combat's seed to 0.
+Capture.
+''')
+        self.assertEqual([(member["species"], member["experience"]) for member in members],
+                         [("Charmander", 135), ("Nidoran F", 96), ("Rattata", 64)])
+
+    def test_status_stays_with_the_member(self):
+        _, ally, _, members = run('''Enlist "Charmander".
+Enlist "Pidgey".
+Set Combat's ally's status to "poisoned".
+Switch to 1.
+''')
+        self.assertEqual(ally["species"], "Charmander")
+        self.assertEqual(members[1]["status"], "poisoned")
 
     def test_trainer_and_full_party_do_not_capture(self):
-        world = self.run_story('''Set Combat's starter to "Bulbasaur".
-Enlist.
+        combat, _, team, _ = run('''Enlist "Bulbasaur".
 Challenge "brock".
 Capture.
 ''')
-        self.assertEqual(world.named["team"].fields["result"], "trainer")
-        self.assertEqual(world.named["combat"].fields["active"], 1)
-        world = self.run_story('''Set Combat's starter to "Bulbasaur".
-Enlist.
-Record.
-Set Team's count to 6.
-Challenge "wild".
+        self.assertEqual((team["result"], combat["active"]), ("trainer", 1))
+        combat, _, team, _ = run('''Enlist "Bulbasaur".
+Repeat 5 times:
+  Enlist "Pidgey".
+Confront "Pidgey" at 3.
 Capture.
 ''')
-        self.assertEqual(world.named["team"].fields["result"], "full")
-        self.assertEqual(world.named["combat"].fields["active"], 1)
+        self.assertEqual((team["result"], combat["active"]), ("full", 1))
 
     def test_faint_sends_reserve_or_loses_when_none_remain(self):
-        world = self.run_story('''Set Combat's starter to "Bulbasaur".
-Enlist.
-Challenge "wild".
-Set Combat's opponent to "Caterpie".
-Set Combat's enemy level to 3.
-Set Combat's enemy health to 1.
+        combat, ally, team, _ = run('''Enlist "Bulbasaur".
+Confront "Caterpie" at 3.
+Set Combat's foe's health to 1.
 Capture.
-Set Combat's health to 0.
+Set Combat's ally's health to 0.
 Set Combat's outcome to "fainted".
 Replace.
 ''')
-        self.assertEqual(world.named["team"].fields["result"], "replacement")
-        self.assertEqual(world.named["combat"].fields["species"], "Caterpie")
-        self.assertEqual(world.named["combat"].fields["active"], 1)
-        world = self.run_story('''Set Combat's starter to "Bulbasaur".
-Enlist.
-Set Combat's health to 0.
+        self.assertEqual((team["result"], ally["species"], combat["active"]), ("replacement", "Caterpie", 1))
+        self.assertEqual(combat["message"], "Caught Caterpie!")
+        self.assertEqual(combat["later lines"], ("Go! Caterpie!",))
+        combat, ally, team, _ = run('''Enlist "Bulbasaur".
+Set Combat's ally's health to 0.
 Set Combat's outcome to "fainted".
 Replace.
 ''')
-        self.assertEqual(world.named["team"].fields["result"], "loss")
-        self.assertEqual(world.named["combat"].fields["outcome"], "loss")
-        self.assertGreater(world.named["combat"].fields["health"], 0)
+        self.assertEqual((team["result"], combat["outcome"]), ("loss", "loss"))
+        self.assertGreater(ally["health"], 0)
 
-    def test_fractional_and_out_of_range_slots_keep_dispatch_behavior(self):
-        world = self.run_story('''Set Combat's starter to "Bulbasaur".
-Enlist.
-Record.
-Set Team's count to 2.
-Set Combat's health to 7.
+    def test_fractional_and_out_of_range_slots_keep_the_selected_member(self):
+        combat, ally, team, members = run('''Enlist "Bulbasaur".
+Enlist "Pidgey".
+Switch to 1.
+Set Combat's ally's health to 7.
 Switch to 1.5.
-Set Combat's health to 4.
-Record.
+Set Combat's ally's health to 4.
 Switch to 3.
 ''')
-        team = world.named["team"].fields
-        self.assertEqual((team["selected"], team["notice"]), (1.5, "NO POKEMON"))
-        self.assertEqual(world.named["first"].fields["health"], 7)
-        self.assertEqual(world.named["second"].fields["health"], 0)
-        self.assertEqual(world.named["combat"].fields["health"], 4)
+        self.assertEqual((team["selected"], team["notice"]), (1, "NO POKEMON"))
+        self.assertEqual((members[0]["health"], ally["health"]), (4, 4))
 
     def test_replace_skips_selected_and_fainted_members_in_slot_order(self):
-        world = self.run_story('''Set Combat's starter to "Bulbasaur".
-Enlist.
-Record.
-Set Team's count to 4.
-Set Second's health to 0.
-Set Third's health to 4.
-Set Third's species to "Pidgey".
-Set Fourth's health to 5.
-Set Fourth's species to "Caterpie".
+        _, ally, team, _ = run('''Enlist "Bulbasaur".
+Enlist "Rattata".
+Set Combat's ally's health to 0.
+Enlist "Pidgey".
+Enlist "Caterpie".
+Switch to 1.
 Replace.
 ''')
-        self.assertEqual(world.named["team"].fields["selected"], 3)
-        self.assertEqual(world.named["team"].fields["result"], "replacement")
-        self.assertEqual(world.named["combat"].fields["species"], "Pidgey")
+        self.assertEqual((team["selected"], team["result"], ally["species"]), (3, "replacement", "Pidgey"))
+
+    def test_switch_rejects_fainted_member_without_resetting_stages(self):
+        combat, ally, team, _ = run('''Enlist "Pidgey".
+Set Combat's ally's health to 0.
+Enlist "Bulbasaur".
+Set Combat's ally's attack stage to 2.
+Set Combat's ally's defense stage to -1.
+Switch to 1.
+''')
+        self.assertEqual((team["selected"], team["notice"], ally["species"]), (2, "FAINTED", "Bulbasaur"))
+        self.assertEqual((ally["attack stage"], ally["defense stage"]), (2, -1))
+
+    def test_switching_in_calms_the_newcomer(self):
+        _, ally, team, _ = run('''Enlist "Pidgey".
+Set Combat's ally's attack stage to -3.
+Now Combat's ally is seeded.
+Enlist "Bulbasaur".
+Switch to 1.
+''')
+        self.assertEqual((team["notice"], ally["species"], ally["attack stage"]), ("READY", "Pidgey", 0))
 
     def test_failed_capture_and_party_healing(self):
-        world = self.run_story('''Set Combat's starter to "Bulbasaur".
-Enlist.
-Challenge "wild".
-Set Combat's opponent to "Kakuna".
+        combat, _, team, _ = run('''Enlist "Bulbasaur".
+Confront "Kakuna" at 5.
 Set Combat's seed to 1.
 Capture.
 ''')
-        self.assertEqual(world.named["team"].fields["result"], "escaped")
-        self.assertEqual(world.named["combat"].fields["active"], 1)
-        world = self.run_story('''Set Combat's starter to "Bulbasaur".
-Enlist.
-Challenge "wild".
-Set Combat's opponent to "Caterpie".
-Set Combat's enemy level to 3.
-Set Combat's enemy health to 1.
+        self.assertEqual((team["result"], combat["active"]), ("escaped", 1))
+        _, ally, _, members = run('''Enlist "Bulbasaur".
+Confront "Caterpie" at 3.
+Set Combat's foe's health to 1.
 Capture.
-Set Combat's health to 1.
+Set Combat's ally's health to 1.
+Set Combat's ally's status to "burned".
 Switch to 2.
-Set Combat's health to 1.
+Set Combat's ally's health to 1.
 Revive.
 ''')
-        first = world.named["first"].fields
-        second = world.named["second"].fields
-        self.assertEqual(first["health"], first["maximum health"])
-        self.assertEqual(second["health"], second["maximum health"])
-        self.assertEqual(world.named["combat"].fields["species"], "Caterpie")
+        for member in members:
+            self.assertEqual((member["health"], member["status"]), (member["maximum health"], ""))
+        self.assertEqual(ally["species"], "Caterpie")
 
 
 if __name__ == "__main__":

@@ -40,7 +40,7 @@ class RedMusic(unittest.IsolatedAsyncioTestCase):
         cases = (
             ("opening", "Pewter Gym", "intro duel"),
             ("title", "", "opening"), ("title", "Pewter Gym", "opening"),
-            ("menu", "Route 1", "opening"), ("intro", "", "oak speech"),
+            ("main menu", "Route 1", "opening"), ("intro", "", "oak speech"),
             ("walk", "", "oak speech"), ("walk", "Bedroom", "pallet"),
             ("walk", "Pallet Town", "pallet"), ("walk", "Home", "pallet"),
             ("walk", "Blue's House", "pallet"), ("walk", "Oak's Lab", "lab"),
@@ -53,7 +53,7 @@ class RedMusic(unittest.IsolatedAsyncioTestCase):
             ("walk", "unknown place", "city"),
             ("dialogue", "Route 1", "route"), ("field menu", "Route 1", "route"),
             ("party", "Route 1", "route"), ("bag", "Route 1", "route"),
-            ("card", "Route 1", "route"), ("shop", "Route 1", "route"),
+            ("trainer card", "Route 1", "route"), ("shop", "Route 1", "route"),
             ("town map", "Route 1", "route"),
         )
         for mode, place, expected in cases:
@@ -67,7 +67,7 @@ class RedMusic(unittest.IsolatedAsyncioTestCase):
                               ("brock", "leader"), ("unknown foe", "trainer"), ("", "trainer")):
             with self.subTest(foe=foe):
                 journey["mode"], journey["place"] = "walk", "Pewter Gym"
-                combat["active"], combat["foe"] = 1, foe
+                combat["active"], combat["challenger"] = 1, foe
                 tick()
                 check(expected)
                 journey["mode"] = "battle bag"

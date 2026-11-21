@@ -24,3 +24,6 @@
 .talk-actions button { margin: 0; padding: 6px 12px; }
 #talk-status { margin: 7px 0 0; font-size: .78rem; line-height: 1.45; }
 .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.live-option{line-height:1.4}.live-option input{width:auto}.companion input[type=checkbox]{width:auto}.talk-controls button:disabled{opacity:.5}
+#save-choice p{margin:0 0 4px;font-weight:700}
+#save-warning{color:#8a2f2f}
+#save-warning[hidden]{display:none}
